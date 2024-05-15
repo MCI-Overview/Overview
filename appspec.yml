@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 files:
   - source: /server
-    destination: /home/ec2-user/Overview
+    destination: /home/ec2-user/Overview/server
 file_exists_behavior: OVERWRITE
 hooks:
 # Install:
