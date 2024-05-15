@@ -5,13 +5,13 @@ files:
     destination: /home/ec2-user/Overview/server
 file_exists_behavior: OVERWRITE
 hooks:
-# Install:
+  # Install:
   AfterInstall:
-    - location: server/after_install.sh
+    - location: server/scripts/after_install.sh
       timeout: 300
       runas: root
   ApplicationStart:
-    - location: server/application_start.sh
+    - location: server/scripts/application_start.sh
       timeout: 300
       runas: root
 # ValidateService:
