@@ -3,6 +3,7 @@ os: linux
 files:
   - source: /server
     destination: /home/ec2-user/Overview
+file_exists_behavior: OVERWRITE
 hooks:
 # Install:
   AfterInstall:
