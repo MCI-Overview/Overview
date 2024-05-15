@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 })
 
 // Company Routes
-app.get('/company/all', authenticateUser, companyController.getAllCompanies); // Get all companies
+app.get('/company/all', companyController.getAllCompanies); // Get all companies
 app.post('/company/create', authenticateUser, companyController.createCompany); // Create a company
 app.get('/company/:uen', authenticateUser, companyController.getCompanyByUen); // Find a company by uen
 app.put('/company/:uen/update', authenticateUser, companyController.updateCompanyByUen); // Update a company by uen
