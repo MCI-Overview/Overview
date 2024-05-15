@@ -35,7 +35,7 @@ const isAdmin = middlewareController.isAdmin; // Check if user is an admin of co
 
 // Routing
 app.get('/', (req, res) => {
-    res.json({ hello:"world" });
+    res.json({ hello:"world!" });
 })
 
 // Company Routes
