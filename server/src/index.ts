@@ -1,21 +1,17 @@
-// Import dependencies
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import dotenv from "dotenv";
 import routes from "./routes";
 import passport from "passport";
 import session from "express-session";
 import PgSession from "connect-pg-simple";
-import path from "path";
-import "./middleware/microsoft";
+
 dotenv.config();
 
-// Create react app
+const port = process.env.PORT;
+
 const app: Express = express();
-const port = process.env.PORT || 3000;
 const pgSession = PgSession(session);
 
-// Middleware
-app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -35,7 +31,9 @@ app.use(
         database: process.env.DATABASE_NAME,
         ssl: {
           rejectUnauthorized: true,
-          ca: process.env.DATABASE_CA_CERT,
+          ca: Buffer.from(process.env.DATABASE_CA as string, "base64").toString(
+            "ascii",
+          ),
         },
       },
     }),
