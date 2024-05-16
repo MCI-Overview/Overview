@@ -17,15 +17,10 @@ msLoginRouter.get("/microsoft/callback", passport.authenticate("auth-microsoft",
 }), (req, res)=> {
     const userString = JSON.stringify(req.user)
     res.send(`
-        <!DOCTYPE html>
-        <html>
-            <body>
-            </body>
-                <script>
-                    window.opener.postMessage(${userString}, 'http://localhost:5173')
-                </script>
-        </html>
-    `)
+    <script>
+        window.opener.postMessage(${userString}, 'http://localhost:5173');
+    </script>
+`);
 })
 
 export { msLoginRouter };

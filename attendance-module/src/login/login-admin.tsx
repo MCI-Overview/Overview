@@ -25,6 +25,7 @@ const AdminLogin: React.FC = () => {
             if (event.data) {
               sessionStorage.setItem("user", JSON.stringify(event.data));
               popup?.close();
+              window.location.href = '/admin/dashboard';
               window.removeEventListener("message", messageListener);
             }
           }
