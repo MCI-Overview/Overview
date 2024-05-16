@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
-const authRouter: Router = express.Router();
+const userAuthRouter: Router = express.Router();
 
 passport.serializeUser(function (user: any, cb) {
   process.nextTick(function () {
@@ -46,7 +46,7 @@ passport.use(
   }),
 );
 
-authRouter.post("/login", function (req: Request, res: Response, next) {
+userAuthRouter.post("/login", function (req: Request, res: Response, next) {
   passport.authenticate("local", function (err: any, user: any, info: any) {
     if (err) {
       return next(err);
@@ -65,4 +65,4 @@ authRouter.post("/login", function (req: Request, res: Response, next) {
   })(req, res, next);
 });
 
-export default authRouter;
+export default userAuthRouter;
