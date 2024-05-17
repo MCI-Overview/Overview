@@ -2,6 +2,12 @@ import { Router } from "express";
 import passport from "passport";
 import "../../utils/microsoft-auth";
 
+const CLIENT_URL = process.env.CLIENT_URL as string;
+
+if (!CLIENT_URL) {
+  throw new Error("CLIENT_URL must be defined in your environment variables");
+}
+
 const adminAuthRouter = Router();
 
 adminAuthRouter.get(
@@ -20,7 +26,7 @@ adminAuthRouter.get(
         <!DOCTYPE html>
         <html>
           <script>
-              window.opener.postMessage(${userString}, 'http://localhost:5173')
+              window.opener.postMessage(${userString}, ${CLIENT_URL});
           </script>
         </html>
     `);

@@ -1,5 +1,6 @@
 import passport from "passport";
 import { Strategy as MicrosoftStrategy } from "passport-microsoft";
+import { Profile } from "../types";
 
 const clientID = process.env.MICROSOFT_CLIENT_ID as string;
 const clientSecret = process.env.MICROSOFT_CLIENT_SECRET as string;
@@ -39,11 +40,10 @@ passport.use(
     function (
       accessToken: string,
       refreshToken: string,
-      profile: any,
-      done: (error: any, user?: any) => void,
+      profile: Profile,
+      cb: (error: any, user?: any) => void,
     ) {
-      console.log(profile);
-      done(null, profile);
+      cb(null, { id: profile.userPrincipalName, isAdmin: true });
     },
   ),
 );
