@@ -1,16 +1,10 @@
 import passport from "passport";
 import { Strategy as MicrosoftStrategy } from "passport-microsoft";
+import { Profile } from "../types";
 
 const clientID = process.env.MICROSOFT_CLIENT_ID as string;
 const clientSecret = process.env.MICROSOFT_CLIENT_SECRET as string;
 const tenantID = process.env.MICROSOFT_TENANT_ID as string;
-
-type Profile = {
-  provider: string;
-  id: string;
-  displayName: string;
-  userPrincipalName: string;
-};
 
 if (!clientID) {
   throw new Error(
