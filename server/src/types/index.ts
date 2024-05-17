@@ -7,6 +7,7 @@ export type Profile = {
 
 export type User = {
   id: string;
+  name: string;
   isUser?: boolean;
   isAdmin?: boolean;
 };
