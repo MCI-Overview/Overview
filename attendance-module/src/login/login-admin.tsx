@@ -6,37 +6,9 @@ const AdminLogin: React.FC = () => {
   return (
     <div>
       <h1>Sign in as admin</h1>
-      <button
-        onClick={() => {
-          const popup = window.open(
-            `${serverLink}/admin/login`,
-            "targetWindow",
-            `toolbar=no,
-          location=no,
-          status=no,
-          menubar=no,
-          scrollbars=yes,
-          resizable=yes,
-          width=620,
-          height=700`,
-          );
-
-          const messageListener = (event: MessageEvent) => {
-            if (event.origin === serverLink) {
-              if (event.data) {
-                sessionStorage.setItem("user", JSON.stringify(event.data));
-                popup?.close();
-                window.location.href = "/admin/dashboard";
-                window.removeEventListener("message", messageListener);
-              }
-            }
-          };
-
-          window.addEventListener("message", messageListener);
-        }}
-      >
+      <a href={`${serverLink}/admin/login`}>
         <img src="/microsoft-login.svg" alt="Microsoft Login" />
-      </button>
+      </a>
     </div>
   );
 };
