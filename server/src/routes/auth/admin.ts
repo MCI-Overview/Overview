@@ -3,6 +3,7 @@ import passport from "passport";
 import "../../utils/microsoft-auth";
 
 const CLIENT_URL = process.env.CLIENT_URL as string;
+const SERVER_URL = process.env.SERVER_URL as string;
 
 if (!CLIENT_URL) {
   throw new Error("CLIENT_URL must be defined in your environment variables");
@@ -19,17 +20,11 @@ adminAuthRouter.get(
 
 adminAuthRouter.get(
   "/auth/callback",
-  passport.authenticate("microsoft", {}),
+  passport.authenticate("microsoft", { failureRedirect: `${SERVER_URL}/admin/login` }),
   (req, res) => {
-    const userString = JSON.stringify(req.user);
-    res.send(`
-        <!DOCTYPE html>
-        <html>
-          <script>
-              window.opener.postMessage(${userString}, ${CLIENT_URL});
-          </script>
-        </html>
-    `);
+    // Assuming req.user contains the authenticated user information
+    const userString = encodeURIComponent(JSON.stringify(req.user));
+    res.redirect(`${CLIENT_URL}/admin/dashboard`);
   },
 );
 

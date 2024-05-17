@@ -1,8 +1,8 @@
-import express, { Request, Response, Router } from "express";
+import { Request, Response, Router } from "express";
 import passport from "passport";
 import "../../utils/local-auth";
 
-const userAuthRouter: Router = express.Router();
+const userAuthRouter: Router = Router();
 
 passport.serializeUser(function (user: any, cb) {
   process.nextTick(function () {

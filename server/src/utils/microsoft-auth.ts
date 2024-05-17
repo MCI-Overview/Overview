@@ -43,7 +43,11 @@ passport.use(
       profile: Profile,
       cb: (error: any, user?: any) => void,
     ) {
-      cb(null, { id: profile.userPrincipalName, isAdmin: true });
+      cb(null, {
+        id: profile.userPrincipalName,
+        name: profile.displayName,
+        isAdmin: true,
+      });
     },
   ),
 );
