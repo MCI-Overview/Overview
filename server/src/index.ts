@@ -21,7 +21,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: new pgSession({
-      tableName: "Sessions",
+      tableName: "Session",
       createTableIfMissing: true,
       conObject: {
         user: process.env.DATABASE_USERNAME,
