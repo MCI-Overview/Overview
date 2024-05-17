@@ -7,40 +7,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Assign {
+  candidateNric   String     @db.VarChar(9)
+  consultantEmail String
+  projectId       String
+  Candidate       Candidate  @relation(fields: [candidateNric], references: [nric])
+  Consultant      Consultant @relation(fields: [consultantEmail], references: [email])
+  Project         Project    @relation(fields: [projectId], references: [id])
+
+  @@id([consultantEmail, projectId, candidateNric])
+}
+
+model Attendance {
+  id            String           @id
+  candidateNric String           @db.VarChar(9)
+  shiftId       String
+  clockInTime   DateTime
+  clockOutTime  DateTime
+  status        AttendanceStatus
+}
+
 model Candidate {
-  nric           String   @id @db.VarChar(9)
+  nric           String    @id @db.VarChar(9)
   name           String
   block          String
   building       String
   floor          String
   unit           String
   street         String
-  postal         String   @db.VarChar(6)
+  postal         String    @db.VarChar(6)
   country        String
   bankHolderName String?
   bankName       String?
   bankNumber     String?
   dateOfBirth    DateTime?
   phoneNumber    String
-  assigns        Assign[]
+  Assign         Assign[]
+}
+
+model Client {
+  id      String    @id @default(cuid())
+  name    String    @unique
+  Project Project[]
 }
 
 model Consultant {
   email        String           @id
   name         String
   contact      String
-  status       EmploymentStatus
+  status       EmploymentStatus @default(ACTIVE)
   designation  String
   registration String
   department   String
-  assigns      Assign[]
-  manages      Manage[]
+  Assign       Assign[]
+  Manage       Manage[]
 }
 
-model Client {
-  id       String    @id @default(cuid())
-  name     String
-  projects Project[]
+model Manage {
+  role            Role @default(CLIENT_HOLDER)
+  consultantEmail String
+  projectId       String
+  Consultant      Consultant @relation(fields: [consultantEmail], references: [email])
+  Project         Project    @relation(fields: [projectId], references: [id])
+
+  @@id([consultantEmail, projectId])
 }
 
 model Project {
@@ -48,10 +78,14 @@ model Project {
   name      String
   clientId  String
   locations Json
-  assigns   Assign[]
-  manages   Manage[]
-  client    Client   @relation(fields: [clientId], references: [id])
-  shifts    Shift[]
+  createdAt DateTime @default(now())
+  startDate DateTime
+  endDate   DateTime
+  status    ProjectStatus @default(ACTIVE)
+  Assign    Assign[]
+  Manage    Manage[]
+  Client    Client   @relation(fields: [clientId], references: [id])
+  Shift     Shift[]
 }
 
 model Shift {
@@ -62,40 +96,10 @@ model Shift {
   projectId   String
   shiftNumber Int
   startTime   DateTime
-  project     Project   @relation(fields: [projectId], references: [id])
+  Project     Project   @relation(fields: [projectId], references: [id])
 }
 
-model Attendance {
-  id            String           @id @default(cuid())
-  candidateNric String           @db.VarChar(9)
-  shiftId       String
-  clockInTime   DateTime
-  clockOutTime  DateTime
-  status        AttendanceStatus
-}
-
-model Manage {
-  role            Role
-  consultantEmail String
-  projectId       String
-  consultant      Consultant @relation(fields: [consultantEmail], references: [email])
-  project         Project    @relation(fields: [projectId], references: [id])
-
-  @@id([consultantEmail, projectId])
-}
-
-model Assign {
-  candidateNric   String     @db.VarChar(9)
-  consultantEmail String
-  projectId       String
-  candidate       Candidate  @relation(fields: [candidateNric], references: [nric])
-  consultant      Consultant @relation(fields: [consultantEmail], references: [email])
-  project         Project    @relation(fields: [projectId], references: [id])
-
-  @@id([consultantEmail, projectId, candidateNric])
-}
-
-model Sessions {
+model Session {
   sid    String   @id(map: "session_pkey") @db.VarChar
   sess   Json     @db.Json
   expire DateTime @db.Timestamp(6)
@@ -103,19 +107,17 @@ model Sessions {
   @@index([expire], map: "IDX_session_expire")
 }
 
-model Users {
+model User {
   username String @id
   hash     String
 }
 
-enum EmploymentStatus {
-  ACTIVE
-  TERMINATED
-}
-
-enum Role {
-  CLIENT_HOLDER
-  CANDIDATE_HOLDER
+enum AttendanceStatus {
+  PRESENT
+  NO_SHOW
+  MC
+  FULL_DAY_LEAVE
+  HALF_DAY_LEAVE
 }
 
 enum DayOfWeek {
@@ -128,10 +130,18 @@ enum DayOfWeek {
   SUNDAY
 }
 
-enum AttendanceStatus {
-  PRESENT
-  NO_SHOW
-  MC
-  FULL_DAY_LEAVE
-  HALF_DAY_LEAVE
+enum EmploymentStatus {
+  ACTIVE
+  TERMINATED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  EXPIRED
+  DELETED
+}
+
+enum Role {
+  CLIENT_HOLDER
+  CANDIDATE_HOLDER
 }

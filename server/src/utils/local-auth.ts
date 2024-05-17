@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 passport.use(
   new LocalStrategy(async function verify(username, password, cb) {
-    const loginData = await prisma.users.findUnique({
+    const loginData = await prisma.user.findUnique({
       where: { username: username },
     });
 
