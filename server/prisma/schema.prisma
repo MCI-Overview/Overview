@@ -59,12 +59,13 @@ model Consultant {
   designation  String
   registration String
   department   String
+  permissions  Json             @default("{}")
   Assign       Assign[]
   Manage       Manage[]
 }
 
 model Manage {
-  role            Role @default(CLIENT_HOLDER)
+  role            Role       @default(CLIENT_HOLDER)
   consultantEmail String
   projectId       String
   Consultant      Consultant @relation(fields: [consultantEmail], references: [email])
@@ -74,17 +75,17 @@ model Manage {
 }
 
 model Project {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   name      String
   clientId  String
   locations Json
-  createdAt DateTime @default(now())
-  startDate DateTime
+  createdAt DateTime      @default(now())
   endDate   DateTime
-  status    ProjectStatus @default(ACTIVE)
+  startDate DateTime
+  status    ProjectStatus
   Assign    Assign[]
   Manage    Manage[]
-  Client    Client   @relation(fields: [clientId], references: [id])
+  Client    Client        @relation(fields: [clientId], references: [id])
   Shift     Shift[]
 }
 
