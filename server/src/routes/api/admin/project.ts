@@ -1,13 +1,13 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
-import { PrismaError, User } from "../../../types";
+import { PrismaError, User } from "@/types";
 import checkPermission from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
 
 const projectAPIRouter: Router = Router();
 
-projectAPIRouter.get("/project", async (req, res) => {
+projectAPIRouter.get("/project", async (_req, res) => {
   return res.status(400).send("No project ID specified.");
 });
 
@@ -206,6 +206,8 @@ projectAPIRouter.post("/project/delete", async (req, res) => {
 
     return res.status(500).send("Internal server error.");
   }
+
+  return res.send("Project deleted");
 });
 
 projectAPIRouter.post("/project/update", async (req, res) => {
@@ -227,8 +229,6 @@ projectAPIRouter.post("/project/update", async (req, res) => {
       data: {},
     });
   } catch (e) {
-    const error = e as PrismaError;
-
     return res.status(500).send("Internal server error.");
   }
 

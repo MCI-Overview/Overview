@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { PrismaError, User } from "../../../types";
+import { PrismaError, User } from "@/types";
 import checkPermission from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
@@ -33,7 +33,7 @@ consultantAPIRoutes.get("/consultant/:consultantId"),
     return res.send(consultantData);
   };
 
-consultantAPIRoutes.get("/consultants", async (req, res) => {
+consultantAPIRoutes.get("/consultants", async (_req, res) => {
   const consultantsData = await prisma.consultant.findMany({
     select: {
       email: true,

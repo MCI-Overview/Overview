@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { PrismaError, User } from "../../../types";
+import { PrismaError } from "@/types";
 
 const prisma = new PrismaClient();
 
@@ -23,7 +23,7 @@ clientAPIRoutes.get("/client/:clientId"),
     return res.send(clientData);
   };
 
-clientAPIRoutes.get("/clients", async (req, res) => {
+clientAPIRoutes.get("/clients", async (_req, res) => {
   const clientsData = await prisma.client.findMany({
     select: {
       id: true,
