@@ -30,6 +30,8 @@ model Attendance {
 model Candidate {
   nric           String    @id @db.VarChar(9)
   name           String
+  nationality    String
+  phoneNumber    String    @unique
   block          String
   building       String
   floor          String
@@ -41,7 +43,6 @@ model Candidate {
   bankName       String?
   bankNumber     String?
   dateOfBirth    DateTime?
-  phoneNumber    String
   Assign         Assign[]
 }
 
