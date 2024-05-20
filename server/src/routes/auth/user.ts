@@ -17,7 +17,7 @@ passport.deserializeUser(function (user: any, cb) {
 });
 
 userAuthRouter.post("/login", function (req: Request, res: Response, next) {
-  passport.authenticate("local", function (err: any, user: any, info: any) {
+  passport.authenticate("local", function (err: any, user: any, _info: any) {
     if (err) {
       return next(err);
     }

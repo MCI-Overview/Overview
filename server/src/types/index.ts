@@ -18,6 +18,7 @@ export type PrismaError = {
   clientVersion: string;
   meta: {
     modelName: string;
-    field_name: string;
+    field_name?: string;
+    target?: string[];
   };
 };

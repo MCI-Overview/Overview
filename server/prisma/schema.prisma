@@ -30,6 +30,8 @@ model Attendance {
 model Candidate {
   nric           String    @id @db.VarChar(9)
   name           String
+  nationality    String
+  phoneNumber    String    @unique
   block          String
   building       String
   floor          String
@@ -41,8 +43,8 @@ model Candidate {
   bankName       String?
   bankNumber     String?
   dateOfBirth    DateTime?
-  phoneNumber    String
   Assign         Assign[]
+  User           User[]
 }
 
 model Client {
@@ -54,10 +56,10 @@ model Client {
 model Consultant {
   email        String           @id
   name         String
-  contact      String           @unique
+  contact      String?          @unique
   status       EmploymentStatus @default(ACTIVE)
   designation  String
-  registration String           @default("-")
+  registration String?          @unique
   department   String
   permissions  Json             @default("{}")
   Assign       Assign[]
@@ -82,8 +84,9 @@ model Project {
   createdAt      DateTime      @default(now())
   endDate        DateTime
   startDate      DateTime
-  status         ProjectStatus
   oldReferenceId String?
+  employmentBy   MCICompany
+  status         ProjectStatus
   Assign         Assign[]
   Manage         Manage[]
   Client         Client        @relation(fields: [clientId], references: [id])
@@ -110,8 +113,9 @@ model Session {
 }
 
 model User {
-  username String @id
-  hash     String
+  username  String    @id
+  hash      String
+  Candidate Candidate @relation(fields: [username], references: [nric])
 }
 
 enum AttendanceStatus {
@@ -146,4 +150,9 @@ enum ProjectStatus {
 enum Role {
   CLIENT_HOLDER
   CANDIDATE_HOLDER
+}
+
+enum MCICompany {
+  MCI_CAREER_SERVICES
+  MCI_OUTSOURCING
 }

@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
-import { PrismaError, User } from "../../../types";
+import { PrismaError, User } from "@/types";
+import checkPermission from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
 
 const projectAPIRouter: Router = Router();
 
-projectAPIRouter.get("/project", async (req, res) => {
+projectAPIRouter.get("/project", async (_req, res) => {
   return res.status(400).send("No project ID specified.");
 });
 
@@ -14,23 +15,34 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
   const user = req.user as User;
   const projectId = req.params.projectId;
 
-  const projectData = await prisma.consultant.findUnique({
+  const projectData = await prisma.project.findUnique({
     where: {
-      email: user.id,
-      Manage: {
-        some: {
-          projectId: projectId,
-        },
-      },
+      id: projectId,
+    },
+    select: {
+      Manage: true,
     },
   });
+
   if (!projectData) {
-    return res
-      .status(404)
-      .send("Project does not exist or unauthorized to view project.");
+    return res.status(404).send("Project does not exist.");
   }
 
-  return res.send(projectData);
+  if (
+    projectData.Manage.some(
+      (consultant) => consultant.consultantEmail === user.id,
+    )
+  ) {
+    return res.send(projectData);
+  }
+
+  const hasPermission = await checkPermission(user.id, "canReadAllProjects");
+
+  if (hasPermission) {
+    return res.send(projectData);
+  }
+
+  return res.status(401).send("Unauthorized");
 });
 
 projectAPIRouter.get("/getExisting", async (req, res) => {
@@ -65,39 +77,51 @@ projectAPIRouter.get("/projects", async (req, res) => {
   return res.send(projectsData);
 });
 
+projectAPIRouter.get("/projects/all", async (req, res) => {
+  const user = req.user as User;
+
+  const hasPermission = await checkPermission(user.id, "canReadAllProjects");
+
+  if (!hasPermission) {
+    return res.status(401).send("Unauthorized");
+  }
+
+  const projectsData = await prisma.project.findMany();
+
+  return res.send(projectsData);
+});
+
 projectAPIRouter.post("/project/create", async (req, res) => {
   const user = req.user as User;
+
+  // Required fields
   const name = req.body.name;
   const clientId = req.body.clientId;
-  const status = req.body.status || "ACTIVE";
-  const candidateHolders = req.body.candidateHolders;
 
+  let employmentBy = req.body.employmentBy;
   let locations = req.body.locations;
   let startDate = req.body.startDate;
   let endDate = req.body.endDate;
 
-  if (!name) {
-    return res.status(400).send("name is required.");
+  // Optional fields
+  const status = req.body.status || "ACTIVE";
+  const candidateHolders = req.body.candidateHolders || [];
+
+  if (!name || !clientId || !locations || !startDate || !endDate) {
+    return res
+      .status(400)
+      .send("name, clientId, locations, startDate, and endDate are required.");
   }
 
-  if (!clientId) {
-    return res.status(400).send("clientId is required.");
-  }
-
-  if (!locations) {
-    return res.status(400).send("locations is required.");
-  }
-
-  if (!startDate) {
-    return res.status(400).send("startDate is required.");
-  }
-
-  if (!endDate) {
-    return res.status(400).send("endDate is required.");
-  }
-
-  if (!candidateHolders) {
-    return res.status(400).send("candidateHolders is required.");
+  if (
+    employmentBy !== "MCI Career Services Pte Ltd" &&
+    employmentBy !== "MCI Outsourcing Pte Ltd"
+  ) {
+    return res
+      .status(400)
+      .send(
+        'Invalid employmentBy value. Must be either "MCI Career Services" or "MCI Outsourcing Pte Ltd"',
+      );
   }
 
   if (!Array.isArray(candidateHolders)) {
@@ -122,6 +146,12 @@ projectAPIRouter.post("/project/create", async (req, res) => {
     return res.status(400).send("endDate must be a valid date.");
   }
 
+  if (employmentBy === "MCI Career Services Pte Ltd") {
+    employmentBy = "MCI_CAREER_SERVICES";
+  } else if (employmentBy === "MCI Outsourcing Pte Ltd") {
+    employmentBy = "MCI_OUTSOURCING";
+  }
+
   try {
     await prisma.project.create({
       data: {
@@ -131,6 +161,7 @@ projectAPIRouter.post("/project/create", async (req, res) => {
         locations: locations,
         startDate: startDate,
         endDate: endDate,
+        employmentBy: employmentBy,
         Manage: {
           createMany: {
             data: [
@@ -140,6 +171,7 @@ projectAPIRouter.post("/project/create", async (req, res) => {
               ...candidateHolders.map((email: string) => {
                 return {
                   consultantEmail: email,
+                  Role: "CANDIDATE_HOLDER",
                 };
               }),
             ],
@@ -191,6 +223,8 @@ projectAPIRouter.post("/project/delete", async (req, res) => {
 
     return res.status(500).send("Internal server error.");
   }
+
+  return res.send("Project deleted");
 });
 
 projectAPIRouter.post("/project/update", async (req, res) => {
@@ -212,8 +246,6 @@ projectAPIRouter.post("/project/update", async (req, res) => {
       data: {},
     });
   } catch (e) {
-    const error = e as PrismaError;
-
     return res.status(500).send("Internal server error.");
   }
 
