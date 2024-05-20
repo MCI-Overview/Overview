@@ -54,7 +54,7 @@ model Client {
 model Consultant {
   email        String           @id
   name         String
-  contact      String           @unique
+  contact      String?          @unique
   status       EmploymentStatus @default(ACTIVE)
   designation  String
   registration String           @default("-")
