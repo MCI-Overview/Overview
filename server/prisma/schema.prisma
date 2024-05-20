@@ -44,6 +44,7 @@ model Candidate {
   bankNumber     String?
   dateOfBirth    DateTime?
   Assign         Assign[]
+  User           User[]
 }
 
 model Client {
@@ -112,8 +113,9 @@ model Session {
 }
 
 model User {
-  username String @id
-  hash     String
+  username  String    @id
+  hash      String
+  Candidate Candidate @relation(fields: [username], references: [nric])
 }
 
 enum AttendanceStatus {

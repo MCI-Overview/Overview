@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { PrismaError, User } from "@/types";
+import bcrypt from "bcrypt";
 import checkPermission from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
@@ -122,6 +123,11 @@ candidateAPIRoutes.post("/candidate/create", async (req, res) => {
         bankName: bankName,
         bankNumber: bankNumber,
         dateOfBirth: dateOfBirth,
+        User: {
+          create: {
+            hash: await bcrypt.hash(phoneNumber, 10),
+          },
+        },
       },
     });
   } catch (error) {
