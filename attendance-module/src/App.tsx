@@ -6,6 +6,7 @@ import LoginUser from './login/login-user';
 import AdminDashboard from './admin/dashboard';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import PrivateRoutes from './utils/private-route'
 
 function App() {
   return (
@@ -18,10 +19,11 @@ function App() {
         <Route path="/user" element={<LoginUser />} />
 
         {/* admin routes */}
-        <Route path='/admin/dashboard' element={<AdminDashboard />} />
-        <Footer />
-
+        <Route element={<PrivateRoutes />}>
+          <Route path='/admin/dashboard' element={<AdminDashboard />} />
+        </Route>
       </Routes>
+      <Footer />
     </Router>
   );
 }
