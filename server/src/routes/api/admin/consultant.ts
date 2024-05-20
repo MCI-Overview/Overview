@@ -55,8 +55,8 @@ consultantAPIRoutes.post("/consultant/create", async (req, res) => {
   const department = req.body.department;
 
   // Optional fields
-  const registration = req.body.registration || "-";
-  const permissions = req.body.permissions || {};
+  const registration = req.body.registration;
+  const permissions = req.body.permissions;
 
   if (!email || !name || !contact || !designation || !department) {
     return res
