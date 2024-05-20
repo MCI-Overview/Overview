@@ -1,6 +1,6 @@
-import passport from "passport";
 import { Strategy as MicrosoftStrategy } from "passport-microsoft";
-import { Profile } from "../types";
+import { Profile } from "@/types";
+import passport from "passport";
 
 const clientID = process.env.MICROSOFT_CLIENT_ID as string;
 const clientSecret = process.env.MICROSOFT_CLIENT_SECRET as string;
@@ -39,8 +39,8 @@ passport.use(
       tokenURL: `https://login.microsoftonline.com/${tenantID}/oauth2/v2.0/token`,
     },
     function (
-      accessToken: string,
-      refreshToken: string,
+      _accessToken: string,
+      _refreshToken: string,
       profile: Profile,
       cb: (error: any, user?: any) => void,
     ) {
