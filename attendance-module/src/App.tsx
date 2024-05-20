@@ -4,10 +4,13 @@ import SelectRole from './login/select-role';
 import LoginAdmin from './login/login-admin';
 import LoginUser from './login/login-user';
 import AdminDashboard from './admin/dashboard';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 function App() {
   return (
     <Router>
+      <Navbar />
       <Routes>
         {/* login routes */}
         <Route path="/" element={<SelectRole />} />
@@ -16,7 +19,7 @@ function App() {
 
         {/* admin routes */}
         <Route path='/admin/dashboard' element={<AdminDashboard />} />
-
+        <Footer />
 
       </Routes>
     </Router>
