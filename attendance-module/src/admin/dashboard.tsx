@@ -12,7 +12,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <select>
-            <option>Select project</option>
+            <option>Select a project</option>
         </select>
         <button>Import project from ELOA</button><br></br>
 
