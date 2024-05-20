@@ -4,6 +4,7 @@ import SelectRole from './login/select-role';
 import LoginAdmin from './login/login-admin';
 import LoginUser from './login/login-user';
 import AdminDashboard from './admin/dashboard';
+import PrivateRoutes from './utils/private-route'
 
 function App() {
   return (
@@ -15,9 +16,9 @@ function App() {
         <Route path="/user" element={<LoginUser />} />
 
         {/* admin routes */}
-        <Route path='/admin/dashboard' element={<AdminDashboard />} />
-
-
+        <Route element={<PrivateRoutes />}>
+          <Route path='/admin/dashboard' element={<AdminDashboard />} />
+        </Route>
       </Routes>
     </Router>
   );

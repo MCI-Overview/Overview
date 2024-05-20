@@ -9,6 +9,10 @@ if (!CLIENT_URL) {
   throw new Error("CLIENT_URL must be defined in your environment variables");
 }
 
+if (!SERVER_URL) {
+  throw new Error("SERVER_URL must be defined in your environment variables");
+}
+
 const adminAuthRouter = Router();
 
 adminAuthRouter.get(

@@ -45,6 +45,23 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
   return res.status(401).send("Unauthorized");
 });
 
+projectAPIRouter.get("/getExisting", async (req, res) => {
+  try {
+    const projectData = await prisma.project.findMany({
+      select: {
+        oldReferenceId: true,
+      },
+    }) as { oldReferenceId: string | null }[];
+
+    // Filter out null values if you only want non-null oldReferenceIds
+    const oldReferenceIds = projectData.map(project => project.oldReferenceId).filter(id => id !== null);
+
+    res.json(oldReferenceIds);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+})
+
 projectAPIRouter.get("/projects", async (req, res) => {
   const user = req.user as User;
 

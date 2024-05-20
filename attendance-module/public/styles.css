@@ -1,0 +1,709 @@
+body {
+    margin: 0;
+    font-size: 1rem;
+    color: rgba(35,48,61,1);
+    letter-spacing: 0.05rem;
+    text-decoration: none;
+    text-wrap: pretty;
+    overscroll-behavior: none;
+    /* overflow-y: hidden; */
+}
+
+/* Containers */
+
+.navbar {
+    position: fixed;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 70px;
+    border-bottom: 1px solid;
+    border-color: rgba(144,163,167,0.5);
+    background-color: white;
+    z-index: 1000;
+}
+
+.bodyBg-ctn {
+    width: 100%;
+    background-color: rgba(144,163,167,0.2);
+    padding: 10px;
+    min-height: 1500px;
+}
+
+.body-ctn {
+    display: flex;
+    flex-direction: column;
+    max-width: 500px; 
+    margin: auto;
+    margin-top: 140px;
+    margin-bottom: 20px;
+    padding: 50px;
+    border-radius: 20px;
+    background-color: white;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.body2-ctn {
+    max-width: 700px;
+    margin: auto;
+    margin-top: 140px;
+    margin-bottom: 20px;
+    padding: 50px 60px;
+    border-radius: 20px;
+    text-align: center;
+    align-items: center;
+    background-color: white;
+}
+
+.footerbg-ctn {
+    display: flex;
+    width: 100%;
+    min-height: 100%;
+    padding-top: 50px;
+    padding-bottom: 20px;
+    background-color: rgba(144,163,167,0.2);
+}
+
+.footer-ctn {
+    display: flex;
+    max-width: 1000px;
+    margin: auto;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid;
+    border-color: rgba(144,163,167,0.5);
+}
+
+.footer-help {
+    width: 580px;
+    padding-bottom: 10px;
+}
+
+.footer-logo {
+    display: inline;
+    min-width: 420px;
+    max-width: 450px;
+}
+
+.form-ctn {
+    width: 270px;
+    border: 0px;
+    border-bottom: 1px Solid;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.formOtp-ctn {
+    width: 40px;
+    height: 60px;
+    border: none;
+    border-radius: 5px;
+    background-color: rgba(144,163,167,0.3);
+    padding: 0px;
+}
+
+.formProfile1-ctn {
+    width: 500px;
+    height: 60px;
+    border: 3px solid;
+    border-radius: 10px;
+    border-color: rgba(144,163,167,0.8);
+    background-color: white;
+    margin-top: 18px;
+}
+
+.formProfile2-ctn {
+    width: 500px;
+    height: 60px;
+    border-radius: 10px;
+    /* border: 3px solid;
+    border-radius: 10px;
+    border-color: rgba(144,163,167,0.8); */
+    color: white;
+    background-color: rgba(35,48,61,1);
+    margin-top: 18px;
+}
+
+.formProfileSlim-ctn {
+    width: 245px;
+    height: 60px;
+    border: 3px solid;
+    border-radius: 10px;
+    border-color: rgba(144,163,167,0.8);
+    background-color: white;
+    margin-top: 18px;
+}
+
+.textareaForm {
+    width: 500px;
+    height: 120px;
+    border: 3px solid;
+    border-radius: 10px;
+    border-color: rgba(144,163,167,0.8);
+    background-color: white;
+    margin-top: 18px;
+}
+
+.bulletPts {
+    float: left;
+    width: 30px;
+    height: 30px;
+    border-radius: 40px;
+    margin-left: 40px;
+}
+
+.ctn-arrow {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    top: 600px;
+    right: 5px;
+    z-index: 99;
+}
+
+
+/* text */
+
+/* .h1 {
+
+}
+
+.h2 {
+
+} */
+
+.h3 {
+    color: rgba(144,163,167,1);
+}
+
+.p-loginSingPassBtn {
+    font-size: 1rem;
+    color: white;
+    text-align: center;
+    line-height: 2.6rem;
+    padding: 4px;
+    margin: auto;
+}
+
+.p-loginMainBtn {
+    font-size: 1rem;
+    color: white;
+    text-align: center;
+    line-height: 2rem;
+    padding: 4px;
+    margin: auto;
+}
+
+.p-otpBtn {
+    font-size: 1rem;
+    color: rgba(57,81,89,1);
+    text-align: center;
+    line-height: 2.6rem;
+    padding: 4px;
+    margin: auto;
+}
+
+.p-menuIconHeader {
+    float: left;
+    font-size: 1.2rem;
+    text-align: left;
+}
+
+.p-menuIconText {
+    float: left;
+    font-size: 0.8rem;
+    text-align: left;
+    margin-top: -20px;
+    margin-left: 90px;
+}
+
+.p-footer {
+    display: inline;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.p-inBullets {
+    color: white;
+    line-height: 1.9rem;
+    text-align: center;
+}
+
+.p-outBullets {
+    margin-left: 100px;
+    text-align: left;
+}
+
+.p-formTitle {
+    text-align: left;
+    font-size: 1.6rem;
+    font-family: "futura-pt", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    padding-left: 10px;
+    margin-top: 130px;
+}
+
+.input-groupLogin {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.input-groupLogin input {
+    width: 90%;
+    height: 60px;
+    border: none;
+    border-radius: 30px !important;
+    outline: none;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1.2rem;
+    font-family: "futura-pt", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    color: black;
+    background-color: rgba(57,81,89,0.2);
+ }
+
+ .input-groupLogin label {
+    position: absolute;
+    top: 30%;
+    left: 10%;
+    transform: translateY(15%);
+    padding: 0 10px;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+    font-family: "futura-pt", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    color: rgba(35, 48, 61, 0.8);
+    background-color: transparent;
+ }
+
+.input-groupLogin input:focus + label,
+.input-groupLogin input:valid + label {
+    top: 0px;
+    font-size: 0.8rem;
+    border-radius: 10px !important;
+    color: white;
+    background-color: rgba(103, 126, 97, 1);
+}
+
+.input-groupOTP {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.input-groupOTP input {
+    width: 15%;
+    height: 60px;
+    border: none;
+    border-radius: 15px !important;
+    outline: none;
+    text-align: center;
+    margin-left: 5px;
+    font-size: 1.2rem;
+    font-family: "futura-pt", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    color: black;
+    background-color: rgba(57,81,89,0.2);
+ }
+
+ .input-groupForm {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+ .input-groupForm input {
+    width: 90%;
+    height: 70px;
+    border: none;
+    border-radius: 30px !important;
+    outline: none;
+    text-align: center;
+    margin-top: 30px;
+    padding: 30px;
+    font-size: 1.5rem;
+    font-family: "futura-pt", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    color: black;
+    background-color: rgba(57,81,89,0.2);
+ }
+
+ .input-groupForm label {
+    position: absolute;
+    top: 65%; /* Center vertically */
+    left: 60px; /* Small left padding from the input edge */
+    transform: translateY(-50%); /* Centering the label by moving it up by half its height */
+    transition: all 0.3s ease;
+    color: white;
+    pointer-events: none; /* Allows click to pass through to input */
+    font-size: 1.2rem;
+    font-family: "futura-pt", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+
+ }
+
+.input-groupForm input:focus + label,
+.input-groupForm input:valid + label {
+    top: 30px;
+    font-size: 0.8rem;
+    border-radius: 10px !important;
+    padding: 5px 10px 5px 10px;
+    color: white;
+    background-color: rgba(144,163,167,0.8);
+}
+
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
+
+.f-book {
+    font-family: "futura-pt", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.f-bold {
+    font-family: "futura-pt", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+.f-size1 {
+    font-size: 2.5rem;
+}
+
+.form-header {
+    font-size: 1.5rem;
+    color: rgba(144,163,167,0.8);
+}
+
+/* unvisited link */
+a:link {
+    color: rgba(57,81,89,1);
+  }
+  
+  /* visited link */
+  a:visited {
+    color: rgba(57,81,89,1);
+  }
+  
+  /* mouse over link */
+  a:hover {
+    color: rgba(144,163,167,0.8);
+  }
+  
+/* images */
+
+.img-logo {
+    position: fixed;
+    margin-left: 30px;
+    margin-bottom: 20px;
+}
+
+.img-chuHand {
+    width: 65px;
+    margin-top: -70px;
+    margin-left: 250px;
+}
+
+.img-chuHand2 {
+    width: 65px;
+    margin-top: 60px;
+    margin-left: -60px;
+    z-index: 1;
+}
+
+.img-loginChat {
+    width: 100px;
+    margin: auto;
+}
+
+.img-singpass {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.img-passIcon {
+    width: 10%;
+    float: right;
+    margin-right: 40px;
+    margin-top: 10px;
+}
+
+.img-arrow {
+    width: 25px;
+    height: 25px;
+}
+
+.img-arrowdown {
+    width: 25px;
+    height: 25px;
+    margin-top: 50px;
+}
+
+.appDwn {
+    float: right;
+    width: 116px;
+    height: 32px;
+    padding-left: 10px;
+}
+
+.menuIcon {
+    float: left;
+    width: 50px;
+    height: 50px;
+    margin: 0 20px;
+}
+
+hr {
+    width: 100%;
+    margin: auto;
+    border-color: white;
+    border-top: 1px solid;
+}
+
+/* Buttons */
+
+.btn-loginSingPass {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    min-height: 50px;
+    background-color: rgba(160,167,66,1);
+    border: none;
+    border-radius: 30px;
+    margin: auto;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.btn-loginHome {
+    float: right;
+    width: 100%;
+    max-width: 120px;
+    height: 30px;
+    min-height: 40px;
+    margin-right: 30px;
+    border: none;
+    border-radius: 30px;
+    background-color: rgba(144,163,167,1);
+    text-align: center;
+    align-items: flex-end;
+}
+
+.btn-otp {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    min-height: 50px;
+    background-color: white;
+    border: 1px solid;
+    border-color: rgba(144,163,167,0.5);
+    border-radius: 30px;
+    margin: auto;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.btn-MyInfo{
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    min-height: 50px;
+    background-color: white;
+    border: 1px solid;
+    border-color: rgba(144,163,167,0.5);
+    border-radius: 30px;
+    margin: auto;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.btn-submit {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    min-height: 50px;
+    background-color: white;
+    border: 1px solid;
+    border-color: rgba(144,163,167,0.5);
+    border-radius: 30px;
+    margin: auto;
+}
+
+.btn-generate {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    min-height: 50px;
+    background-color: rgba(160,167,66,0.2);
+    border: 0;
+    /* border-color: rgba(144,163,167,0.5); */
+    border-radius: 30px;
+    margin-top: 150px;
+}
+
+.btn-generate2 {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    min-height: 50px;
+    background-color: rgba(160,167,66,0.2);
+    border: 0;
+    /* border-color: rgba(144,163,167,0.5); */
+    border-radius: 30px;
+    margin-top: 20px;
+}
+
+.btn-arrow {
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 300px;
+    background-color: transparent;
+    outline: none;
+    transition: opacity 0.4s;
+}
+
+.btn-arrow:hover {
+    background-color: white;
+}
+
+/* Colours */
+
+.c-B1 {
+    color: rgba(144,163,167,1);
+}
+
+.c-B2 {
+    color: rgba(57,81,89,1);
+}
+
+.c-B3 {
+    color: rgba(35,48,61,1);
+}
+
+.c-C1 {
+    color: rgba(147,84,48,1);
+}
+
+.c-C2 {
+    color: rgba(254,183,55,1);
+}
+
+.c-C3 {
+    color: rgba(160,167,66,1);
+}
+
+.c-C4 {
+    color: rgba(203,166,136,1); 
+}
+
+.c-white {
+    color: white; 
+}
+
+.c-bgB1 {
+    background-color: rgba(144,163,167,1);
+}
+
+.c-bgB2 {
+    background-color: rgba(57,81,89,1);
+}
+
+.c-bgB3 {
+    background-color: rgba(35,48,61,1);
+}
+
+.c-bgC1 {
+    background-color: rgba(147,84,48,1);
+}
+
+.c-bgC2 {
+    background-color: rgba(254,183,55,1);
+}
+
+.c-bgC3 {
+    background-color: rgba(160,167,66,1);
+}
+
+.c-bgC4 {
+    background-color: rgba(203,166,136,1); 
+}
+
+
+/* Colours Palette
+
+Light Blue - rgba(144,163,167,1);
+Medium Blue - rgba(57,81,89,1);
+Dark Blue - rgba(35,48,61,1);
+Brown - rgba(147,84,48,1);
+Orange - rgba(254,183,55,1);
+Green - rgba(160,167,66,1);
+Pink - rgba(203,166,136,1); 
+*/
+
+/* font
+
+Futura PT Book
+font-family: "futura-pt", sans-serif;
+font-weight: 400;
+font-style: normal;
+
+Futura PT Book Oblique
+font-family: "futura-pt", sans-serif;
+font-weight: 400;
+font-style: italic;
+
+Futura PT Heavy
+font-family: "futura-pt", sans-serif;
+font-weight: 700;
+font-style: normal;
+
+Futura PT Heavy Oblique
+font-family: "futura-pt", sans-serif;
+font-weight: 700;
+font-style: italic;
+
+Futura PT Bold
+font-family: "futura-pt-bold", sans-serif;
+font-weight: 700;
+font-style: normal;
+
+Futura PT Bold Oblique
+font-family: "futura-pt-bold", sans-serif;
+font-weight: 700;
+font-style: italic; 
+
+.yeseva-one-regular {
+  font-family: "Yeseva One", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+*/
