@@ -54,10 +54,10 @@ model Client {
 model Consultant {
   email        String           @id
   name         String
-  contact      String
+  contact      String           @unique
   status       EmploymentStatus @default(ACTIVE)
   designation  String
-  registration String
+  registration String           @default("-")
   department   String
   permissions  Json             @default("{}")
   Assign       Assign[]
@@ -75,18 +75,19 @@ model Manage {
 }
 
 model Project {
-  id        String        @id @default(cuid())
-  name      String
-  clientId  String
-  locations Json
-  createdAt DateTime      @default(now())
-  endDate   DateTime
-  startDate DateTime
-  status    ProjectStatus
-  Assign    Assign[]
-  Manage    Manage[]
-  Client    Client        @relation(fields: [clientId], references: [id])
-  Shift     Shift[]
+  id             String        @id @default(cuid())
+  name           String
+  clientId       String
+  locations      Json
+  createdAt      DateTime      @default(now())
+  endDate        DateTime
+  startDate      DateTime
+  status         ProjectStatus
+  oldReferenceId String?
+  Assign         Assign[]
+  Manage         Manage[]
+  Client         Client        @relation(fields: [clientId], references: [id])
+  Shift          Shift[]
 }
 
 model Shift {
