@@ -24,7 +24,6 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
       },
     },
   });
-
   if (!projectData) {
     return res
       .status(404)
@@ -36,12 +35,10 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
 
 projectAPIRouter.get("/projects", async (req, res) => {
   const user = req.user as User;
-  const status = req.body.status || "ACTIVE";
 
   const projectsData = prisma.consultant.findUnique({
     where: {
       email: user.id,
-      status: status,
     },
     select: {
       Manage: true,
@@ -56,6 +53,8 @@ projectAPIRouter.post("/project/create", async (req, res) => {
   const name = req.body.name;
   const clientId = req.body.clientId;
   const status = req.body.status || "ACTIVE";
+  const candidateHolders = req.body.candidateHolders;
+
   let locations = req.body.locations;
   let startDate = req.body.startDate;
   let endDate = req.body.endDate;
@@ -78,6 +77,14 @@ projectAPIRouter.post("/project/create", async (req, res) => {
 
   if (!endDate) {
     return res.status(400).send("endDate is required.");
+  }
+
+  if (!candidateHolders) {
+    return res.status(400).send("candidateHolders is required.");
+  }
+
+  if (!Array.isArray(candidateHolders)) {
+    return res.status(400).send("candidateHolders must be an array.");
   }
 
   try {
@@ -108,8 +115,17 @@ projectAPIRouter.post("/project/create", async (req, res) => {
         startDate: startDate,
         endDate: endDate,
         Manage: {
-          create: {
-            consultantEmail: user.id,
+          createMany: {
+            data: [
+              {
+                consultantEmail: user.id,
+              },
+              ...candidateHolders.map((email: string) => {
+                return {
+                  consultantEmail: email,
+                };
+              }),
+            ],
           },
         },
       },
