@@ -69,6 +69,17 @@ projectAPIRouter.post("/project/create", async (req, res) => {
       .send("name, clientId, locations, startDate, and endDate are required.");
   }
 
+  if (
+    employmentBy !== "MCI Career Services Pte Ltd" &&
+    employmentBy !== "MCI Outsourcing Pte Ltd"
+  ) {
+    return res
+      .status(400)
+      .send(
+        'Invalid employmentBy value. Must be either "MCI Career Services" or "MCI Outsourcing Pte Ltd"',
+      );
+  }
+
   if (!Array.isArray(candidateHolders)) {
     return res.status(400).send("candidateHolders must be an array.");
   }
@@ -91,6 +102,12 @@ projectAPIRouter.post("/project/create", async (req, res) => {
     return res.status(400).send("endDate must be a valid date.");
   }
 
+  if (employmentBy === "MCI Career Services Pte Ltd") {
+    employmentBy = "MCI_CAREER_SERVICES";
+  } else if (employmentBy === "MCI Outsourcing Pte Ltd") {
+    employmentBy = "MCI_OUTSOURCING";
+  }
+
   try {
     await prisma.project.create({
       data: {
@@ -100,6 +117,7 @@ projectAPIRouter.post("/project/create", async (req, res) => {
         locations: locations,
         startDate: startDate,
         endDate: endDate,
+        employmentBy: employmentBy,
         Manage: {
           createMany: {
             data: [
@@ -109,6 +127,11 @@ projectAPIRouter.post("/project/create", async (req, res) => {
               ...candidateHolders.map((email: string) => {
                 return {
                   consultantEmail: email,
+                  Role: {
+                    connect: {
+                      name: Role.CANDIDATE_HOLDER,
+                    },
+                  },
                 };
               }),
             ],
