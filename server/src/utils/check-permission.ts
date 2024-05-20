@@ -22,6 +22,10 @@ export default async function checkPermission(
 
   const permissions = permissionData.permissions as JsonObject;
 
+  if ("isRoot" in permissions && permissions["isRoot"]) {
+    return true;
+  }
+
   if (permissionName in permissions) {
     return permissions[permissionName];
   }
