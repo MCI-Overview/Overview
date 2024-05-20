@@ -55,6 +55,7 @@ projectAPIRouter.post("/project/create", async (req, res) => {
   const name = req.body.name;
   const clientId = req.body.clientId;
 
+  let employmentBy = req.body.employmentBy;
   let locations = req.body.locations;
   let startDate = req.body.startDate;
   let endDate = req.body.endDate;
@@ -127,11 +128,7 @@ projectAPIRouter.post("/project/create", async (req, res) => {
               ...candidateHolders.map((email: string) => {
                 return {
                   consultantEmail: email,
-                  Role: {
-                    connect: {
-                      name: Role.CANDIDATE_HOLDER,
-                    },
-                  },
+                  Role: "CANDIDATE_HOLDER",
                 };
               }),
             ],
