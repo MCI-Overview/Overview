@@ -42,6 +42,7 @@ model Candidate {
   bankNumber     String?
   dateOfBirth    DateTime?
   phoneNumber    String
+  nationality    String
   Assign         Assign[]
 }
 
@@ -54,17 +55,18 @@ model Client {
 model Consultant {
   email        String           @id
   name         String
-  contact      String
+  contact      String?          @unique
   status       EmploymentStatus @default(ACTIVE)
   designation  String
-  registration String
+  registration String?          @unique
   department   String
+  permissions  Json             @default("{}")
   Assign       Assign[]
   Manage       Manage[]
 }
 
 model Manage {
-  role            Role @default(CLIENT_HOLDER)
+  role            Role       @default(CLIENT_HOLDER)
   consultantEmail String
   projectId       String
   Consultant      Consultant @relation(fields: [consultantEmail], references: [email])
@@ -74,18 +76,20 @@ model Manage {
 }
 
 model Project {
-  id        String   @id @default(cuid())
-  name      String
-  clientId  String
-  locations Json
-  createdAt DateTime @default(now())
-  startDate DateTime
-  endDate   DateTime
-  status    ProjectStatus @default(ACTIVE)
-  Assign    Assign[]
-  Manage    Manage[]
-  Client    Client   @relation(fields: [clientId], references: [id])
-  Shift     Shift[]
+  id             String        @id @default(cuid())
+  name           String
+  clientId       String
+  locations      Json
+  createdAt      DateTime      @default(now())
+  endDate        DateTime
+  startDate      DateTime
+  employmentBy   MCICompany
+  status         ProjectStatus
+  oldReferenceId String?
+  Assign         Assign[]
+  Manage         Manage[]
+  Client         Client        @relation(fields: [clientId], references: [id])
+  Shift          Shift[]
 }
 
 model Shift {
@@ -144,4 +148,9 @@ enum ProjectStatus {
 enum Role {
   CLIENT_HOLDER
   CANDIDATE_HOLDER
+}
+
+enum MCICompany {
+  MCI_CAREER_SERVICES
+  MCI_OUTSOURCING
 }
