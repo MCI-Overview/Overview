@@ -50,37 +50,23 @@ projectAPIRouter.get("/projects", async (req, res) => {
 
 projectAPIRouter.post("/project/create", async (req, res) => {
   const user = req.user as User;
+
+  // Required fields
   const name = req.body.name;
   const clientId = req.body.clientId;
-  const status = req.body.status || "ACTIVE";
-  const candidateHolders = req.body.candidateHolders;
 
   let locations = req.body.locations;
   let startDate = req.body.startDate;
   let endDate = req.body.endDate;
 
-  if (!name) {
-    return res.status(400).send("name is required.");
-  }
+  // Optional fields
+  const status = req.body.status || "ACTIVE";
+  const candidateHolders = req.body.candidateHolders || [];
 
-  if (!clientId) {
-    return res.status(400).send("clientId is required.");
-  }
-
-  if (!locations) {
-    return res.status(400).send("locations is required.");
-  }
-
-  if (!startDate) {
-    return res.status(400).send("startDate is required.");
-  }
-
-  if (!endDate) {
-    return res.status(400).send("endDate is required.");
-  }
-
-  if (!candidateHolders) {
-    return res.status(400).send("candidateHolders is required.");
+  if (!name || !clientId || !locations || !startDate || !endDate) {
+    return res
+      .status(400)
+      .send("name, clientId, locations, startDate, and endDate are required.");
   }
 
   if (!Array.isArray(candidateHolders)) {
