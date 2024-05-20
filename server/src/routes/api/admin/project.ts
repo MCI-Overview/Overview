@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { PrismaError, User } from "../../../types";
+import checkPermission from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
 
@@ -14,23 +15,34 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
   const user = req.user as User;
   const projectId = req.params.projectId;
 
-  const projectData = await prisma.consultant.findUnique({
+  const projectData = await prisma.project.findUnique({
     where: {
-      email: user.id,
-      Manage: {
-        some: {
-          projectId: projectId,
-        },
-      },
+      id: projectId,
+    },
+    select: {
+      Manage: true,
     },
   });
+
   if (!projectData) {
-    return res
-      .status(404)
-      .send("Project does not exist or unauthorized to view project.");
+    return res.status(404).send("Project does not exist.");
   }
 
-  return res.send(projectData);
+  if (
+    projectData.Manage.some(
+      (consultant) => consultant.consultantEmail === user.id,
+    )
+  ) {
+    return res.send(projectData);
+  }
+
+  const hasPermission = await checkPermission(user.id, "canReadAllProjects");
+
+  if (hasPermission) {
+    return res.send(projectData);
+  }
+
+  return res.status(401).send("Unauthorized");
 });
 
 projectAPIRouter.get("/projects", async (req, res) => {
@@ -44,6 +56,20 @@ projectAPIRouter.get("/projects", async (req, res) => {
       Manage: true,
     },
   });
+
+  return res.send(projectsData);
+});
+
+projectAPIRouter.get("/projects/all", async (req, res) => {
+  const user = req.user as User;
+
+  const hasPermission = await checkPermission(user.id, "canReadAllProjects");
+
+  if (!hasPermission) {
+    return res.status(401).send("Unauthorized");
+  }
+
+  const projectsData = await prisma.project.findMany();
 
   return res.send(projectsData);
 });
