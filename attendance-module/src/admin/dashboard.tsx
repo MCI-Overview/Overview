@@ -3,6 +3,9 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+// Server url
+const serverUrl = "http://localhost:3000";
+
 interface Project {
   projectId: string;
   projectTitle: string;
@@ -18,9 +21,9 @@ const AdminDashboard: React.FC = () => {
     // Fetch the project data from the backend API
     const fetchProjects = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/bridge/projects', { withCredentials: true });
-        const getExisting = await axios.get('http://localhost:3000/api/admin/getExisting', { withCredentials: true });
-        console.log("this is getexisting:",getExisting);
+        const response = await axios.get(`${serverUrl}/bridge/projects`, { withCredentials: true });
+        // const getExisting = await axios.get('http://localhost:3000/api/admin/getExisting', { withCredentials: true });
+        // console.log("this is getexisting:",getExisting);
         setProjects(response.data);
       } catch (error) {
         console.error('Error fetching projects:', error);
@@ -56,9 +59,15 @@ const AdminDashboard: React.FC = () => {
           ))}
         </select>
         <button type="submit">Import project from ELOA</button>
-      </form><br />
-      <button>Create new project</button>
+        <span> - OR - </span>
+      <button>Create new projectfrom scratch</button>
+      </form>
+      <br />
       <div>Select existing projects</div>
+      <div>- Empty for now -</div>
+      <br />
+      <div>My candidates</div>
+      <button>View my candidates</button>
     </>
   );
 };
