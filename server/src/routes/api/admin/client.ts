@@ -8,7 +8,6 @@ const clientAPIRoutes: Router = Router();
 
 clientAPIRoutes.get("/client/:clientId"),
   async (req: Request, res: Response) => {
-    const user = req.user as User;
     const clientId = req.params.clientId;
 
     const clientData = await prisma.client.findUnique({
