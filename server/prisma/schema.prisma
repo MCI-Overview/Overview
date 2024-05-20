@@ -57,7 +57,7 @@ model Consultant {
   contact      String?          @unique
   status       EmploymentStatus @default(ACTIVE)
   designation  String
-  registration String           @default("-")
+  registration String?          @unique
   department   String
   permissions  Json             @default("{}")
   Assign       Assign[]
