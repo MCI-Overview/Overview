@@ -5,6 +5,7 @@ import { Profile } from "../types";
 const clientID = process.env.MICROSOFT_CLIENT_ID as string;
 const clientSecret = process.env.MICROSOFT_CLIENT_SECRET as string;
 const tenantID = process.env.MICROSOFT_TENANT_ID as string;
+const SERVER_URL = process.env.SERVER_URL as string;
 
 if (!clientID) {
   throw new Error(
@@ -30,7 +31,7 @@ passport.use(
     {
       clientID,
       clientSecret,
-      callbackURL: "http://localhost:3000/admin/auth/callback",
+      callbackURL: `${SERVER_URL}/admin/auth/callback`,
       scope: ["user.read"],
       tenant: tenantID,
 
