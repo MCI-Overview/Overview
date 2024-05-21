@@ -42,8 +42,8 @@ model Candidate {
 }
 
 model Client {
-  UEN     String   @id
-  name    String   @unique
+  UEN     String    @id
+  name    String    @unique
   Project Project[]
 }
 
@@ -71,19 +71,19 @@ model Manage {
 }
 
 model Project {
-  id             String        @id @default(cuid())
-  name           String
-  clientUEN      String
-  locations      Json
-  createdAt      DateTime      @default(now())
-  endDate        DateTime
-  startDate      DateTime
-  employmentBy   MCICompany
-  status         ProjectStatus
-  Assign         Assign[]
-  Manage         Manage[]
-  Client         Client        @relation(fields: [clientUEN], references: [UEN])
-  Shift          Shift[]
+  id           String        @id @default(cuid())
+  name         String
+  clientUEN    String
+  locations    Json
+  createdAt    DateTime      @default(now())
+  endDate      DateTime
+  startDate    DateTime
+  employmentBy MCICompany
+  status       ProjectStatus @default(ACTIVE)
+  Assign       Assign[]
+  Manage       Manage[]
+  Client       Client        @relation(fields: [clientUEN], references: [UEN])
+  Shift        Shift[]
 }
 
 model Shift {
