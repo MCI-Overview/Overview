@@ -33,6 +33,13 @@ export type Address = {
   country: String;
 };
 
+export type Location = {
+  postalCode: String;
+  address: String;
+  longitude: String;
+  latitude: String;
+};
+
 export type BankDetails = {
   bankHolderName: String;
   bankName: String;
@@ -45,3 +52,15 @@ export type EmergencyContact = {
   phoneNumber: String;
 };
 
+export enum TransactionType {
+  ADD,
+  DELETE,
+  OVERWRITE,
+  UPDATE,
+}
+
+export type Transaction = {
+  type: TransactionType;
+  resource: string;
+  value: String | String[];
+};
