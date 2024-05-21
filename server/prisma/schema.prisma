@@ -28,28 +28,22 @@ model Attendance {
 }
 
 model Candidate {
-  nric           String    @id @db.VarChar(9)
-  name           String
-  nationality    String
-  phoneNumber    String    @unique
-  block          String
-  building       String
-  floor          String
-  unit           String
-  street         String
-  postal         String    @db.VarChar(6)
-  country        String
-  bankHolderName String?
-  bankName       String?
-  bankNumber     String?
-  dateOfBirth    DateTime?
-  Assign         Assign[]
-  User           User[]
+  nric             String    @id @db.VarChar(9)
+  phoneNumber      String    @unique
+  name             String
+  hasOnboarded     Boolean   @default(false)
+  nationality      String?
+  dateOfBirth      DateTime?
+  bankDetails      Json?
+  address          Json?
+  emergencyContact Json?
+  Assign           Assign[]
+  User             User[]
 }
 
 model Client {
-  id      String    @id @default(cuid())
-  name    String    @unique
+  UEN     String   @id
+  name    String   @unique
   Project Project[]
 }
 
@@ -79,17 +73,16 @@ model Manage {
 model Project {
   id             String        @id @default(cuid())
   name           String
-  clientId       String
+  clientUEN      String
   locations      Json
   createdAt      DateTime      @default(now())
   endDate        DateTime
   startDate      DateTime
-  oldReferenceId String?
   employmentBy   MCICompany
   status         ProjectStatus
   Assign         Assign[]
   Manage         Manage[]
-  Client         Client        @relation(fields: [clientId], references: [id])
+  Client         Client        @relation(fields: [clientUEN], references: [UEN])
   Shift          Shift[]
 }
 

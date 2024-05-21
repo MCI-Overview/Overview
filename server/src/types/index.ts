@@ -22,3 +22,26 @@ export type PrismaError = {
     target?: string[];
   };
 };
+
+export type Address = {
+  block: String;
+  building: String;
+  floor: String;
+  unit: String;
+  street: String;
+  postal: String;
+  country: String;
+};
+
+export type BankDetails = {
+  bankHolderName: String;
+  bankName: String;
+  bankNumber: String;
+};
+
+export type EmergencyContact = {
+  name: String;
+  relationship: String;
+  phoneNumber: String;
+};
+
