@@ -165,6 +165,19 @@ body {
     z-index: 99;
 }
 
+.body-ctnAttendance {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    margin-top: 140px;
+    padding: 40px;
+    border-radius: 20px;
+    background-color: white;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
 
 /* text */
 
