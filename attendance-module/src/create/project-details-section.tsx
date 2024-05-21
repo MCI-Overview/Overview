@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  ClientCompany,
-  Location,
-  MCICompany,
-  ProjectData,
-} from "../types";
+import { ClientCompany, Location, MCICompany, ProjectData } from "../types";
 
 interface ProjectDetailsSectionProps {
   projectData: ProjectData;
@@ -38,15 +33,21 @@ const ProjectDetailsSection = ({
   }, []);
 
   const [isUENPresent, setIsUENPresent] = useState<boolean>(false);
-  const handleClientCompanyUENChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleClientCompanyUENChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const uen = e.target.value;
-    setProjectData({ ...projectData, clientCompanyUEN: uen });
 
     const company = clientCompanies.find((client) => client.UEN === uen);
     if (company) {
-      setProjectData({ ...projectData, clientCompanyName: company.name });
+      setProjectData({
+        ...projectData,
+        clientCompanyUEN: uen,
+        clientCompanyName: company.name,
+      });
       setIsUENPresent(true);
     } else {
+      setProjectData({ ...projectData, clientCompanyUEN: uen });
       setIsUENPresent(false);
     }
   };
@@ -100,16 +101,21 @@ const ProjectDetailsSection = ({
 
       <label>Employment by </label>
       <select
-        value={projectData.employedBy}
+        value={projectData.employedBy ?? ""}
         onChange={(e) =>
-          setProjectData({ ...projectData, employedBy: MCICompany[e.target.value as keyof typeof MCICompany]})
+          setProjectData({
+            ...projectData,
+            employedBy: e.target.value as MCICompany,
+          })
         }
       >
-        <option value={undefined} disabled>
+        <option value="" disabled>
           Select:
         </option>
         {Object.values(MCICompany).map((company) => (
-          <option value={company}>{company}</option>
+          <option key={company} value={company}>
+            {company}
+          </option>
         ))}
       </select>
       <br />
@@ -122,19 +128,19 @@ const ProjectDetailsSection = ({
         onChange={handleClientCompanyUENChange}
       />
       <datalist id="clientCompanies">
-      {clientCompanies.map((client) => (
-        <option value={client.UEN} />
-      ))}
+        {clientCompanies.map((client) => (
+          <option value={client.UEN} />
+        ))}
       </datalist>
 
       <label>Client Company Name </label>
       <input
         type="text"
-        list="clientCompanies"
         value={projectData.clientCompanyName}
         onChange={(e) =>
           setProjectData({ ...projectData, clientCompanyName: e.target.value })
         }
+        disabled={isUENPresent}
       />
 
       <br />
@@ -143,7 +149,9 @@ const ProjectDetailsSection = ({
       <input
         type="date"
         value={projectData.startDate}
-        onChange={(e) => setProjectData({ ...projectData, startDate: e.target.value })}
+        onChange={(e) =>
+          setProjectData({ ...projectData, startDate: e.target.value })
+        }
       />
       <br />
 
@@ -151,7 +159,9 @@ const ProjectDetailsSection = ({
       <input
         type="date"
         value={projectData.endDate}
-        onChange={(e) => setProjectData({ ...projectData, endDate: e.target.value })}
+        onChange={(e) =>
+          setProjectData({ ...projectData, endDate: e.target.value })
+        }
       />
       <br />
 
@@ -169,10 +179,7 @@ const ProjectDetailsSection = ({
         value={postalCode}
         onChange={(e) => setPostalCode(e.target.value)}
       />
-      <button
-        onClick={handleAddLocation}
-        disabled={!validPostalCode}
-      >
+      <button onClick={handleAddLocation} disabled={!validPostalCode}>
         Add
       </button>
     </div>

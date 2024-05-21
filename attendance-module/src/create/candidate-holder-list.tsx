@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CandidateHolder } from "@/types";
+import { CandidateHolder } from "../types";
 
 interface CandidateHolderListProps {
   availableConsultants: CandidateHolder[];
