@@ -1,12 +1,11 @@
 export type ProjectData = {
-  projectId: string | undefined;
   projectTitle: string;
   email: string;
+  clientCompanyUEN: string;
   clientCompanyName: string;
   employedBy: MCICompany | undefined;
   startDate: string;
   endDate: string;
-  candidates: CandidateData[];
 };
 
 export type CandidateData = {
@@ -27,7 +26,7 @@ export type Location = {
 };
 
 export type ClientCompany = {
-  id: string;
+  UEN: string;
   name: string;
 };
 
