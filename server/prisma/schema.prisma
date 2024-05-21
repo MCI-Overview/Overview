@@ -42,7 +42,9 @@ model Candidate {
   bankNumber     String?
   dateOfBirth    DateTime?
   phoneNumber    String
+  nationality    String
   Assign         Assign[]
+  User           User[]
 }
 
 model Client {
@@ -54,10 +56,10 @@ model Client {
 model Consultant {
   email        String           @id
   name         String
-  contact      String           @unique
+  contact      String?          @unique
   status       EmploymentStatus @default(ACTIVE)
   designation  String
-  registration String           @default("-")
+  registration String?          @unique
   department   String
   permissions  Json             @default("{}")
   Assign       Assign[]
@@ -82,6 +84,7 @@ model Project {
   createdAt      DateTime      @default(now())
   endDate        DateTime
   startDate      DateTime
+  employmentBy   MCICompany
   status         ProjectStatus
   oldReferenceId String?
   Assign         Assign[]
@@ -110,8 +113,9 @@ model Session {
 }
 
 model User {
-  username String @id
-  hash     String
+  username  String    @id
+  hash      String
+  Candidate Candidate @relation(fields: [username], references: [nric])
 }
 
 enum AttendanceStatus {
@@ -146,4 +150,9 @@ enum ProjectStatus {
 enum Role {
   CLIENT_HOLDER
   CANDIDATE_HOLDER
+}
+
+enum MCICompany {
+  MCI_CAREER_SERVICES
+  MCI_OUTSOURCING
 }

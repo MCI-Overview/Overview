@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { corsOptions } from "../../config/cors-options"
+import { corsOptions } from "../../config/cors-options";
 import authRoutes from "./auth";
 import bridgeRoutes from "./bridge";
 import cors from "cors";

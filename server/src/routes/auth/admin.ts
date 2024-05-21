@@ -24,10 +24,10 @@ adminAuthRouter.get(
 
 adminAuthRouter.get(
   "/auth/callback",
-  passport.authenticate("microsoft", { failureRedirect: `${SERVER_URL}/admin/login` }),
-  (req, res) => {
-    // Assuming req.user contains the authenticated user information
-    const userString = encodeURIComponent(JSON.stringify(req.user));
+  passport.authenticate("microsoft", {
+    failureRedirect: `${SERVER_URL}/admin/login`,
+  }),
+  (_req, res) => {
     res.redirect(`${CLIENT_URL}/admin/dashboard`);
   },
 );

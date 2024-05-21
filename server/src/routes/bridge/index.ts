@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { User } from "../../types";
+import { User } from "@/types";
 import axios from "axios";
 
 const PHP_SECRET_KEY = process.env.PHP_SECRET_KEY as string;

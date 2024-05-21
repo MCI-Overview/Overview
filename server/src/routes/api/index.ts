@@ -1,7 +1,7 @@
 import { Router } from "express";
 import userAPIRoutes from "./user";
 import adminAPIRoutes from "./admin";
-import { User } from "../../types";
+import { User } from "@/types";
 
 const router: Router = Router();
 
