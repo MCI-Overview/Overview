@@ -45,7 +45,7 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
   return res.status(401).send("Unauthorized");
 });
 
-projectAPIRouter.get("/getExisting", async (req, res) => {
+projectAPIRouter.get("/getExisting", async (_req, res) => {
   try {
     const projectData = await prisma.project.findMany({
       select: {

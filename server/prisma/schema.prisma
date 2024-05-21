@@ -30,8 +30,6 @@ model Attendance {
 model Candidate {
   nric           String    @id @db.VarChar(9)
   name           String
-  nationality    String
-  phoneNumber    String    @unique
   block          String
   building       String
   floor          String
@@ -43,6 +41,8 @@ model Candidate {
   bankName       String?
   bankNumber     String?
   dateOfBirth    DateTime?
+  phoneNumber    String
+  nationality    String
   Assign         Assign[]
   User           User[]
 }
@@ -84,9 +84,9 @@ model Project {
   createdAt      DateTime      @default(now())
   endDate        DateTime
   startDate      DateTime
-  oldReferenceId String?
   employmentBy   MCICompany
   status         ProjectStatus
+  oldReferenceId String?
   Assign         Assign[]
   Manage         Manage[]
   Client         Client        @relation(fields: [clientId], references: [id])
