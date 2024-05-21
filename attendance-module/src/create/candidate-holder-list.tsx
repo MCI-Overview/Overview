@@ -1,17 +1,13 @@
 import { useState } from "react";
-import { CandidateHolder, CandidateData } from "../../types";
-
-const candidateInfoHeader = ["NRIC", "Name", "Mobile Number"];
+import { CandidateHolder } from "@/types";
 
 interface CandidateHolderListProps {
-  candidateList: CandidateData[];
   availableConsultants: CandidateHolder[];
   candidateHolders: CandidateHolder[];
   handleAddCandidateHolder: (email: string) => void;
 }
 
 const CandidateHolderList = ({
-  candidateList,
   availableConsultants,
   candidateHolders,
   handleAddCandidateHolder,
@@ -22,36 +18,7 @@ const CandidateHolderList = ({
     <div>
       <h2> Candidate Holders </h2>
       {candidateHolders.map((cddHolder) => (
-        <div>
-          <h3>
-            {cddHolder.name} - {cddHolder.email} :{" "}
-            {
-              candidateList.filter(
-                (cdd) => cdd.candidateHolder === cddHolder.email
-              ).length
-            }
-          </h3>
-          <table>
-            <thead>
-              <tr>
-                {candidateInfoHeader.map((header) => (
-                  <th key={header}> {header} </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {candidateList
-                .filter((cdd) => cdd.candidateHolder === cddHolder.email)
-                .map((cdd) => (
-                  <tr key={cdd.nric}>
-                    <td> {cdd.nric} </td>
-                    <td> {cdd.name} </td>
-                    <td> {cdd.mobileNumber} </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
+        <p> {cddHolder.name} - {cddHolder.email} </p>
       ))}
 
       <h3>Add candidate holder:</h3>
