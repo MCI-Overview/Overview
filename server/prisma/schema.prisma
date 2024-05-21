@@ -44,7 +44,7 @@ model Candidate {
   phoneNumber    String
   nationality    String
   Assign         Assign[]
-  User           User[]
+  User           User?
 }
 
 model Client {
