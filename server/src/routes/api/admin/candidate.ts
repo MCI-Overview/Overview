@@ -42,6 +42,7 @@ candidateAPIRoutes.get("/candidate/:nric"),
       name: candidateData.name,
       nric: candidateData.nric,
       phoneNumber: candidateData.phoneNumber,
+      emergencyContact: candidateData.emergencyContact,
     });
   };
 
@@ -137,6 +138,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
     nric,
     name,
     phoneNumber,
+    hasOnboarded,
     ...(nationality && { nationality }),
     ...(dateOfBirth && { dateOfBirth }),
     ...(addressObject && { address: { update: addressObject } }),
@@ -150,7 +152,6 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
     await prisma.candidate.create({
       data: {
         ...createData,
-        hasOnboarded: hasOnboarded,
         User: {
           create: {
             hash: await bcrypt.hash(phoneNumber, 12),
@@ -233,7 +234,7 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     return res
       .status(401)
       .send(
-        'Unauthorized. User does not have permission "canDeleteCandidates".',
+        'Unauthorized. User does not have permission "canUpdateCandidates".',
       );
   }
 
