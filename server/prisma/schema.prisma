@@ -20,35 +20,33 @@ model Assign {
 
 model Attendance {
   id            String           @id
-  candidateNric String           @db.VarChar(9)
+  candidateNric String
   shiftId       String
   clockInTime   DateTime
   clockOutTime  DateTime
   status        AttendanceStatus
+  shiftDate     DateTime
+  Candidate     Candidate        @relation(fields: [candidateNric], references: [nric])
+  Shift         Shift            @relation(fields: [shiftId], references: [id])
 }
 
 model Candidate {
-  nric           String    @id @db.VarChar(9)
-  name           String
-  block          String
-  building       String
-  floor          String
-  unit           String
-  street         String
-  postal         String    @db.VarChar(6)
-  country        String
-  bankHolderName String?
-  bankName       String?
-  bankNumber     String?
-  dateOfBirth    DateTime?
-  phoneNumber    String
-  nationality    String
-  Assign         Assign[]
-  User           User?
+  nric             String       @id @db.VarChar(9)
+  phoneNumber      String       @unique
+  name             String
+  hasOnboarded     Boolean      @default(false)
+  nationality      String?
+  dateOfBirth      DateTime?
+  bankDetails      Json?
+  address          Json?
+  emergencyContact Json?
+  Assign           Assign[]
+  Attendance       Attendance[]
+  User             User?
 }
 
 model Client {
-  id      String    @id @default(cuid())
+  UEN     String    @id
   name    String    @unique
   Project Project[]
 }
@@ -77,31 +75,33 @@ model Manage {
 }
 
 model Project {
-  id             String        @id @default(cuid())
-  name           String
-  clientId       String
-  locations      Json
-  createdAt      DateTime      @default(now())
-  endDate        DateTime
-  startDate      DateTime
-  employmentBy   MCICompany
-  status         ProjectStatus
-  oldReferenceId String?
-  Assign         Assign[]
-  Manage         Manage[]
-  Client         Client        @relation(fields: [clientId], references: [id])
-  Shift          Shift[]
+  id           String        @id @default(cuid())
+  name         String
+  clientUEN    String
+  locations    Json
+  createdAt    DateTime      @default(now())
+  endDate      DateTime
+  startDate    DateTime
+  employmentBy MCICompany
+  status       ProjectStatus @default(ACTIVE)
+  Assign       Assign[]
+  Manage       Manage[]
+  Client       Client        @relation(fields: [clientUEN], references: [UEN])
+  Shift        Shift[]
 }
 
 model Shift {
-  id          String    @id @default(cuid())
+  id          String       @id @default(cuid())
   headcount   Int
   day         DayOfWeek
   endTime     DateTime
   projectId   String
   shiftNumber Int
   startTime   DateTime
-  Project     Project   @relation(fields: [projectId], references: [id])
+  Attendance  Attendance[]
+  Project     Project      @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, day, shiftNumber, startTime, endTime])
 }
 
 model Session {
