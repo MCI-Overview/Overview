@@ -1,7 +1,7 @@
 import { User } from "@/types";
 import {
+  PERMISSION_ERROR_TEMPLATE,
   Permission,
-  PermissionErrorMessage,
   checkPermission,
 } from "@/utils/check-permission";
 import { DayOfWeek, PrismaClient, Role } from "@prisma/client";
@@ -51,7 +51,7 @@ projectShiftAPIRouter.get("/shift/:shiftId", async (req, res) => {
 
   return res
     .status(401)
-    .send(PermissionErrorMessage.CANNOT_READ_PROJECT_ERROR_MESSAGE);
+    .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
 });
 
 projectShiftAPIRouter.post("/shift", async (req, res) => {
@@ -112,7 +112,7 @@ projectShiftAPIRouter.post("/shift", async (req, res) => {
     if (!hasEditAllProjectPermission) {
       return res
         .status(401)
-        .send(PermissionErrorMessage.CANNOT_EDIT_PROJECT_ERROR_MESSAGE);
+        .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
     }
   }
 
@@ -185,7 +185,7 @@ projectShiftAPIRouter.delete("/shift", async (req, res) => {
   if (!hasEditAllProjectPermission) {
     return res
       .status(401)
-      .send(PermissionErrorMessage.CANNOT_EDIT_PROJECT_ERROR_MESSAGE);
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
   }
 
   await prisma.shift.delete({
@@ -291,7 +291,7 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
   if (!hasEditAllProjectPermission) {
     return res
       .status(401)
-      .send(PermissionErrorMessage.CANNOT_EDIT_PROJECT_ERROR_MESSAGE);
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
   }
 
   await prisma.shift.update({
