@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { MCICompany, PrismaClient, Role } from "@prisma/client";
-import { PrismaError, User } from "@/types";
+import { PrismaError, User, Location } from "@/types";
 import checkPermission from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
@@ -9,14 +9,17 @@ const projectAPIRouter: Router = Router();
 
 projectAPIRouter.get("/project/:projectId", async (req, res) => {
   const user = req.user as User;
-  const projectId = req.params.projectId;
+  const { projectId } = req.params;
 
   const projectData = await prisma.project.findUnique({
     where: {
       id: projectId,
     },
-    select: {
+    include: {
       Manage: true,
+      Shift: true,
+      Assign: true,
+      Client: true,
     },
   });
 
@@ -38,124 +41,118 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
     return res.send(projectData);
   }
 
-  return res.status(401).send('Unauthorized. User does not have permission "canReadAllProjects".');
+  return res
+    .status(401)
+    .send('Unauthorized. User does not have permission "canReadAllProjects".');
 });
 
-projectAPIRouter.get("/projects", async (req, res) => {
+projectAPIRouter.post("/project", async (req, res) => {
   const user = req.user as User;
+  const {
+    name,
+    clientUEN,
+    clientName,
+    employmentBy,
+    locations,
+    startDate,
+    endDate,
+    candidateHolders,
+  } = req.body;
 
-  const projectsData = prisma.consultant.findUnique({
-    where: {
-      email: user.id,
-    },
-    select: {
-      Manage: true,
-    },
-  });
-
-  return res.send(projectsData);
-});
-
-projectAPIRouter.get("/projects/all", async (req, res) => {
-  const user = req.user as User;
-
-  const hasPermission = await checkPermission(user.id, "canReadAllProjects");
-
-  if (!hasPermission) {
-    return res.status(401).send('Unauthorized. User does not have permission "canReadAllProjects".');
+  if (!name) {
+    return res.status(400).send("name is required.");
   }
 
-  const projectsData = await prisma.project.findMany();
-
-  return res.send(projectsData);
-});
-
-projectAPIRouter.post("/project/create", async (req, res) => {
-  const user = req.user as User;
-
-  // Required fields
-  const name = req.body.name;
-  const clientId = req.body.clientId;
-
-  const employmentBy = req.body.employmentBy;
-  const locations = req.body.locations;
-  const startDate = req.body.startDate;
-  const endDate = req.body.endDate;
-
-  // Optional fields
-  const status = req.body.status;
-  const candidateHolders = req.body.candidateHolders || [];
-
-  if (!name || !clientId || !employmentBy || !locations || !startDate || !endDate) {
-    return res
-      .status(400)
-      .send("name, clientId, locations, startDate, and endDate parameters are required.");
+  if (!clientUEN) {
+    return res.status(400).send("clientUEN is required.");
   }
 
-  // Validation of employmentBy
-  switch (employmentBy) {
-    case "MCI Career Services Pte Ltd":
-      employmentBy = MCICompany.MCI_CAREER_SERVICES;
-      break;
-    case "MCI Outsourcing Pte Ltd":
-      employmentBy = MCICompany.MCI_OUTSOURCING;
-      break;
-    default:
-      return res
-        .status(400)
-        .send(
-          'Invalid employmentBy value. Must be either "MCI Career Services Pte Ltd" or "MCI Outsourcing Pte Ltd"',
-        );
+  if (!employmentBy) {
+    return res.status(400).send("employmentBy is required.");
   }
 
-  // Validation of candidateHolders
-  if (!Array.isArray(candidateHolders)) {
+  if (!startDate) {
+    return res.status(400).send("startDate is required.");
+  }
+
+  if (!endDate) {
+    return res.status(400).send("endDate is required.");
+  }
+
+  let endDateObject: Date | undefined;
+  if (endDate) {
+    try {
+      endDateObject = new Date(Date.parse(endDate));
+    } catch (error) {
+      return res.status(400).send("Invalid endDate parameter.");
+    }
+  }
+
+  let startDateObject: Date | undefined;
+  if (startDate) {
+    try {
+      startDateObject = new Date(Date.parse(startDate));
+    } catch (error) {
+      return res.status(400).send("Invalid startDate parameter.");
+    }
+  }
+
+  if (startDateObject && endDateObject && startDateObject >= endDateObject) {
+    return res.status(400).send("startDate cannot be after endDate.");
+  }
+
+  if (locations && !Array.isArray(locations)) {
+    return res.status(400).send("locations must be an array.");
+  }
+
+  let locationsObject: Location[] | undefined;
+  if (locations && Array.isArray(locations)) {
+    try {
+      locationsObject = locations.map((location: Location) => {
+        return {
+          postalCode: location.postalCode,
+          address: location.address,
+          longitude: location.longitude,
+          latitude: location.latitude,
+        };
+      });
+    } catch (error) {
+      return res.status(400).send("Invalid locations parameter.");
+    }
+  }
+
+  if (candidateHolders && !Array.isArray(candidateHolders)) {
     return res.status(400).send("candidateHolders must be an array.");
   }
 
-  // Validation of locations
-  try {
-    locations = JSON.parse(locations);
-  } catch (e) {
-    return res.status(400).send("locations must be a valid JSON string.");
+  let employmentByObject: MCICompany | undefined;
+  if (employmentBy === "MCI Career Services Ptd Ltd") {
+    employmentByObject = MCICompany.MCI_CAREER_SERVICES;
+  } else if (employmentBy === "MCI Outsourcing Ptd Ltd") {
+    employmentByObject = MCICompany.MCI_OUTSOURCING;
+  } else {
+    return res.status(400).send("Invalid employmentBy parameter.");
   }
 
-  // Validation of endDate
-  try {
-    endDate = new Date(endDate);
-  } catch (e) {
-    return res.status(400).send("endDate must be a valid date.");
-  }
-
-  // Validation of startDate
-  try {
-    startDate = new Date(startDate);
-  } catch (e) {
-    return res.status(400).send("startDate must be a valid date.");
-  }
-
-
-  if (employmentBy === "MCI Career Services Pte Ltd") {
-    employmentBy = "MCI_CAREER_SERVICES";
-  } else if (employmentBy === "MCI Outsourcing Pte Ltd") {
-    employmentBy = "MCI_OUTSOURCING";
-  }
+  const createData = {
+    name,
+    clientUEN,
+    startDate,
+    endDate,
+    locations: JSON.stringify(locationsObject),
+    employmentBy: employmentByObject,
+  };
 
   try {
     await prisma.project.create({
       data: {
-        name: name,
-        status: status,
-        clientId: clientId,
-        locations: locations,
-        startDate: startDate,
-        endDate: endDate,
-        employmentBy: employmentBy,
+        ...createData,
         Manage: {
           createMany: {
             data: [
               {
                 consultantEmail: user.id,
+                role: Role.CLIENT_HOLDER,
               },
               ...candidateHolders.map((email: string) => {
                 return {
@@ -169,14 +166,14 @@ projectAPIRouter.post("/project/create", async (req, res) => {
         Client: {
           connectOrCreate: {
             where: {
-              id: clientId,
+              UEN: clientUEN,
             },
             create: {
-              id: clientId,
+              UEN: clientUEN,
+              name: clientName,
             },
           },
-          }
-        }
+        },
       },
     });
   } catch (e) {
@@ -196,9 +193,34 @@ projectAPIRouter.post("/project/create", async (req, res) => {
   return res.send("Project successfully created");
 });
 
-projectAPIRouter.post("/project/delete", async (req, res) => {
+projectAPIRouter.delete("/project", async (req, res) => {
   const user = req.user as User;
-  const projectId = req.body.projectId;
+  const { projectId, hardDelete } = req.body;
+
+  if (hardDelete) {
+    const hasPermission = await checkPermission(
+      user.id,
+      "canHardDeleteProjects",
+    );
+
+    if (!hasPermission) {
+      return res
+        .status(401)
+        .send(
+          'Unauthorized. User does not have permission "canHardDeleteProjects".',
+        );
+    }
+
+    try {
+      await prisma.project.delete({
+        where: {
+          id: projectId,
+        },
+      });
+    } catch (error) {
+      return res.status(500).send("Internal server error.");
+    }
+  }
 
   try {
     await prisma.project.update({
@@ -227,25 +249,135 @@ projectAPIRouter.post("/project/delete", async (req, res) => {
   return res.send("Project deleted");
 });
 
-projectAPIRouter.post("/project/update", async (req, res) => {
+projectAPIRouter.patch("/project", async (req, res) => {
   const user = req.user as User;
-  const projectId = req.body.projectId;
 
-  const clientHolderEmails: string[] = req.body.clientHolderEmails;
-  const candidateHolderEmails: string[] = req.body.candidateHolderEmails;
-  const candidateNRICs: string[] = req.body.candidateNRICs;
+  const {
+    name,
+    clientUEN,
+    employmentBy,
+    locations,
+    startDate,
+    endDate,
+    candidateHolders,
+    projectId,
+  } = req.body;
 
-  await prisma.$transaction([
-    prisma.manage.deleteMany({
-      where: {
-        projectId: projectId,
-      },
-    }),
+  if (!projectId) {
+    return res.status(400).send("projectId is required.");
+  }
 
+  let employmentByObject: MCICompany | undefined;
+  if (employmentBy === "MCI Career Services Ptd Ltd") {
+    employmentByObject = MCICompany.MCI_CAREER_SERVICES;
+  } else if (employmentBy === "MCI Outsourcing Ptd Ltd") {
+    employmentByObject = MCICompany.MCI_OUTSOURCING;
+  } else {
+    return res.status(400).send("Invalid employmentBy parameter.");
+  }
 
+  let endDateObject: Date | undefined;
+  if (endDate) {
+    try {
+      endDateObject = new Date(Date.parse(endDate));
+    } catch (error) {
+      return res.status(400).send("Invalid endDate parameter.");
+    }
+  }
 
+  let startDateObject: Date | undefined;
+  if (startDate) {
+    try {
+      startDateObject = new Date(Date.parse(startDate));
+    } catch (error) {
+      return res.status(400).send("Invalid startDate parameter.");
+    }
+  }
+
+  if (startDateObject && endDateObject && startDateObject >= endDateObject) {
+    return res.status(400).send("startDate cannot be after endDate.");
+  }
+
+  if (locations && !Array.isArray(locations)) {
+    return res.status(400).send("locations must be an array.");
+  }
+
+  let locationsObject: Location[] | undefined;
+  if (locations && Array.isArray(locations)) {
+    try {
+      locationsObject = locations.map((location: Location) => {
+        return {
+          postalCode: location.postalCode,
+          address: location.address,
+          longitude: location.longitude,
+          latitude: location.latitude,
+        };
+      });
+    } catch (error) {
+      return res.status(400).send("Invalid locations parameter.");
+    }
+  }
+
+  if (candidateHolders && !Array.isArray(candidateHolders)) {
+    return res.status(400).send("candidateHolders must be an array.");
+  }
+
+  const hasCanEditAllProjects = await checkPermission(
+    user.id,
+    "canEditAllProjects",
+  );
+
+  if (hasCanEditAllProjects) {
+    const updateData = {
+      ...(name && { name }),
+      ...(clientUEN && { clientUEN }),
+      ...(employmentByObject && {
+        employmentBy: { update: employmentByObject },
+      }),
+      ...(locationsObject && { locations: { update: locationsObject } }),
+      ...(startDateObject && { startDate: startDateObject }),
+      ...(endDateObject && { endDate: endDateObject }),
+      ...(candidateHolders && {
+        candidateHolders: { update: candidateHolders },
+      }),
+    };
+
+    // Check if no fields are provided to update
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).send("No valid fields provided for update.");
+    }
+
+    try {
+      await prisma.project.update({
+        where: {
+          id: projectId,
+        },
+        data: updateData,
+      });
+    } catch (error) {
+      const prismaError = error as PrismaError;
+      if (prismaError.code === "P2025") {
+        return res.status(404).send("Project not found.");
+      }
+
+      return res.status(500).send(prismaError);
+    }
+  }
 
   try {
+    const updateData = {
+      ...(name && { name }),
+      ...(employmentByObject && {
+        employmentBy: { update: employmentByObject },
+      }),
+      ...(locationsObject && { locations: { update: locationsObject } }),
+      ...(startDateObject && { startDate: startDateObject }),
+      ...(endDateObject && { endDate: endDateObject }),
+      ...(candidateHolders && {
+        candidateHolders: { update: candidateHolders },
+      }),
+    };
+
     await prisma.project.update({
       where: {
         id: projectId,
@@ -255,72 +387,51 @@ projectAPIRouter.post("/project/update", async (req, res) => {
           },
         },
       },
-      data: {},
+      data: updateData,
     });
-  } catch (e) {
-    return res.status(500).send("Internal server error.");
+  } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2025") {
+      return res.status(404).send("Project not found.");
+    }
+
+    return res.status(500).send(prismaError);
   }
 
-  return res.send("Project updated");
+  return res.send(`Project ${projectId} updated successfully.`);
 });
 
-projectAPIRouter.post("/project/assign", async (req, res) => {
+projectAPIRouter.get("/projects", async (req, res) => {
   const user = req.user as User;
-  const projectId = req.body.projectId;
 
-  const consultantEmails: string[] = req.body.consultantEmails;
-  const candidateNRICs:string[] = req.body.candidateNRICs;
+  const projectsData = prisma.consultant.findUnique({
+    where: {
+      email: user.id,
+    },
+    select: {
+      Manage: true,
+    },
+  });
 
-  if (!projectId || !consultantEmails || !candidateNRICs) {
-    return res.status(400).send("projectId, consultantEmail and candidateNRICs are required.");
+  return res.send(projectsData);
+});
+
+projectAPIRouter.get("/projects/all", async (req, res) => {
+  const user = req.user as User;
+
+  const hasPermission = await checkPermission(user.id, "canReadAllProjects");
+
+  if (!hasPermission) {
+    return res
+      .status(401)
+      .send(
+        'Unauthorized. User does not have permission "canReadAllProjects".',
+      );
   }
 
-  try {
-    await prisma.project.update({
-      where: {
-        id: projectId,
-        Manage: {
-          some: {
-            consultantEmail: user.id,
-          },
-        },
-      },
-      data: {
-        Manage: {
-          createMany: {
-            data: [
-              ...consultantEmails.map((email: string) => {
-                return {
-                  consultantEmail: email,
-                  Role: Role.,
-                };
-              }),
-              ...candidateNRICs.map((nric: string) => {
-                return {
-                  consultantEmail: nric,
-                  Role: "CANDIDATE",
-                };
-              }),
-            ],
-          },
-        },
-      },
-    });
-  } catch (e) {
-    const error = e as PrismaError;
+  const projectsData = await prisma.project.findMany();
 
-    if (error.code === "P2025") {
-      return res.status(404).send("Project does not exist.");
-    }
-
-    if (error.code === "P2016") {
-      return res.status(400).send("Consultant does not exist.");
-    }
-
-    return res.status(500).send("Internal server error.");
-  }
-
-  return res.send("Consultant assigned to project");
-}
+  return res.send(projectsData);
+});
 
 export default projectAPIRouter;
