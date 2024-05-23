@@ -22,6 +22,7 @@ model Attendance {
   id            String           @id
   candidateNric String           @db.VarChar(9)
   shiftId       String
+  shiftDate     DateTime
   clockInTime   DateTime
   clockOutTime  DateTime
   status        AttendanceStatus
@@ -88,13 +89,15 @@ model Project {
 
 model Shift {
   id          String    @id @default(cuid())
-  headcount   Int
-  day         DayOfWeek
-  endTime     DateTime
   projectId   String
-  shiftNumber Int
+  day         DayOfWeek
+  headcount   Int
   startTime   DateTime
+  endTime     DateTime
+  shiftNumber Int
   Project     Project   @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, day, shiftNumber, startTime, endTime])
 }
 
 model Session {
