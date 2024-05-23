@@ -3,7 +3,7 @@ import {
   PERMISSION_ERROR_TEMPLATE,
   Permission,
   checkPermission,
-} from "@/utils/check-permission";
+} from "../../../utils/check-permission";
 import { DayOfWeek, PrismaClient, Role } from "@prisma/client";
 import { Router } from "express";
 

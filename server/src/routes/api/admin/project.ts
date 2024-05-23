@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { MCICompany, PrismaClient, Role } from "@prisma/client";
+import { Candidate, MCICompany, PrismaClient, Role } from "@prisma/client";
 import { PrismaError, User, Location } from "@/types";
 import {
   checkPermission,
@@ -419,15 +419,83 @@ projectAPIRouter.patch("/project", async (req, res) => {
   return res.send(`Project ${projectId} updated successfully.`);
 });
 
+projectAPIRouter.get("/project/:projectId/candidates", async (req, res) => {
+  const user = req.user as User;
+  const { projectId } = req.params;
+
+  if (!projectId) {
+    return res.status(400).send("projectId is required.");
+  }
+
+  const projectData = await prisma.project.findUnique({
+    where: {
+      id: projectId,
+    },
+    include: {
+      Assign: {
+        include: {
+          Candidate: true,
+        },
+      },
+      Manage: true,
+    },
+  });
+
+  if (!projectData) {
+    return res.status(404).send("Project does not exist.");
+  }
+
+  let candidateData: any = projectData.Assign.map((assign) => assign.Candidate);
+
+  const hasReadCandidateDetailsPermission = await checkPermission(
+    user.id,
+    Permission.CAN_READ_CANDIDATE_DETAILS,
+  );
+
+  if (!hasReadCandidateDetailsPermission) {
+    candidateData = candidateData.map((candidate: Candidate) => {
+      const { nric, name, phoneNumber, emergencyContact } = candidate;
+      return {
+        nric,
+        name,
+        phoneNumber,
+        emergencyContact,
+      };
+    });
+  }
+
+  if (
+    projectData.Manage.some(
+      (consultant) => consultant.consultantEmail === user.id,
+    )
+  ) {
+    return res.send(candidateData);
+  }
+
+  const hasReadAllProjectPermission = await checkPermission(
+    user.id,
+    Permission.CAN_READ_ALL_PROJECTS,
+  );
+
+  if (hasReadAllProjectPermission) {
+    return res.send(candidateData);
+  }
+
+  return res
+    .status(401)
+    .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
+});
+
 projectAPIRouter.get("/projects", async (req, res) => {
   const user = req.user as User;
 
-  const projectsData = prisma.consultant.findUnique({
+  const projectsData = await prisma.project.findMany({
     where: {
-      email: user.id,
-    },
-    select: {
-      Manage: true,
+      Manage: {
+        some: {
+          consultantEmail: user.id,
+        },
+      },
     },
   });
 

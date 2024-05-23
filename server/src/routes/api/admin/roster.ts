@@ -5,7 +5,7 @@ import {
   PERMISSION_ERROR_TEMPLATE,
   Permission,
   checkPermission,
-} from "@/utils/check-permission";
+} from "../../../utils/check-permission";
 import moment from "moment";
 
 const prisma = new PrismaClient();
