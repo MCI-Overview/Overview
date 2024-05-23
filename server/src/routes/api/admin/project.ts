@@ -212,9 +212,7 @@ projectAPIRouter.delete("/project", async (req, res) => {
     if (!hasHardDeletePermission) {
       return res
         .status(401)
-        .send(
-          'Unauthorized. User does not have permission "canHardDeleteProjects".',
-        );
+        .send(PermissionErrorMessage.CANNOT_HARD_DELETE_PROJECT_ERROR_MESSAGE);
     }
 
     try {
@@ -223,6 +221,8 @@ projectAPIRouter.delete("/project", async (req, res) => {
           id: projectId,
         },
       });
+
+      return res.send("Project hard deleted.");
     } catch (error) {
       return res.status(500).send("Internal server error.");
     }

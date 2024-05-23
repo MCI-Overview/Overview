@@ -1,7 +1,11 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { PrismaError, User } from "@/types";
-import { checkPermission, Permission } from "../../../utils/check-permission";
+import {
+  checkPermission,
+  Permission,
+  PermissionErrorMessage,
+} from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
 
@@ -83,7 +87,9 @@ consultantAPIRoutes.post("/consultant/create", async (req, res) => {
   );
 
   if (!hasCreateConsultantPermission) {
-    return res.status(401).send("Unauthorized");
+    return res
+      .status(401)
+      .send(PermissionErrorMessage.CANNOT_CREATE_CONSULTANT_ERROR_MESSAGE);
   }
 
   try {
@@ -134,7 +140,9 @@ consultantAPIRoutes.post("consultant/delete", async (req, res) => {
   );
 
   if (!hasDeleteConsultantPermission) {
-    return res.status(401).send("Unauthorized");
+    return res
+      .status(401)
+      .send(PermissionErrorMessage.CANNOT_DELETE_CONSULTANT_ERROR_MESSAGE);
   }
 
   try {

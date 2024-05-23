@@ -22,6 +22,11 @@ export enum PermissionErrorMessage {
   CANNOT_READ_PROJECT_ERROR_MESSAGE = `Unauthorized. User does not manage the project and does not have permission ${Permission.CAN_READ_ALL_PROJECTS}.`,
   CANNOT_EDIT_PROJECT_ERROR_MESSAGE = `Unauthorized. User does not manage the project and does not have permission ${Permission.CAN_EDIT_ALL_PROJECTS}.`,
   CANNOT_DELETE_CLIENT_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_DELETE_CLIENTS}.`,
+  CANNOT_DELETE_CANDIDATE_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_DELETE_CANDIDATES}.`,
+  CANNOT_UPDATE_CANDIDATE_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_UPDATE_CANDIDATES}.`,
+  CANNOT_CREATE_CONSULTANT_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_CREATE_CONSULTANTS}.`,
+  CANNOT_DELETE_CONSULTANT_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_DELETE_CONSULTANTS}.`,
+  CANNOT_HARD_DELETE_PROJECT_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_HARD_DELETE_PROJECTS}.`,
 }
 
 export async function checkPermission(

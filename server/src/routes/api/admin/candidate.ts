@@ -8,7 +8,11 @@ import {
   User,
 } from "@/types";
 import bcrypt from "bcrypt";
-import { Permission, checkPermission } from "../../../utils/check-permission";
+import {
+  Permission,
+  PermissionErrorMessage,
+  checkPermission,
+} from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
 
@@ -195,9 +199,7 @@ candidateAPIRoutes.delete("/candidate", async (req, res) => {
   if (!hasDeleteCandidatePermission) {
     return res
       .status(401)
-      .send(
-        'Unauthorized. User does not have permission "canDeleteCandidates".',
-      );
+      .send(PermissionErrorMessage.CANNOT_DELETE_CANDIDATE_ERROR_MESSAGE);
   }
 
   try {
@@ -259,9 +261,7 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   if (!hasUpdateCandidatePermission) {
     return res
       .status(401)
-      .send(
-        'Unauthorized. User does not have permission "canUpdateCandidates".',
-      );
+      .send(PermissionErrorMessage.CANNOT_UPDATE_CANDIDATE_ERROR_MESSAGE);
   }
 
   // Validation for dateOfBirth
