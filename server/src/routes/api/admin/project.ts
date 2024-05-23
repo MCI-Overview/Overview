@@ -273,6 +273,22 @@ projectAPIRouter.patch("/project", async (req, res) => {
     return res.status(400).send("projectId is required.");
   }
 
+  if (
+    !name &&
+    !clientUEN &&
+    !employmentBy &&
+    !locations &&
+    !startDate &&
+    !endDate &&
+    !candidateHolders
+  ) {
+    return res
+      .status(400)
+      .send(
+        "At least one field (name, clientUEN, employmentBy, locations, startDate, endDate, candidateHolders) is required to update.",
+      );
+  }
+
   let employmentByObject: MCICompany | undefined;
   if (employmentBy === "MCI Career Services Ptd Ltd") {
     employmentByObject = MCICompany.MCI_CAREER_SERVICES;
@@ -347,11 +363,6 @@ projectAPIRouter.patch("/project", async (req, res) => {
         candidateHolders: { update: candidateHolders },
       }),
     };
-
-    // Check if no fields are provided to update
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).send("No valid fields provided for update.");
-    }
 
     try {
       await prisma.project.update({

@@ -235,6 +235,22 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     return res.status(400).send("nric parameter is required.");
   }
 
+  if (
+    !name &&
+    !phoneNumber &&
+    !nationality &&
+    !dateOfBirth &&
+    !bankDetails &&
+    !address &&
+    !emergencyContact
+  ) {
+    return res
+      .status(400)
+      .send(
+        "At least one field (name, phoneNumber, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required.",
+      );
+  }
+
   const hasUpdateCandidatePermission = await checkPermission(
     user.id,
     Permission.CAN_UPDATE_CANDIDATES,
