@@ -9,7 +9,7 @@ const consultantAPIRoutes: Router = Router();
 
 consultantAPIRoutes.get("/consultant/:consultantId"),
   async (req: Request, res: Response) => {
-    const consultantId = req.params.consultantId;
+    const { consultantId } = req.params;
 
     const consultantData = await prisma.consultant.findUnique({
       where: {
