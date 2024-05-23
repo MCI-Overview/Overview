@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { CandidateHolder } from "@/types"; // Ensure this path is correct
+import { CandidateHolder } from "../../types";
 
 import {
   Stack,
   FormLabel,
   Select,
   Option,
-  Button,
-  Autocomplete
+  Button
 } from '@mui/joy'
 
 interface CandidateHolderListProps {
@@ -31,7 +30,7 @@ const CandidateHolderList = ({
           <p key={cddHolder.email}> {cddHolder.name} - {cddHolder.email} </p>
         ))}
 
-        <Select value={newHolder} onChange={(e) => setNewHolder((e.target as HTMLSelectElement).value)}>
+        <Select value={newHolder} onChange={(e) => setNewHolder((e?.target as HTMLSelectElement).value)}>
           <Option value="" disabled>
             Select:
           </Option>

@@ -1,7 +1,11 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { PrismaError, User } from "@/types";
-import checkPermission from "../../../utils/check-permission";
+import {
+  checkPermission,
+  Permission,
+  PERMISSION_ERROR_TEMPLATE,
+} from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
 
@@ -9,7 +13,7 @@ const consultantAPIRoutes: Router = Router();
 
 consultantAPIRoutes.get("/consultant/:consultantId"),
   async (req: Request, res: Response) => {
-    const consultantId = req.params.consultantId;
+    const { consultantId } = req.params;
 
     const consultantData = await prisma.consultant.findUnique({
       where: {
@@ -44,30 +48,40 @@ consultantAPIRoutes.get("/consultants", async (_req, res) => {
   return res.send(consultantsData);
 });
 
-consultantAPIRoutes.post("/consultant/create", async (req, res) => {
+consultantAPIRoutes.post("/consultant", async (req, res) => {
   const user = req.user as User;
+  const { email, name, contact, designation, department, registration } =
+    req.body;
 
-  // Required fields
-  const email = req.body.email;
-  const name = req.body.name;
-  const contact = req.body.contact;
-  const designation = req.body.designation;
-  const department = req.body.department;
-
-  // Optional fields
-  const registration = req.body.registration;
-  const permissions = req.body.permissions;
-
-  if (!email || !name || !contact || !designation || !department) {
-    return res
-      .status(400)
-      .send("email, name, contact, designation, and department are required.");
+  if (!email) {
+    return res.status(400).send("email is required.");
   }
 
-  const hasPermission = await checkPermission(user.id, "canCreateConsultant");
+  if (!name) {
+    return res.status(400).send("name is required.");
+  }
 
-  if (!hasPermission) {
-    return res.status(401).send("Unauthorized");
+  if (!contact) {
+    return res.status(400).send("contact is required.");
+  }
+
+  if (!designation) {
+    return res.status(400).send("designation is required.");
+  }
+
+  if (!department) {
+    return res.status(400).send("department is required.");
+  }
+
+  const hasCreateConsultantPermission = await checkPermission(
+    user.id,
+    Permission.CAN_CREATE_CONSULTANTS,
+  );
+
+  if (!hasCreateConsultantPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_CREATE_CONSULTANTS);
   }
 
   try {
@@ -79,7 +93,6 @@ consultantAPIRoutes.post("/consultant/create", async (req, res) => {
         designation: designation,
         department: department,
         registration: registration,
-        permissions: permissions,
       },
     });
   } catch (error) {
@@ -104,40 +117,84 @@ consultantAPIRoutes.post("/consultant/create", async (req, res) => {
   return res.send("Consultant created successfully.");
 });
 
-consultantAPIRoutes.post("consultant/delete", async (req, res) => {
+consultantAPIRoutes.delete("/consultant", async (req, res) => {
   const user = req.user as User;
-
-  const email = req.body.email;
+  const { email } = req.body;
 
   if (!email) {
     return res.status(400).send("email is required.");
   }
 
-  if (!checkPermission(user.id, "canDeleteConsultant")) {
-    return res.status(401).send("Unauthorized");
+  const hasDeleteConsultantPermission = await checkPermission(
+    user.id,
+    Permission.CAN_DELETE_CONSULTANTS,
+  );
+
+  if (!hasDeleteConsultantPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_DELETE_CONSULTANTS);
   }
 
   try {
     await prisma.consultant.delete({
       where: {
         email: email,
-        AND: [
-          {
-            Manage: {
-              none: {},
-            },
-            Assign: {
-              none: {},
-            },
-          },
-        ],
       },
     });
+
+    return res.send("Consultant deleted successfully.");
   } catch (error) {
     return res.status(500).send("Internal server error.");
   }
+});
 
-  return res.send("Consultant deleted successfully.");
+consultantAPIRoutes.patch("/consultant", async (req, res) => {
+  const user = req.user as User;
+  const { email, name, contact, designation, department, registration } =
+    req.body;
+
+  if (!email) {
+    return res.status(400).send("email is required.");
+  }
+
+  if (!name && !contact && !designation && !department && !registration) {
+    return res
+      .status(400)
+      .send(
+        "At least one field (name, contact, designation, department, registration) is required.",
+      );
+  }
+
+  const hasUpdateConsultantPermission = await checkPermission(
+    user.id,
+    Permission.CAN_UPDATE_CONSULTANTS,
+  );
+
+  if (!hasUpdateConsultantPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_UPDATE_CONSULTANTS);
+  }
+
+  try {
+    await prisma.consultant.update({
+      where: {
+        email: email,
+      },
+      data: {
+        name: name,
+        contact: contact,
+        designation: designation,
+        department: department,
+        registration: registration,
+      },
+    });
+
+    return res.send("Consultant updated successfully.");
+  } catch (error) {
+    return res.status(500).send("Internal server error.");
+  }
 });
 
 export default consultantAPIRoutes;

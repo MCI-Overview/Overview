@@ -94,8 +94,6 @@ const ProjectDetailsSection = ({
     setValidPostalCode(/^\d{6}$/.test(postalCode)); // all numerical digits and length is 6
   }, [postalCode]);
 
-  console.log(clientCompanies);
-
   return (
     <div>
       <Stack spacing={1}>
@@ -117,7 +115,7 @@ const ProjectDetailsSection = ({
           value={projectData.employedBy}
         >
           {Object.values(MCICompany).map((company) => (
-            <Option value={company}>{company}</Option>
+            <Option value={company} key={company}>{company}</Option>
           ))}
         </Select>
 

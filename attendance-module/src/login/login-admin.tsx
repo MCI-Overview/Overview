@@ -1,12 +1,13 @@
 import React from "react";
-import { 
-Box, 
-Typography,
-Divider,
-Stack,
-CardOverflow,
-CardActions,
-Card  } from "@mui/joy";
+import {
+  Box,
+  Typography,
+  Divider,
+  Stack,
+  CardOverflow,
+  CardActions,
+  Card
+} from "@mui/joy";
 
 const serverLink = "http://localhost:3000";
 
@@ -39,7 +40,7 @@ const AdminLogin: React.FC = () => {
               <img src="/microsoft-login.svg" alt="Microsoft Login" />
             </a>
           </Stack>
-            
+
           <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
             <CardActions sx={{ pt: 2 }}>
               <Typography level="body-sm">
