@@ -8,6 +8,7 @@ import CreateProject from './create/create-project-page';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import PrivateRoutes from './utils/private-route'
+import AssignCandidatePage from './assign/assign-candidate-page';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/" element={<SelectRole />} />
         <Route path="/admin" element={<LoginAdmin />} />
         <Route path="/user" element={<LoginUser />} />
+        <Route path="/assign" element={<AssignCandidatePage />} />
 
         {/* admin routes */}
         <Route element={<PrivateRoutes />}>
