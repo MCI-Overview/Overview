@@ -47,21 +47,34 @@ consultantAPIRoutes.get("/consultants", async (_req, res) => {
 consultantAPIRoutes.post("/consultant/create", async (req, res) => {
   const user = req.user as User;
 
-  // Required fields
-  const email = req.body.email;
-  const name = req.body.name;
-  const contact = req.body.contact;
-  const designation = req.body.designation;
-  const department = req.body.department;
+  const {
+    email,
+    name,
+    contact,
+    designation,
+    department,
+    registration,
+    permissions,
+  } = req.body;
 
-  // Optional fields
-  const registration = req.body.registration;
-  const permissions = req.body.permissions;
+  if (!email) {
+    return res.status(400).send("email is required.");
+  }
 
-  if (!email || !name || !contact || !designation || !department) {
-    return res
-      .status(400)
-      .send("email, name, contact, designation, and department are required.");
+  if (!name) {
+    return res.status(400).send("name is required.");
+  }
+
+  if (!contact) {
+    return res.status(400).send("contact is required.");
+  }
+
+  if (!designation) {
+    return res.status(400).send("designation is required.");
+  }
+
+  if (!department) {
+    return res.status(400).send("department is required.");
   }
 
   const hasCreateConsultantPermission = await checkPermission(
@@ -109,8 +122,7 @@ consultantAPIRoutes.post("/consultant/create", async (req, res) => {
 
 consultantAPIRoutes.post("consultant/delete", async (req, res) => {
   const user = req.user as User;
-
-  const email = req.body.email;
+  const { email } = req.body;
 
   if (!email) {
     return res.status(400).send("email is required.");

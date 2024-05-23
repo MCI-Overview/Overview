@@ -181,7 +181,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
 
 candidateAPIRoutes.delete("/candidate", async (req, res) => {
   const user = req.user as User;
-  const nric = req.body.nric;
+  const { nric } = req.body;
 
   if (!nric) {
     return res.status(400).send("nric parameter is required.");
