@@ -220,6 +220,14 @@ body {
     margin: auto;
 }
 
+.p-userBtn {
+    font-size: 1rem;
+    color: white;
+    text-align: center;
+    padding: 4px;
+    margin: auto;
+}
+
 .p-menuIconHeader {
     float: left;
     font-size: 1.2rem;
@@ -582,12 +590,22 @@ hr {
     margin-top: 150px;
 }
 
-.btn-generate2 {
-    width: 100%;
-    max-width: 280px;
+.btn-AdminLogin {
+    width: 300px;
     height: auto;
     min-height: 50px;
     background-color: rgba(160,167,66,0.2);
+    border: 0;
+    /* border-color: rgba(144,163,167,0.5); */
+    border-radius: 30px;
+    margin-top: 20px;
+}
+
+.btn-UserLogin {
+    width: 300px;
+    height: auto;
+    min-height: 50px;
+    background-color: rgba(160,167,66,1);
     border: 0;
     /* border-color: rgba(144,163,167,0.5); */
     border-radius: 30px;

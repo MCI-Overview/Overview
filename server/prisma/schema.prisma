@@ -20,24 +20,28 @@ model Assign {
 
 model Attendance {
   id            String           @id
-  candidateNric String           @db.VarChar(9)
+  candidateNric String
   shiftId       String
   clockInTime   DateTime
   clockOutTime  DateTime
   status        AttendanceStatus
+  shiftDate     DateTime
+  Candidate     Candidate        @relation(fields: [candidateNric], references: [nric])
+  Shift         Shift            @relation(fields: [shiftId], references: [id])
 }
 
 model Candidate {
-  nric             String    @id @db.VarChar(9)
-  phoneNumber      String    @unique
+  nric             String       @id @db.VarChar(9)
+  phoneNumber      String       @unique
   name             String
-  hasOnboarded     Boolean   @default(false)
+  hasOnboarded     Boolean      @default(false)
   nationality      String?
   dateOfBirth      DateTime?
   bankDetails      Json?
   address          Json?
   emergencyContact Json?
   Assign           Assign[]
+  Attendance       Attendance[]
   User             User?
 }
 
@@ -79,7 +83,7 @@ model Project {
   endDate      DateTime
   startDate    DateTime
   employmentBy MCICompany
-  status       ProjectStatus
+  status       ProjectStatus @default(ACTIVE)
   Assign       Assign[]
   Manage       Manage[]
   Client       Client        @relation(fields: [clientUEN], references: [UEN])
@@ -87,14 +91,17 @@ model Project {
 }
 
 model Shift {
-  id          String    @id @default(cuid())
+  id          String       @id @default(cuid())
   headcount   Int
   day         DayOfWeek
   endTime     DateTime
   projectId   String
   shiftNumber Int
   startTime   DateTime
-  Project     Project   @relation(fields: [projectId], references: [id])
+  Attendance  Attendance[]
+  Project     Project      @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, day, shiftNumber, startTime, endTime])
 }
 
 model Session {
