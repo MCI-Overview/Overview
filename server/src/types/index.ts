@@ -51,16 +51,3 @@ export type EmergencyContact = {
   relationship: String;
   phoneNumber: String;
 };
-
-export enum TransactionType {
-  ADD,
-  DELETE,
-  OVERWRITE,
-  UPDATE,
-}
-
-export type Transaction = {
-  type: TransactionType;
-  resource: string;
-  value: String | String[];
-};
