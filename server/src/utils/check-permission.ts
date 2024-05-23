@@ -17,7 +17,8 @@ export enum Permission {
 }
 
 export enum PermissionErrorMessage {
-  CANNOT_READ_PROJECT_ERROR_MESSAGE = 'Unauthorized. User does not manage the project and does not have permission "canReadAllProjects".',
+  CANNOT_READ_PROJECT_ERROR_MESSAGE = `Unauthorized. User does not manage the project and does not have permission ${Permission.CAN_READ_ALL_PROJECTS}.`,
+  CANNOT_EDIT_PROJECT_ERROR_MESSAGE = `Unauthorized. User does not manage the project and does not have permission ${Permission.CAN_EDIT_ALL_PROJECTS}.`,
 }
 
 export async function checkPermission(
