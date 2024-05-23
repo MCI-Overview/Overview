@@ -15,6 +15,7 @@ export enum Permission {
   CAN_UPDATE_CLIENTS = "canUpdateClients",
 
   CAN_CREATE_CONSULTANTS = "canCreateConsultants",
+  CAN_UPDATE_CONSULTANTS = "canUpdateConsultants",
   CAN_DELETE_CONSULTANTS = "canDeleteConsultants",
 
   CAN_DELETE_CANDIDATES = "canDeleteCandidates",
