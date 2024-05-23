@@ -26,10 +26,8 @@ model Attendance {
   clockInTime   DateTime?
   clockOutTime  DateTime?
   status        AttendanceStatus?
-  Shift         Shift             @relation(fields: [shiftId], references: [id])
   Candidate     Candidate         @relation(fields: [candidateNric], references: [nric])
-
-  @@unique([candidateNric, shiftId, shiftDate])
+  Shift         Shift             @relation(fields: [shiftId], references: [id])
 }
 
 model Candidate {
@@ -44,7 +42,7 @@ model Candidate {
   emergencyContact Json?
   Assign           Assign[]
   Attendance       Attendance[]
-  User             User[]
+  User             User?
 }
 
 model Client {
@@ -94,14 +92,14 @@ model Project {
 
 model Shift {
   id          String       @id @default(cuid())
-  projectId   String
-  day         DayOfWeek
   headcount   Int
-  startTime   DateTime
+  day         DayOfWeek
   endTime     DateTime
+  projectId   String
   shiftNumber Int
-  Project     Project      @relation(fields: [projectId], references: [id])
+  startTime   DateTime
   Attendance  Attendance[]
+  Project     Project      @relation(fields: [projectId], references: [id])
 
   @@unique([projectId, day, shiftNumber, startTime, endTime])
 }

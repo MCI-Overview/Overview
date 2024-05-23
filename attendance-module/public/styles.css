@@ -165,6 +165,19 @@ body {
     z-index: 99;
 }
 
+.body-ctnAttendance {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    margin-top: 140px;
+    padding: 40px;
+    border-radius: 20px;
+    background-color: white;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
 
 /* text */
 
@@ -203,6 +216,14 @@ body {
     color: rgba(57,81,89,1);
     text-align: center;
     line-height: 2.6rem;
+    padding: 4px;
+    margin: auto;
+}
+
+.p-userBtn {
+    font-size: 1rem;
+    color: white;
+    text-align: center;
     padding: 4px;
     margin: auto;
 }
@@ -569,12 +590,22 @@ hr {
     margin-top: 150px;
 }
 
-.btn-generate2 {
-    width: 100%;
-    max-width: 280px;
+.btn-AdminLogin {
+    width: 300px;
     height: auto;
     min-height: 50px;
     background-color: rgba(160,167,66,0.2);
+    border: 0;
+    /* border-color: rgba(144,163,167,0.5); */
+    border-radius: 30px;
+    margin-top: 20px;
+}
+
+.btn-UserLogin {
+    width: 300px;
+    height: auto;
+    min-height: 50px;
+    background-color: rgba(160,167,66,1);
     border: 0;
     /* border-color: rgba(144,163,167,0.5); */
     border-radius: 30px;

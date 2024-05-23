@@ -7,9 +7,10 @@ import {
   checkPermission,
 } from "@/utils/check-permission";
 
-const FOURTEEN_DAYS_OFFSET = 14 * 24 * 60 * 60 * 1000;
 const prisma = new PrismaClient();
 const attendanceAPIRouter: Router = Router();
+
+const FOURTEEN_DAYS_OFFSET = 14 * 24 * 60 * 60 * 1000;
 
 attendanceAPIRouter.get(
   "/attendance/:candidateNRIC&:projectId&:startDate&:endDate",
