@@ -3,12 +3,16 @@ import { JsonObject } from "@prisma/client/runtime/library";
 
 const prisma = new PrismaClient();
 
+export const PERMISSION_ERROR_TEMPLATE =
+  "Unauthorized. User does not have permission ";
+
 export enum Permission {
   CAN_READ_ALL_PROJECTS = "canReadAllProjects",
   CAN_EDIT_ALL_PROJECTS = "canEditAllProjects",
   CAN_HARD_DELETE_PROJECTS = "canHardDeleteProjects",
 
   CAN_DELETE_CLIENTS = "canDeleteClients",
+  CAN_UPDATE_CLIENTS = "canUpdateClients",
 
   CAN_CREATE_CONSULTANTS = "canCreateConsultants",
   CAN_DELETE_CONSULTANTS = "canDeleteConsultants",
@@ -16,17 +20,6 @@ export enum Permission {
   CAN_DELETE_CANDIDATES = "canDeleteCandidates",
   CAN_UPDATE_CANDIDATES = "canUpdateCandidates",
   CAN_READ_CANDIDATE_DETAILS = "canReadCandidateDetails",
-}
-
-export enum PermissionErrorMessage {
-  CANNOT_READ_PROJECT_ERROR_MESSAGE = `Unauthorized. User does not manage the project and does not have permission ${Permission.CAN_READ_ALL_PROJECTS}.`,
-  CANNOT_EDIT_PROJECT_ERROR_MESSAGE = `Unauthorized. User does not manage the project and does not have permission ${Permission.CAN_EDIT_ALL_PROJECTS}.`,
-  CANNOT_DELETE_CLIENT_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_DELETE_CLIENTS}.`,
-  CANNOT_DELETE_CANDIDATE_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_DELETE_CANDIDATES}.`,
-  CANNOT_UPDATE_CANDIDATE_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_UPDATE_CANDIDATES}.`,
-  CANNOT_CREATE_CONSULTANT_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_CREATE_CONSULTANTS}.`,
-  CANNOT_DELETE_CONSULTANT_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_DELETE_CONSULTANTS}.`,
-  CANNOT_HARD_DELETE_PROJECT_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_HARD_DELETE_PROJECTS}.`,
 }
 
 export async function checkPermission(

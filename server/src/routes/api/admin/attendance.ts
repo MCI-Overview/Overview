@@ -3,8 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import { User } from "@/types";
 import {
   Permission,
-  PermissionErrorMessage,
   checkPermission,
+  PERMISSION_ERROR_TEMPLATE,
 } from "@/utils/check-permission";
 
 const prisma = new PrismaClient();
@@ -97,7 +97,7 @@ attendanceAPIRouter.get(
 
       return res
         .status(403)
-        .send(PermissionErrorMessage.CANNOT_READ_PROJECT_ERROR_MESSAGE);
+        .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
     }
 
     if (candidateNRIC && !projectId) {
@@ -218,7 +218,7 @@ attendanceAPIRouter.get(
 
       return res
         .status(403)
-        .send(PermissionErrorMessage.CANNOT_READ_PROJECT_ERROR_MESSAGE);
+        .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
     }
 
     return res.status(400).send("Invalid request.");

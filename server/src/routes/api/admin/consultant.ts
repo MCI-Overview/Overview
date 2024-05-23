@@ -4,7 +4,7 @@ import { PrismaError, User } from "@/types";
 import {
   checkPermission,
   Permission,
-  PermissionErrorMessage,
+  PERMISSION_ERROR_TEMPLATE,
 } from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
@@ -89,7 +89,7 @@ consultantAPIRoutes.post("/consultant/create", async (req, res) => {
   if (!hasCreateConsultantPermission) {
     return res
       .status(401)
-      .send(PermissionErrorMessage.CANNOT_CREATE_CONSULTANT_ERROR_MESSAGE);
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_CREATE_CONSULTANTS);
   }
 
   try {
@@ -124,48 +124,6 @@ consultantAPIRoutes.post("/consultant/create", async (req, res) => {
   }
 
   return res.send("Consultant created successfully.");
-});
-
-consultantAPIRoutes.post("consultant/delete", async (req, res) => {
-  const user = req.user as User;
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).send("email is required.");
-  }
-
-  const hasDeleteConsultantPermission = await checkPermission(
-    user.id,
-    Permission.CAN_DELETE_CONSULTANTS,
-  );
-
-  if (!hasDeleteConsultantPermission) {
-    return res
-      .status(401)
-      .send(PermissionErrorMessage.CANNOT_DELETE_CONSULTANT_ERROR_MESSAGE);
-  }
-
-  try {
-    await prisma.consultant.delete({
-      where: {
-        email: email,
-        AND: [
-          {
-            Manage: {
-              none: {},
-            },
-            Assign: {
-              none: {},
-            },
-          },
-        ],
-      },
-    });
-  } catch (error) {
-    return res.status(500).send("Internal server error.");
-  }
-
-  return res.send("Consultant deleted successfully.");
 });
 
 export default consultantAPIRoutes;

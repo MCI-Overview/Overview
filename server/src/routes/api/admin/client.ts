@@ -3,8 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaError, User } from "@/types";
 import {
   Permission,
-  PermissionErrorMessage,
   checkPermission,
+  PERMISSION_ERROR_TEMPLATE,
 } from "@/utils/check-permission";
 
 const prisma = new PrismaClient();
@@ -70,7 +70,7 @@ clientAPIRoutes.delete("/client", async (req, res) => {
   if (!hasDeleteClientPermission) {
     return res
       .status(401)
-      .send(PermissionErrorMessage.CANNOT_DELETE_CLIENT_ERROR_MESSAGE);
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_DELETE_CLIENTS);
   }
 
   try {
@@ -102,6 +102,44 @@ clientAPIRoutes.delete("/client", async (req, res) => {
 
   return res.send("Client deleted successfully.");
 });
+
+async function updateClient(req: Request, res: Response) {
+  const user = req.user as User;
+  const { UEN, name } = req.body;
+
+  if (!name) {
+    return res.status(400).send("name is required.");
+  }
+
+  const hasUpdateClientPermission = checkPermission(
+    user.id,
+    Permission.CAN_UPDATE_CLIENTS,
+  );
+
+  if (!hasUpdateClientPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_UPDATE_CLIENTS);
+  }
+
+  try {
+    await prisma.client.update({
+      where: {
+        UEN: UEN,
+      },
+      data: {
+        name: name,
+      },
+    });
+  } catch (error) {
+    return res.status(500).send("Internal server error.");
+  }
+
+  return res.send("Client updated successfully.");
+}
+
+clientAPIRoutes.put("/client", updateClient);
+clientAPIRoutes.patch("/client", updateClient);
 
 clientAPIRoutes.get("/clients", async (_req, res) => {
   const clientsData = await prisma.client.findMany({

@@ -4,7 +4,7 @@ import { PrismaError, User, Location } from "@/types";
 import {
   checkPermission,
   Permission,
-  PermissionErrorMessage,
+  PERMISSION_ERROR_TEMPLATE,
 } from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
@@ -49,7 +49,7 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
 
   return res
     .status(401)
-    .send(PermissionErrorMessage.CANNOT_READ_PROJECT_ERROR_MESSAGE);
+    .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
 });
 
 projectAPIRouter.post("/project", async (req, res) => {
@@ -103,7 +103,7 @@ projectAPIRouter.post("/project", async (req, res) => {
     }
   }
 
-  if (startDateObject && endDateObject && startDateObject >= endDateObject) {
+  if (startDateObject && endDateObject && startDateObject > endDateObject) {
     return res.status(400).send("startDate cannot be after endDate.");
   }
 
@@ -212,7 +212,7 @@ projectAPIRouter.delete("/project", async (req, res) => {
     if (!hasHardDeletePermission) {
       return res
         .status(401)
-        .send(PermissionErrorMessage.CANNOT_HARD_DELETE_PROJECT_ERROR_MESSAGE);
+        .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_HARD_DELETE_PROJECTS);
     }
 
     try {
@@ -316,7 +316,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
     }
   }
 
-  if (startDateObject && endDateObject && startDateObject >= endDateObject) {
+  if (startDateObject && endDateObject && startDateObject > endDateObject) {
     return res.status(400).send("startDate cannot be after endDate.");
   }
 
@@ -371,6 +371,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
         },
         data: updateData,
       });
+      return res.send(`Project ${projectId} updated successfully.`);
     } catch (error) {
       const prismaError = error as PrismaError;
       if (prismaError.code === "P2025") {
@@ -444,7 +445,7 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
   if (!hasReadAllProjectsPermission) {
     return res
       .status(401)
-      .send(PermissionErrorMessage.CANNOT_READ_PROJECT_ERROR_MESSAGE);
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
   }
 
   const projectsData = await prisma.project.findMany();

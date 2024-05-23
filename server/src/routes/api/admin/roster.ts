@@ -2,8 +2,8 @@ import { Router, Request, Response } from "express";
 import { PrismaClient, Role } from "@prisma/client";
 import { PrismaError, User } from "@/types";
 import {
+  PERMISSION_ERROR_TEMPLATE,
   Permission,
-  PermissionErrorMessage,
   checkPermission,
 } from "@/utils/check-permission";
 import moment from "moment";
@@ -108,7 +108,7 @@ rosterAPIRouter.get(
 
       return res
         .status(403)
-        .send(PermissionErrorMessage.CANNOT_READ_PROJECT_ERROR_MESSAGE);
+        .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
     }
 
     if (candidateNRIC && !projectId) {
@@ -223,7 +223,7 @@ rosterAPIRouter.get(
 
       return res
         .status(403)
-        .send(PermissionErrorMessage.CANNOT_READ_PROJECT_ERROR_MESSAGE);
+        .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
     }
 
     return res.status(400).send("Invalid request.");
@@ -311,7 +311,7 @@ rosterAPIRouter.post("/roster", async (req: Request, res: Response) => {
     if (!hasEditAllProjectPermission) {
       return res
         .status(401)
-        .send(PermissionErrorMessage.CANNOT_EDIT_PROJECT_ERROR_MESSAGE);
+        .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
     }
   }
 

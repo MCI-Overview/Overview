@@ -9,8 +9,8 @@ import {
 } from "@/types";
 import bcrypt from "bcrypt";
 import {
+  PERMISSION_ERROR_TEMPLATE,
   Permission,
-  PermissionErrorMessage,
   checkPermission,
 } from "../../../utils/check-permission";
 
@@ -199,7 +199,7 @@ candidateAPIRoutes.delete("/candidate", async (req, res) => {
   if (!hasDeleteCandidatePermission) {
     return res
       .status(401)
-      .send(PermissionErrorMessage.CANNOT_DELETE_CANDIDATE_ERROR_MESSAGE);
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_DELETE_CANDIDATES);
   }
 
   try {
@@ -261,7 +261,7 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   if (!hasUpdateCandidatePermission) {
     return res
       .status(401)
-      .send(PermissionErrorMessage.CANNOT_UPDATE_CANDIDATE_ERROR_MESSAGE);
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_UPDATE_CANDIDATES);
   }
 
   // Validation for dateOfBirth
