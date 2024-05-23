@@ -1,27 +1,37 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { PrismaError, User } from "@/types";
+import {
+  Address,
+  BankDetails,
+  EmergencyContact,
+  PrismaError,
+  User,
+} from "@/types";
 import bcrypt from "bcrypt";
-import checkPermission from "../../../utils/check-permission";
+import {
+  PERMISSION_ERROR_TEMPLATE,
+  Permission,
+  checkPermission,
+} from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
 
 const candidateAPIRoutes: Router = Router();
 
-candidateAPIRoutes.get("/candidate/:candidateId"),
+candidateAPIRoutes.get("/candidate/:nric"),
   async (req: Request, res: Response) => {
     const user = req.user as User;
-    const candidateId = req.params.candidateId;
+    const { nric } = req.params;
 
     const candidateData = await prisma.candidate.findUnique({
       where: {
-        nric: candidateId,
+        nric: nric,
       },
     });
 
     const hasReadCandidateDetailsPermission = await checkPermission(
       user.id,
-      "canReadCandidateDetails",
+      Permission.CAN_READ_CANDIDATE_DETAILS,
     );
 
     if (!candidateData) {
@@ -35,97 +45,120 @@ candidateAPIRoutes.get("/candidate/:candidateId"),
     return res.send({
       name: candidateData.name,
       nric: candidateData.nric,
-      nationality: candidateData.nationality,
       phoneNumber: candidateData.phoneNumber,
+      emergencyContact: candidateData.emergencyContact,
     });
   };
 
-candidateAPIRoutes.get("/candidates", async (req, res) => {
-  const user = req.user as User;
+candidateAPIRoutes.post("/candidate", async (req, res) => {
+  const {
+    nric,
+    name,
+    phoneNumber,
+    nationality,
+    dateOfBirth,
+    bankDetails,
+    address,
+    emergencyContact,
+  } = req.body;
 
-  const hasReadCandidateDetailsPermission = await checkPermission(
-    user.id,
-    "canReadCandidateDetails",
-  );
-
-  if (hasReadCandidateDetailsPermission) {
-    const candidatesData = await prisma.candidate.findMany();
-    return res.send(candidatesData);
+  // Checking for the required parameters
+  if (!nric) {
+    return res.status(400).send("nric parameter is required.");
   }
 
-  const candidatesData = await prisma.candidate.findMany({
-    select: {
-      name: true,
-      nric: true,
-      nationality: true,
-      phoneNumber: true,
-    },
-  });
-
-  return res.send(candidatesData);
-});
-
-candidateAPIRoutes.post("/candidate/create", async (req, res) => {
-  // Required fields
-  const nric = req.body.nric;
-  const name = req.body.name;
-  const block = req.body.block;
-  const building = req.body.building;
-  const floor = req.body.floor;
-  const unit = req.body.unit;
-  const street = req.body.street;
-  const postal = req.body.postal;
-  const country = req.body.country;
-  const nationality = req.body.nationality;
-  const phoneNumber = req.body.phoneNumber;
-
-  // Optional fields
-  const bankHolderName = req.body.bankHolderName;
-  const bankName = req.body.bankName;
-  const bankNumber = req.body.bankNumber;
-  const dateOfBirth = req.body.dateOfBirth;
-
-  if (
-    !nric ||
-    !name ||
-    !block ||
-    !building ||
-    !floor ||
-    !unit ||
-    !street ||
-    !postal ||
-    !country ||
-    !nationality ||
-    !phoneNumber
-  ) {
-    return res
-      .status(400)
-      .send(
-        "nric, name, block, building, floor, unit, street, postal, country, nationality, and phoneNumber are required.",
-      );
+  if (!name) {
+    return res.status(400).send("name parameter is required.");
   }
+
+  if (!phoneNumber) {
+    return res.status(400).send("phoneNumber parameter is required.");
+  }
+
+  // Validation for dateOfBirth
+  if (dateOfBirth && !Date.parse(dateOfBirth)) {
+    return res.status(400).send("Invalid dateOfBirth parameter.");
+  }
+
+  // Validation for bankDetails
+  let bankDetailsObject: BankDetails | undefined;
+  if (bankDetails) {
+    try {
+      bankDetailsObject = JSON.parse(bankDetails) as BankDetails;
+      if (
+        !bankDetailsObject.bankHolderName ||
+        !bankDetailsObject.bankName ||
+        !bankDetailsObject.bankNumber
+      ) {
+        return res.status(400).send("Invalid bankDetails JSON.");
+      }
+    } catch (error) {
+      return res.status(400).send("Invalid bankDetails JSON.");
+    }
+  }
+
+  // Validation for address
+  let addressObject: Address | undefined;
+  if (address) {
+    try {
+      addressObject = JSON.parse(address) as Address;
+      if (
+        !addressObject.block ||
+        !addressObject.building ||
+        !addressObject.floor ||
+        !addressObject.unit ||
+        !addressObject.street ||
+        !addressObject.postal ||
+        !addressObject.country
+      ) {
+        return res.status(400).send("Invalid address JSON.");
+      }
+    } catch (error) {
+      return res.status(400).send("Invalid address JSON.");
+    }
+  }
+
+  // Validation for emergencyContact
+  let emergencyContactObject: EmergencyContact | undefined;
+  if (emergencyContact) {
+    try {
+      emergencyContactObject = JSON.parse(emergencyContact) as EmergencyContact;
+      if (
+        !emergencyContactObject.name ||
+        !emergencyContactObject.relationship ||
+        !emergencyContactObject.phoneNumber
+      ) {
+        return res.status(400).send("Invalid emergencyContact JSON.");
+      }
+    } catch (error) {
+      return res.status(400).send("Invalid emergencyContact JSON.");
+    }
+  }
+
+  const hasOnboarded =
+    nationality && dateOfBirth && bankDetails && address && emergencyContact;
+
+  const createData = {
+    nric,
+    name,
+    phoneNumber,
+    hasOnboarded,
+    ...(nationality && { nationality }),
+    ...(dateOfBirth && { dateOfBirth }),
+    ...(addressObject && { address: { update: addressObject } }),
+    ...(bankDetailsObject && { bankDetails: { update: bankDetailsObject } }),
+    ...(emergencyContactObject && {
+      emergencyContact: { update: emergencyContactObject },
+    }),
+  };
 
   try {
     await prisma.candidate.create({
       data: {
-        nric: nric,
-        name: name,
-        nationality: nationality,
-        phoneNumber: phoneNumber,
-        block: block,
-        building: building,
-        floor: floor,
-        unit: unit,
-        street: street,
-        postal: postal,
-        country: country,
-        bankHolderName: bankHolderName,
-        bankName: bankName,
-        bankNumber: bankNumber,
-        dateOfBirth: dateOfBirth,
+        ...createData,
         User: {
           create: {
-            hash: await bcrypt.hash(phoneNumber, 10),
+            hash: await bcrypt.hash(phoneNumber, 12),
           },
         },
       },
@@ -136,7 +169,7 @@ candidateAPIRoutes.post("/candidate/create", async (req, res) => {
       const prismaErrorMetaTarget = prismaError.meta.target || [];
 
       if (prismaErrorMetaTarget.includes("nric")) {
-        return res.status(400).send("Candidate already exists. (Duplicate ID)");
+        return res.status(400).send("Candidate already exists.");
       }
 
       if (prismaErrorMetaTarget.includes("phoneNumber")) {
@@ -144,23 +177,29 @@ candidateAPIRoutes.post("/candidate/create", async (req, res) => {
       }
     }
 
-    return res.status(500).send("Internal server error.");
+    return res.status(500).send(prismaError);
   }
 
-  return res.send("Candidate created successfully.");
+  return res.send(`Candidate ${nric} created successfully.`);
 });
 
-candidateAPIRoutes.post("candidate/delete", async (req, res) => {
+candidateAPIRoutes.delete("/candidate", async (req, res) => {
   const user = req.user as User;
-
-  const nric = req.body.nric;
+  const { nric } = req.body;
 
   if (!nric) {
-    return res.status(400).send("nric is required.");
+    return res.status(400).send("nric parameter is required.");
   }
 
-  if (!checkPermission(user.id, "canDeleteCandidate")) {
-    return res.status(401).send("Unauthorized");
+  const hasDeleteCandidatePermission = await checkPermission(
+    user.id,
+    Permission.CAN_DELETE_CANDIDATES,
+  );
+
+  if (!hasDeleteCandidatePermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_DELETE_CANDIDATES);
   }
 
   try {
@@ -173,10 +212,174 @@ candidateAPIRoutes.post("candidate/delete", async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).send("Internal server error.");
+    const prismaError = error as PrismaError;
+    return res.status(500).send(prismaError);
   }
 
-  return res.send("Consultant deleted successfully.");
+  return res.send(`Candidate ${nric} deleted successfully.`);
+});
+
+candidateAPIRoutes.patch("/candidate", async (req, res) => {
+  const user = req.user as User;
+  const {
+    nric,
+    name,
+    phoneNumber,
+    nationality,
+    dateOfBirth,
+    bankDetails,
+    address,
+    emergencyContact,
+  } = req.body;
+
+  // Checking for the required identifier
+  if (!nric) {
+    return res.status(400).send("nric parameter is required.");
+  }
+
+  if (
+    !name &&
+    !phoneNumber &&
+    !nationality &&
+    !dateOfBirth &&
+    !bankDetails &&
+    !address &&
+    !emergencyContact
+  ) {
+    return res
+      .status(400)
+      .send(
+        "At least one field (name, phoneNumber, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required.",
+      );
+  }
+
+  const hasUpdateCandidatePermission = await checkPermission(
+    user.id,
+    Permission.CAN_UPDATE_CANDIDATES,
+  );
+
+  if (!hasUpdateCandidatePermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_UPDATE_CANDIDATES);
+  }
+
+  // Validation for dateOfBirth
+  if (dateOfBirth && !Date.parse(dateOfBirth)) {
+    return res.status(400).send("Invalid dateOfBirth parameter.");
+  }
+
+  // Validation for bankDetails
+  let bankDetailsObject;
+  if (bankDetails) {
+    try {
+      bankDetailsObject = JSON.parse(bankDetails);
+      if (
+        !bankDetailsObject.bankHolderName ||
+        !bankDetailsObject.bankName ||
+        !bankDetailsObject.bankNumber
+      ) {
+        return res.status(400).send("Invalid bankDetails JSON.");
+      }
+    } catch (error) {
+      return res.status(400).send("Invalid bankDetails JSON.");
+    }
+  }
+
+  // Validation for address
+  let addressObject;
+  if (address) {
+    try {
+      addressObject = JSON.parse(address);
+      if (
+        !addressObject.block ||
+        !addressObject.building ||
+        !addressObject.floor ||
+        !addressObject.unit ||
+        !addressObject.street ||
+        !addressObject.postal ||
+        !addressObject.country
+      ) {
+        return res.status(400).send("Invalid address JSON.");
+      }
+    } catch (error) {
+      return res.status(400).send("Invalid address JSON.");
+    }
+  }
+
+  // Validation for emergencyContact
+  let emergencyContactObject;
+  if (emergencyContact) {
+    try {
+      emergencyContactObject = JSON.parse(emergencyContact);
+      if (
+        !emergencyContactObject.name ||
+        !emergencyContactObject.relationship ||
+        !emergencyContactObject.phoneNumber
+      ) {
+        return res.status(400).send("Invalid emergencyContact JSON.");
+      }
+    } catch (error) {
+      return res.status(400).send("Invalid emergencyContact JSON.");
+    }
+  }
+
+  // Build the update data object with only provided fields
+  const updateData = {
+    ...(name && { name }),
+    ...(phoneNumber && { phoneNumber }),
+    ...(nationality && { nationality }),
+    ...(dateOfBirth && { dateOfBirth }),
+    ...(addressObject && { address: { update: addressObject } }),
+    ...(bankDetailsObject && { bankDetails: { update: bankDetailsObject } }),
+    ...(emergencyContactObject && {
+      emergencyContact: { update: emergencyContactObject },
+    }),
+  };
+
+  // Check if no fields are provided to update
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).send("No valid fields provided for update.");
+  }
+
+  try {
+    await prisma.candidate.update({
+      where: { nric },
+      data: updateData,
+    });
+
+    return res.send(`Candidate ${nric} updated successfully.`);
+  } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2025") {
+      return res.status(404).send("Candidate not found.");
+    }
+    return res.status(500).send(prismaError);
+  }
+});
+
+candidateAPIRoutes.get("/candidates", async (req, res) => {
+  const user = req.user as User;
+
+  const hasReadCandidateDetailsPermission = await checkPermission(
+    user.id,
+    Permission.CAN_READ_CANDIDATE_DETAILS,
+  );
+
+  if (hasReadCandidateDetailsPermission) {
+    const candidatesData = await prisma.candidate.findMany();
+    return res.send(candidatesData);
+  }
+
+  const candidatesData = await prisma.candidate.findMany({
+    select: {
+      name: true,
+      nric: true,
+      phoneNumber: true,
+    },
+  });
+
+  return res.send(candidatesData);
 });
 
 export default candidateAPIRoutes;

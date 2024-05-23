@@ -19,15 +19,15 @@ model Assign {
 }
 
 model Attendance {
-  id            String           @id
+  id            String            @id @default(cuid())
   candidateNric String
   shiftId       String
-  clockInTime   DateTime
-  clockOutTime  DateTime
-  status        AttendanceStatus
   shiftDate     DateTime
-  Candidate     Candidate        @relation(fields: [candidateNric], references: [nric])
-  Shift         Shift            @relation(fields: [shiftId], references: [id])
+  clockInTime   DateTime?
+  clockOutTime  DateTime?
+  status        AttendanceStatus?
+  Candidate     Candidate         @relation(fields: [candidateNric], references: [nric])
+  Shift         Shift             @relation(fields: [shiftId], references: [id])
 }
 
 model Candidate {
