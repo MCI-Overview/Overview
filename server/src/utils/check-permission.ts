@@ -8,8 +8,10 @@ export enum Permission {
   CAN_EDIT_ALL_PROJECTS = "canEditAllProjects",
   CAN_HARD_DELETE_PROJECTS = "canHardDeleteProjects",
 
-  CAN_CREATE_CONSULTANT = "canCreateConsultant",
-  CAN_DELETE_CONSULTANT = "canDeleteConsultant",
+  CAN_DELETE_CLIENTS = "canDeleteClients",
+
+  CAN_CREATE_CONSULTANTS = "canCreateConsultants",
+  CAN_DELETE_CONSULTANTS = "canDeleteConsultants",
 
   CAN_DELETE_CANDIDATES = "canDeleteCandidates",
   CAN_UPDATE_CANDIDATES = "canUpdateCandidates",
@@ -19,6 +21,7 @@ export enum Permission {
 export enum PermissionErrorMessage {
   CANNOT_READ_PROJECT_ERROR_MESSAGE = `Unauthorized. User does not manage the project and does not have permission ${Permission.CAN_READ_ALL_PROJECTS}.`,
   CANNOT_EDIT_PROJECT_ERROR_MESSAGE = `Unauthorized. User does not manage the project and does not have permission ${Permission.CAN_EDIT_ALL_PROJECTS}.`,
+  CANNOT_DELETE_CLIENT_ERROR_MESSAGE = `Unauthorized. User does not have permission ${Permission.CAN_DELETE_CLIENTS}.`,
 }
 
 export async function checkPermission(

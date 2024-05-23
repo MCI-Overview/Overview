@@ -66,7 +66,7 @@ consultantAPIRoutes.post("/consultant/create", async (req, res) => {
 
   const hasCreateConsultantPermission = await checkPermission(
     user.id,
-    Permission.CAN_CREATE_CONSULTANT,
+    Permission.CAN_CREATE_CONSULTANTS,
   );
 
   if (!hasCreateConsultantPermission) {
@@ -118,7 +118,7 @@ consultantAPIRoutes.post("consultant/delete", async (req, res) => {
 
   const hasDeleteConsultantPermission = await checkPermission(
     user.id,
-    Permission.CAN_DELETE_CONSULTANT,
+    Permission.CAN_DELETE_CONSULTANTS,
   );
 
   if (!hasDeleteConsultantPermission) {

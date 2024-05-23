@@ -140,7 +140,7 @@ rosterAPIRouter.post("/roster", async (req: Request, res: Response) => {
       skipDuplicates: true,
     });
 
-    return res.send("Attendance created successfully.");
+    return res.send("Roster created successfully.");
   } catch (error) {
     const prismaError = error as PrismaError;
     if (prismaError.code === "P2002") {
