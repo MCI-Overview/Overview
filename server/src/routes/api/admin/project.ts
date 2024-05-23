@@ -45,23 +45,6 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
   return res.status(401).send("Unauthorized");
 });
 
-projectAPIRouter.get("/getExisting", async (_req, res) => {
-  try {
-    const projectData = await prisma.project.findMany({
-      select: {
-        oldReferenceId: true,
-      },
-    }) as { oldReferenceId: string | null }[];
-
-    // Filter out null values if you only want non-null oldReferenceIds
-    const oldReferenceIds = projectData.map(project => project.oldReferenceId).filter(id => id !== null);
-
-    res.json(oldReferenceIds);
-  } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-})
-
 projectAPIRouter.get("/projects", async (req, res) => {
   const user = req.user as User;
 
@@ -96,7 +79,7 @@ projectAPIRouter.post("/project/create", async (req, res) => {
 
   // Required fields
   const name = req.body.name;
-  const clientId = req.body.clientId;
+  const clientUEN = req.body.clientUEN;
 
   let employmentBy = req.body.employmentBy;
   let locations = req.body.locations;
@@ -107,7 +90,7 @@ projectAPIRouter.post("/project/create", async (req, res) => {
   const status = req.body.status || "ACTIVE";
   const candidateHolders = req.body.candidateHolders || [];
 
-  if (!name || !clientId || !locations || !startDate || !endDate) {
+  if (!name || !clientUEN || !locations || !startDate || !endDate) {
     return res
       .status(400)
       .send("name, clientId, locations, startDate, and endDate are required.");
@@ -157,7 +140,7 @@ projectAPIRouter.post("/project/create", async (req, res) => {
       data: {
         name: name,
         status: status,
-        clientId: clientId,
+        clientUEN: clientUEN,
         locations: locations,
         startDate: startDate,
         endDate: endDate,

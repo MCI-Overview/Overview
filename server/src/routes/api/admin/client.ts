@@ -6,13 +6,13 @@ const prisma = new PrismaClient();
 
 const clientAPIRoutes: Router = Router();
 
-clientAPIRoutes.get("/client/:clientId"),
+clientAPIRoutes.get("/client/:clientUEN"),
   async (req: Request, res: Response) => {
-    const clientId = req.params.clientId;
+    const clientUEN = req.params.clientId;
 
     const clientData = await prisma.client.findUnique({
       where: {
-        id: clientId,
+        UEN: clientUEN,
       },
     });
 
@@ -24,17 +24,28 @@ clientAPIRoutes.get("/client/:clientId"),
   };
 
 clientAPIRoutes.get("/clients", async (_req, res) => {
-  const clientsData = await prisma.client.findMany({
-    select: {
-      id: true,
-      name: true,
-    },
-  });
+  // const clientsData = await prisma.client.findMany({
+  //   select: {
+  //     id: true,
+  //     name: true,
+  //   },
+  // });
 
+  const clientsData = [
+    {
+      UEN: "123456789A",
+      name: "company A"
+    },
+    {
+      UEN: "987654321B",
+      name: "company B"
+    },
+  ]
   return res.send(clientsData);
 });
 
 clientAPIRoutes.post("/client/create", async (req, res) => {
+  const clientUEN = req.body.uen;
   const clientName = req.body.name;
 
   if (!clientName) {
@@ -44,6 +55,7 @@ clientAPIRoutes.post("/client/create", async (req, res) => {
   try {
     await prisma.client.create({
       data: {
+        UEN: clientUEN,
         name: clientName,
       },
     });
