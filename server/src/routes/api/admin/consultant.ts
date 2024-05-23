@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { PrismaError, User } from "@/types";
-import checkPermission from "../../../utils/check-permission";
+import { checkPermission, Permission } from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
 
@@ -64,9 +64,12 @@ consultantAPIRoutes.post("/consultant/create", async (req, res) => {
       .send("email, name, contact, designation, and department are required.");
   }
 
-  const hasPermission = await checkPermission(user.id, "canCreateConsultant");
+  const hasCreateConsultantPermission = await checkPermission(
+    user.id,
+    Permission.CAN_CREATE_CONSULTANT,
+  );
 
-  if (!hasPermission) {
+  if (!hasCreateConsultantPermission) {
     return res.status(401).send("Unauthorized");
   }
 
@@ -113,7 +116,12 @@ consultantAPIRoutes.post("consultant/delete", async (req, res) => {
     return res.status(400).send("email is required.");
   }
 
-  if (!checkPermission(user.id, "canDeleteConsultant")) {
+  const hasDeleteConsultantPermission = await checkPermission(
+    user.id,
+    Permission.CAN_DELETE_CONSULTANT,
+  );
+
+  if (!hasDeleteConsultantPermission) {
     return res.status(401).send("Unauthorized");
   }
 

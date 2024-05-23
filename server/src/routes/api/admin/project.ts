@@ -1,10 +1,13 @@
 import { Router } from "express";
 import { MCICompany, PrismaClient, Role } from "@prisma/client";
 import { PrismaError, User, Location } from "@/types";
-import checkPermission from "../../../utils/check-permission";
+import {
+  checkPermission,
+  Permission,
+  PermissionErrorMessage,
+} from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
-
 const projectAPIRouter: Router = Router();
 
 projectAPIRouter.get("/project/:projectId", async (req, res) => {
@@ -35,15 +38,18 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
     return res.send(projectData);
   }
 
-  const hasPermission = await checkPermission(user.id, "canReadAllProjects");
+  const hasReadAllProjectPermission = await checkPermission(
+    user.id,
+    Permission.CAN_READ_ALL_PROJECTS,
+  );
 
-  if (hasPermission) {
+  if (hasReadAllProjectPermission) {
     return res.send(projectData);
   }
 
   return res
     .status(401)
-    .send('Unauthorized. User does not have permission "canReadAllProjects".');
+    .send(PermissionErrorMessage.CANNOT_READ_PROJECT_ERROR_MESSAGE);
 });
 
 projectAPIRouter.post("/project", async (req, res) => {
@@ -198,12 +204,12 @@ projectAPIRouter.delete("/project", async (req, res) => {
   const { projectId, hardDelete } = req.body;
 
   if (hardDelete) {
-    const hasPermission = await checkPermission(
+    const hasHardDeletePermission = await checkPermission(
       user.id,
-      "canHardDeleteProjects",
+      Permission.CAN_HARD_DELETE_PROJECTS,
     );
 
-    if (!hasPermission) {
+    if (!hasHardDeletePermission) {
       return res
         .status(401)
         .send(
@@ -324,7 +330,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
 
   const hasCanEditAllProjects = await checkPermission(
     user.id,
-    "canEditAllProjects",
+    Permission.CAN_EDIT_ALL_PROJECTS,
   );
 
   if (hasCanEditAllProjects) {
@@ -419,14 +425,15 @@ projectAPIRouter.get("/projects", async (req, res) => {
 projectAPIRouter.get("/projects/all", async (req, res) => {
   const user = req.user as User;
 
-  const hasPermission = await checkPermission(user.id, "canReadAllProjects");
+  const hasReadAllProjectsPermission = await checkPermission(
+    user.id,
+    Permission.CAN_READ_ALL_PROJECTS,
+  );
 
-  if (!hasPermission) {
+  if (!hasReadAllProjectsPermission) {
     return res
       .status(401)
-      .send(
-        'Unauthorized. User does not have permission "canReadAllProjects".',
-      );
+      .send(PermissionErrorMessage.CANNOT_READ_PROJECT_ERROR_MESSAGE);
   }
 
   const projectsData = await prisma.project.findMany();

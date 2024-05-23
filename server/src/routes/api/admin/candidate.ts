@@ -8,7 +8,7 @@ import {
   User,
 } from "@/types";
 import bcrypt from "bcrypt";
-import checkPermission from "../../../utils/check-permission";
+import { Permission, checkPermission } from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
 
@@ -27,7 +27,7 @@ candidateAPIRoutes.get("/candidate/:nric"),
 
     const hasReadCandidateDetailsPermission = await checkPermission(
       user.id,
-      "canReadCandidateDetails",
+      Permission.CAN_READ_CANDIDATE_DETAILS,
     );
 
     if (!candidateData) {
@@ -187,7 +187,12 @@ candidateAPIRoutes.delete("/candidate", async (req, res) => {
     return res.status(400).send("nric parameter is required.");
   }
 
-  if (!checkPermission(user.id, "canDeleteCandidates")) {
+  const hasDeleteCandidatePermission = await checkPermission(
+    user.id,
+    Permission.CAN_DELETE_CANDIDATES,
+  );
+
+  if (!hasDeleteCandidatePermission) {
     return res
       .status(401)
       .send(
@@ -230,7 +235,12 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     return res.status(400).send("nric parameter is required.");
   }
 
-  if (!checkPermission(user.id, "canUpdateCandidates")) {
+  const hasUpdateCandidatePermission = await checkPermission(
+    user.id,
+    Permission.CAN_UPDATE_CANDIDATES,
+  );
+
+  if (!hasUpdateCandidatePermission) {
     return res
       .status(401)
       .send(
@@ -337,7 +347,7 @@ candidateAPIRoutes.get("/candidates", async (req, res) => {
 
   const hasReadCandidateDetailsPermission = await checkPermission(
     user.id,
-    "canReadCandidateDetails",
+    Permission.CAN_READ_CANDIDATE_DETAILS,
   );
 
   if (hasReadCandidateDetailsPermission) {
