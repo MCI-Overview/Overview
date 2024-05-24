@@ -28,7 +28,7 @@ adminAuthRouter.get(
     failureRedirect: `${SERVER_URL}/admin/login`,
   }),
   (_req, res) => {
-    res.redirect(`${CLIENT_URL}/admin/dashboard`);
+    res.redirect(`${CLIENT_URL}/admin`);
   },
 );
 
