@@ -7,16 +7,6 @@ export type ProjectDetails = {
   endDate: Date | null;
 };
 
-export type CandidateData = {
-  nric: Date | null;
-  name: string;
-  mobileNumber: string;
-  addressLine1: string;
-  addressLine2: string;
-  addressLine3: string;
-  candidateHolder: string;
-};
-
 export type Location = {
   postalCode: string;
   address: string;
@@ -39,6 +29,24 @@ export type User = {
   name: string;
   isUser?: boolean;
   isAdmin?: boolean;
+};
+
+export type Client = {
+  UEN: string;
+  name: string;
+};
+
+export type Project = {
+  id: string;
+  name: string;
+  clientUEN: string;
+  locations: Location[];
+  createdAt: string;
+  startDate: string;
+  endDate: string;
+  employmentBy: MCICompany;
+  status: string;
+  Client: Client;
 };
 
 export enum MCICompany {
