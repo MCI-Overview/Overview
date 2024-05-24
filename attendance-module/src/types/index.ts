@@ -1,15 +1,14 @@
-export type ProjectData = {
-  projectTitle: string;
-  email: string;
-  clientCompanyUEN: string;
-  clientCompanyName: string;
-  employedBy: MCICompany | undefined;
-  startDate: string;
-  endDate: string;
+export type ProjectDetails = {
+  name: string | null;
+  clientUEN: string | null;
+  clientName: string | null;
+  employmentBy: MCICompany | null;
+  startDate: Date | null;
+  endDate: Date | null;
 };
 
 export type CandidateData = {
-  nric: string;
+  nric: Date | null;
   name: string;
   mobileNumber: string;
   addressLine1: string;
@@ -30,12 +29,19 @@ export type ClientCompany = {
   name: string;
 };
 
-export type CandidateHolder = {
+export type Consultant = {
   email: string;
   name: string;
 };
 
+export type User = {
+  id: string;
+  name: string;
+  isUser?: boolean;
+  isAdmin?: boolean;
+};
+
 export enum MCICompany {
   MCI_CAREER_SERVICES = "MCI Career Services Pte Ltd",
-  MCI_OUTSOURCING = "MCI Outsourcing Pte Ltd"
+  MCI_OUTSOURCING = "MCI Outsourcing Pte Ltd",
 }
