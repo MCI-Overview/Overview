@@ -489,7 +489,7 @@ projectAPIRouter.get("/project/:projectId/candidates", async (req, res) => {
 projectAPIRouter.post("/project/:projectId/candidates", async (req, res) => {
   const user = req.user as User;
   const { projectId } = req.params;
-  const { candidates } = req.body;
+  const candidates = req.body;
 
   if (!projectId) {
     return res.status(400).send("projectId is required.");
@@ -519,22 +519,48 @@ projectAPIRouter.post("/project/:projectId/candidates", async (req, res) => {
   }
 
   if (!candidates || !Array.isArray(candidates)) {
-    return res.status(400).send("candidates array is required.");
+    return res.status(400).send("candidates array is required.22");
   }
 
-  const candidateObjects = candidates.map((cdd: any) => {
-    return {
-      nric: cdd.nric,
-      phoneNumber: cdd.phoneNumber,
-      name: cdd.name,
-      hasOnboarded: false,
-      nationality: null,
-      dateOfBirth: cdd.dateOfBirth,
-      bankDetails: undefined,
-      address: undefined,
-      emergencyContact: undefined,
-    };
-  });
+  // verify all candidates have nric, name, phoneNumber, dateOfBirth
+  const invalidCandidates = candidates.filter(
+    (cdd: any) => !cdd.nric || !cdd.name || !cdd.phoneNumber || !cdd.dateOfBirth
+  );
+
+  if (invalidCandidates.length > 0) {
+    return res.status(400).send("Invalid candidates data.");
+  }
+
+  let candidateObjects: {
+    nric: any;
+    phoneNumber: any;
+    name: any;
+    hasOnboarded: boolean;
+    nationality: null;
+    dateOfBirth: Date;
+    bankDetails: undefined;
+    address: undefined;
+    emergencyContact: undefined;
+  }[] = [];
+
+  try {
+    candidateObjects = candidates.map((cdd: any) => {
+      return {
+        nric: cdd.nric,
+        phoneNumber: cdd.phoneNumber,
+        name: cdd.name,
+        hasOnboarded: false,
+        nationality: null,
+        dateOfBirth: new Date(Date.parse(cdd.dateOfBirth)),
+        bankDetails: undefined,
+        address: undefined,
+        emergencyContact: undefined,
+      };
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).send("Invalid dateOfBirth parameter.");
+  }
 
   const existingCandidates = await prisma.candidate.findMany({
     where: {
@@ -568,6 +594,8 @@ projectAPIRouter.post("/project/:projectId/candidates", async (req, res) => {
     });
     return res.send("Candidates added successfully.");
   } catch (error) {
+    const err = error as PrismaError;
+    console.log(err);
     return res.status(500).send("Internal server error.");
   }
 });
