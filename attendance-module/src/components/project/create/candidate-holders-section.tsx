@@ -11,7 +11,7 @@ import {
 } from "@mui/joy";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { Consultant } from "../../../types";
+import { Consultant, User } from "../../../types";
 
 export default function ProjectCandidateHoldersSection({
   candidateHolders,
@@ -23,6 +23,13 @@ export default function ProjectCandidateHoldersSection({
   const [consultantList, setConsultantList] = useState<Consultant[]>([]);
   const [selectedConsultant, setSelectedConsultant] =
     useState<Consultant | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    axios.get("/api").then((response) => {
+      setUser(response.data);
+    });
+  }, []);
 
   useEffect(() => {
     try {
@@ -61,7 +68,7 @@ export default function ProjectCandidateHoldersSection({
           <Autocomplete
             sx={{ flexGrow: 1 }}
             placeholder="Select a consultant"
-            options={consultantList}
+            options={consultantList.filter((c) => c.email !== user?.id)}
             getOptionLabel={(option) => `${option.name} - ${option.email}`}
             onChange={(_e, value) => {
               setSelectedConsultant(value);
