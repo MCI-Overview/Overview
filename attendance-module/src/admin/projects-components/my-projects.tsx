@@ -1,5 +1,5 @@
 // ./login/choose-role.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -11,8 +11,10 @@ import {
   Card,
   CardActions,
   CardOverflow,
-  Chip,
 } from "@mui/joy";
+import axios from "axios";
+import ProjectDisplay from "../../components/project/ui/Project";
+import { Project } from "../../types";
 
 const MyProjects: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +22,14 @@ const MyProjects: React.FC = () => {
   const handleCreateProjectClick = () => {
     navigate("/admin/projects#create");
   };
+
+  const [projectsList, setProjectsList] = React.useState([]);
+
+  useEffect(() => {
+    axios.get("/api/admin/projects").then((response) => {
+      setProjectsList(response.data);
+    });
+  }, []);
 
   return (
     <>
@@ -42,18 +52,18 @@ const MyProjects: React.FC = () => {
           </Box>
           <Divider />
           <Stack spacing={2} sx={{ my: 1 }}>
-            <Card>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Typography level="title-md">Project 1</Typography>
-                <Chip>Company Pte Ltd</Chip>
-              </Box>
-            </Card>
-            <Card>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Typography level="title-md">Project 1</Typography>
-                <Chip>Company Pte Ltd</Chip>
-              </Box>
-            </Card>
+            {projectsList.length === 0 && (
+              <Typography level="body-sm" textAlign="center">
+                No projects found. Create one to get started!
+              </Typography>
+            )}
+            {projectsList.map((project: Project) => (
+              <ProjectDisplay
+                key={project.id}
+                projectName={project.name}
+                companyName={project.Client.name}
+              />
+            ))}
           </Stack>
           <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
             <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
