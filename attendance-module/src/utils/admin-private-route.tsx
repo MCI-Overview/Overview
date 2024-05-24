@@ -18,6 +18,10 @@ function AdminPrivateRoute() {
   }
 
   if (!user || (user && !user.isAdmin)) {
+    if (currentPath === "/admin") {
+      return <Outlet />;
+    }
+
     return <Navigate to="/admin" />;
   }
 

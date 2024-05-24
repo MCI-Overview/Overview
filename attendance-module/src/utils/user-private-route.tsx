@@ -17,7 +17,11 @@ function AuthRedirect() {
     return <div>Loading...</div>;
   }
 
-  if (!user || (user && !user?.isUser)) {
+  if (!user || (user && !user.isUser)) {
+    if (currentPath === "/user") {
+      return <Outlet />;
+    }
+
     return <Navigate to="/user" />;
   }
 
