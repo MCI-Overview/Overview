@@ -1,8 +1,19 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { CandidateHolder, Location, ProjectData } from "../types";
-import ProjectDetailsSection from "../create/project-details-section";
-import CandidateHolderList from "../create/candidate-holder-list";
+import { CandidateHolder, Location, ProjectData } from "../../types";
+import ProjectDetailsSection from "./project-details-section";
+import CandidateHolderList from "./candidate-holder-list";
+
+import {
+  Box,
+  Button,
+  Divider,
+  Stack,
+  Typography,
+  Card,
+  CardActions,
+  CardOverflow
+} from '@mui/joy';
 
 const CreateProjectPage = () => {
   const [projectData, setProjectData] = useState<ProjectData>({
@@ -69,25 +80,55 @@ const CreateProjectPage = () => {
   };
 
   return (
-    <div>
-      <ProjectDetailsSection
-        projectData={projectData}
-        setProjectData={setProjectData}
-        locations={locations}
-        setLocations={setLocations}
-      />
+    <>
+      <Stack
+        spacing={4}
+        sx={{
+          display: 'flex',
+          maxWidth: '800px',
+          mx: 'auto',
+          px: { xs: 2, md: 6 },
+          py: { xs: 2, md: 3 },
+        }}
+      >
+        <Card>
+          <Box sx={{ mb: 1 }}>
+            <Typography level="title-md">Create project</Typography>
+            <Typography level="body-sm">
+              Create a new project and add your candidate holders.
+            </Typography>
+          </Box>
+          <Divider />
+          <Stack spacing={2} sx={{ my: 1 }}>
 
-      <CandidateHolderList
-        candidateHolders={candidateHolders}
-        handleAddCandidateHolder={handleAddCandidateHolder}
-        availableConsultants={allConsultants.filter(
-          (c) => c.email !== projectData?.email // exclude client handler
-        )}
-      />
+            <div>
+              <ProjectDetailsSection
+                projectData={projectData}
+                setProjectData={setProjectData}
+                locations={locations}
+                setLocations={setLocations}
+              />
 
-      <br />
-      <button onClick={handleSaveProject}>Save project</button>
-    </div>
+              <CandidateHolderList
+                candidateHolders={candidateHolders}
+                handleAddCandidateHolder={handleAddCandidateHolder}
+                availableConsultants={allConsultants.filter(
+                  (c) => c.email !== projectData?.email // exclude client handler
+                )}
+              />
+            </div>
+
+          </Stack>
+          <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
+            <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
+              <Button size="sm" variant="solid" onClick={handleSaveProject}>
+                Create
+              </Button>
+            </CardActions>
+          </CardOverflow>
+        </Card>
+      </Stack>
+    </>
   );
 };
 
