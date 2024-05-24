@@ -111,10 +111,9 @@ projectAPIRouter.post("/project", async (req, res) => {
     return res.status(400).send("locations must be an array.");
   }
 
-  let locationsObject: Location[] | undefined;
   if (locations && Array.isArray(locations)) {
     try {
-      locationsObject = locations.map((location: Location) => {
+      locations.map((location: Location) => {
         return {
           postalCode: location.postalCode,
           address: location.address,
@@ -144,7 +143,7 @@ projectAPIRouter.post("/project", async (req, res) => {
     name,
     startDate,
     endDate,
-    locations: JSON.stringify(locationsObject),
+    locations,
     employmentBy: employmentByObject,
   };
 
@@ -323,10 +322,9 @@ projectAPIRouter.patch("/project", async (req, res) => {
     return res.status(400).send("locations must be an array.");
   }
 
-  let locationsObject: Location[] | undefined;
   if (locations && Array.isArray(locations)) {
     try {
-      locationsObject = locations.map((location: Location) => {
+      locations.map((location: Location) => {
         return {
           postalCode: location.postalCode,
           address: location.address,
@@ -352,10 +350,10 @@ projectAPIRouter.patch("/project", async (req, res) => {
     const updateData = {
       ...(name && { name }),
       ...(clientUEN && { clientUEN }),
+      ...(locations && { locations }),
       ...(employmentByObject && {
         employmentBy: { update: employmentByObject },
       }),
-      ...(locationsObject && { locations: { update: locationsObject } }),
       ...(startDateObject && { startDate: startDateObject }),
       ...(endDateObject && { endDate: endDateObject }),
       ...(candidateHolders && {
@@ -384,10 +382,10 @@ projectAPIRouter.patch("/project", async (req, res) => {
   try {
     const updateData = {
       ...(name && { name }),
+      ...(locations && { locations }),
       ...(employmentByObject && {
         employmentBy: { update: employmentByObject },
       }),
-      ...(locationsObject && { locations: { update: locationsObject } }),
       ...(startDateObject && { startDate: startDateObject }),
       ...(endDateObject && { endDate: endDateObject }),
       ...(candidateHolders && {
@@ -495,6 +493,9 @@ projectAPIRouter.get("/projects", async (req, res) => {
           consultantEmail: user.id,
         },
       },
+    },
+    include: {
+      Client: true,
     },
   });
 
