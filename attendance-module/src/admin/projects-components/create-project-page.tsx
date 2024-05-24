@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { Consultant, Location, ProjectDetails } from "../../types";
-import ProjectDetailsSection from "../../components/project/create/details-section";
+import ProjectDetailsSection from "../../components/project/create/DetailsSection";
 
 import {
   Box,
@@ -13,8 +13,8 @@ import {
   CardActions,
   CardOverflow,
 } from "@mui/joy";
-import ProjectLocationsSection from "../../components/project/create/locations-section";
-import ProjectCandidateHoldersSection from "../../components/project/create/candidate-holders-section";
+import ProjectLocationsSection from "../../components/project/create/LocationsSection";
+import ProjectCandidateHoldersSection from "../../components/project/create/CandidateHoldersSection";
 
 const CreateProjectPage = () => {
   const [projectDetails, setProjectDetails] = useState<ProjectDetails>({
