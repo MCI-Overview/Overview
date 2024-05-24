@@ -5,7 +5,7 @@ import {
   Permission,
   checkPermission,
   PERMISSION_ERROR_TEMPLATE,
-} from "@/utils/check-permission";
+} from "../../../utils/check-permission";
 
 const prisma = new PrismaClient();
 const attendanceAPIRouter: Router = Router();
