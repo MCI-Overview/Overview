@@ -132,9 +132,9 @@ projectAPIRouter.post("/project", async (req, res) => {
   }
 
   let employmentByObject: MCICompany | undefined;
-  if (employmentBy === "MCI Career Services Ptd Ltd") {
+  if (employmentBy === "MCI Career Services Pte Ltd") {
     employmentByObject = MCICompany.MCI_CAREER_SERVICES;
-  } else if (employmentBy === "MCI Outsourcing Ptd Ltd") {
+  } else if (employmentBy === "MCI Outsourcing Pt Ltd") {
     employmentByObject = MCICompany.MCI_OUTSOURCING;
   } else {
     return res.status(400).send("Invalid employmentBy parameter.");
@@ -142,7 +142,6 @@ projectAPIRouter.post("/project", async (req, res) => {
 
   const createData = {
     name,
-    clientUEN,
     startDate,
     endDate,
     locations: JSON.stringify(locationsObject),
