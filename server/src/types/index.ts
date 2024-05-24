@@ -3,6 +3,10 @@ export type Profile = {
   id: string;
   displayName: string;
   userPrincipalName: string;
+  _json: {
+    jobTitle: string
+    businessPhones: string[]
+  }
 };
 
 export type User = {
