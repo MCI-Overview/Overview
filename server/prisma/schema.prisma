@@ -15,7 +15,7 @@ model Assign {
   Consultant      Consultant @relation(fields: [consultantEmail], references: [email])
   Project         Project    @relation(fields: [projectId], references: [id])
 
-  @@id([consultantEmail, projectId, candidateNric])
+  @@id([projectId, candidateNric])
 }
 
 model Attendance {
