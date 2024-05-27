@@ -101,7 +101,13 @@ projectShiftAPIRouter.post("/shift", async (req, res) => {
   const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
   const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
 
-  if (!startTimeHour || !startTimeMinute || !endTimeHour || !endTimeMinute) {
+  if (
+    isNaN(startTimeHour) ||
+    isNaN(startTimeMinute) ||
+    isNaN(endTimeHour) ||
+    isNaN(endTimeMinute)
+  ) {
+    console.log(startTimeHour, startTimeMinute, endTimeHour, endTimeMinute);
     return res.status(400).send("Invalid time format.");
   }
 

@@ -41,7 +41,6 @@ export default function CreateShiftModal() {
       .get(`/api/admin/project/${projectId}/shiftGroups`)
       .then((response) => {
         const currentGroups = response.data;
-        // currentGroups.push({ name: `Shift ${currentGroups.length + 1}` });
         setShiftGroups(currentGroups);
       });
   }, [projectId]);
@@ -53,13 +52,15 @@ export default function CreateShiftModal() {
       days: days,
     });
     setIsOpen(false);
-    window.location.reload()
+    window.location.reload();
   }
 
   function handleShiftNameInput(e: SyntheticEvent<Element, Event>) {
     const inputShiftGroupName = (e.target as HTMLSelectElement).value;
 
-    const shiftGroup = shiftGroups.find((group) => group.name === inputShiftGroupName);
+    const shiftGroup = shiftGroups.find(
+      (group) => group.name === inputShiftGroupName,
+    );
     if (shiftGroup) {
       setShiftData({
         ...shiftData,
@@ -74,7 +75,6 @@ export default function CreateShiftModal() {
       });
     }
   }
-
 
   return (
     <>
@@ -93,9 +93,7 @@ export default function CreateShiftModal() {
                       label: shiftGroup.name,
                       value: shiftGroup.id,
                     }))}
-                    onSelect={
-                      handleShiftNameInput
-                    }
+                    onSelect={handleShiftNameInput}
                   />
                 </FormControl>
               </Grid>
