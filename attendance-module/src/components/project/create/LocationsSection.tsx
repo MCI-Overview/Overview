@@ -10,11 +10,13 @@ import {
   List,
   ListItem,
   Grid,
+  IconButton,
+  Stack,
 } from "@mui/joy";
 import { Location } from "../../../types";
 import { useState } from "react";
 import axios from "axios";
-import { InfoOutlined } from "@mui/icons-material";
+import { Delete, InfoOutlined } from "@mui/icons-material";
 import { capitalizeWords } from "../../../utils/capitalize";
 
 export default function ProjectLocationsSection({
@@ -126,11 +128,29 @@ export default function ProjectLocationsSection({
         </AccordionSummary>
         <AccordionDetails>
           <List component="ol" marker="decimal">
-            {locations.map((locations) => (
+            {locations.map((location) => (
               <ListItem>
-                <Typography>
-                  {locations.postalCode} - {capitalizeWords(locations.address)}
-                </Typography>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography>
+                    {location.postalCode} - {capitalizeWords(location.address)}
+                  </Typography>
+                  <IconButton
+                    onClick={() => {
+                      setLocations(
+                        locations.filter(
+                          (currentLocation) =>
+                            currentLocation.postalCode !== location.postalCode,
+                        ),
+                      );
+                    }}
+                  >
+                    <Delete />
+                  </IconButton>
+                </Stack>
               </ListItem>
             ))}
           </List>

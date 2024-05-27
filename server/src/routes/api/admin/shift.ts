@@ -17,12 +17,16 @@ projectShiftAPIRouter.get("/shift/:shiftId", async (req, res) => {
 
   const shiftData = await prisma.shift.findUnique({
     where: {
-      id: shiftId,
+      shiftId,
     },
     include: {
-      Project: {
+      ShiftGroup: {
         include: {
-          Manage: true,
+          Project: {
+            include: {
+              Manage: true,
+            },
+          },
         },
       },
     },
@@ -33,7 +37,7 @@ projectShiftAPIRouter.get("/shift/:shiftId", async (req, res) => {
   }
 
   if (
-    shiftData.Project.Manage.some(
+    shiftData.ShiftGroup.Project.Manage.some(
       (consultant) => consultant.consultantEmail === user.id,
     )
   ) {
@@ -56,15 +60,15 @@ projectShiftAPIRouter.get("/shift/:shiftId", async (req, res) => {
 
 projectShiftAPIRouter.post("/shift", async (req, res) => {
   const user = req.user as User;
-  const { projectId, day, headcount, startTime, endTime, shiftNumber } =
+  const { projectId, days, headcount, startTime, endTime, shiftGroupId } =
     req.body;
 
   if (!projectId) {
     return res.status(400).send("projectId is required.");
   }
 
-  if (!day) {
-    return res.status(400).send("day is required.");
+  if (!days) {
+    return res.status(400).send("days is required.");
   }
 
   if (!headcount) {
@@ -79,9 +83,42 @@ projectShiftAPIRouter.post("/shift", async (req, res) => {
     return res.status(400).send("endTime is required.");
   }
 
-  if (!shiftNumber) {
-    return res.status(400).send("shiftNumber is required.");
+  if (!shiftGroupId) {
+    return res.status(400).send("shiftGroupId is required.");
   }
+
+  if (!Array.isArray(days)) {
+    return res.status(400).send("days must be an array.");
+  }
+
+  const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
+  const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
+
+  if (!startTimeHour || !startTimeMinute || !endTimeHour || !endTimeMinute) {
+    return res.status(400).send("Invalid time format.");
+  }
+
+  if (startTimeHour < 0 || startTimeHour > 23) {
+    return res.status(400).send("Invalid start time hour.");
+  }
+
+  if (startTimeMinute < 0 || startTimeMinute > 59) {
+    return res.status(400).send("Invalid start time minute.");
+  }
+
+  if (endTimeHour < 0 || endTimeHour > 23) {
+    return res.status(400).send("Invalid end time hour.");
+  }
+
+  if (endTimeMinute < 0 || endTimeMinute > 59) {
+    return res.status(400).send("Invalid end time minute.");
+  }
+
+  const startTimeObject = new Date();
+  startTimeObject.setHours(startTimeHour, startTimeMinute, 0, 0);
+
+  const endTimeObject = new Date();
+  endTimeObject.setHours(endTimeHour, endTimeMinute, 0, 0);
 
   const projectData = await prisma.project.findUnique({
     where: {
@@ -89,6 +126,7 @@ projectShiftAPIRouter.post("/shift", async (req, res) => {
     },
     include: {
       Manage: true,
+      ShiftGroup: true,
     },
   });
 
@@ -116,22 +154,21 @@ projectShiftAPIRouter.post("/shift", async (req, res) => {
     }
   }
 
+  const createData = days.map((day) => ({
+    day: day.toUpperCase() as DayOfWeek,
+    headcount: parseInt(headcount),
+    startTime: startTimeObject,
+    endTime: endTimeObject,
+    projectId: projectId,
+    groupId: shiftGroupId,
+  }));
+
   try {
-    await prisma.shift.create({
-      data: {
-        day: day.toUpperCase() as DayOfWeek,
-        headcount: headcount,
-        startTime: startTime,
-        endTime: endTime,
-        shiftNumber: shiftNumber,
-        Project: {
-          connect: {
-            id: projectId,
-          },
-        },
-      },
+    await prisma.shift.createMany({
+      data: createData,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).send("Internal server error.");
   }
 
@@ -148,12 +185,16 @@ projectShiftAPIRouter.delete("/shift", async (req, res) => {
 
   const shiftData = await prisma.shift.findUnique({
     where: {
-      id: shiftId,
+      shiftId,
     },
     include: {
-      Project: {
+      ShiftGroup: {
         include: {
-          Manage: true,
+          Project: {
+            include: {
+              Manage: true,
+            },
+          },
         },
       },
     },
@@ -164,13 +205,13 @@ projectShiftAPIRouter.delete("/shift", async (req, res) => {
   }
 
   if (
-    shiftData.Project.Manage.some(
+    shiftData.ShiftGroup.Project.Manage.some(
       (consultant) => consultant.consultantEmail === user.id,
     )
   ) {
     await prisma.shift.delete({
       where: {
-        id: shiftId,
+        shiftId,
       },
     });
 
@@ -190,7 +231,7 @@ projectShiftAPIRouter.delete("/shift", async (req, res) => {
 
   await prisma.shift.delete({
     where: {
-      id: shiftId,
+      shiftId,
     },
   });
 
@@ -251,12 +292,16 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
 
   const shiftData = await prisma.shift.findUnique({
     where: {
-      id: shiftId,
+      shiftId,
     },
     include: {
-      Project: {
+      ShiftGroup: {
         include: {
-          Manage: true,
+          Project: {
+            include: {
+              Manage: true,
+            },
+          },
         },
       },
     },
@@ -267,7 +312,7 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
   }
 
   if (
-    shiftData.Project.Manage.some(
+    shiftData.ShiftGroup.Project.Manage.some(
       (consultant) =>
         consultant.consultantEmail === user.id &&
         consultant.role === Role.CLIENT_HOLDER,
@@ -275,7 +320,7 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
   ) {
     await prisma.shift.update({
       where: {
-        id: shiftId,
+        shiftId,
       },
       data: updateData,
     });
@@ -296,7 +341,7 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
 
   await prisma.shift.update({
     where: {
-      id: shiftId,
+      shiftId,
     },
     data: updateData,
   });

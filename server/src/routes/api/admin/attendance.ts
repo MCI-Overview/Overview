@@ -57,7 +57,9 @@ attendanceAPIRouter.get(
             lte: endDateObject,
           },
           Shift: {
-            projectId: projectId,
+            ShiftGroup: {
+              projectId: projectId,
+            },
           },
           NOT: {
             status: null,
@@ -66,9 +68,13 @@ attendanceAPIRouter.get(
         include: {
           Shift: {
             include: {
-              Project: {
+              ShiftGroup: {
                 include: {
-                  Manage: true,
+                  Project: {
+                    include: {
+                      Manage: true,
+                    },
+                  },
                 },
               },
             },
@@ -78,7 +84,7 @@ attendanceAPIRouter.get(
 
       if (
         attendanceData.some((shift) =>
-          shift.Shift.Project.Manage.some(
+          shift.Shift.ShiftGroup.Project.Manage.some(
             (consultant) => consultant.consultantEmail === user.id,
           ),
         )
@@ -121,9 +127,13 @@ attendanceAPIRouter.get(
           include: {
             Shift: {
               include: {
-                Project: {
+                ShiftGroup: {
                   include: {
-                    Manage: true,
+                    Project: {
+                      include: {
+                        Manage: true,
+                      },
+                    },
                   },
                 },
               },
@@ -142,10 +152,12 @@ attendanceAPIRouter.get(
             lte: endDateObject,
           },
           Shift: {
-            Project: {
-              Manage: {
-                some: {
-                  consultantEmail: user.id,
+            ShiftGroup: {
+              Project: {
+                Manage: {
+                  some: {
+                    consultantEmail: user.id,
+                  },
                 },
               },
             },
@@ -157,9 +169,13 @@ attendanceAPIRouter.get(
         include: {
           Shift: {
             include: {
-              Project: {
+              ShiftGroup: {
                 include: {
-                  Manage: true,
+                  Project: {
+                    include: {
+                      Manage: true,
+                    },
+                  },
                 },
               },
             },
@@ -178,7 +194,9 @@ attendanceAPIRouter.get(
             lte: endDateObject,
           },
           Shift: {
-            projectId: projectId,
+            ShiftGroup: {
+              projectId: projectId,
+            },
           },
           NOT: {
             status: null,
@@ -187,9 +205,13 @@ attendanceAPIRouter.get(
         include: {
           Shift: {
             include: {
-              Project: {
+              ShiftGroup: {
                 include: {
-                  Manage: true,
+                  Project: {
+                    include: {
+                      Manage: true,
+                    },
+                  },
                 },
               },
             },
@@ -199,7 +221,7 @@ attendanceAPIRouter.get(
 
       if (
         attendanceData.some((shift) =>
-          shift.Shift.Project.Manage.some(
+          shift.Shift.ShiftGroup.Project.Manage.some(
             (consultant) => consultant.consultantEmail === user.id,
           ),
         )

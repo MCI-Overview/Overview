@@ -1,4 +1,5 @@
-import { Card, Box, Typography, Chip, Link } from "@mui/joy";
+import { Card, Box, Typography, Chip } from "@mui/joy";
+import { useNavigate } from "react-router-dom";
 
 export function ProjectDisplay({
   projectName,
@@ -9,20 +10,23 @@ export function ProjectDisplay({
   companyName: string;
   projectId: string;
 }) {
+  const navigate = useNavigate();
+
   return (
-    <Link href={`/admin/project/${projectId}`} underline="none">
-      <Card sx={{ flexGrow: 1 }}>
-        <Box
-          sx={{
-            display: "flex",
-          }}
-          justifyContent="space-between"
-        >
-          <Typography level="title-md">{projectName}</Typography>
-          <Chip>{companyName}</Chip>
-        </Box>
-      </Card>
-    </Link>
+    <Card
+      sx={{ flexGrow: 1, cursor: "pointer" }}
+      onClick={() => navigate(`/admin/project/${projectId}`)}
+    >
+      <Box
+        sx={{
+          display: "flex",
+        }}
+        justifyContent="space-between"
+      >
+        <Typography level="title-md">{projectName}</Typography>
+        <Chip>{companyName}</Chip>
+      </Box>
+    </Card>
   );
 }
 

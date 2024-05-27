@@ -60,6 +60,7 @@ function App() {
           <Routes>
             {/* User routes */}
             <Route element={<UserPrivateRoutes />}>
+              <Route path="/" element={<LoginUser />} />
               <Route path="/user" element={<LoginUser />} />
               <Route path="/user/home" element={<MyProfile />} />
             </Route>
