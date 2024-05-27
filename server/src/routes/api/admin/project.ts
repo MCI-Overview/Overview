@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { Candidate, MCICompany, PrismaClient, Role } from "@prisma/client";
+import {
+  Candidate,
+  MCICompany,
+  PrismaClient,
+  Role,
+  ShiftStatus,
+} from "@prisma/client";
 import { PrismaError, User, Location } from "@/types";
 import {
   checkPermission,
@@ -20,7 +26,7 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
     },
     include: {
       Manage: true,
-      Shift: true,
+      ShiftGroup: true,
       Assign: true,
       Client: true,
     },
@@ -32,7 +38,7 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
 
   if (
     projectData.Manage.some(
-      (consultant) => consultant.consultantEmail === user.id
+      (consultant) => consultant.consultantEmail === user.id,
     )
   ) {
     return res.send(projectData);
@@ -40,7 +46,7 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
 
   const hasReadAllProjectPermission = await checkPermission(
     user.id,
-    Permission.CAN_READ_ALL_PROJECTS
+    Permission.CAN_READ_ALL_PROJECTS,
   );
 
   if (hasReadAllProjectPermission) {
@@ -204,7 +210,7 @@ projectAPIRouter.delete("/project", async (req, res) => {
   if (hardDelete) {
     const hasHardDeletePermission = await checkPermission(
       user.id,
-      Permission.CAN_HARD_DELETE_PROJECTS
+      Permission.CAN_HARD_DELETE_PROJECTS,
     );
 
     if (!hasHardDeletePermission) {
@@ -283,7 +289,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
     return res
       .status(400)
       .send(
-        "At least one field (name, clientUEN, employmentBy, locations, startDate, endDate, candidateHolders) is required to update."
+        "At least one field (name, clientUEN, employmentBy, locations, startDate, endDate, candidateHolders) is required to update.",
       );
   }
 
@@ -343,7 +349,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
 
   const hasCanEditAllProjects = await checkPermission(
     user.id,
-    Permission.CAN_EDIT_ALL_PROJECTS
+    Permission.CAN_EDIT_ALL_PROJECTS,
   );
 
   if (hasCanEditAllProjects) {
@@ -446,7 +452,7 @@ projectAPIRouter.get("/project/:projectId/candidates", async (req, res) => {
 
   const hasReadCandidateDetailsPermission = await checkPermission(
     user.id,
-    Permission.CAN_READ_CANDIDATE_DETAILS
+    Permission.CAN_READ_CANDIDATE_DETAILS,
   );
 
   if (!hasReadCandidateDetailsPermission) {
@@ -463,7 +469,7 @@ projectAPIRouter.get("/project/:projectId/candidates", async (req, res) => {
 
   if (
     projectData.Manage.some(
-      (consultant) => consultant.consultantEmail === user.id
+      (consultant) => consultant.consultantEmail === user.id,
     )
   ) {
     return res.send(candidateData);
@@ -471,7 +477,7 @@ projectAPIRouter.get("/project/:projectId/candidates", async (req, res) => {
 
   const hasReadAllProjectPermission = await checkPermission(
     user.id,
-    Permission.CAN_READ_ALL_PROJECTS
+    Permission.CAN_READ_ALL_PROJECTS,
   );
 
   if (hasReadAllProjectPermission) {
@@ -521,7 +527,8 @@ projectAPIRouter.post("/project/:projectId/candidates", async (req, res) => {
 
   // verify all candidates have nric, name, phoneNumber, dateOfBirth
   const invalidCandidates = candidates.filter(
-    (cdd: any) => !cdd.nric || !cdd.name || !cdd.phoneNumber || !cdd.dateOfBirth
+    (cdd: any) =>
+      !cdd.nric || !cdd.name || !cdd.phoneNumber || !cdd.dateOfBirth,
   );
 
   if (invalidCandidates.length > 0) {
@@ -568,7 +575,7 @@ projectAPIRouter.post("/project/:projectId/candidates", async (req, res) => {
   });
 
   const newCandidates = candidateObjects.filter(
-    (cdd) => !existingCandidates.some((existCdd) => existCdd.nric === cdd.nric)
+    (cdd) => !existingCandidates.some((existCdd) => existCdd.nric === cdd.nric),
   );
 
   try {
@@ -621,7 +628,7 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
 
   const hasReadAllProjectsPermission = await checkPermission(
     user.id,
-    Permission.CAN_READ_ALL_PROJECTS
+    Permission.CAN_READ_ALL_PROJECTS,
   );
 
   if (!hasReadAllProjectsPermission) {

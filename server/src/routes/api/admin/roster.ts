@@ -71,15 +71,21 @@ rosterAPIRouter.get(
             lte: endDateObject,
           },
           Shift: {
-            projectId: projectId,
+            ShiftGroup: {
+              projectId: projectId,
+            },
           },
         },
         include: {
           Shift: {
             include: {
-              Project: {
+              ShiftGroup: {
                 include: {
-                  Manage: true,
+                  Project: {
+                    include: {
+                      Manage: true,
+                    },
+                  },
                 },
               },
             },
@@ -89,7 +95,7 @@ rosterAPIRouter.get(
 
       if (
         attendanceData.some((shift) =>
-          shift.Shift.Project.Manage.some(
+          shift.Shift.ShiftGroup.Project.Manage.some(
             (consultant) => consultant.consultantEmail === user.id,
           ),
         )
@@ -130,9 +136,13 @@ rosterAPIRouter.get(
           include: {
             Shift: {
               include: {
-                Project: {
+                ShiftGroup: {
                   include: {
-                    Manage: true,
+                    Project: {
+                      include: {
+                        Manage: true,
+                      },
+                    },
                   },
                 },
               },
@@ -152,10 +162,12 @@ rosterAPIRouter.get(
             lte: endDateObject,
           },
           Shift: {
-            Project: {
-              Manage: {
-                some: {
-                  consultantEmail: user.id,
+            ShiftGroup: {
+              Project: {
+                Manage: {
+                  some: {
+                    consultantEmail: user.id,
+                  },
                 },
               },
             },
@@ -164,9 +176,13 @@ rosterAPIRouter.get(
         include: {
           Shift: {
             include: {
-              Project: {
+              ShiftGroup: {
                 include: {
-                  Manage: true,
+                  Project: {
+                    include: {
+                      Manage: true,
+                    },
+                  },
                 },
               },
             },
@@ -186,15 +202,21 @@ rosterAPIRouter.get(
             lte: endDateObject,
           },
           Shift: {
-            projectId: projectId,
+            ShiftGroup: {
+              projectId: projectId,
+            },
           },
         },
         include: {
           Shift: {
             include: {
-              Project: {
+              ShiftGroup: {
                 include: {
-                  Manage: true,
+                  Project: {
+                    include: {
+                      Manage: true,
+                    },
+                  },
                 },
               },
             },
@@ -204,7 +226,7 @@ rosterAPIRouter.get(
 
       if (
         attendanceData.some((shift) =>
-          shift.Shift.Project.Manage.some(
+          shift.Shift.ShiftGroup.Project.Manage.some(
             (consultant) => consultant.consultantEmail === user.id,
           ),
         )
@@ -281,12 +303,16 @@ rosterAPIRouter.post("/roster", async (req: Request, res: Response) => {
 
   const shiftData = await prisma.shift.findUnique({
     where: {
-      id: shiftId,
+      shiftId,
     },
     include: {
-      Project: {
+      ShiftGroup: {
         include: {
-          Manage: true,
+          Project: {
+            include: {
+              Manage: true,
+            },
+          },
         },
       },
     },
@@ -297,7 +323,7 @@ rosterAPIRouter.post("/roster", async (req: Request, res: Response) => {
   }
 
   if (
-    !shiftData.Project.Manage.some(
+    !shiftData.ShiftGroup.Project.Manage.some(
       (consultant) =>
         consultant.consultantEmail === user.id &&
         consultant.role === Role.CLIENT_HOLDER,
