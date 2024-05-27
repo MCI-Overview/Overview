@@ -1,73 +1,73 @@
-import { useNavigate } from 'react-router-dom';
-import GlobalStyles from '@mui/joy/GlobalStyles';
-import Box from '@mui/joy/Box';
-import Divider from '@mui/joy/Divider';
-import IconButton from '@mui/joy/IconButton';
-import List from '@mui/joy/List';
-import ListItem from '@mui/joy/ListItem';
-import ListItemButton, { listItemButtonClasses } from '@mui/joy/ListItemButton';
-import ListItemContent from '@mui/joy/ListItemContent';
-import Typography from '@mui/joy/Typography';
-import Sheet from '@mui/joy/Sheet';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
-import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
-import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import BrightnessAutoRoundedIcon from '@mui/icons-material/BrightnessAutoRounded';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import GroupIcon from '@mui/icons-material/Group';
+import { useNavigate } from "react-router-dom";
+import GlobalStyles from "@mui/joy/GlobalStyles";
+import Box from "@mui/joy/Box";
+import Divider from "@mui/joy/Divider";
+import IconButton from "@mui/joy/IconButton";
+import List from "@mui/joy/List";
+import ListItem from "@mui/joy/ListItem";
+import ListItemButton, { listItemButtonClasses } from "@mui/joy/ListItemButton";
+import ListItemContent from "@mui/joy/ListItemContent";
+import Typography from "@mui/joy/Typography";
+import Sheet from "@mui/joy/Sheet";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
+import SupportRoundedIcon from "@mui/icons-material/SupportRounded";
+import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import BrightnessAutoRoundedIcon from "@mui/icons-material/BrightnessAutoRounded";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import GroupIcon from "@mui/icons-material/Group";
 
-import ColorSchemeToggle from './ColorSchemeToggle';
-import { closeSidebar } from '../utils/toggle-sidebar';
+import ColorSchemeToggle from "./ColorSchemeToggle";
+import { closeSidebar } from "../utils/toggle-sidebar";
 
 export default function Sidebar() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleHomeClick = () => {
-      navigate('/admin/home');
-    };
+  const handleHomeClick = () => {
+    navigate("/admin/home");
+  };
 
-    const handleDashboardClick = () => {
-        navigate('/admin/dashboard');
-    };
+  const handleDashboardClick = () => {
+    navigate("/admin/dashboard");
+  };
 
-    const handleCandidatesClick = () => {
-        navigate('/admin/candidates');
-    };
+  const handleCandidatesClick = () => {
+    navigate("/admin/candidates");
+  };
 
-    const handleProjectsClick = () => {
-        navigate('/admin/projects');
-    };
+  const handleProjectsClick = () => {
+    navigate("/admin/projects");
+  };
   return (
     <Sheet
       className="Sidebar"
       sx={{
-        position: { xs: 'fixed', md: 'sticky' },
+        position: { xs: "fixed", md: "sticky" },
         transform: {
-          xs: 'translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1)))',
-          md: 'none',
+          xs: "translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1)))",
+          md: "none",
         },
-        transition: 'transform 0.4s, width 0.4s',
-        zIndex: 10000,
-        height: '100dvh',
-        width: 'var(--Sidebar-width)',
+        transition: "transform 0.4s, width 0.4s",
+        zIndex: 0,
+        height: "100dvh",
+        width: "var(--Sidebar-width)",
         top: 0,
         p: 2,
         flexShrink: 0,
-        display: 'flex',
-        flexDirection: 'column',
+        display: "flex",
+        flexDirection: "column",
         gap: 2,
-        borderRight: '1px solid',
-        borderColor: 'divider',
+        borderRight: "1px solid",
+        borderColor: "divider",
       }}
     >
       <GlobalStyles
         styles={(theme) => ({
-          ':root': {
-            '--Sidebar-width': '220px',
-            [theme.breakpoints.up('lg')]: {
-              '--Sidebar-width': '240px',
+          ":root": {
+            "--Sidebar-width": "220px",
+            [theme.breakpoints.up("lg")]: {
+              "--Sidebar-width": "240px",
             },
           },
         })}
@@ -75,37 +75,37 @@ export default function Sidebar() {
       <Box
         className="Sidebar-overlay"
         sx={{
-          position: 'fixed',
+          position: "fixed",
           zIndex: 9998,
           top: 0,
           left: 0,
-          width: '100vw',
-          height: '100vh',
-          opacity: 'var(--SideNavigation-slideIn)',
-          backgroundColor: 'var(--joy-palette-background-backdrop)',
-          transition: 'opacity 0.4s',
+          width: "100vw",
+          height: "100vh",
+          opacity: "var(--SideNavigation-slideIn)",
+          backgroundColor: "var(--joy-palette-background-backdrop)",
+          transition: "opacity 0.4s",
           transform: {
-            xs: 'translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1) + var(--SideNavigation-slideIn, 0) * var(--Sidebar-width, 0px)))',
-            lg: 'translateX(-100%)',
+            xs: "translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1) + var(--SideNavigation-slideIn, 0) * var(--Sidebar-width, 0px)))",
+            lg: "translateX(-100%)",
           },
         }}
         onClick={() => closeSidebar()}
       />
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
         <IconButton variant="soft" color="primary" size="sm">
           <BrightnessAutoRoundedIcon />
         </IconButton>
         <Typography level="title-lg">Overview</Typography>
-        <ColorSchemeToggle sx={{ ml: 'auto' }} />
+        <ColorSchemeToggle sx={{ ml: "auto" }} />
       </Box>
 
       <Box
         sx={{
           minHeight: 0,
-          overflow: 'hidden auto',
+          overflow: "hidden auto",
           flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
+          display: "flex",
+          flexDirection: "column",
           [`& .${listItemButtonClasses.root}`]: {
             gap: 1.5,
           },
@@ -115,12 +115,12 @@ export default function Sidebar() {
           size="sm"
           sx={{
             gap: 1,
-            '--List-nestedInsetStart': '30px',
-            '--ListItem-radius': (theme) => theme.vars.radius.sm,
+            "--List-nestedInsetStart": "30px",
+            "--ListItem-radius": (theme) => theme.vars.radius.sm,
           }}
         >
           <ListItem>
-            <ListItemButton onClick={handleHomeClick}>    
+            <ListItemButton onClick={handleHomeClick}>
               <HomeRoundedIcon />
               <ListItemContent>
                 <Typography level="title-sm">Home</Typography>
@@ -231,10 +231,10 @@ export default function Sidebar() {
         <List
           size="sm"
           sx={{
-            mt: 'auto',
+            mt: "auto",
             flexGrow: 0,
-            '--ListItem-radius': (theme) => theme.vars.radius.sm,
-            '--List-gap': '8px',
+            "--ListItem-radius": (theme) => theme.vars.radius.sm,
+            "--List-gap": "8px",
             mb: 2,
           }}
         >
@@ -251,10 +251,9 @@ export default function Sidebar() {
             </ListItemButton>
           </ListItem>
         </List>
-
       </Box>
       <Divider />
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Typography level="title-sm">Username</Typography>
           <Typography level="body-xs">user@mail.com</Typography>

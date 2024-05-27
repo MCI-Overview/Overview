@@ -15,7 +15,7 @@ model Assign {
   Consultant      Consultant @relation(fields: [consultantEmail], references: [email])
   Project         Project    @relation(fields: [projectId], references: [id])
 
-  @@id([consultantEmail, projectId, candidateNric])
+  @@id([projectId, candidateNric])
 }
 
 model Attendance {
@@ -58,7 +58,7 @@ model Consultant {
   status       EmploymentStatus @default(ACTIVE)
   designation  String
   registration String?          @unique
-  department   String
+  department   String?
   permissions  Json             @default("{}")
   Assign       Assign[]
   Manage       Manage[]
