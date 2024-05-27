@@ -8,7 +8,7 @@ import {
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
 import MyProjects from "./projects-components/my-projects";
-import CreateProjectPage from "./projects-components/create-project-page";
+import CreateProjectPage from "../components/project/create/Page";
 
 const tabs: Tab[] = [
   {
