@@ -27,7 +27,7 @@ model Attendance {
   status        AttendanceStatus?
   shiftDate     DateTime
   Candidate     Candidate         @relation(fields: [candidateNric], references: [nric])
-  Shift         Shift             @relation(fields: [shiftId], references: [id])
+  Shift         Shift             @relation(fields: [shiftId], references: [shiftId])
 }
 
 model Candidate {
@@ -87,7 +87,7 @@ model Project {
   Assign       Assign[]
   Manage       Manage[]
   Client       Client        @relation(fields: [clientUEN], references: [UEN])
-  Shift        Shift[]
+  ShiftGroup   ShiftGroup[]
 }
 
 model Session {
@@ -99,17 +99,25 @@ model Session {
 }
 
 model Shift {
-  id          String       @id @default(cuid())
-  headcount   Int
-  day         DayOfWeek
-  endTime     DateTime
-  projectId   String
-  shiftNumber Int
-  startTime   DateTime
-  Attendance  Attendance[]
-  Project     Project      @relation(fields: [projectId], references: [id])
+  shiftId    String       @id @default(cuid())
+  groupId    String
+  day        DayOfWeek
+  headcount  Int
+  startTime  DateTime     @db.Time()
+  endTime    DateTime     @db.Time()
+  Attendance Attendance[]
+  ShiftGroup ShiftGroup   @relation(fields: [groupId], references: [id])
 
-  @@unique([projectId, day, shiftNumber, startTime, endTime])
+  @@unique([groupId, day, startTime, endTime])
+}
+
+model ShiftGroup {
+  id          String      @id @default(cuid())
+  projectId   String
+  name        String
+  shiftStatus ShiftStatus @default(ACTIVE)
+  Shift       Shift[]
+  Project     Project     @relation(fields: [projectId], references: [id])
 }
 
 model User {
@@ -139,6 +147,11 @@ enum DayOfWeek {
 enum EmploymentStatus {
   ACTIVE
   TERMINATED
+}
+
+enum ShiftStatus {
+  ACTIVE
+  ARCHIVED
 }
 
 enum MCICompany {
