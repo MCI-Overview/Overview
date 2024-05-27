@@ -62,6 +62,7 @@ const MyProjects: React.FC = () => {
                 key={project.id}
                 projectName={project.name}
                 companyName={project.Client.name}
+                projectId={project.id}
               />
             ))}
           </Stack>

@@ -20,6 +20,7 @@ import AdminHome from "./admin/Home";
 import AdminCandidates from "./admin/Candidates";
 import axios from "axios";
 import { RemoveTrailingSlash } from "./utils/remove-trailing-slash";
+import Project from "./admin/Project";
 
 function App() {
   const location = useLocation();
@@ -67,6 +68,7 @@ function App() {
             <Route element={<AdminPrivateRoutes />}>
               <Route path="/admin" element={<LoginAdmin />} />
               <Route path="/admin/home" element={<AdminHome />} />
+              <Route path="/admin/project/:projectId?" element={<Project />} />
               <Route path="/admin/projects" element={<AdminProjects />} />
               <Route path="/admin/candidates" element={<AdminCandidates />} />
             </Route>

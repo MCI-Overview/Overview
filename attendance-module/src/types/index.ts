@@ -36,6 +36,12 @@ export type Client = {
   name: string;
 };
 
+export type Manage = {
+  role: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
+  consultantEmail: string;
+  projectId: string;
+};
+
 export type Project = {
   id: string;
   name: string;
@@ -47,6 +53,7 @@ export type Project = {
   employmentBy: MCICompany;
   status: string;
   Client: Client;
+  Manage: Manage[];
 };
 
 export enum MCICompany {
