@@ -8,10 +8,13 @@ import {
   ListItem,
   List,
   Grid,
+  Stack,
+  IconButton,
 } from "@mui/joy";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { Consultant, User } from "../../../types";
+import { Delete } from "@mui/icons-material";
 
 export default function ProjectCandidateHoldersSection({
   candidateHolders,
@@ -101,9 +104,27 @@ export default function ProjectCandidateHoldersSection({
           <List component="ol" marker="decimal">
             {candidateHolders.map((holder) => (
               <ListItem>
-                <Typography>
-                  {holder.name} - {holder.email}
-                </Typography>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography>
+                    {holder.name} - {holder.email}
+                  </Typography>
+                  <IconButton
+                    onClick={() => {
+                      setCandidateHolders(
+                        candidateHolders.filter(
+                          (currentHolder) =>
+                            currentHolder.email !== holder.email,
+                        ),
+                      );
+                    }}
+                  >
+                    <Delete />
+                  </IconButton>
+                </Stack>
               </ListItem>
             ))}
           </List>
