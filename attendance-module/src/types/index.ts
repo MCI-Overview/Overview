@@ -56,6 +56,24 @@ export type Project = {
   Manage: Manage[];
 };
 
+export type Shift = {
+  shiftId: string;
+  groupId: string;
+  day: string;
+  headcount: number;
+  startTime: string;
+  endTime: string;
+};
+
+export type ShiftGroup = {
+  id: string;
+  projectId: string;
+  name: string;
+  shiftStatus: string;
+  Shift: Shift[];
+};
+
+
 export enum MCICompany {
   MCI_CAREER_SERVICES = "MCI Career Services Pte Ltd",
   MCI_OUTSOURCING = "MCI Outsourcing Pte Ltd",

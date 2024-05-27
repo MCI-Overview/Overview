@@ -604,6 +604,110 @@ projectAPIRouter.post("/project/:projectId/candidates", async (req, res) => {
   }
 });
 
+projectAPIRouter.get("/project/:projectId/shifts", async (req, res) => {
+  const user = req.user as User;
+  const { projectId } = req.params;
+
+  if (!projectId) {
+    return res.status(400).send("projectId is required.");
+  }
+
+  const projectData = await prisma.project.findUnique({
+    where: {
+      id: projectId,
+    },
+    include: {
+      Manage: true,
+      ShiftGroup: {
+        include: {
+          Shift: true,
+        },
+      },
+    },
+  });
+
+  if (!projectData) {
+    return res.status(404).send("Project does not exist.");
+  }
+
+  const responseData = projectData.ShiftGroup.filter(
+    (shift) => shift.shiftStatus === ShiftStatus.ACTIVE,
+  ).map((shiftGroup) => shiftGroup.Shift);
+
+  if (
+    projectData.Manage.some(
+      (consultant) => consultant.consultantEmail === user.id,
+    )
+  ) {
+    return res.send(responseData);
+  }
+
+  const hasReadAllProjectPermission = await checkPermission(
+    user.id,
+    Permission.CAN_READ_ALL_PROJECTS,
+  );
+
+  if (hasReadAllProjectPermission) {
+    return res.send(responseData);
+  }
+
+  return res
+    .status(401)
+    .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
+});
+
+projectAPIRouter.get("/project/:projectId/shiftGroups", async (req, res) => {
+  const user = req.user as User;
+  const { projectId } = req.params;
+
+  if (!projectId) {
+    return res.status(400).send("projectId is required.");
+  }
+
+  const projectData = await prisma.project.findUnique({
+    where: {
+      id: projectId,
+    },
+    include: {
+      Manage: true,
+      ShiftGroup: {
+        include: {
+          Shift: true,
+        },
+      },
+    },
+  });
+
+  if (!projectData) {
+    return res.status(404).send("Project does not exist.");
+  }
+
+  const responseData = projectData.ShiftGroup.filter(
+    (shiftGroup) => shiftGroup.shiftStatus === ShiftStatus.ACTIVE,
+  );
+
+  if (
+    projectData.Manage.some(
+      (consultant) => consultant.consultantEmail === user.id,
+    )
+  ) {
+    return res.send(responseData);
+  }
+
+  const hasReadAllProjectPermission = await checkPermission(
+    user.id,
+    Permission.CAN_READ_ALL_PROJECTS,
+  );
+
+  if (hasReadAllProjectPermission) {
+    return res.send(responseData);
+  }
+
+  return res
+    .status(401)
+    .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
+});
+
 projectAPIRouter.get("/projects", async (req, res) => {
   const user = req.user as User;
 

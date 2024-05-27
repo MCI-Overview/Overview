@@ -14,6 +14,7 @@ import {
 } from "../components/project/ui/AdminBreadcrumb";
 import { Project } from "../types";
 import axios from "axios";
+import RosterPage from "../components/project/manage/Roster";
 
 const tabs: Tab[] = [
   {
@@ -30,7 +31,7 @@ const tabs: Tab[] = [
   },
   {
     label: "Roster",
-    content: <div>Roster</div>,
+    content: <RosterPage />,
   },
 ];
 
