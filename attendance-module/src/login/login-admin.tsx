@@ -6,7 +6,7 @@ import {
   Stack,
   CardOverflow,
   CardActions,
-  Card
+  Card,
 } from "@mui/joy";
 
 const serverLink = "http://localhost:3000";
@@ -17,19 +17,19 @@ const AdminLogin: React.FC = () => {
       <Stack
         spacing={4}
         sx={{
-          display: 'flex',
-          maxWidth: '800px',
-          mx: 'auto',
+          display: "flex",
+          maxWidth: "800px",
+          mx: "auto",
           px: { xs: 2, md: 6 },
           py: { xs: 2, md: 3 },
         }}
       >
         <Card>
-
           <Box sx={{ mb: 1 }}>
             <Typography level="title-md">Administrator Login</Typography>
             <Typography level="body-sm">
-              Only administrators will be allowed to login using their MCI Microsoft email.
+              Only administrators will be allowed to login using their MCI
+              Microsoft email.
             </Typography>
           </Box>
 
@@ -41,17 +41,14 @@ const AdminLogin: React.FC = () => {
             </a>
           </Stack>
 
-          <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
+          <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
             <CardActions sx={{ pt: 2 }}>
               <Typography level="body-sm">
                 Not an Administrator?&nbsp;
-                <a href="/">
-                  Login as user instead.
-                </a>
+                <a href="/">Login as user instead.</a>
               </Typography>
             </CardActions>
           </CardOverflow>
-
         </Card>
       </Stack>
     </>

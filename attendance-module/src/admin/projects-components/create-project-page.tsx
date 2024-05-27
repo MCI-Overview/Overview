@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
-import { CandidateHolder, Location, ProjectData } from "../../types";
-import ProjectDetailsSection from "./project-details-section";
-import CandidateHolderList from "./candidate-holder-list";
+import { Consultant, Location, ProjectDetails } from "../../types";
+import ProjectDetailsSection from "../../components/project/create/DetailsSection";
 
 import {
   Box,
@@ -12,66 +11,35 @@ import {
   Typography,
   Card,
   CardActions,
-  CardOverflow
-} from '@mui/joy';
+  CardOverflow,
+} from "@mui/joy";
+import ProjectLocationsSection from "../../components/project/create/LocationsSection";
+import ProjectCandidateHoldersSection from "../../components/project/create/CandidateHoldersSection";
 
 const CreateProjectPage = () => {
-  const [projectData, setProjectData] = useState<ProjectData>({
-    projectTitle: "",
-    email: "",
-    clientCompanyUEN: "",
-    clientCompanyName: "",
-    employedBy: undefined,
-    startDate: "",
-    endDate: "",
+  const [projectDetails, setProjectDetails] = useState<ProjectDetails>({
+    name: null,
+    clientUEN: null,
+    clientName: null,
+    employmentBy: null,
+    startDate: null,
+    endDate: null,
   });
-
   const [locations, setLocations] = useState<Location[]>([]);
-
-  const [allConsultants, setAllConsultants] = useState<CandidateHolder[]>([]);
-  useEffect(() => {
-    const fetchConsultants = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/admin/consultants",
-          { withCredentials: true }
-        );
-        setAllConsultants(response.data);
-      } catch (error) {
-        console.error("Error while fetching consultants", error);
-      }
-    };
-
-    fetchConsultants();
-  }, []);
-
-  const [candidateHolders, setCandidateHolders] = useState<CandidateHolder[]>(
-    []
-  );
-  const handleAddCandidateHolder = (email: string) => {
-    const newHolder = allConsultants.find((c) => c.email === email);
-    setCandidateHolders([...candidateHolders, newHolder!]);
-  };
+  const [candidateHolders, setCandidateHolders] = useState<Consultant[]>([]);
 
   const handleSaveProject = async () => {
     const body = {
-      name: projectData.projectTitle,
-      clientUEN: projectData.clientCompanyUEN,
-      clientName: projectData.clientCompanyName,
-      employmentBy: projectData.employedBy,
-      locations: JSON.stringify(locations),
-      startDate: projectData.startDate,
-      endDate: projectData.endDate,
+      ...projectDetails,
+      locations,
       candidateHolders: candidateHolders.map((holder) => holder.email),
     };
 
-    console.log("Saving project with body", body);
+    console.log(body);
 
     try {
-      await axios.post("http://localhost:3000/api/admin/project/create",
-        body,
-        { withCredentials: true, }
-      );
+      const res = await axios.post("/api/admin/project", body);
+      console.log(res);
       console.log("Project saved successfully");
     } catch (error) {
       // TODO: Handle failed save
@@ -84,9 +52,9 @@ const CreateProjectPage = () => {
       <Stack
         spacing={4}
         sx={{
-          display: 'flex',
-          maxWidth: '800px',
-          mx: 'auto',
+          display: "flex",
+          maxWidth: "800px",
+          mx: "auto",
           px: { xs: 2, md: 6 },
           py: { xs: 2, md: 3 },
         }}
@@ -99,28 +67,29 @@ const CreateProjectPage = () => {
             </Typography>
           </Box>
           <Divider />
-          <Stack spacing={2} sx={{ my: 1 }}>
-
-            <div>
-              <ProjectDetailsSection
-                projectData={projectData}
-                setProjectData={setProjectData}
-                locations={locations}
-                setLocations={setLocations}
-              />
-
-              <CandidateHolderList
-                candidateHolders={candidateHolders}
-                handleAddCandidateHolder={handleAddCandidateHolder}
-                availableConsultants={allConsultants.filter(
-                  (c) => c.email !== projectData?.email // exclude client handler
-                )}
-              />
-            </div>
-
+          <Stack
+            spacing={2}
+            sx={{
+              py: { xs: 2, md: 3 },
+            }}
+          >
+            <ProjectDetailsSection
+              projectDetails={projectDetails}
+              setProjectDetails={setProjectDetails}
+            />
+            <Divider />
+            <ProjectLocationsSection
+              locations={locations}
+              setLocations={setLocations}
+            />
+            <Divider />
+            <ProjectCandidateHoldersSection
+              candidateHolders={candidateHolders}
+              setCandidateHolders={setCandidateHolders}
+            />
           </Stack>
-          <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
-            <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
+          <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
+            <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
               <Button size="sm" variant="solid" onClick={handleSaveProject}>
                 Create
               </Button>
