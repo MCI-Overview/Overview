@@ -21,6 +21,7 @@ import AdminCandidates from "./admin/Candidates";
 import axios from "axios";
 import { RemoveTrailingSlash } from "./utils/remove-trailing-slash";
 import Project from "./admin/Project";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const location = useLocation();
@@ -83,6 +84,7 @@ function App() {
 function AppWithRouter() {
   return (
     <Router>
+      <Toaster />
       <App />
     </Router>
   );

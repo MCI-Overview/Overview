@@ -38,7 +38,7 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
 
   if (
     projectData.Manage.some(
-      (consultant) => consultant.consultantEmail === user.id,
+      (consultant) => consultant.consultantEmail === user.id
     )
   ) {
     return res.send(projectData);
@@ -46,7 +46,7 @@ projectAPIRouter.get("/project/:projectId", async (req, res) => {
 
   const hasReadAllProjectPermission = await checkPermission(
     user.id,
-    Permission.CAN_READ_ALL_PROJECTS,
+    Permission.CAN_READ_ALL_PROJECTS
   );
 
   if (hasReadAllProjectPermission) {
@@ -210,7 +210,7 @@ projectAPIRouter.delete("/project", async (req, res) => {
   if (hardDelete) {
     const hasHardDeletePermission = await checkPermission(
       user.id,
-      Permission.CAN_HARD_DELETE_PROJECTS,
+      Permission.CAN_HARD_DELETE_PROJECTS
     );
 
     if (!hasHardDeletePermission) {
@@ -289,7 +289,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
     return res
       .status(400)
       .send(
-        "At least one field (name, clientUEN, employmentBy, locations, startDate, endDate, candidateHolders) is required to update.",
+        "At least one field (name, clientUEN, employmentBy, locations, startDate, endDate, candidateHolders) is required to update."
       );
   }
 
@@ -349,7 +349,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
 
   const hasCanEditAllProjects = await checkPermission(
     user.id,
-    Permission.CAN_EDIT_ALL_PROJECTS,
+    Permission.CAN_EDIT_ALL_PROJECTS
   );
 
   if (hasCanEditAllProjects) {
@@ -452,24 +452,24 @@ projectAPIRouter.get("/project/:projectId/candidates", async (req, res) => {
 
   const hasReadCandidateDetailsPermission = await checkPermission(
     user.id,
-    Permission.CAN_READ_CANDIDATE_DETAILS,
+    Permission.CAN_READ_CANDIDATE_DETAILS
   );
 
   if (!hasReadCandidateDetailsPermission) {
     candidateData = candidateData.map((candidate: Candidate) => {
-      const { nric, name, phoneNumber, emergencyContact } = candidate;
+      const { nric, name, phoneNumber, dateOfBirth } = candidate;
       return {
         nric,
         name,
         phoneNumber,
-        emergencyContact,
+        dateOfBirth,
       };
     });
   }
 
   if (
     projectData.Manage.some(
-      (consultant) => consultant.consultantEmail === user.id,
+      (consultant) => consultant.consultantEmail === user.id
     )
   ) {
     return res.send(candidateData);
@@ -477,7 +477,7 @@ projectAPIRouter.get("/project/:projectId/candidates", async (req, res) => {
 
   const hasReadAllProjectPermission = await checkPermission(
     user.id,
-    Permission.CAN_READ_ALL_PROJECTS,
+    Permission.CAN_READ_ALL_PROJECTS
   );
 
   if (hasReadAllProjectPermission) {
@@ -521,14 +521,13 @@ projectAPIRouter.post("/project/:projectId/candidates", async (req, res) => {
       .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
   }
 
-  if (!candidates || !Array.isArray(candidates)) {
-    return res.status(400).send("candidates array is required.22");
+  if (!candidates || !Array.isArray(candidates) || candidates.length === 0) {
+    return res.status(400).send("Nonempty candidates array is required.");
   }
 
   // verify all candidates have nric, name, phoneNumber, dateOfBirth
   const invalidCandidates = candidates.filter(
-    (cdd: any) =>
-      !cdd.nric || !cdd.name || !cdd.phoneNumber || !cdd.dateOfBirth,
+    (cdd: any) => !cdd.nric || !cdd.name || !cdd.phoneNumber || !cdd.dateOfBirth
   );
 
   if (invalidCandidates.length > 0) {
@@ -575,7 +574,7 @@ projectAPIRouter.post("/project/:projectId/candidates", async (req, res) => {
   });
 
   const newCandidates = candidateObjects.filter(
-    (cdd) => !existingCandidates.some((existCdd) => existCdd.nric === cdd.nric),
+    (cdd) => !existingCandidates.some((existCdd) => existCdd.nric === cdd.nric)
   );
 
   try {
@@ -600,6 +599,59 @@ projectAPIRouter.post("/project/:projectId/candidates", async (req, res) => {
   } catch (error) {
     const err = error as PrismaError;
     console.log(err);
+    return res.status(500).send("Internal server error.");
+  }
+});
+
+projectAPIRouter.delete("/project/:projectId/candidates", async (req, res) => {
+  const user = req.user as User;
+  const { projectId } = req.params;
+  const { nricList } = req.body;
+
+  if (!projectId) {
+    return res.status(400).send("projectId is required.");
+  }
+
+  if (!nricList || !Array.isArray(nricList) || nricList.length === 0) {
+    return res.status(400).send("Nonempty nricList array is required.");
+  }
+
+  const projectData = await prisma.project.findUnique({
+    where: {
+      id: projectId,
+    },
+    include: {
+      Manage: true,
+    },
+  });
+
+  if (!projectData) {
+    return res.status(404).send("Project does not exist.");
+  }
+
+  const hasPermission =
+    projectData.Manage.some((m) => m.consultantEmail === user.id) ||
+    (await checkPermission(user.id, Permission.CAN_EDIT_ALL_PROJECTS));
+
+  if (!hasPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
+  }
+
+  try {
+    await prisma.assign.deleteMany({
+      where: {
+        projectId,
+        candidateNric: {
+          in: nricList,
+        },
+      },
+    });
+
+    return res.send("Candidates removed successfully.");
+  } catch (error) {
+    console.log(error);
     return res.status(500).send("Internal server error.");
   }
 });
@@ -631,12 +683,12 @@ projectAPIRouter.get("/project/:projectId/shifts", async (req, res) => {
   }
 
   const responseData = projectData.ShiftGroup.filter(
-    (shift) => shift.shiftStatus === ShiftStatus.ACTIVE,
+    (shift) => shift.shiftStatus === ShiftStatus.ACTIVE
   ).map((shiftGroup) => shiftGroup.Shift);
 
   if (
     projectData.Manage.some(
-      (consultant) => consultant.consultantEmail === user.id,
+      (consultant) => consultant.consultantEmail === user.id
     )
   ) {
     return res.send(responseData);
@@ -644,7 +696,7 @@ projectAPIRouter.get("/project/:projectId/shifts", async (req, res) => {
 
   const hasReadAllProjectPermission = await checkPermission(
     user.id,
-    Permission.CAN_READ_ALL_PROJECTS,
+    Permission.CAN_READ_ALL_PROJECTS
   );
 
   if (hasReadAllProjectPermission) {
@@ -683,12 +735,12 @@ projectAPIRouter.get("/project/:projectId/shiftGroups", async (req, res) => {
   }
 
   const responseData = projectData.ShiftGroup.filter(
-    (shiftGroup) => shiftGroup.shiftStatus === ShiftStatus.ACTIVE,
+    (shiftGroup) => shiftGroup.shiftStatus === ShiftStatus.ACTIVE
   );
 
   if (
     projectData.Manage.some(
-      (consultant) => consultant.consultantEmail === user.id,
+      (consultant) => consultant.consultantEmail === user.id
     )
   ) {
     return res.send(responseData);
@@ -696,7 +748,7 @@ projectAPIRouter.get("/project/:projectId/shiftGroups", async (req, res) => {
 
   const hasReadAllProjectPermission = await checkPermission(
     user.id,
-    Permission.CAN_READ_ALL_PROJECTS,
+    Permission.CAN_READ_ALL_PROJECTS
   );
 
   if (hasReadAllProjectPermission) {
@@ -732,7 +784,7 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
 
   const hasReadAllProjectsPermission = await checkPermission(
     user.id,
-    Permission.CAN_READ_ALL_PROJECTS,
+    Permission.CAN_READ_ALL_PROJECTS
   );
 
   if (!hasReadAllProjectsPermission) {

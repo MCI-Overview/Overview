@@ -14,6 +14,7 @@ import {
 } from "../components/project/ui/AdminBreadcrumb";
 import { Project } from "../types";
 import axios from "axios";
+import AssignCandidatePage from "./projects-components/assign-candidate-page";
 import RosterPage from "../components/project/manage/Roster";
 
 const tabs: Tab[] = [
@@ -27,7 +28,7 @@ const tabs: Tab[] = [
   },
   {
     label: "Candidates",
-    content: <div>Candidates</div>,
+    content: <AssignCandidatePage />,
   },
   {
     label: "Roster",
@@ -86,7 +87,7 @@ const AdminProjects: React.FC = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null,
+    newValue: string | number | null
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);

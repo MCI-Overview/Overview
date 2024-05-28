@@ -1,46 +1,59 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { ReactSpreadsheetImport } from "react-spreadsheet-import";
 import { Data, Result } from "react-spreadsheet-import/types/types";
-import { getExactAge } from "../utils/utils";
+import { getExactAge } from "../../../utils/date-time";
 
-import { Box, Button, Divider, Stack, Typography, Card } from "@mui/joy";
-import Table from "@mui/joy/Table";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  Modal,
+  ModalClose,
+  ModalDialog,
+  ModalOverflow,
+  Stack,
+} from "@mui/joy";
+import CandidateTable from "./CandidateTable";
+import toast from "react-hot-toast";
 
-const AssignCandidatePage = () => {
-  const navigate = useNavigate();
+interface AssignCandidateSectionProps {
+  isUploadOpen: boolean;
+  setIsUploadOpen: (isOpen: boolean) => void;
+  existingCddIdList: string[];
+}
+
+const AssignCandidateSection = ({
+  isUploadOpen,
+  setIsUploadOpen,
+  existingCddIdList,
+}: AssignCandidateSectionProps) => {
   const { projectId } = useParams();
 
-  const [existingCddIdList, setExistingCddIdList] = useState<string[]>([]);
   const [newCddList, setNewCddList] = useState<Data<string>[]>([]);
   const [invalidCddList, setInvalidCddList] = useState<Data<string>[]>([]);
   const [overlapCddList, setOverlapCddList] = useState<Data<string>[]>([]);
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
   const [data, setData] = useState<Result<string>>({
     validData: [],
     all: [],
     invalidData: [],
   });
 
-  // retrieve existing candidates id
-  useEffect(() => {
-    const fetchExistingCandidates = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:3000/api/admin/project/${projectId}/candidates`,
-          { withCredentials: true }
-        );
-        setExistingCddIdList(response.data.map((c: any) => c.nric));
-      } catch (error) {
-        // TODO: Encountered error toast and redirect to project page
-        console.error("Error while fetching candidates", error);
+  const handleModalClose = () => {
+    if (isModalOpen) {
+      const confirmClose = window.confirm(
+        "Are you sure you want to close the modal? Uploaded information will be lost."
+      );
+      if (confirmClose) {
+        setIsModalOpen(false);
       }
-    };
-
-    fetchExistingCandidates();
-  }, [projectId]);
+    }
+  };
 
   // when data is uploaded, update the three candidate lists
   useEffect(() => {
@@ -73,8 +86,8 @@ const AssignCandidatePage = () => {
       example: "S1234567A",
       validations: [
         {
-          rule: "required",
-          errorMessage: "NRIC/FIN is required",
+          rule: "unique",
+          errorMessage: "NRIC should be unique.",
           level: "error",
         },
       ],
@@ -208,124 +221,64 @@ const AssignCandidatePage = () => {
 
   const handleSubmitData = async () => {
     try {
-      console.log(newCddList);
       await axios.post(
         `http://localhost:3000/api/admin/project/${projectId}/candidates`,
         newCddList,
         { withCredentials: true }
       );
 
-      // TODO: toast success message
-      // wait for 2 seconds before redirecting to correct link
-      setTimeout(() => {
-        navigate(`/admin/projects/${projectId}`);
-      }, 2000);
+      toast.success("Candidates added successfully");
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
-      // TODO: toast error message
-      console.error("Error while adding candidates", error);
+      toast.error("Error while adding candidates");
     }
   };
 
   return (
     <>
-      <Stack
-        spacing={4}
-        sx={{
-          display: "flex",
-          maxWidth: "800px",
-          mx: "auto",
-          px: { xs: 2, md: 6 },
-          py: { xs: 2, md: 3 },
+      <ReactSpreadsheetImport
+        isOpen={isUploadOpen}
+        onClose={() => {
+          setIsUploadOpen(false);
         }}
-      >
-        <Card>
-          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-            <Box>
-              <Typography level="title-md">Assign Candidates</Typography>
-              <Typography level="body-sm">
-                Assign new candidates to the project
-              </Typography>
-            </Box>
-            <Button
-              onClick={() => setIsOpen(true)}
-              sx={{ ml: "10dvh", px: { xs: 2, md: 6 } }}
-            >
-              {data.all.length > 0 ? "Re-Upload" : "Upload"}
+        onSubmit={(result) => {
+          setData(result);
+          setIsModalOpen(true);
+        }}
+        fields={fields}
+        rowHook={rowHook}
+      />
+
+      <Modal open={isModalOpen} onClose={handleModalClose}>
+        <ModalOverflow>
+          <ModalClose />
+          <ModalDialog style={{ maxWidth: "65%" }}>
+            {candidateTableProps
+              .filter((props) => props.tableData.length > 0)
+              .map((props, index) => (
+                <Box key={props.tableTitle}>
+                  <CandidateTable {...props} />
+                  {index !== candidateTableProps.length - 1 && (
+                    <Divider sx={{ marginTop: "15px" }} />
+                  )}
+                </Box>
+              ))}
+
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Checkbox
+                onChange={() => setIsSubmitDisabled(!isSubmitDisabled)}
+                label="I have reviewed all candidate information."
+                sx={{ fontSize: "sm" }}
+              />
+            </Stack>
+            <Button onClick={handleSubmitData} disabled={isSubmitDisabled}>
+              Submit
             </Button>
-          </Box>
-
-          <ReactSpreadsheetImport
-            isOpen={isOpen}
-            onClose={() => setIsOpen(false)}
-            onSubmit={(result) => setData(result)}
-            fields={fields}
-            rowHook={rowHook}
-          />
-
-          {candidateTableProps
-            .filter((props) => props.tableData.length > 0)
-            .map((props, index) => (
-              <Box key={props.tableTitle}>
-                <CandidateTable {...props} />
-                {index !== candidateTableProps.length - 1 && (
-                  <Divider sx={{ marginTop: "15px" }} />
-                )}
-              </Box>
-            ))}
-
-          {newCddList.length > 0 && (
-            <>
-              <Divider />
-              <Button onClick={handleSubmitData}>Submit</Button>
-            </>
-          )}
-        </Card>
-      </Stack>
+          </ModalDialog>
+        </ModalOverflow>
+      </Modal>
     </>
   );
 };
 
-interface CandidateTableProps {
-  tableTitle: string;
-  tableDescription: string;
-  tableProps: any;
-  tableData: Data<string>[];
-}
-
-const CandidateTable = ({
-  tableTitle,
-  tableDescription,
-  tableProps,
-  tableData,
-}: CandidateTableProps) => (
-  <Box>
-    <Typography level="title-sm">{tableTitle}</Typography>
-    <Typography level="body-xs">{tableDescription}</Typography>
-    <Table sx={{ "& tr > *": { textAlign: "center" } }} {...tableProps}>
-      <thead>
-        <tr>
-          <th>NRIC/FIN</th>
-          <th>Full name</th>
-          <th>Phone Number</th>
-          <th>Date of birth</th>
-          <th>Age</th>
-        </tr>
-      </thead>
-      <tbody>
-        {tableData.map((row: any, index: number) => (
-          <tr key={index}>
-            <td>{row.nric}</td>
-            <td>{row.name}</td>
-            <td>{row.phoneNumber}</td>
-            <td>{row.dateOfBirth}</td>
-            <td>
-              {row.dateOfBirth ? getExactAge(row.dateOfBirth as string) : "-"}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </Table>
-  </Box>
-);
-
-export default AssignCandidatePage;
+export default AssignCandidateSection;
