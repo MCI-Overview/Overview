@@ -103,8 +103,8 @@ model Shift {
   groupId    String
   day        DayOfWeek
   headcount  Int
-  startTime  DateTime     @db.Time()
-  endTime    DateTime     @db.Time()
+  startTime  DateTime     @db.Time(6)
+  endTime    DateTime     @db.Time(6)
   Attendance Attendance[]
   ShiftGroup ShiftGroup   @relation(fields: [groupId], references: [id])
 
@@ -118,6 +118,8 @@ model ShiftGroup {
   shiftStatus ShiftStatus @default(ACTIVE)
   Shift       Shift[]
   Project     Project     @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, name])
 }
 
 model User {
