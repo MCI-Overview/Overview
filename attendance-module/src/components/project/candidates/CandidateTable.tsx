@@ -1,5 +1,6 @@
 import { Data } from "react-spreadsheet-import/types/types";
-import { getExactAge } from "../../../utils/utils";
+import { getExactAge, formatDate } from "../../../utils/date-time";
+import { mask } from "../../../utils/mask";
 
 import { Box, Table, Typography, Tooltip, IconButton } from "@mui/joy";
 import { Edit, Delete } from "@mui/icons-material";
@@ -38,10 +39,10 @@ const CandidateTable = ({
       <tbody>
         {tableData.map((row: any) => (
           <tr key={row.nric}>
-            <td>{row.nric}</td>
+            <td>{mask(row.nric)}</td>
             <td>{row.name}</td>
             <td>{row.phoneNumber}</td>
-            <td>{row.dateOfBirth}</td>
+            <td>{formatDate(row.dateOfBirth)}</td>
             <td>
               {row.dateOfBirth ? getExactAge(row.dateOfBirth as string) : "-"}
             </td>

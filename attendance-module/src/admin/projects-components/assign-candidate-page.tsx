@@ -55,7 +55,7 @@ const AssignCandidatePage = () => {
               nric: c.nric,
               name: c.name,
               phoneNumber: c.phoneNumber,
-              dateOfBirth: new Date(c.dateOfBirth).toLocaleDateString(),
+              dateOfBirth: c.dateOfBirth,
             };
           })
         );

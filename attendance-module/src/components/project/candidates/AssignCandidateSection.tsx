@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ReactSpreadsheetImport } from "react-spreadsheet-import";
 import { Data, Result } from "react-spreadsheet-import/types/types";
-import { getExactAge } from "../../../utils/utils";
+import { getExactAge } from "../../../utils/date-time";
 
 import {
   Box,
@@ -228,9 +228,7 @@ const AssignCandidateSection = ({
       );
 
       toast.success("Candidates added successfully");
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       toast.error("Error while adding candidates");
     }

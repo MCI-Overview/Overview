@@ -13,3 +13,12 @@ export function getExactAge(dateOfBirth: string) {
 
   return age;
 }
+
+export function formatDate(date: string) {
+  const dateObj = new Date(date);
+  return dateObj.toLocaleDateString("en-SG", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+}
