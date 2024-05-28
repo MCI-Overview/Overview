@@ -15,6 +15,7 @@ import {
 import { Project } from "../types";
 import axios from "axios";
 import AssignCandidatePage from "./projects-components/assign-candidate-page";
+import RosterPage from "../components/project/manage/Roster";
 
 const tabs: Tab[] = [
   {
@@ -31,7 +32,7 @@ const tabs: Tab[] = [
   },
   {
     label: "Roster",
-    content: <div>Roster</div>,
+    content: <RosterPage />,
   },
 ];
 

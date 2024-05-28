@@ -60,8 +60,15 @@ projectShiftAPIRouter.get("/shift/:shiftId", async (req, res) => {
 
 projectShiftAPIRouter.post("/shift", async (req, res) => {
   const user = req.user as User;
-  const { projectId, days, headcount, startTime, endTime, shiftGroupId } =
-    req.body;
+  const {
+    projectId,
+    days,
+    headcount,
+    startTime,
+    endTime,
+    shiftGroupId,
+    shiftGroupName,
+  } = req.body;
 
   if (!projectId) {
     return res.status(400).send("projectId is required.");
@@ -83,8 +90,8 @@ projectShiftAPIRouter.post("/shift", async (req, res) => {
     return res.status(400).send("endTime is required.");
   }
 
-  if (!shiftGroupId) {
-    return res.status(400).send("shiftGroupId is required.");
+  if (!shiftGroupId && !shiftGroupName) {
+    return res.status(400).send("shiftGroupId or shiftGroupName is required.");
   }
 
   if (!Array.isArray(days)) {
@@ -94,7 +101,13 @@ projectShiftAPIRouter.post("/shift", async (req, res) => {
   const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
   const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
 
-  if (!startTimeHour || !startTimeMinute || !endTimeHour || !endTimeMinute) {
+  if (
+    isNaN(startTimeHour) ||
+    isNaN(startTimeMinute) ||
+    isNaN(endTimeHour) ||
+    isNaN(endTimeMinute)
+  ) {
+    console.log(startTimeHour, startTimeMinute, endTimeHour, endTimeMinute);
     return res.status(400).send("Invalid time format.");
   }
 
@@ -154,14 +167,25 @@ projectShiftAPIRouter.post("/shift", async (req, res) => {
     }
   }
 
-  const createData = days.map((day) => ({
-    day: day.toUpperCase() as DayOfWeek,
-    headcount: parseInt(headcount),
-    startTime: startTimeObject,
-    endTime: endTimeObject,
-    projectId: projectId,
-    groupId: shiftGroupId,
-  }));
+  let shiftGroup: any;
+  if (!projectData.ShiftGroup.some((group) => group.id === shiftGroupId)) {
+    shiftGroup = await prisma.shiftGroup.create({
+      data: {
+        name: shiftGroupName,
+        projectId,
+      },
+    });
+  }
+
+  const createData = days.map((day) => {
+    return {
+      day: day.toUpperCase() as DayOfWeek,
+      headcount: parseInt(headcount),
+      startTime: startTimeObject,
+      endTime: endTimeObject,
+      groupId: shiftGroupId || shiftGroup.id,
+    };
+  });
 
   try {
     await prisma.shift.createMany({
