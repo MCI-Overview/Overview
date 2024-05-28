@@ -36,7 +36,7 @@ const CandidateTable = ({
         </tr>
       </thead>
       <tbody>
-        {tableData.map((row: any, index: number) => (
+        {tableData.map((row: any) => (
           <tr key={row.nric}>
             <td>{row.nric}</td>
             <td>{row.name}</td>
