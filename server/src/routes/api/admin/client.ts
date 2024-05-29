@@ -11,35 +11,34 @@ const prisma = new PrismaClient();
 
 const clientAPIRoutes: Router = Router();
 
-clientAPIRoutes.get("/client/:clientUEN"),
+clientAPIRoutes.get("/client/:uen"),
   async (req: Request, res: Response) => {
-    const { clientUEN } = req.params;
+    const { uen } = req.params;
 
-    const clientData = await prisma.client.findUnique({
-      where: {
-        UEN: clientUEN,
-      },
-    });
+    try {
+      const clientData = await prisma.client.findUniqueOrThrow({
+        where: {
+          uen,
+        },
+      });
 
-    if (!clientData) {
+      return res.send(clientData);
+    } catch (error) {
       return res.status(404).send("Client does not exist.");
     }
-
-    return res.send(clientData);
   };
 
 clientAPIRoutes.post("/client", async (req, res) => {
-  const { UEN, name } = req.body;
+  const { uen, name } = req.body;
 
-  if (!name) {
-    return res.status(400).send("name is required.");
-  }
+  if (!uen) return res.status(400).send("uen is required.");
+  if (!name) return res.status(400).send("name is required.");
 
   try {
     await prisma.client.create({
       data: {
-        UEN: UEN,
-        name: name,
+        uen,
+        name,
       },
     });
   } catch (error) {
@@ -48,6 +47,7 @@ clientAPIRoutes.post("/client", async (req, res) => {
       return res.status(400).send("Client already exists.");
     }
 
+    console.log(error);
     return res.status(500).send("Internal server error.");
   }
 
@@ -56,14 +56,12 @@ clientAPIRoutes.post("/client", async (req, res) => {
 
 clientAPIRoutes.delete("/client", async (req, res) => {
   const user = req.user as User;
-  const { UEN } = req.body;
+  const { uen } = req.body;
 
-  if (!UEN) {
-    return res.status(400).send("UEN is required.");
-  }
+  if (!uen) return res.status(400).send("uen is required.");
 
   const hasDeleteClientPermission = checkPermission(
-    user.id,
+    user.cuid,
     Permission.CAN_DELETE_CLIENTS,
   );
 
@@ -74,18 +72,14 @@ clientAPIRoutes.delete("/client", async (req, res) => {
   }
 
   try {
-    const clientToDelete = await prisma.client.findUnique({
+    const clientToDelete = await prisma.client.findUniqueOrThrow({
       where: {
-        UEN: UEN,
+        uen,
       },
       include: {
         Project: true,
       },
     });
-
-    if (!clientToDelete) {
-      return res.status(404).send("Client does not exist.");
-    }
 
     if (clientToDelete.Project.length > 0) {
       return res.status(400).send("Client has linked projects.");
@@ -93,26 +87,25 @@ clientAPIRoutes.delete("/client", async (req, res) => {
 
     await prisma.client.delete({
       where: {
-        UEN: UEN,
+        uen,
       },
     });
-  } catch (error) {
-    return res.status(500).send("Internal server error.");
-  }
 
-  return res.send("Client deleted successfully.");
+    return res.send("Client deleted successfully.");
+  } catch (error) {
+    return res.status(404).send("Client does not exist.");
+  }
 });
 
 async function updateClient(req: Request, res: Response) {
   const user = req.user as User;
-  const { UEN, name } = req.body;
+  const { uen, name } = req.body;
 
-  if (!name) {
-    return res.status(400).send("name is required.");
-  }
+  if (!uen) return res.status(400).send("uen is required.");
+  if (!name) return res.status(400).send("name is required.");
 
   const hasUpdateClientPermission = checkPermission(
-    user.id,
+    user.cuid,
     Permission.CAN_UPDATE_CLIENTS,
   );
 
@@ -125,17 +118,18 @@ async function updateClient(req: Request, res: Response) {
   try {
     await prisma.client.update({
       where: {
-        UEN: UEN,
+        uen,
       },
       data: {
         name: name,
       },
     });
+
+    return res.send("Client updated successfully.");
   } catch (error) {
+    console.log(error);
     return res.status(500).send("Internal server error.");
   }
-
-  return res.send("Client updated successfully.");
 }
 
 clientAPIRoutes.put("/client", updateClient);
@@ -144,7 +138,7 @@ clientAPIRoutes.patch("/client", updateClient);
 clientAPIRoutes.get("/clients", async (_req, res) => {
   const clientsData = await prisma.client.findMany({
     select: {
-      UEN: true,
+      uen: true,
       name: true,
     },
   });
