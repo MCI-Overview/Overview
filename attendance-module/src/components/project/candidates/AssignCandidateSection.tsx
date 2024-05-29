@@ -47,7 +47,7 @@ const AssignCandidateSection = ({
   const handleModalClose = () => {
     if (isModalOpen) {
       const confirmClose = window.confirm(
-        "Are you sure you want to close the modal? Uploaded information will be lost."
+        "Are you sure you want to close the modal? Uploaded information will be lost.",
       );
       if (confirmClose) {
         setIsModalOpen(false);
@@ -59,21 +59,21 @@ const AssignCandidateSection = ({
   useEffect(() => {
     setOverlapCddList(
       // existing candidate list
-      data.all.filter((c) => existingCddIdList.includes(c.nric as string))
+      data.all.filter((c) => existingCddIdList.includes(c.nric as string)),
     );
 
     setNewCddList(
       // valid data not in existing candidate list
       data.validData.filter(
-        (c) => !existingCddIdList.includes(c.nric as string)
-      )
+        (c) => !existingCddIdList.includes(c.nric as string),
+      ),
     );
 
     setInvalidCddList(
       // invalid data not in existing candidate list
       data.invalidData.filter(
-        (c) => !existingCddIdList.includes(c.nric as string)
-      )
+        (c) => !existingCddIdList.includes(c.nric as string),
+      ),
     );
   }, [data]);
 
@@ -224,7 +224,6 @@ const AssignCandidateSection = ({
       await axios.post(
         `http://localhost:3000/api/admin/project/${projectId}/candidates`,
         newCddList,
-        { withCredentials: true }
       );
 
       toast.success("Candidates added successfully");
@@ -236,18 +235,20 @@ const AssignCandidateSection = ({
 
   return (
     <>
-      <ReactSpreadsheetImport
-        isOpen={isUploadOpen}
-        onClose={() => {
-          setIsUploadOpen(false);
-        }}
-        onSubmit={(result) => {
-          setData(result);
-          setIsModalOpen(true);
-        }}
-        fields={fields}
-        rowHook={rowHook}
-      />
+      <Modal open={isUploadOpen} onClose={() => setIsUploadOpen(false)}>
+        <ReactSpreadsheetImport
+          isOpen={isUploadOpen}
+          onClose={() => {
+            setIsUploadOpen(false);
+          }}
+          onSubmit={(result) => {
+            setData(result);
+            setIsModalOpen(true);
+          }}
+          fields={fields}
+          rowHook={rowHook}
+        />
+      </Modal>
 
       <Modal open={isModalOpen} onClose={handleModalClose}>
         <ModalOverflow>
