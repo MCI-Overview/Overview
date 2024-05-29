@@ -53,5 +53,5 @@ export type BankDetails = {
 export type EmergencyContact = {
   name: String;
   relationship: String;
-  phoneNumber: String;
+  contact: String;
 };
