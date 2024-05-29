@@ -12,8 +12,8 @@ import {
   PERMISSION_ERROR_TEMPLATE,
   Permission,
   checkPermission,
-} from "../../../utils/check-permission";
-import maskNRIC from "@/utils/mask-nric";
+  maskNRIC,
+} from "../../../utils";
 
 const prisma = new PrismaClient();
 
