@@ -47,7 +47,6 @@ const AssignCandidatePage = () => {
       try {
         const response = await axios.get(
           `http://localhost:3000/api/admin/project/${projectId}/candidates`,
-          { withCredentials: true }
         );
         setCandidatesData(
           response.data.map((c: Candidate) => {
@@ -57,7 +56,7 @@ const AssignCandidatePage = () => {
               phoneNumber: c.phoneNumber,
               dateOfBirth: c.dateOfBirth,
             };
-          })
+          }),
         );
       } catch (error) {
         toast.error("Error while fetching candidates. Please try again later.");
@@ -109,10 +108,10 @@ const AssignCandidatePage = () => {
       const body = { nricList: selectedCandidates };
       await axios.delete(
         `http://localhost:3000/api/admin/project/${projectId}/candidates`,
-        { data: body, withCredentials: true }
+        { data: body },
       );
       setCandidatesData((prev) =>
-        prev.filter((c) => !selectedCandidates.includes(c.nric))
+        prev.filter((c) => !selectedCandidates.includes(c.nric)),
       );
 
       setIsDeleteModalOpen(false);
@@ -124,7 +123,7 @@ const AssignCandidatePage = () => {
   };
 
   return (
-    <>
+    <Card>
       <Stack
         spacing={1}
         sx={{
@@ -222,7 +221,7 @@ const AssignCandidatePage = () => {
           </Stack>
         </ModalDialog>
       </Modal>
-    </>
+    </Card>
   );
 };
 
