@@ -31,6 +31,13 @@ export type User = {
   isAdmin?: boolean;
 };
 
+export type CandidateBasic = {
+  nric: string;
+  name: string;
+  phoneNumber: string;
+  dateOfBirth: string;
+};
+
 export type Client = {
   UEN: string;
   name: string;
@@ -72,7 +79,6 @@ export type ShiftGroup = {
   shiftStatus: string;
   Shift: Shift[];
 };
-
 
 export enum MCICompany {
   MCI_CAREER_SERVICES = "MCI Career Services Pte Ltd",

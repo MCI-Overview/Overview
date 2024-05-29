@@ -1,5 +1,5 @@
 import { Data } from "react-spreadsheet-import/types/types";
-import { getExactAge, formatDate } from "../../../utils/date-time";
+import { getExactAge } from "../../../utils/date-time";
 import { mask } from "../../../utils/mask";
 
 import { Box, Table, Typography, Tooltip, IconButton } from "@mui/joy";
@@ -10,7 +10,7 @@ interface CandidateTableProps {
   tableDescription?: string;
   tableProps: any;
   tableData: Data<string>[];
-  showActions?: boolean;
+  handleEdit?: (nric: string) => void;
   handleDelete?: (nricList: string[]) => void;
 }
 
@@ -19,65 +19,85 @@ const CandidateTable = ({
   tableDescription,
   tableProps,
   tableData,
-  showActions,
+  handleEdit,
   handleDelete,
-}: CandidateTableProps) => (
-  <Box>
-    <Typography level="title-sm">{tableTitle}</Typography>
-    <Typography level="body-xs">{tableDescription}</Typography>
-    <Table sx={{ "& tr > *": { textAlign: "center" } }} {...tableProps}>
-      <thead>
-        <tr>
-          <th>NRIC</th>
-          <th>Full name</th>
-          <th>Phone Number</th>
-          <th>Date of birth</th>
-          <th>Age</th>
-          {showActions && <th>Actions</th>}
-        </tr>
-      </thead>
-      <tbody>
-        {tableData.map((row: any) => (
-          <tr key={row.nric}>
-            <td>{mask(row.nric)}</td>
-            <td>{row.name}</td>
-            <td>{row.phoneNumber}</td>
-            <td>{formatDate(row.dateOfBirth)}</td>
-            <td>
-              {row.dateOfBirth ? getExactAge(row.dateOfBirth as string) : "-"}
-            </td>
-            {showActions && handleDelete && (
-              <td>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    justifyContent: "center",
-                    gap: 1,
-                  }}
-                >
-                  <Tooltip size="sm" title="Edit" placement="left">
-                    <IconButton size="sm" color="neutral">
-                      <Edit />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip size="sm" title="Delete" placement="right">
-                    <IconButton
-                      size="sm"
-                      color="danger"
-                      onClick={() => handleDelete([row.nric])}
-                    >
-                      <Delete />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </td>
-            )}
+}: CandidateTableProps) => {
+  const showActions = handleEdit || handleDelete;
+
+  return (
+    <Box>
+      <Typography level="title-sm">{tableTitle}</Typography>
+      <Typography level="body-xs">{tableDescription}</Typography>
+      <Table sx={{ "& tr > *": { textAlign: "center" } }} {...tableProps}>
+        <thead>
+          <tr>
+            <th>NRIC</th>
+            <th>Full name</th>
+            <th>Phone Number</th>
+            <th>Date of birth</th>
+            <th>Age</th>
+            {showActions && <th>Actions</th>}
           </tr>
-        ))}
-      </tbody>
-    </Table>
-  </Box>
-);
+        </thead>
+        <tbody>
+          {tableData.length === 0 ? (
+            <tr>
+              <td colSpan={showActions ? 6 : 5}>No candidates found.</td>
+            </tr>
+          ) : (
+            tableData.map((row: any) => (
+              <tr key={row.nric}>
+                <td>{mask(row.nric)}</td>
+                <td>{row.name}</td>
+                <td>{row.phoneNumber}</td>
+                <td>{row.dateOfBirth.slice(0, 10)}</td>
+                <td>
+                  {row.dateOfBirth
+                    ? getExactAge(row.dateOfBirth as string)
+                    : "-"}
+                </td>
+                {showActions && (
+                  <td>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        justifyContent: "center",
+                        gap: 1,
+                      }}
+                    >
+                      {handleEdit && (
+                        <Tooltip size="sm" title="Edit" placement="left">
+                          <IconButton
+                            size="sm"
+                            color="neutral"
+                            onClick={() => handleEdit(row.nric)}
+                          >
+                            <Edit />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {handleDelete && (
+                        <Tooltip size="sm" title="Delete" placement="right">
+                          <IconButton
+                            size="sm"
+                            color="danger"
+                            onClick={() => handleDelete([row.nric])}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+                  </td>
+                )}
+              </tr>
+            ))
+          )}
+        </tbody>
+      </Table>
+    </Box>
+  );
+};
 
 export default CandidateTable;

@@ -18,18 +18,19 @@ import {
 } from "@mui/joy";
 import CandidateTable from "./CandidateTable";
 import toast from "react-hot-toast";
+import { dateRegex, nricRegex, phoneRegex } from "../../../utils/validation";
 
-interface AssignCandidateSectionProps {
+interface AssignCandidateModalProps {
   isUploadOpen: boolean;
   setIsUploadOpen: (isOpen: boolean) => void;
   existingCddIdList: string[];
 }
 
-const AssignCandidateSection = ({
+const AssignCandidateModal = ({
   isUploadOpen,
   setIsUploadOpen,
   existingCddIdList,
-}: AssignCandidateSectionProps) => {
+}: AssignCandidateModalProps) => {
   const { projectId } = useParams();
 
   const [newCddList, setNewCddList] = useState<Data<string>[]>([]);
@@ -79,9 +80,9 @@ const AssignCandidateSection = ({
 
   const fields = [
     {
-      label: "NRIC/FIN",
+      label: "NRIC",
       key: "nric",
-      alternateMatches: ["nric", "fin", "id"],
+      alternateMatches: ["nric", "id"],
       fieldType: { type: "input" },
       example: "S1234567A",
       validations: [
@@ -98,41 +99,20 @@ const AssignCandidateSection = ({
       alternateMatches: ["full name", "name", "candidate name"],
       fieldType: { type: "input" },
       example: "John Doe Xiao Ming",
-      validations: [
-        {
-          rule: "required",
-          errorMessage: "Name is required",
-          level: "error",
-        },
-      ],
     },
     {
       label: "Phone Number",
       key: "phoneNumber",
-      alternateMatches: ["email", "e-mail"],
+      alternateMatches: ["phone number", "phone", "contact"],
       fieldType: { type: "input" },
       example: "98765432",
-      validations: [
-        {
-          rule: "required",
-          errorMessage: "Phone number is required",
-          level: "error",
-        },
-      ],
     },
     {
       label: "Date of birth",
       key: "dateOfBirth",
       alternateMatches: ["date of birth", "dob", "birth date"],
       fieldType: { type: "input" },
-      example: "09/08/1965",
-      validations: [
-        {
-          rule: "required",
-          errorMessage: "Date of birth is required",
-          level: "error",
-        },
-      ],
+      example: "1965-08-09",
     },
   ];
 
@@ -140,10 +120,10 @@ const AssignCandidateSection = ({
     // nric validation
     if (!row.nric) {
       addError("nric", {
-        message: "NRIC/FIN is required",
+        message: "NRIC is required",
         level: "error",
       });
-    } else if (!/^[STFGM]\d{7}[A-Z]$/i.test(row.nric as string)) {
+    } else if (!nricRegex.test(row.nric as string)) {
       addError("nric", {
         message: "Invalid NRIC/FIN",
         level: "error",
@@ -151,7 +131,6 @@ const AssignCandidateSection = ({
     }
 
     // phone number validation
-    const phoneRegex = /^(\+\d{1,3}\s?)?(\d{4}\s?)?\d{4}$/;
     if (!row.phoneNumber) {
       addError("phoneNumber", {
         message: "Phone number is required",
@@ -164,8 +143,15 @@ const AssignCandidateSection = ({
       });
     }
 
+    // name validation
+    if (!row.name) {
+      addError("name", {
+        message: "Name is required",
+        level: "error",
+      });
+    }
+
     // date of birth validation
-    const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
     if (!row.dateOfBirth) {
       addError("dateOfBirth", {
         message: "Date of birth is required",
@@ -282,4 +268,4 @@ const AssignCandidateSection = ({
   );
 };
 
-export default AssignCandidateSection;
+export default AssignCandidateModal;
