@@ -1,5 +1,5 @@
 import { Data } from "react-spreadsheet-import/types/types";
-import { getExactAge, formatDate } from "../../../utils/date-time";
+import { getExactAge } from "../../../utils/date-time";
 import { mask } from "../../../utils/mask";
 
 import { Box, Table, Typography, Tooltip, IconButton } from "@mui/joy";
