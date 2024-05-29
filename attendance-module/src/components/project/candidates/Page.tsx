@@ -42,7 +42,6 @@ const CandidatePage = () => {
       try {
         const response = await axios.get(
           `http://localhost:3000/api/admin/project/${projectId}/candidates`,
-          { withCredentials: true }
         );
         setCandidatesData(
           response.data.map((c: CandidateBasic) => {
@@ -52,7 +51,7 @@ const CandidatePage = () => {
               phoneNumber: c.phoneNumber,
               dateOfBirth: c.dateOfBirth,
             };
-          })
+          }),
         );
       } catch (error) {
         toast.error("Error while fetching candidates. Please try again later.");
@@ -105,10 +104,10 @@ const CandidatePage = () => {
       const body = { nricList: candidatesToDelete };
       await axios.delete(
         `http://localhost:3000/api/admin/project/${projectId}/candidates`,
-        { data: body, withCredentials: true }
+        { data: body },
       );
       setCandidatesData((prev) =>
-        prev.filter((c) => !candidatesToDelete.includes(c.nric))
+        prev.filter((c) => !candidatesToDelete.includes(c.nric)),
       );
 
       setIsDeleteModalOpen(false);

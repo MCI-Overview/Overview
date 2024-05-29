@@ -32,7 +32,7 @@ const EditCandidateModal = ({
   const [name, setName] = useState(candidate.name);
   const [phoneNumber, setPhoneNumber] = useState(candidate.phoneNumber);
   const [dateOfBirth, setDateOfBirth] = useState(
-    new Date(candidate.dateOfBirth).toDateString()
+    new Date(candidate.dateOfBirth).toDateString(),
   );
 
   const [isNameValid, setIsNameValid] = useState(true);
@@ -55,7 +55,7 @@ const EditCandidateModal = ({
   // phone number validation
   useEffect(() => {
     setIsPhoneNumberValid(
-      phoneNumber.length > 0 && phoneRegex.test(phoneNumber)
+      phoneNumber.length > 0 && phoneRegex.test(phoneNumber),
     );
   }, [phoneNumber]);
 
@@ -64,31 +64,25 @@ const EditCandidateModal = ({
     setIsDateOfBirthValid(
       dateOfBirth.length > 0 &&
         dateRegex.test(dateOfBirth) &&
-        getExactAge(dateOfBirth) >= 16
+        getExactAge(dateOfBirth) >= 16,
     );
   }, [dateOfBirth]);
 
   // disallow submission if any of the fields are invalid
   useEffect(() => {
     setIsSubmitDisabled(
-      !isNameValid || !isPhoneNumberValid || !isDateOfBirthValid
+      !isNameValid || !isPhoneNumberValid || !isDateOfBirthValid,
     );
   }, [isNameValid, isPhoneNumberValid, isDateOfBirthValid]);
 
   const handleSave = async () => {
     try {
-      await axios.patch(
-        "http://localhost:3000/api/admin/candidate",
-        {
-          nric: candidate.nric,
-          name: name,
-          phoneNumber: phoneNumber,
-          dateOfBirth: new Date(dateOfBirth),
-        },
-        {
-          withCredentials: true,
-        }
-      );
+      await axios.patch("http://localhost:3000/api/admin/candidate", {
+        nric: candidate.nric,
+        name: name,
+        phoneNumber: phoneNumber,
+        dateOfBirth: new Date(dateOfBirth),
+      });
 
       toast.success("Candidate edited");
       const updatedCandidates = candidatesData.map((c) => {
