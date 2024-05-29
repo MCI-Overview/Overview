@@ -14,7 +14,7 @@ import {
 } from "../components/project/ui/AdminBreadcrumb";
 import { Project } from "../types";
 import axios from "axios";
-import AssignCandidatePage from "./projects-components/assign-candidate-page";
+import AssignCandidatePage from "../components/project/candidates/Page";
 import RosterPage from "../components/project/manage/Roster";
 
 const tabs: Tab[] = [
