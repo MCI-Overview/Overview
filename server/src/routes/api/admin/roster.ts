@@ -96,7 +96,7 @@ rosterAPIRouter.get(
       if (
         attendanceData.some((shift) =>
           shift.Shift.ShiftGroup.Project.Manage.some(
-            (consultant) => consultant.consultantEmail === user.id,
+            (consultant) => consultant.consultantEmail === user.cuid,
           ),
         )
       ) {
@@ -104,7 +104,7 @@ rosterAPIRouter.get(
       }
 
       const hasReadAllProjectPermission = await checkPermission(
-        user.id,
+        user.cuid,
         Permission.CAN_READ_ALL_PROJECTS,
       );
 
@@ -119,7 +119,7 @@ rosterAPIRouter.get(
 
     if (candidateNRIC && !projectId) {
       const hasReadAllProjectPermission = await checkPermission(
-        user.id,
+        user.cuid,
         Permission.CAN_READ_ALL_PROJECTS,
       );
 
@@ -166,7 +166,7 @@ rosterAPIRouter.get(
               Project: {
                 Manage: {
                   some: {
-                    consultantEmail: user.id,
+                    consultantEmail: user.cuid,
                   },
                 },
               },
@@ -227,7 +227,7 @@ rosterAPIRouter.get(
       if (
         attendanceData.some((shift) =>
           shift.Shift.ShiftGroup.Project.Manage.some(
-            (consultant) => consultant.consultantEmail === user.id,
+            (consultant) => consultant.consultantEmail === user.cuid,
           ),
         )
       ) {
@@ -235,7 +235,7 @@ rosterAPIRouter.get(
       }
 
       const hasReadAllProjectPermission = await checkPermission(
-        user.id,
+        user.cuid,
         Permission.CAN_READ_ALL_PROJECTS,
       );
 
@@ -325,12 +325,12 @@ rosterAPIRouter.post("/roster", async (req: Request, res: Response) => {
   if (
     !shiftData.ShiftGroup.Project.Manage.some(
       (consultant) =>
-        consultant.consultantEmail === user.id &&
+        consultant.consultantEmail === user.cuid &&
         consultant.role === Role.CLIENT_HOLDER,
     )
   ) {
     const hasEditAllProjectPermission = await checkPermission(
-      user.id,
+      user.cuid,
       Permission.CAN_EDIT_ALL_PROJECTS,
     );
 

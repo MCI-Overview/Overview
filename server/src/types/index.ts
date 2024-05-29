@@ -4,13 +4,13 @@ export type Profile = {
   displayName: string;
   userPrincipalName: string;
   _json: {
-    jobTitle: string
-    businessPhones: string[]
-  }
+    jobTitle: string;
+    businessPhones: string[];
+  };
 };
 
 export type User = {
-  id: string;
+  cuid: string;
   name: string;
   isUser?: boolean;
   isAdmin?: boolean;
