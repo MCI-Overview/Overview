@@ -7,7 +7,7 @@ import {
   useParams,
 } from "react-router-dom";
 import { Tab, TabBar } from "../components/TabBar";
-import { Typography, Box } from "@mui/joy";
+import { Typography, Box, Skeleton } from "@mui/joy";
 import {
   AdminBreadcrumb,
   BreadcrumbPart,
@@ -51,7 +51,7 @@ const AdminProjects: React.FC = () => {
       link: "/admin/projects",
     },
     {
-      label: projectDetails?.name || "No Project Title",
+      label: projectDetails?.name || "Loading...",
       link: `/admin/project/${projectId}`,
     },
   ];
@@ -88,7 +88,7 @@ const AdminProjects: React.FC = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null
+    newValue: string | number | null,
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);
@@ -122,7 +122,14 @@ const AdminProjects: React.FC = () => {
         <Box sx={{ px: { xs: 2, md: 6 } }}>
           <AdminBreadcrumb breadcrumbs={breadcrumbs} />
           <Typography level="h2" component="h1" sx={{ mt: 1, mb: 2 }}>
-            {projectDetails?.name}
+            <Skeleton
+              variant="rectangular"
+              loading={!projectDetails}
+              animation="wave"
+              sx={{ height: "2.5rem", mt: 1, mb: 2 }}
+            >
+              {projectDetails?.name}
+            </Skeleton>
           </Typography>
         </Box>
         <TabBar
