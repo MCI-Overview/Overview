@@ -6,14 +6,13 @@ import {
 } from "react-router-dom";
 import LoginAdmin from "./login/login-admin";
 import LoginUser from "./login/login-user";
-import AdminPrivateRoutes from "./utils/admin-private-route";
 import Box from "@mui/joy/Box";
 import Sidebar from "./components/Sidebar";
 import SidebarUser from "./components/SidebarUser";
 import Header from "./components/Header";
 import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import AdminProjects from "./admin/Projects";
 import AdminHome from "./admin/Home";
 import AdminCandidates from "./admin/Candidates";
@@ -23,8 +22,11 @@ import Project from "./admin/Project";
 import { Toaster } from "react-hot-toast";
 import UserNew from "./user/UserNew";
 import UserHome from "./user/UserHome";
-import { DndProvider } from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { User } from "./types";
+import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
+import { CircularProgress } from "@mui/joy";
 
 function App() {
   const location = useLocation();
@@ -38,6 +40,38 @@ function App() {
 
   axios.defaults.baseURL = "http://localhost:3000";
   axios.defaults.withCredentials = true;
+
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const startTime = Date.now();
+
+    axios
+      .get("/api")
+      .then((response) => {
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = Math.max(0, 1000 - elapsedTime);
+
+        setTimeout(() => {
+          setUser(response.data);
+        }, remainingTime);
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the data!", error);
+      });
+  }, []);
+
+  if (!user) {
+    return (
+      <Box
+        sx={{ display: "flex", width: "100dvw", height: "100dvh" }}
+        justifyContent="center"
+        alignItems="center"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -66,7 +100,7 @@ function App() {
             <RemoveTrailingSlash />
             <Routes>
               {/* User routes */}
-              {/* <Route element={<UserPrivateRoutes />}>
+              {/* <Route element={<PrivateUserRoutes user={user}/>}>
               <Route path="/user" element={<LoginUser />} />
               <Route path="/user/home" element={<MyProfile />} />
             </Route> */}
@@ -77,23 +111,23 @@ function App() {
 
               {/* Admin routes */}
 
-              <Route element={<AdminPrivateRoutes />}>
+              <Route element={<PrivateAdminRoutes user={user} />}>
                 <Route path="/admin" element={<LoginAdmin />} />
                 <Route path="/admin/home" element={<AdminHome />} />
-                <Route path="/admin/project/:projectId?" element={<Project />} />
+                <Route
+                  path="/admin/project/:projectId?"
+                  element={<Project />}
+                />
                 <Route path="/admin/projects" element={<AdminProjects />} />
                 <Route path="/admin/candidates" element={<AdminCandidates />} />
               </Route>
-
             </Routes>
           </Box>
         </Box>
       </CssVarsProvider>
-    </DndProvider >
+    </DndProvider>
   );
 }
-
-
 
 function AppWithRouter() {
   return (
