@@ -1,5 +1,5 @@
 // ./login/choose-role.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Navigate,
   useLocation,
@@ -7,16 +7,16 @@ import {
   useParams,
 } from "react-router-dom";
 import { Tab, TabBar } from "../components/TabBar";
-import { Typography, Box, Skeleton } from "@mui/joy";
+import { Typography, Box, CircularProgress } from "@mui/joy";
 import {
   AdminBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
-import { Project } from "../types";
 import axios from "axios";
 import ProjectOverview from "./projects-components/overview-tab-components/project-overview";
 import AssignCandidatePage from "../components/project/candidates/Page";
 import RosterPage from "../components/project/manage/Roster";
+import { useProjectContext } from "../providers/projectContextProvider";
 
 const tabs: Tab[] = [
   {
@@ -40,10 +40,11 @@ const tabs: Tab[] = [
 const AdminProjects: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const projectId = useParams().projectId;
+  const projectCuid = useParams().projectCuid;
+
+  const { project, setProject } = useProjectContext();
 
   const [tabValue, setTabValue] = useState<number>(0);
-  const [projectDetails, setProjectDetails] = useState<Project | null>(null);
 
   const breadcrumbs: BreadcrumbPart[] = [
     {
@@ -51,10 +52,20 @@ const AdminProjects: React.FC = () => {
       link: "/admin/projects",
     },
     {
-      label: projectDetails?.name || "Loading...",
-      link: `/admin/project/${projectId}`,
+      label: project?.name,
+      link: `/admin/project/${projectCuid}`,
     },
   ];
+
+  useEffect(() => {
+    setProject(null);
+
+    if (!projectCuid) return;
+
+    axios.get(`/api/admin/project/${projectCuid}`).then((res) => {
+      setProject(res.data);
+    });
+  }, [projectCuid, setProject]);
 
   useEffect(() => {
     const hash = location.hash.replace("#", "");
@@ -74,17 +85,9 @@ const AdminProjects: React.FC = () => {
     }
   }, [location.hash]);
 
-  useEffect(() => {
-    if (!projectId) return;
+  if (!projectCuid) return <Navigate to="/admin/projects" />;
 
-    axios.get(`/api/admin/project/${projectId}`).then((res) => {
-      setProjectDetails(res.data);
-    });
-  }, [projectId]);
-
-  if (!projectId) {
-    return <Navigate to="/admin/projects" />;
-  }
+  if (!project) return null;
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
@@ -94,16 +97,16 @@ const AdminProjects: React.FC = () => {
     setTabValue(newValue);
     switch (newValue) {
       case 0:
-        navigate(`/admin/project/${projectId}`);
+        navigate(`/admin/project/${projectCuid}`);
         break;
       case 1:
-        navigate(`/admin/project/${projectId}#attendance`);
+        navigate(`/admin/project/${projectCuid}#attendance`);
         break;
       case 2:
-        navigate(`/admin/project/${projectId}#candidates`);
+        navigate(`/admin/project/${projectCuid}#candidates`);
         break;
       case 3:
-        navigate(`/admin/project/${projectId}#roster`);
+        navigate(`/admin/project/${projectCuid}#roster`);
         break;
       default:
         break;
@@ -122,14 +125,7 @@ const AdminProjects: React.FC = () => {
         <Box sx={{ px: { xs: 2, md: 6 } }}>
           <AdminBreadcrumb breadcrumbs={breadcrumbs} />
           <Typography level="h2" component="h1" sx={{ mt: 1, mb: 2 }}>
-            <Skeleton
-              variant="rectangular"
-              loading={!projectDetails}
-              animation="wave"
-              sx={{ height: "2.5rem", mt: 1, mb: 2 }}
-            >
-              {projectDetails?.name}
-            </Skeleton>
+            {project?.name}
           </Typography>
         </Box>
         <TabBar

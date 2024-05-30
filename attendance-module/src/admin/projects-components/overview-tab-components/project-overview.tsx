@@ -1,5 +1,5 @@
 // ./login/choose-role.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 import {
   Box,
@@ -11,24 +11,23 @@ import {
   FormLabel,
   Input,
   Grid,
-  Skeleton,
 } from "@mui/joy";
 import ProjectHeadcount from "./project-headcount";
 import DailyAttendanceReport from "./project-daily-attendance";
 import ProjectDailyHeadcount from "./project-daily-headcount";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-import { Project } from "../../../types";
+import { useProjectContext } from "../../../providers/projectContextProvider";
 
 const ProjectOverview: React.FC = () => {
   const projectId = useParams().projectId;
-  const [projectDetails, setProjectDetails] = useState<Project | null>(null);
+  const { project, setProject } = useProjectContext();
 
   useEffect(() => {
     axios.get(`/api/admin/project/${projectId}`).then((response) => {
-      setProjectDetails(response.data);
+      setProject(response.data);
     });
-  }, [projectId]);
+  }, [projectId, setProject]);
   return (
     <>
       <Stack
@@ -56,84 +55,36 @@ const ProjectOverview: React.FC = () => {
             >
               <Grid xs={12} sm={12} md={6}>
                 <FormLabel>Client name</FormLabel>
-                <Skeleton
-                  variant="rectangular"
-                  loading={!projectDetails}
-                  animation="wave"
-                  sx={{ height: "2.25rem" }}
-                >
-                  <Input value={projectDetails?.Client.name} disabled />
-                </Skeleton>
+                <Input value={project?.Client.name} disabled />
               </Grid>
               <Grid xs={12} sm={12} md={6}>
                 <FormLabel>Client UEN</FormLabel>
-                <Skeleton
-                  variant="rectangular"
-                  loading={!projectDetails}
-                  animation="wave"
-                  sx={{ height: "2.25rem" }}
-                >
-                  <Input value={projectDetails?.clientUEN} disabled />
-                </Skeleton>
+                <Input value={project?.clientUEN} disabled />
               </Grid>
               <Grid xs={12} sm={12} md={6}>
                 <FormLabel>Created on</FormLabel>
-                <Skeleton
-                  variant="rectangular"
-                  loading={!projectDetails}
-                  animation="wave"
-                  sx={{ height: "2.25rem" }}
-                >
-                  <Input
-                    value={new Date(
-                      projectDetails?.createdAt || 0,
-                    ).toLocaleDateString()}
-                    disabled
-                  />
-                </Skeleton>
+                <Input
+                  value={new Date(project?.createdAt || 0).toLocaleDateString()}
+                  disabled
+                />
               </Grid>
               <Grid xs={12} sm={12} md={6}>
                 <FormLabel>Employment by</FormLabel>
-                <Skeleton
-                  variant="rectangular"
-                  loading={!projectDetails}
-                  animation="wave"
-                  sx={{ height: "2.25rem" }}
-                >
-                  <Input value={projectDetails?.employmentBy} disabled />
-                </Skeleton>
+                <Input value={project?.employmentBy} disabled />
               </Grid>
               <Grid xs={12} sm={12} md={6}>
                 <FormLabel>Start date</FormLabel>
-                <Skeleton
-                  variant="rectangular"
-                  loading={!projectDetails}
-                  animation="wave"
-                  sx={{ height: "2.25rem" }}
-                >
-                  <Input
-                    value={new Date(
-                      projectDetails?.startDate || 0,
-                    ).toLocaleDateString()}
-                    disabled
-                  />
-                </Skeleton>
+                <Input
+                  value={new Date(project?.startDate || 0).toLocaleDateString()}
+                  disabled
+                />
               </Grid>
               <Grid xs={12} sm={12} md={6}>
                 <FormLabel>End date</FormLabel>
-                <Skeleton
-                  variant="rectangular"
-                  loading={!projectDetails}
-                  animation="wave"
-                  sx={{ height: "2.25rem" }}
-                >
-                  <Input
-                    value={new Date(
-                      projectDetails?.endDate || 0,
-                    ).toLocaleDateString()}
-                    disabled
-                  />
-                </Skeleton>
+                <Input
+                  value={new Date(project?.endDate || 0).toLocaleDateString()}
+                  disabled
+                />
               </Grid>
             </Grid>
           </Stack>
