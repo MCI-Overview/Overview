@@ -1,18 +1,27 @@
 import React from "react";
-import { 
-Box, 
-Typography,
-Divider,
-Stack,
-CardOverflow,
-CardActions,
-Input,
-Button,
-Card,
-FormLabel,
+import {
+  Box,
+  Typography,
+  Divider,
+  Stack,
+  CardOverflow,
+  CardActions,
+  Input,
+  Button,
+  Card,
+  FormLabel,
 } from "@mui/joy";
+import { useNavigate } from "react-router-dom";
 
 const AdminLogin: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Handle form data here if needed
+    navigate('/user/new');
+  };
+
   return (
     <>
       <Stack
@@ -26,7 +35,7 @@ const AdminLogin: React.FC = () => {
         }}
       >
         <Card>
-          
+
           <Box sx={{ mb: 1 }}>
             <Typography level="title-md">Overview Attendance</Typography>
             <Typography level="body-sm">
@@ -37,24 +46,17 @@ const AdminLogin: React.FC = () => {
           <Divider />
 
           <Stack spacing={2} sx={{ my: 1 }}>
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                const formData = new FormData(event.currentTarget);
-                const formJson = Object.fromEntries((formData as any).entries());
-                alert(JSON.stringify(formJson));
-              }}
-            >
+            <form onSubmit={handleSubmit}>
               <Stack spacing={1}>
                 <FormLabel>NRIC / FIN</FormLabel>
                 <Input placeholder="" required />
                 <FormLabel>Password</FormLabel>
-                <Input placeholder="" required />
+                <Input type="password" placeholder="" required />
                 <Button type="submit">Login</Button>
               </Stack>
             </form>
           </Stack>
-            
+
           <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
             <CardActions sx={{ pt: 2 }}>
               <Typography level="body-sm">
