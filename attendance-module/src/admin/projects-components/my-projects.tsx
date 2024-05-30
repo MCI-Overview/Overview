@@ -23,7 +23,9 @@ const MyProjects: React.FC = () => {
     navigate("/admin/projects#create");
   };
 
-  const [projectsList, setProjectsList] = React.useState([]);
+  const [projectsList, setProjectsList] = React.useState<Project[] | null>(
+    null,
+  );
 
   useEffect(() => {
     axios.get("/api/admin/projects").then((response) => {
@@ -52,19 +54,21 @@ const MyProjects: React.FC = () => {
           </Box>
           <Divider />
           <Stack spacing={2} sx={{ my: 1 }}>
-            {projectsList.length === 0 && (
+            {!projectsList && <div>Loading...</div>}
+            {projectsList && projectsList.length === 0 && (
               <Typography level="body-sm" textAlign="center">
                 No projects found. Create one to get started!
               </Typography>
             )}
-            {projectsList.map((project: Project) => (
-              <ProjectDisplay
-                key={project.id}
-                projectName={project.name}
-                companyName={project.Client.name}
-                projectId={project.id}
-              />
-            ))}
+            {projectsList &&
+              projectsList.map((project: Project) => (
+                <ProjectDisplay
+                  key={project.cuid}
+                  projectName={project.name}
+                  companyName={project.Client.name}
+                  projectId={project.cuid}
+                />
+              ))}
           </Stack>
           <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
             <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
