@@ -47,15 +47,15 @@ passport.use(
       profile: Profile,
       cb: (error: any, user?: any) => void,
     ) {
-      const { cuid, name } = await prisma.consultant.upsert({
+      const { cuid, name, email } = await prisma.consultant.upsert({
         where: {
-          email: profile.userPrincipalName,
+          email: profile.userPrincipalName.toLowerCase(),
         },
         update: {
           name: profile.displayName,
         },
         create: {
-          email: profile.userPrincipalName,
+          email: profile.userPrincipalName.toLowerCase(),
           name: profile.displayName,
           designation: profile._json.jobTitle || "Employee",
           contact: profile._json.businessPhones[0] || null,
@@ -65,7 +65,7 @@ passport.use(
       cb(null, {
         cuid,
         name,
-        email: profile.userPrincipalName,
+        email,
         userType: "Admin",
       });
     },

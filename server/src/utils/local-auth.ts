@@ -9,7 +9,7 @@ passport.use(
   new LocalStrategy(async function verify(username, password, cb) {
     try {
       const loginData = await prisma.user.findUniqueOrThrow({
-        where: { username: username },
+        where: { username: username.toUpperCase() },
         include: { Candidate: true },
       });
 
