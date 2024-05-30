@@ -21,6 +21,8 @@ import GroupIcon from "@mui/icons-material/Group";
 
 import ColorSchemeToggle from "./ColorSchemeToggle";
 import { closeSidebar } from "../utils/toggle-sidebar";
+import { useUserContext } from "../providers/userContextProvider";
+import axios from "axios";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -40,6 +42,9 @@ export default function Sidebar() {
   const handleProjectsClick = () => {
     navigate("/admin/projects");
   };
+
+  const { user, setUser } = useUserContext();
+
   return (
     <Sheet
       className="Sidebar"
@@ -256,10 +261,17 @@ export default function Sidebar() {
       <Divider />
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography level="title-sm">Username</Typography>
-          <Typography level="body-xs">user@mail.com</Typography>
+          <Typography level="title-sm">{user?.name}</Typography>
+          <Typography level="body-xs">
+            {user?.userType == "Admin" && user.email}
+          </Typography>
         </Box>
-        <IconButton size="sm" variant="plain" color="neutral">
+        <IconButton
+          size="sm"
+          variant="plain"
+          color="neutral"
+          onClick={() => axios.post("/logout").then(() => setUser(null))}
+        >
           <LogoutRoundedIcon />
         </IconButton>
       </Box>

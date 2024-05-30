@@ -65,7 +65,8 @@ passport.use(
       cb(null, {
         cuid,
         name,
-        isAdmin: true,
+        email: profile.userPrincipalName,
+        userType: "Admin",
       });
     },
   ),

@@ -1,12 +1,21 @@
 import { useLocation, Outlet, Navigate } from "react-router-dom";
-import { User } from "../types";
+import { useUserContext } from "../providers/userContextProvider";
+import axios from "axios";
 
-export function PrivateUserRoutes({ user }: { user: User }) {
+export function PrivateUserRoutes() {
+  const { user, setUser } = useUserContext();
+
+  if (!user) {
+    axios.get("/api").then((response) => {
+      setUser(response.data);
+    });
+  }
+
   const currentPath = useLocation().pathname;
 
   if (user === null) return;
 
-  if (!user || (user && !user.isUser)) {
+  if (!user || (user && !(user.userType == "User"))) {
     if (currentPath === "/user") {
       return <Outlet />;
     }
@@ -21,12 +30,20 @@ export function PrivateUserRoutes({ user }: { user: User }) {
   return <Outlet />;
 }
 
-export function PrivateAdminRoutes({ user }: { user: User }) {
+export function PrivateAdminRoutes() {
+  const { user, setUser } = useUserContext();
+
+  if (!user) {
+    axios.get("/api").then((response) => {
+      setUser(response.data);
+    });
+  }
+
   const currentPath = useLocation().pathname;
 
   if (!user) return;
 
-  if (!user || (user && !user.isAdmin)) {
+  if (!user || (user && !(user.userType == "Admin"))) {
     if (currentPath === "/admin") {
       return <Outlet />;
     }

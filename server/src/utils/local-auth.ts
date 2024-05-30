@@ -28,7 +28,8 @@ passport.use(
         return cb(null, {
           cuid,
           name,
-          isUser: true,
+          nric: username,
+          userType: "User",
         });
       });
     } catch (error) {

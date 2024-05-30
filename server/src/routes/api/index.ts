@@ -1,25 +1,27 @@
-import { Router } from "express";
+import { NextFunction, Router } from "express";
 import userAPIRoutes from "./user";
 import adminAPIRoutes from "./admin";
 import { User } from "@/types";
+import { Request, Response } from "express";
 
 const router: Router = Router();
 
-router.use("/user", userAPIRoutes, (req, res) => {
+function checkAdmin(req: Request, res: Response, next: NextFunction) {
   const user: User = req.user as User;
-  if (!user?.isUser) {
-    res.status(401).send("Unauthorized");
-    return;
-  }
-});
+  if (!(user?.userType == "Admin")) return res.status(401).send("Unauthorized");
 
-router.use("/admin", adminAPIRoutes, (req, res) => {
+  return next();
+}
+
+function checkUser(req: Request, res: Response, next: NextFunction) {
   const user: User = req.user as User;
-  if (!user?.isAdmin) {
-    res.status(401).send("Unauthorized");
-    return;
-  }
-});
+  if (!(user?.userType == "User")) return res.status(401).send("Unauthorized");
+
+  return next();
+}
+
+router.use("/user", checkUser, userAPIRoutes);
+router.use("/admin", checkAdmin, adminAPIRoutes);
 
 router.get("/", (req, res) => {
   const user = req.user as User;

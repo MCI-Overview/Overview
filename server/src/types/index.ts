@@ -9,11 +9,20 @@ export type Profile = {
   };
 };
 
-export type User = {
+export type User = ConsultantUser | CandidateUser;
+
+export type ConsultantUser = {
   cuid: string;
   name: string;
-  isUser?: boolean;
-  isAdmin?: boolean;
+  email: string;
+  userType: "Admin";
+};
+
+export type CandidateUser = {
+  cuid: string;
+  name: string;
+  nric: string;
+  userType: "User";
 };
 
 export type PrismaError = {

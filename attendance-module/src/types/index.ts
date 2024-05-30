@@ -15,23 +15,34 @@ export type Location = {
 };
 
 export type ClientCompany = {
-  UEN: string;
+  uen: string;
   name: string;
 };
 
 export type Consultant = {
+  cuid: string;
   email: string;
   name: string;
 };
 
-export type User = {
-  id: string;
+export type User = ConsultantUser | CandidateUser;
+
+export type ConsultantUser = {
+  cuid: string;
   name: string;
-  isUser?: boolean;
-  isAdmin?: boolean;
+  email: string;
+  userType: "Admin";
+};
+
+export type CandidateUser = {
+  cuid: string;
+  name: string;
+  nric: string;
+  userType: "User";
 };
 
 export type CandidateBasic = {
+  cuid: string;
   nric: string;
   name: string;
   phoneNumber: string;
@@ -50,7 +61,7 @@ export type Manage = {
 };
 
 export type Project = {
-  id: string;
+  cuid: string;
   name: string;
   clientUEN: string;
   locations: Location[];
