@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GlobalStyles from "@mui/joy/GlobalStyles";
 import Box from "@mui/joy/Box";
@@ -49,7 +50,7 @@ export default function Sidebar() {
           md: "none",
         },
         transition: "transform 0.4s, width 0.4s",
-        zIndex: 0,
+        zIndex: 10,
         height: "100dvh",
         width: "var(--Sidebar-width)",
         top: 0,

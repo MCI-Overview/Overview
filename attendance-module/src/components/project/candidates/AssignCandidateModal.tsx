@@ -233,6 +233,8 @@ const AssignCandidateModal = ({
           }}
           fields={fields}
           rowHook={rowHook}
+          customTheme={{}}
+          z-index={0}
         />
       </Modal>
 
