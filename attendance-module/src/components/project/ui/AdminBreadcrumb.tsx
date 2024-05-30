@@ -1,6 +1,7 @@
-import { Breadcrumbs, Typography, Link } from "@mui/joy";
+import { Breadcrumbs, Typography, Link, Button } from "@mui/joy";
 import { HomeRounded, ChevronRightRounded } from "@mui/icons-material";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export type BreadcrumbPart = {
   label: React.ReactNode;
@@ -8,17 +9,18 @@ export type BreadcrumbPart = {
 };
 
 function CustomLink({ breadcrumbPart }: { breadcrumbPart: BreadcrumbPart }) {
+  const navigate = useNavigate();
+
   return (
-    <Link
-      underline="none"
-      color="neutral"
-      href={breadcrumbPart.link}
-      aria-label="Home"
+    <Typography
+      color="primary"
+      fontWeight={500}
+      fontSize={12}
+      sx={{ cursor: "pointer" }}
+      onClick={() => navigate(breadcrumbPart.link)}
     >
-      <Typography color="primary" fontWeight={500} fontSize={12}>
-        {breadcrumbPart.label}
-      </Typography>
-    </Link>
+      {breadcrumbPart.label}
+    </Typography>
   );
 }
 
