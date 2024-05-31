@@ -7,16 +7,16 @@ import {
   useParams,
 } from "react-router-dom";
 import { Tab, TabBar } from "../components/TabBar";
-import { Typography, Box, CircularProgress } from "@mui/joy";
+import { Typography, Box } from "@mui/joy";
 import {
   AdminBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
-import axios from "axios";
-import ProjectOverview from "./projects-components/overview-tab-components/project-overview";
+import ProjectOverview from "./projects-components/overview-tab-components/Page.tsx";
 import AssignCandidatePage from "../components/project/candidates/Page";
-import RosterPage from "../components/project/manage/Roster";
+import RosterPage from "../components/project/roster/RosterPage.tsx";
 import { useProjectContext } from "../providers/projectContextProvider";
+import ShiftPage from "../components/project/shift/ShiftPage.tsx";
 
 const tabs: Tab[] = [
   {
@@ -32,6 +32,10 @@ const tabs: Tab[] = [
     content: <AssignCandidatePage />,
   },
   {
+    label: "Shifts",
+    content: <ShiftPage />,
+  },
+  {
     label: "Roster",
     content: <RosterPage />,
   },
@@ -40,32 +44,12 @@ const tabs: Tab[] = [
 const AdminProjects: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const projectCuid = useParams().projectCuid;
-
-  const { project, setProject } = useProjectContext();
+  const { projectCuid } = useParams();
+  const { project, updateProject } = useProjectContext();
 
   const [tabValue, setTabValue] = useState<number>(0);
 
-  const breadcrumbs: BreadcrumbPart[] = [
-    {
-      label: "Projects",
-      link: "/admin/projects",
-    },
-    {
-      label: project?.name,
-      link: `/admin/project/${projectCuid}`,
-    },
-  ];
-
-  useEffect(() => {
-    setProject(null);
-
-    if (!projectCuid) return;
-
-    axios.get(`/api/admin/project/${projectCuid}`).then((res) => {
-      setProject(res.data);
-    });
-  }, [projectCuid, setProject]);
+  useEffect(() => updateProject(projectCuid), []);
 
   useEffect(() => {
     const hash = location.hash.replace("#", "");
@@ -76,8 +60,11 @@ const AdminProjects: React.FC = () => {
       case "candidates":
         setTabValue(2);
         break;
-      case "roster":
+      case "shifts":
         setTabValue(3);
+        break;
+      case "roster":
+        setTabValue(4);
         break;
       default:
         setTabValue(0);
@@ -89,6 +76,17 @@ const AdminProjects: React.FC = () => {
 
   if (!project) return null;
 
+  const breadcrumbs: BreadcrumbPart[] = [
+    {
+      label: "Projects",
+      link: "/admin/projects",
+    },
+    {
+      label: project?.name,
+      link: `/admin/project/${project?.cuid}`,
+    },
+  ];
+
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
     newValue: string | number | null,
@@ -97,16 +95,19 @@ const AdminProjects: React.FC = () => {
     setTabValue(newValue);
     switch (newValue) {
       case 0:
-        navigate(`/admin/project/${projectCuid}`);
+        navigate(`/admin/project/${project.cuid}`);
         break;
       case 1:
-        navigate(`/admin/project/${projectCuid}#attendance`);
+        navigate(`/admin/project/${project.cuid}#attendance`);
         break;
       case 2:
-        navigate(`/admin/project/${projectCuid}#candidates`);
+        navigate(`/admin/project/${project.cuid}#candidates`);
         break;
       case 3:
-        navigate(`/admin/project/${projectCuid}#roster`);
+        navigate(`/admin/project/${project.cuid}#shifts`);
+        break;
+      case 4:
+        navigate(`/admin/project/${project.cuid}#roster`);
         break;
       default:
         break;

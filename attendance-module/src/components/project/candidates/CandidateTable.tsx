@@ -1,16 +1,22 @@
-import { Data } from "react-spreadsheet-import/types/types";
 import { getExactAge } from "../../../utils/date-time";
-import { mask } from "../../../utils/mask";
+import { Candidate } from "../../../types";
 
-import { Box, Table, Typography, Tooltip, IconButton } from "@mui/joy";
-import { Edit, Delete } from "@mui/icons-material";
+import {
+  Box,
+  Table,
+  TableProps,
+  Typography,
+  Tooltip,
+  IconButton,
+} from "@mui/joy";
+import { Delete } from "@mui/icons-material";
 
 interface CandidateTableProps {
   tableTitle?: string;
   tableDescription?: string;
-  tableProps: any;
-  tableData: Data<string>[];
-  handleEdit?: (nric: string) => void;
+  tableProps: TableProps;
+  tableData: Candidate[];
+  // handleEdit?: (nric: string) => void;
   handleDelete?: (nricList: string[]) => void;
 }
 
@@ -19,10 +25,10 @@ const CandidateTable = ({
   tableDescription,
   tableProps,
   tableData,
-  handleEdit,
+  // handleEdit,
   handleDelete,
 }: CandidateTableProps) => {
-  const showActions = handleEdit || handleDelete;
+  const showActions = handleDelete; // || handleEdit;
 
   return (
     <Box>
@@ -33,7 +39,7 @@ const CandidateTable = ({
           <tr>
             <th>NRIC</th>
             <th>Full name</th>
-            <th>Phone Number</th>
+            <th>Contact Number</th>
             <th>Date of birth</th>
             <th>Age</th>
             {showActions && <th>Actions</th>}
@@ -45,12 +51,12 @@ const CandidateTable = ({
               <td colSpan={showActions ? 6 : 5}>No candidates found.</td>
             </tr>
           ) : (
-            tableData.map((row: any) => (
-              <tr key={row.nric}>
-                <td>{mask(row.nric)}</td>
+            tableData.map((row: Candidate) => (
+              <tr key={row.cuid}>
+                <td>{row.nric}</td>
                 <td>{row.name}</td>
-                <td>{row.phoneNumber}</td>
-                <td>{row.dateOfBirth.slice(0, 10)}</td>
+                <td>{row.contact}</td>
+                <td>{row.dateOfBirth ? row.dateOfBirth.slice(0, 10) : ""}</td>
                 <td>
                   {row.dateOfBirth
                     ? getExactAge(row.dateOfBirth as string)
@@ -66,23 +72,23 @@ const CandidateTable = ({
                         gap: 1,
                       }}
                     >
-                      {handleEdit && (
+                      {/* {handleEdit && (
                         <Tooltip size="sm" title="Edit" placement="left">
                           <IconButton
                             size="sm"
                             color="neutral"
-                            onClick={() => handleEdit(row.nric)}
+                            onClick={() => handleEdit(row.cuid)}
                           >
                             <Edit />
                           </IconButton>
                         </Tooltip>
-                      )}
+                      )} */}
                       {handleDelete && (
                         <Tooltip size="sm" title="Delete" placement="right">
                           <IconButton
                             size="sm"
                             color="danger"
-                            onClick={() => handleDelete([row.nric])}
+                            onClick={() => handleDelete([row.cuid])}
                           >
                             <Delete />
                           </IconButton>

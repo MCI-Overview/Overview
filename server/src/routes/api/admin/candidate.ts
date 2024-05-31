@@ -184,7 +184,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
 
 candidateAPIRoutes.delete("/candidate", async (req, res) => {
   const user = req.user as User;
-  const { nric: cuid } = req.body;
+  const { cuid } = req.body;
 
   if (!cuid) return res.status(400).send("cuid parameter is required.");
 
@@ -322,7 +322,7 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   // Build the update data object with only provided fields
   const updateData = {
     ...(name && { name }),
-    ...(contact && { phoneNumber: contact }),
+    ...(contact && { contact: contact }),
     ...(nationality && { nationality }),
     ...(dateOfBirth && { dateOfBirth }),
     ...(addressObject && { address: { update: addressObject } }),

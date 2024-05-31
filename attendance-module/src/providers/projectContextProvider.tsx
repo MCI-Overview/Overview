@@ -1,13 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from "react";
 import { Project } from "../types";
+import axios from "axios";
 
 const ProjectContext = createContext<{
   project: Project | null;
-  setProject: React.Dispatch<React.SetStateAction<Project | null>>;
+  updateProject: (projectCuid?: string | undefined) => void;
 }>({
   project: null,
-  setProject: () => {},
+  updateProject: () => {},
 });
 
 export function ProjectContextProvider({
@@ -17,8 +18,22 @@ export function ProjectContextProvider({
 }) {
   const [project, setProject] = useState<Project | null>(null);
 
+  function updateProject(projectCuid?: string | undefined) {
+    const previousProjectCuid = project?.cuid;
+
+    if (!projectCuid && !previousProjectCuid) return;
+
+    setProject(null);
+
+    axios
+      .get(`/api/admin/project/${projectCuid || previousProjectCuid}`)
+      .then((res) => {
+        setProject(res.data);
+      });
+  }
+
   return (
-    <ProjectContext.Provider value={{ project, setProject }}>
+    <ProjectContext.Provider value={{ project, updateProject }}>
       {children}
     </ProjectContext.Provider>
   );

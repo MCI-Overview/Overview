@@ -1,6 +1,3 @@
-// ./login/choose-role.tsx
-import React, { useEffect } from "react";
-
 import {
   Box,
   Divider,
@@ -15,19 +12,12 @@ import {
 import ProjectHeadcount from "./project-headcount";
 import DailyAttendanceReport from "./project-daily-attendance";
 import ProjectDailyHeadcount from "./project-daily-headcount";
-import axios from "axios";
-import { useParams } from "react-router-dom";
 import { useProjectContext } from "../../../providers/projectContextProvider";
+import ProjectLocations from "./project-locations";
 
 const ProjectOverview: React.FC = () => {
-  const projectId = useParams().projectId;
-  const { project, setProject } = useProjectContext();
+  const { project } = useProjectContext();
 
-  useEffect(() => {
-    axios.get(`/api/admin/project/${projectId}`).then((response) => {
-      setProject(response.data);
-    });
-  }, [projectId, setProject]);
   return (
     <>
       <Stack
@@ -112,7 +102,7 @@ const ProjectOverview: React.FC = () => {
             </Typography>
           </Box>
           <Divider />
-          <Stack spacing={2} sx={{ my: 1 }}></Stack>
+          <ProjectLocations />
           <CardOverflow
             sx={{ borderTop: "1px solid", borderColor: "divider" }}
           ></CardOverflow>

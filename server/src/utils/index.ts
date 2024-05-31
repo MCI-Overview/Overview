@@ -24,12 +24,12 @@ export enum Permission {
 }
 
 export async function checkPermission(
-  email: string,
+  cuid: string,
   permissionName: Permission,
 ) {
   const permissionData = await prisma.consultant.findUnique({
     where: {
-      email: email,
+      cuid,
     },
     select: {
       permissions: true,
@@ -54,5 +54,5 @@ export async function checkPermission(
 }
 
 export function maskNRIC(nric: string): string {
-  return nric.replace(/(\d{5})(\d{4})/, "*****$2");
+  return "*****" + nric.slice(5, 9);
 }

@@ -1,4 +1,3 @@
-import { Check } from "@mui/icons-material";
 import {
   Modal,
   ModalDialog,
@@ -10,14 +9,13 @@ import {
   FormLabel,
   Input,
   Chip,
-  Checkbox,
   Button,
   Autocomplete,
 } from "@mui/joy";
 import axios from "axios";
-import { SyntheticEvent, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { ShiftGroup } from "../../../types";
+import { SyntheticEvent, useRef, useState } from "react";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+import { CreateShiftData } from "../../../types";
 
 const DAYS = [
   "Monday",
@@ -30,49 +28,53 @@ const DAYS = [
 ];
 
 export default function CreateShiftModal() {
-  const projectId = useParams().projectId;
+  const { project, updateProject } = useProjectContext();
   const [isOpen, setIsOpen] = useState(false);
-  const [shiftData, setShiftData] = useState({});
+  const [shiftData, setShiftData] = useState<CreateShiftData>({
+    shiftGroupName: null,
+    shiftGroupCuid: null,
+    startTime: "00:00",
+    endTime: "00:00",
+    headcount: null,
+    days: [],
+  });
   const [days, setDays] = useState<string[]>([]);
-  const [shiftGroups, setShiftGroups] = useState<ShiftGroup[]>([]);
+  const [shiftGroupExists, setShiftGroupExists] = useState<boolean>(false);
+  const headcountInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    axios
-      .get(`/api/admin/project/${projectId}/shiftGroups`)
-      .then((response) => {
-        const currentGroups = response.data;
-        setShiftGroups(currentGroups);
-      });
-  }, [projectId]);
+  if (!project) return null;
 
   async function handleCreateShift() {
-    await axios.post("/api/admin/shift", {
+    await axios.post(`/api/admin/project/${project?.cuid}/shifts`, {
       ...shiftData,
-      projectId,
       days: days,
     });
     setIsOpen(false);
-    window.location.reload();
+    updateProject();
   }
 
   function handleShiftNameInput(e: SyntheticEvent<Element, Event>) {
     const inputShiftGroupName = (e.target as HTMLSelectElement).value;
 
-    const shiftGroup = shiftGroups.find(
+    const shiftGroup = project?.ShiftGroup.find(
       (group) => group.name === inputShiftGroupName,
     );
     if (shiftGroup) {
       setShiftData({
         ...shiftData,
-        shiftGroupId: shiftGroup.id,
+        shiftGroupCuid: shiftGroup.cuid,
         shiftGroupName: null,
+        headcount: shiftGroup.headcount.toString(),
       });
+      setShiftGroupExists(true);
     } else {
       setShiftData({
         ...shiftData,
-        shiftGroupId: null,
+        shiftGroupCuid: null,
         shiftGroupName: inputShiftGroupName,
+        headcount: null,
       });
+      setShiftGroupExists(false);
     }
   }
 
@@ -86,12 +88,12 @@ export default function CreateShiftModal() {
             <Grid container spacing={1}>
               <Grid xs={6}>
                 <FormControl required>
-                  <FormLabel>Shift Group Name</FormLabel>
+                  <FormLabel>Shift Name</FormLabel>
                   <Autocomplete
                     freeSolo
-                    options={shiftGroups.map((shiftGroup) => ({
+                    options={project?.ShiftGroup.map((shiftGroup) => ({
                       label: shiftGroup.name,
-                      value: shiftGroup.id,
+                      value: shiftGroup.cuid,
                     }))}
                     onSelect={handleShiftNameInput}
                   />
@@ -101,10 +103,16 @@ export default function CreateShiftModal() {
                 <FormControl required>
                   <FormLabel>Headcount</FormLabel>
                   <Input
+                    ref={headcountInputRef}
+                    disabled={shiftGroupExists}
                     type="number"
+                    value={shiftData.headcount || ""}
                     onChange={(e) => {
                       if (parseInt(e.target.value) < 0) {
-                        e.target.value = "0";
+                        setShiftData({
+                          ...shiftData,
+                          headcount: "0",
+                        });
                       } else {
                         setShiftData({
                           ...shiftData,
@@ -153,29 +161,17 @@ export default function CreateShiftModal() {
                   return (
                     <Chip
                       key={name}
-                      variant="plain"
+                      variant={checked ? "solid" : "outlined"}
                       color={checked ? "primary" : "neutral"}
-                      startDecorator={
-                        checked && (
-                          <Check sx={{ zIndex: 1, pointerEvents: "none" }} />
+                      onClick={() =>
+                        setDays(
+                          checked
+                            ? days.filter((day) => day !== name)
+                            : [...days, name],
                         )
                       }
                     >
-                      <Checkbox
-                        variant="outlined"
-                        color={checked ? "primary" : "neutral"}
-                        disableIcon
-                        overlay
-                        label={name.substring(0, 3)}
-                        checked={checked}
-                        onChange={(event) => {
-                          setDays((names) =>
-                            !event.target.checked
-                              ? names.filter((n) => n !== name)
-                              : [...names, name],
-                          );
-                        }}
-                      />
+                      {name.substring(0, 3)}
                     </Chip>
                   );
                 })}

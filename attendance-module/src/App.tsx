@@ -8,7 +8,6 @@ import LoginAdmin from "./login/login-admin";
 import LoginUser from "./login/login-user";
 import Box from "@mui/joy/Box";
 import Sidebar from "./components/Sidebar";
-import SidebarUser from "./components/SidebarUser";
 import Header from "./components/Header";
 import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
@@ -81,9 +80,8 @@ function App() {
         <UserContextProvider>
           <CssBaseline />
           <Box sx={{ display: "flex", minHeight: "100dvh" }}>
-            {!isUserRoute && !shouldHideSidebar && <Sidebar />}
+            {!shouldHideSidebar && <Sidebar />}
             {!shouldHideSidebar && <Header />}
-            {isUserRoute && !shouldHideSidebar && <SidebarUser />}
 
             <Box
               component="main"
@@ -108,10 +106,11 @@ function App() {
               <Route path="/user" element={<LoginUser />} />
               <Route path="/user/home" element={<MyProfile />} />
             </Route> */}
-
-                  <Route path="/" element={<LoginUser />} />
-                  <Route path="/user/new" element={<UserNew />} />
-                  <Route path="/user/home" element={<UserHome />} />
+                  <Route element={<PrivateUserRoutes />}>
+                    <Route path="/" element={<LoginUser />} />
+                    <Route path="/user/new" element={<UserNew />} />
+                    <Route path="/user/home" element={<UserHome />} />
+                  </Route>
 
                   {/* Admin routes */}
 

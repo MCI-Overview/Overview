@@ -1,7 +1,7 @@
 import type { FC } from 'react'
 import { memo, useState } from 'react'
 
-import { Box2 } from './Box2';
+import { Box2 } from '../roster/DraggableChip';
 import { ItemTypes } from './ItemTypes';
 
 interface Box2State {

@@ -8,18 +8,18 @@ import {
   Typography,
 } from "@mui/joy";
 import { useEffect, useState } from "react";
-import { CandidateBasic } from "../../../types";
+import { Candidate } from "../../../types";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { dateRegex, phoneRegex } from "../../../utils/validation";
+import { dateRegex, contactRegex } from "../../../utils/validation";
 import { getExactAge } from "../../../utils/date-time";
 
 interface EditCandidateModalProps {
-  candidate: CandidateBasic;
+  candidate: Candidate;
   isEditModalOpen: boolean;
   setIsEditModalOpen: (isOpen: boolean) => void;
-  candidatesData: CandidateBasic[];
-  setCandidatesData: (candidates: CandidateBasic[]) => void;
+  candidatesData: Candidate[];
+  setCandidatesData: (candidates: Candidate[]) => void;
 }
 
 const EditCandidateModal = ({
@@ -30,20 +30,20 @@ const EditCandidateModal = ({
   setCandidatesData,
 }: EditCandidateModalProps) => {
   const [name, setName] = useState(candidate.name);
-  const [phoneNumber, setPhoneNumber] = useState(candidate.phoneNumber);
+  const [contact, setContact] = useState(candidate.contact);
   const [dateOfBirth, setDateOfBirth] = useState(
     new Date(candidate.dateOfBirth).toDateString(),
   );
 
   const [isNameValid, setIsNameValid] = useState(true);
-  const [isPhoneNumberValid, setIsPhoneNumberValid] = useState(true);
+  const [isContactValid, setIsContactValid] = useState(true);
   const [isDateOfBirthValid, setIsDateOfBirthValid] = useState(true);
 
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
 
   useEffect(() => {
     setName(candidate.name);
-    setPhoneNumber(candidate.phoneNumber);
+    setContact(candidate.contact);
     setDateOfBirth(candidate.dateOfBirth.slice(0, 10));
   }, [candidate]);
 
@@ -54,10 +54,8 @@ const EditCandidateModal = ({
 
   // phone number validation
   useEffect(() => {
-    setIsPhoneNumberValid(
-      phoneNumber.length > 0 && phoneRegex.test(phoneNumber),
-    );
-  }, [phoneNumber]);
+    setIsContactValid(contact.length > 0 && contactRegex.test(contact));
+  }, [contact]);
 
   // dob validation
   useEffect(() => {
@@ -70,27 +68,26 @@ const EditCandidateModal = ({
 
   // disallow submission if any of the fields are invalid
   useEffect(() => {
-    setIsSubmitDisabled(
-      !isNameValid || !isPhoneNumberValid || !isDateOfBirthValid,
-    );
-  }, [isNameValid, isPhoneNumberValid, isDateOfBirthValid]);
+    setIsSubmitDisabled(!isNameValid || !isContactValid || !isDateOfBirthValid);
+  }, [isNameValid, isContactValid, isDateOfBirthValid]);
 
   const handleSave = async () => {
     try {
       await axios.patch("http://localhost:3000/api/admin/candidate", {
-        nric: candidate.nric,
+        cuid: candidate.cuid,
         name: name,
-        phoneNumber: phoneNumber,
+        contact: contact,
         dateOfBirth: new Date(dateOfBirth),
       });
 
       toast.success("Candidate edited");
       const updatedCandidates = candidatesData.map((c) => {
-        if (c.nric === candidate.nric) {
+        if (c.cuid === candidate.cuid) {
           return {
+            cuid: c.cuid,
             nric: c.nric,
             name: name,
-            phoneNumber: phoneNumber,
+            contact: contact,
             dateOfBirth: dateOfBirth,
           };
         }
@@ -99,6 +96,8 @@ const EditCandidateModal = ({
       setCandidatesData(updatedCandidates);
       setIsEditModalOpen(false);
     } catch (error) {
+      const prismaError = error as PrismaError;
+      console.log(prismaError);
       toast.error("Error while editing candidate");
     }
   };
@@ -123,17 +122,17 @@ const EditCandidateModal = ({
           />
         </Box>
         <Box>
-          {isPhoneNumberValid ? (
-            <Typography level="body-xs">Phone Number</Typography>
+          {isContactValid ? (
+            <Typography level="body-xs">Contact Number</Typography>
           ) : (
             <Typography level="body-xs" color="danger">
-              Phone Number is invalid
+              Contact Number is invalid
             </Typography>
           )}
           <Input
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            color={isPhoneNumberValid ? "neutral" : "danger"}
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+            color={isContactValid ? "neutral" : "danger"}
           />
         </Box>
         <Box>

@@ -16,15 +16,15 @@ export function PrivateUserRoutes() {
   if (user === null) return;
 
   if (!user || (user && !(user.userType == "User"))) {
-    if (currentPath === "/user") {
+    if (currentPath === "/") {
       return <Outlet />;
     }
 
-    return <Navigate to="/user" />;
+    return <Navigate to="/" />;
   }
 
   if (user && currentPath === "/user") {
-    return <Navigate to="/user/home" />;
+    return <Navigate to="/user" />;
   }
 
   return <Outlet />;

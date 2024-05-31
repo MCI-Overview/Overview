@@ -1,4 +1,4 @@
-import { CandidateBasic } from "../../../types";
+import { Candidate } from "../../../types";
 
 import {
   Button,
@@ -13,7 +13,7 @@ import {
 interface DeleteCandidateModal {
   isDeleteModalOpen: boolean;
   setIsDeleteModalOpen: (isOpen: boolean) => void;
-  candidatesData: CandidateBasic[];
+  candidatesData: Candidate[];
   candidatesToDelete: string[];
   handleDeleteCandidates: () => void;
 }
@@ -34,9 +34,9 @@ const DeleteCandidateModal = ({
         </Typography>
         <List component="ol" marker="decimal">
           {candidatesData.map((c) => {
-            if (candidatesToDelete.includes(c.nric)) {
+            if (candidatesToDelete.includes(c.cuid)) {
               return (
-                <ListItem key={c.nric}>
+                <ListItem key={c.cuid}>
                   <Typography level="title-md">
                     {c.nric} - {c.name}
                   </Typography>

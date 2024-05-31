@@ -8,35 +8,58 @@ datasource db {
 }
 
 model Assign {
-  candidateNric   String     @db.VarChar(9)
-  consultantEmail String
-  projectId       String
-  Candidate       Candidate  @relation(fields: [candidateNric], references: [nric])
-  Consultant      Consultant @relation(fields: [consultantEmail], references: [email])
-  Project         Project    @relation(fields: [projectId], references: [id])
+  candidateCuid  String
+  consultantCuid String
+  projectCuid    String
+  startDate      DateTime
+  endDate        DateTime
+  Request        Request[]
+  Candidate      Candidate  @relation(fields: [candidateCuid], references: [cuid])
+  Consultant     Consultant @relation(fields: [consultantCuid], references: [cuid])
+  Project        Project    @relation(fields: [projectCuid], references: [cuid])
 
-  @@id([projectId, candidateNric])
+  @@id([projectCuid, candidateCuid])
+}
+
+model Request {
+  cuid         String        @id @default(cuid())
+  candidateCuid String
+  projectCuid  String
+  type RequestType
+  Assign      Assign       @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
+  status       RequestStatus @default(PENDING)
+}
+
+enum RequestType {
+  CLAIM
+  PAID_LEAVE
+  UNPAID_LEAVE
+  RESIGNATION
+  CANCEL
 }
 
 model Attendance {
-  id            String            @id @default(cuid())
-  candidateNric String
-  shiftId       String
+  cuid          String            @id @default(cuid())
+  candidateCuid String
+  shiftCuid     String
   clockInTime   DateTime?
   clockOutTime  DateTime?
   status        AttendanceStatus?
-  shiftDate     DateTime
-  Candidate     Candidate         @relation(fields: [candidateNric], references: [nric])
-  Shift         Shift             @relation(fields: [shiftId], references: [shiftId])
+  shiftDate     DateTime          @db.Date
+  Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
+  Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
+
+  @@unique([candidateCuid, shiftCuid, shiftDate])
 }
 
 model Candidate {
-  nric             String       @id @db.VarChar(9)
-  phoneNumber      String       @unique
+  cuid             String       @id @default(cuid())
+  nric             String       @unique @db.VarChar(9)
+  contact          String       @unique
   name             String
+  dateOfBirth      DateTime     @db.Date
   hasOnboarded     Boolean      @default(false)
   nationality      String?
-  dateOfBirth      DateTime?
   bankDetails      Json?
   address          Json?
   emergencyContact Json?
@@ -46,16 +69,17 @@ model Candidate {
 }
 
 model Client {
-  UEN     String    @id
+  uen     String    @id
   name    String    @unique
   Project Project[]
 }
 
 model Consultant {
-  email        String           @id
+  cuid         String           @id @default(cuid())
+  email        String           @unique
   name         String
-  contact      String?          @unique
   status       EmploymentStatus @default(ACTIVE)
+  contact      String?          @unique
   designation  String
   registration String?          @unique
   department   String?
@@ -65,29 +89,31 @@ model Consultant {
 }
 
 model Manage {
-  role            Role       @default(CLIENT_HOLDER)
-  consultantEmail String
-  projectId       String
-  Consultant      Consultant @relation(fields: [consultantEmail], references: [email])
-  Project         Project    @relation(fields: [projectId], references: [id])
+  role           Role       @default(CLIENT_HOLDER)
+  consultantCuid String
+  projectCuid    String
+  Consultant     Consultant @relation(fields: [consultantCuid], references: [cuid])
+  Project        Project    @relation(fields: [projectCuid], references: [cuid])
 
-  @@id([consultantEmail, projectId])
+  @@id([consultantCuid, projectCuid])
 }
 
 model Project {
-  id           String        @id @default(cuid())
-  name         String
-  clientUEN    String
-  locations    Json
-  createdAt    DateTime      @default(now())
-  endDate      DateTime
-  startDate    DateTime
-  employmentBy MCICompany
-  status       ProjectStatus @default(ACTIVE)
-  Assign       Assign[]
-  Manage       Manage[]
-  Client       Client        @relation(fields: [clientUEN], references: [UEN])
-  ShiftGroup   ShiftGroup[]
+  cuid                 String           @id @default(cuid())
+  name                 String
+  clientUEN            String
+  employmentBy         String
+  locations            Json             @default("[]")
+  createdAt            DateTime         @default(now())
+  endDate              DateTime         @db.Date
+  startDate            DateTime         @db.Date
+  noticePeriodDuration Int
+  noticePeriodUnit     NoticePeriodUnit
+  status               ProjectStatus    @default(ACTIVE)
+  Assign               Assign[]
+  Manage               Manage[]
+  Client               Client           @relation(fields: [clientUEN], references: [uen])
+  ShiftGroup           ShiftGroup[]
 }
 
 model Session {
@@ -99,41 +125,45 @@ model Session {
 }
 
 model Shift {
-  shiftId    String       @id @default(cuid())
-  groupId    String
+  cuid       String       @id @default(cuid())
+  groupCuid  String
   day        DayOfWeek
-  headcount  Int
   startTime  DateTime     @db.Time(6)
   endTime    DateTime     @db.Time(6)
   Attendance Attendance[]
-  ShiftGroup ShiftGroup   @relation(fields: [groupId], references: [id])
+  ShiftGroup ShiftGroup   @relation(fields: [groupCuid], references: [cuid])
 
-  @@unique([groupId, day, startTime, endTime])
+  @@unique([groupCuid, day, startTime, endTime])
 }
 
 model ShiftGroup {
-  id          String      @id @default(cuid())
-  projectId   String
+  cuid        String      @id @default(cuid())
+  projectCuid String
   name        String
+  headcount   Int
   shiftStatus ShiftStatus @default(ACTIVE)
   Shift       Shift[]
-  Project     Project     @relation(fields: [projectId], references: [id])
+  Project     Project     @relation(fields: [projectCuid], references: [cuid])
 
-  @@unique([projectId, name])
+  @@unique([projectCuid, name])
 }
 
 model User {
-  username  String    @id
+  cuid      String    @id @default(cuid())
+  username  String    @unique
   hash      String
-  Candidate Candidate @relation(fields: [username], references: [nric])
+  Candidate Candidate @relation(fields: [cuid], references: [cuid])
 }
 
 enum AttendanceStatus {
   PRESENT
   NO_SHOW
-  MC
-  FULL_DAY_LEAVE
-  HALF_DAY_LEAVE
+  MEDICAL
+}
+
+enum LeaveStatus {
+  FULL_DAY
+  HALF_DAY
 }
 
 enum DayOfWeek {
@@ -156,11 +186,6 @@ enum ShiftStatus {
   ARCHIVED
 }
 
-enum MCICompany {
-  MCI_CAREER_SERVICES
-  MCI_OUTSOURCING
-}
-
 enum ProjectStatus {
   ACTIVE
   EXPIRED
@@ -170,4 +195,16 @@ enum ProjectStatus {
 enum Role {
   CLIENT_HOLDER
   CANDIDATE_HOLDER
+}
+
+enum NoticePeriodUnit {
+  DAY
+  WEEK
+  MONTH
+}
+
+enum RequestStatus {
+  APPROVED
+  REJECTED
+  PENDING
 }

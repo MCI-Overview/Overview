@@ -1,6 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
-import { Consultant, Location, ProjectDetails } from "../../../types";
+import axios, { AxiosError } from "axios";
+import { Consultant, Location, CreateProjectData } from "../../../types";
 import ProjectDetailsSection from "./DetailsSection";
 
 import {
@@ -15,9 +15,11 @@ import {
 } from "@mui/joy";
 import ProjectLocationsSection from "./LocationsSection";
 import ProjectCandidateHoldersSection from "./CandidateHoldersSection";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const CreateProjectPage = () => {
-  const [projectDetails, setProjectDetails] = useState<ProjectDetails>({
+  const [projectDetails, setProjectDetails] = useState<CreateProjectData>({
     name: null,
     clientUEN: null,
     clientName: null,
@@ -28,22 +30,29 @@ const CreateProjectPage = () => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [candidateHolders, setCandidateHolders] = useState<Consultant[]>([]);
 
+  const navigate = useNavigate();
+
   const handleSaveProject = async () => {
     const body = {
       ...projectDetails,
       locations,
-      candidateHolders: candidateHolders.map((holder) => holder.email),
+      candidateHolders: candidateHolders.map((holder) => holder.cuid),
     };
 
-    console.log(body);
-
     try {
-      const res = await axios.post("/api/admin/project", body);
-      console.log(res);
-      console.log("Project saved successfully");
+      const { status, data } = await axios.post("/api/admin/project", body);
+      if (status === 200) {
+        navigate(`/admin/project/${data.projectCuid}`);
+        return toast.success(data.message);
+      }
+
+      toast.error(data.message);
     } catch (error) {
-      // TODO: Handle failed save
-      console.error("Error while saving project", error);
+      const axiosError = error as AxiosError;
+      toast.error(
+        axiosError.response?.data.message ||
+          "Error while creating project. Please try again later.",
+      );
     }
   };
 
