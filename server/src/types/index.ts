@@ -4,16 +4,25 @@ export type Profile = {
   displayName: string;
   userPrincipalName: string;
   _json: {
-    jobTitle: string
-    businessPhones: string[]
-  }
+    jobTitle: string;
+    businessPhones: string[];
+  };
 };
 
-export type User = {
-  id: string;
+export type User = ConsultantUser | CandidateUser;
+
+export type ConsultantUser = {
+  cuid: string;
   name: string;
-  isUser?: boolean;
-  isAdmin?: boolean;
+  email: string;
+  userType: "Admin";
+};
+
+export type CandidateUser = {
+  cuid: string;
+  name: string;
+  nric: string;
+  userType: "User";
 };
 
 export type PrismaError = {
@@ -53,5 +62,5 @@ export type BankDetails = {
 export type EmergencyContact = {
   name: String;
   relationship: String;
-  phoneNumber: String;
+  contact: String;
 };

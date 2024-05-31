@@ -7,40 +7,33 @@ const prisma = new PrismaClient();
 
 passport.use(
   new LocalStrategy(async function verify(username, password, cb) {
-    const loginData = await prisma.user.findUnique({
-      where: { username: username },
-    });
+    try {
+      const loginData = await prisma.user.findUniqueOrThrow({
+        where: { username: username.toUpperCase() },
+        include: { Candidate: true },
+      });
 
-    if (!loginData) {
+      const { hash, Candidate } = loginData;
+      const { cuid, name } = Candidate;
+
+      bcrypt.compare(password, hash, function (err, result) {
+        if (err) {
+          return cb(err);
+        }
+
+        if (!result) {
+          return cb(null, false, { message: "Invalid username or password." });
+        }
+
+        return cb(null, {
+          cuid,
+          name,
+          nric: username,
+          userType: "User",
+        });
+      });
+    } catch (error) {
       return cb(null, false, { message: "Invalid username or password." });
     }
-
-    const userData = await prisma.candidate.findUnique({
-      where: { nric: username },
-    });
-
-    if (!userData) {
-      return cb(null, false, {
-        message: "Invalid profile. Please contact a consultant.",
-      });
-    }
-
-    const { hash } = loginData;
-
-    bcrypt.compare(password, hash, function (err, result) {
-      if (err) {
-        return cb(err);
-      }
-
-      if (!result) {
-        return cb(null, false, { message: "Invalid username or password." });
-      }
-
-      return cb(null, {
-        id: loginData.username,
-        name: userData.name,
-        isUser: true,
-      });
-    });
   }),
 );

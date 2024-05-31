@@ -4,6 +4,9 @@ import { useParams } from "react-router-dom";
 import { ReactSpreadsheetImport } from "react-spreadsheet-import";
 import { Data, Result } from "react-spreadsheet-import/types/types";
 import { getExactAge } from "../../../utils/date-time";
+import CandidateTable from "./CandidateTable";
+import toast from "react-hot-toast";
+import { dateRegex, nricRegex, contactRegex } from "../../../utils/validation";
 
 import {
   Box,
@@ -16,66 +19,47 @@ import {
   ModalOverflow,
   Stack,
 } from "@mui/joy";
-import CandidateTable from "./CandidateTable";
-import toast from "react-hot-toast";
-import { dateRegex, nricRegex, phoneRegex } from "../../../utils/validation";
 
 interface AssignCandidateModalProps {
   isUploadOpen: boolean;
   setIsUploadOpen: (isOpen: boolean) => void;
-  existingCddIdList: string[];
 }
 
 const AssignCandidateModal = ({
   isUploadOpen,
   setIsUploadOpen,
-  existingCddIdList,
 }: AssignCandidateModalProps) => {
-  const { projectId } = useParams();
+  const { projectCuid } = useParams();
 
-  const [newCddList, setNewCddList] = useState<Data<string>[]>([]);
+  const [validCddList, setValidCddList] = useState<Data<string>[]>([]);
   const [invalidCddList, setInvalidCddList] = useState<Data<string>[]>([]);
-  const [overlapCddList, setOverlapCddList] = useState<Data<string>[]>([]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
+
+  const [overlapCddList, setOverlapCddList] = useState<Data<string>[]>([]);
+  const [isOverlapModalOpen, setIsOverlapModalOpen] = useState(false);
+
   const [data, setData] = useState<Result<string>>({
     validData: [],
     all: [],
     invalidData: [],
   });
 
-  const handleModalClose = () => {
-    if (isModalOpen) {
+  const handleSubmitModalClose = () => {
+    if (isSubmitModalOpen) {
       const confirmClose = window.confirm(
-        "Are you sure you want to close the modal? Uploaded information will be lost."
+        "Are you sure you want to close the modal? Uploaded information will be lost.",
       );
       if (confirmClose) {
-        setIsModalOpen(false);
+        setIsSubmitModalOpen(false);
       }
     }
   };
 
-  // when data is uploaded, update the three candidate lists
   useEffect(() => {
-    setOverlapCddList(
-      // existing candidate list
-      data.all.filter((c) => existingCddIdList.includes(c.nric as string))
-    );
-
-    setNewCddList(
-      // valid data not in existing candidate list
-      data.validData.filter(
-        (c) => !existingCddIdList.includes(c.nric as string)
-      )
-    );
-
-    setInvalidCddList(
-      // invalid data not in existing candidate list
-      data.invalidData.filter(
-        (c) => !existingCddIdList.includes(c.nric as string)
-      )
-    );
+    setValidCddList(data.validData);
+    setInvalidCddList(data.invalidData);
   }, [data]);
 
   const fields = [
@@ -101,8 +85,8 @@ const AssignCandidateModal = ({
       example: "John Doe Xiao Ming",
     },
     {
-      label: "Phone Number",
-      key: "phoneNumber",
+      label: "Contact",
+      key: "contact",
       alternateMatches: ["phone number", "phone", "contact"],
       fieldType: { type: "input" },
       example: "98765432",
@@ -116,7 +100,7 @@ const AssignCandidateModal = ({
     },
   ];
 
-  const rowHook = (row: Data<string>, addError: any) => {
+  const rowHook = (row: Data<string>, addError) => {
     // nric validation
     if (!row.nric) {
       addError("nric", {
@@ -131,14 +115,14 @@ const AssignCandidateModal = ({
     }
 
     // phone number validation
-    if (!row.phoneNumber) {
-      addError("phoneNumber", {
-        message: "Phone number is required",
+    if (!row.contact) {
+      addError("contact", {
+        message: "Contact number is required",
         level: "error",
       });
-    } else if (!phoneRegex.test(row.phoneNumber as string)) {
-      addError("phoneNumber", {
-        message: "Invalid phone number",
+    } else if (!contactRegex.test(row.contact as string)) {
+      addError("contact", {
+        message: "Invalid contact number",
         level: "error",
       });
     }
@@ -172,9 +156,7 @@ const AssignCandidateModal = ({
     return {
       nric: row.nric ? (row.nric as string).trim() : row.nric,
       name: row.name ? (row.name as string).trim() : row.name,
-      phoneNumber: row.phoneNumber
-        ? (row.phoneNumber as string).trim()
-        : row.phoneNumber,
+      contact: row.contact ? (row.contact as string).trim() : row.contact,
       dateOfBirth: row.dateOfBirth
         ? (row.dateOfBirth as string).trim()
         : row.dateOfBirth,
@@ -183,18 +165,11 @@ const AssignCandidateModal = ({
 
   const candidateTableProps = [
     {
-      tableTitle: "New Candidates",
+      tableTitle: "Valid Candidates",
       tableDescription:
         "These candidates will be added to the project upon submission.",
       tableProps: { stripe: "odd", size: "sm" },
-      tableData: newCddList,
-    },
-    {
-      tableTitle: "Already In Project",
-      tableDescription:
-        "These candidates have been previously added to the project and will be excluded from submission.",
-      tableProps: { variant: "soft", color: "warning", size: "sm" },
-      tableData: overlapCddList,
+      tableData: validCddList,
     },
     {
       tableTitle: "Invalid Info",
@@ -207,38 +182,47 @@ const AssignCandidateModal = ({
 
   const handleSubmitData = async () => {
     try {
-      await axios.post(
-        `http://localhost:3000/api/admin/project/${projectId}/candidates`,
-        newCddList,
-        { withCredentials: true }
+      const response = await axios.post(
+        `http://localhost:3000/api/admin/project/${projectCuid}/candidates`,
+        validCddList,
       );
 
       toast.success("Candidates added successfully");
-      setTimeout(() => window.location.reload(), 1000);
+
+      if (response.data.length !== 0) {
+        setOverlapCddList(response.data);
+        setIsOverlapModalOpen(true);
+        setIsSubmitModalOpen(false);
+      } else {
+        setIsSubmitModalOpen(false);
+        setTimeout(() => window.location.reload(), 1000);
+      }
     } catch (error) {
       toast.error("Error while adding candidates");
+      console.error(error);
     }
   };
 
   return (
     <>
-      <ReactSpreadsheetImport
-        isOpen={isUploadOpen}
-        onClose={() => {
-          setIsUploadOpen(false);
-        }}
-        onSubmit={(result) => {
-          setData(result);
-          setIsModalOpen(true);
-        }}
-        fields={fields}
-        rowHook={rowHook}
-        customTheme={{
-        }}
-        z-index={0}
-      />
+      <Modal open={isUploadOpen} onClose={() => setIsUploadOpen(false)}>
+        <ReactSpreadsheetImport
+          isOpen={isUploadOpen}
+          onClose={() => {
+            setIsUploadOpen(false);
+          }}
+          onSubmit={(result) => {
+            setData(result);
+            setIsSubmitModalOpen(true);
+          }}
+          fields={fields}
+          rowHook={rowHook}
+          customTheme={{}}
+          z-index={0}
+        />
+      </Modal>
 
-      <Modal open={isModalOpen} onClose={handleModalClose}>
+      <Modal open={isSubmitModalOpen} onClose={handleSubmitModalClose}>
         <ModalOverflow>
           <ModalClose />
           <ModalDialog style={{ maxWidth: "65%" }}>
@@ -263,6 +247,34 @@ const AssignCandidateModal = ({
             <Button onClick={handleSubmitData} disabled={isSubmitDisabled}>
               Submit
             </Button>
+          </ModalDialog>
+        </ModalOverflow>
+      </Modal>
+
+      <Modal
+        open={isOverlapModalOpen}
+        onClose={() => setIsOverlapModalOpen(false)}
+      >
+        <ModalOverflow>
+          <ModalClose />
+          <ModalDialog style={{ maxWidth: "65%" }}>
+            <CandidateTable
+              tableTitle="Already In Project"
+              tableDescription="These candidates have already been added to the project previously. This is just for your information, no action is required."
+              tableProps={{ variant: "soft", color: "warning", size: "sm" }}
+              tableData={overlapCddList}
+            />
+            <Box>
+              <Button
+                onClick={() => {
+                  setIsOverlapModalOpen(false);
+                  setTimeout(() => window.location.reload(), 1000);
+                }}
+                fullWidth
+              >
+                Close
+              </Button>
+            </Box>
           </ModalDialog>
         </ModalOverflow>
       </Modal>

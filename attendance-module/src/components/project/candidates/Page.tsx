@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import AssignCandidateModal from "./AssignCandidateModal";
 import CandidateTable from "./CandidateTable";
-import { mask } from "../../../utils/mask";
-import { CandidateBasic } from "../../../types";
+import { Candidate } from "../../../types";
 
 import {
   Box,
@@ -18,20 +17,20 @@ import {
 } from "@mui/joy";
 import toast from "react-hot-toast";
 import { FilterList, FilterListOff } from "@mui/icons-material";
-import EditCandidateModal from "./EditCandidateModal";
+// import EditCandidateModal from "./EditCandidateModal";
 import DeleteCandidateModal from "./DeleteCandidateModal";
 
 const CandidatePage = () => {
-  const { projectId } = useParams();
+  const { projectCuid } = useParams();
 
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
-  const [candidatesData, setCandidatesData] = useState<CandidateBasic[]>([]);
+  const [candidatesData, setCandidatesData] = useState<Candidate[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [ageOrder, setAgeOrder] = useState<"ASC" | "DSC" | null>(null);
 
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [candidateToEdit, setCandidateToEdit] = useState<string>("");
+  // const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // const [candidateToEdit, setCandidateToEdit] = useState<string>("");
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [candidatesToDelete, setCandidatesToDelete] = useState<string[]>([]);
@@ -41,18 +40,19 @@ const CandidatePage = () => {
     const fetchExistingCandidates = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/admin/project/${projectId}/candidates`,
-          { withCredentials: true }
+          `http://localhost:3000/api/admin/project/${projectCuid}/candidates`,
         );
+        console.log(response.data);
         setCandidatesData(
-          response.data.map((c: CandidateBasic) => {
+          response.data.map((c: Candidate) => {
             return {
+              cuid: c.cuid,
               nric: c.nric,
               name: c.name,
-              phoneNumber: c.phoneNumber,
+              contact: c.contact,
               dateOfBirth: c.dateOfBirth,
             };
-          })
+          }),
         );
       } catch (error) {
         toast.error("Error while fetching candidates. Please try again later.");
@@ -60,13 +60,13 @@ const CandidatePage = () => {
     };
 
     fetchExistingCandidates();
-  }, [projectId]);
+  }, [projectCuid]);
 
-  const matchSearchValue = (c: CandidateBasic) =>
-    mask(c.nric).toLowerCase().includes(searchValue.toLowerCase()) ||
+  const matchSearchValue = (c: Candidate) =>
+    c.nric.toLowerCase().includes(searchValue.toLowerCase()) ||
     c.name.toLowerCase().includes(searchValue.toLowerCase());
 
-  const ageComparator = (a: CandidateBasic, b: CandidateBasic) => {
+  const ageComparator = (a: Candidate, b: Candidate) => {
     if (ageOrder === "DSC") {
       return (
         new Date(a.dateOfBirth).getTime() - new Date(b.dateOfBirth).getTime()
@@ -90,25 +90,24 @@ const CandidatePage = () => {
     }
   };
 
-  const handleEdit = (nric: string) => {
-    setCandidateToEdit(nric);
-    setIsEditModalOpen(true);
-  };
+  // const handleEdit = (cuid: string) => {
+  //   setCandidateToEdit(cuid);
+  //   setIsEditModalOpen(true);
+  // };
 
-  const handleConfirmDeletion = async (nricList: string[]) => {
-    setCandidatesToDelete(nricList);
+  const handleConfirmDeletion = async (cuidList: string[]) => {
+    setCandidatesToDelete(cuidList);
     setIsDeleteModalOpen(true);
   };
 
   const handleDeleteCandidates = async () => {
     try {
-      const body = { nricList: candidatesToDelete };
       await axios.delete(
-        `http://localhost:3000/api/admin/project/${projectId}/candidates`,
-        { data: body, withCredentials: true }
+        `http://localhost:3000/api/admin/project/${projectCuid}/candidates`,
+        { data: { cuidList: candidatesToDelete } },
       );
       setCandidatesData((prev) =>
-        prev.filter((c) => !candidatesToDelete.includes(c.nric))
+        prev.filter((c) => !candidatesToDelete.includes(c.cuid)),
       );
 
       setIsDeleteModalOpen(false);
@@ -172,7 +171,7 @@ const CandidatePage = () => {
             tableData={candidatesData
               .filter((c) => matchSearchValue(c))
               .sort(ageComparator)}
-            handleEdit={handleEdit}
+            // handleEdit={handleEdit}
             handleDelete={handleConfirmDeletion}
           />
         </CardOverflow>
@@ -181,18 +180,17 @@ const CandidatePage = () => {
       <AssignCandidateModal
         isUploadOpen={isUploadOpen}
         setIsUploadOpen={setIsUploadOpen}
-        existingCddIdList={candidatesData.map((c) => c.nric)}
       />
 
-      {candidateToEdit && (
+      {/* {candidateToEdit && (
         <EditCandidateModal
-          candidate={candidatesData.find((c) => c.nric === candidateToEdit)!}
+          candidate={candidatesData.find((c) => c.cuid === candidateToEdit)!}
           isEditModalOpen={isEditModalOpen}
           setIsEditModalOpen={setIsEditModalOpen}
           candidatesData={candidatesData}
           setCandidatesData={setCandidatesData}
         />
-      )}
+      )} */}
 
       <DeleteCandidateModal
         isDeleteModalOpen={isDeleteModalOpen}

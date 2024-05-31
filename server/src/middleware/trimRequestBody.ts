@@ -6,12 +6,21 @@ export default function trimRequestBody(
   _res: Response,
   next: NextFunction,
 ) {
-  if (req.body) {
-    for (const key in req.body) {
-      if (typeof req.body[key] === "string") {
-        req.body[key] = req.body[key].trim();
+  const convertFields = (obj: any) => {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        if (typeof obj[key] === "object" && obj[key] !== null) {
+          convertFields(obj[key]);
+        } else if (typeof obj[key] === "string") {
+          obj[key] = obj[key].trim();
+        }
       }
     }
+  };
+
+  if (req.body) {
+    convertFields(req.body);
   }
+
   next();
 }

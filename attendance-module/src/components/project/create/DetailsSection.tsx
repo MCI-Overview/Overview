@@ -8,7 +8,7 @@ import {
   Autocomplete,
   Grid,
 } from "@mui/joy";
-import { ClientCompany, MCICompany, ProjectDetails } from "../../../types";
+import { ClientCompany, MCICompany, CreateProjectData } from "../../../types";
 import axios from "axios";
 import { useState, useEffect, SyntheticEvent, useRef } from "react";
 
@@ -16,8 +16,8 @@ export default function ProjectDetailsSection({
   projectDetails,
   setProjectDetails,
 }: {
-  projectDetails: ProjectDetails;
-  setProjectDetails: (projectDetails: ProjectDetails) => void;
+  projectDetails: CreateProjectData;
+  setProjectDetails: (projectDetails: CreateProjectData) => void;
 }) {
   const [clientList, setClientList] = useState<ClientCompany[]>([]);
   const [clientExists, setClientExists] = useState<boolean>(false);
@@ -40,11 +40,11 @@ export default function ProjectDetailsSection({
       return;
     }
 
-    const client = clientList.find((c) => c.UEN === inputUEN);
+    const client = clientList.find((c) => c.uen === inputUEN);
     if (client) {
       setProjectDetails({
         ...projectDetails,
-        clientUEN: client.UEN,
+        clientUEN: client.uen,
         clientName: client.name,
       });
       setClientExists(true);
@@ -99,8 +99,8 @@ export default function ProjectDetailsSection({
               freeSolo
               placeholder="Enter client company UEN"
               options={clientList.map((c) => ({
-                label: c.UEN,
-                value: c.UEN,
+                label: c.uen,
+                value: c.uen,
               }))}
               onSelect={handleClientUENInput}
             />

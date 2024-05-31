@@ -4,18 +4,18 @@ import { useNavigate } from "react-router-dom";
 export function ProjectDisplay({
   projectName,
   companyName,
-  projectId,
+  projectCuid,
 }: {
   projectName: string;
   companyName: string;
-  projectId: string;
+  projectCuid: string;
 }) {
   const navigate = useNavigate();
 
   return (
     <Card
       sx={{ flexGrow: 1, cursor: "pointer" }}
-      onClick={() => navigate(`/admin/project/${projectId}`)}
+      onClick={() => navigate(`/admin/project/${projectCuid}`)}
     >
       <Box
         sx={{

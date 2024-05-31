@@ -3,289 +3,96 @@ import {
   PERMISSION_ERROR_TEMPLATE,
   Permission,
   checkPermission,
-} from "../../../utils/check-permission";
-import { DayOfWeek, PrismaClient, Role } from "@prisma/client";
+} from "../../../utils";
+import { DayOfWeek, PrismaClient } from "@prisma/client";
 import { Router } from "express";
 
 const prisma = new PrismaClient();
 
 const projectShiftAPIRouter: Router = Router();
 
-projectShiftAPIRouter.get("/shift/:shiftId", async (req, res) => {
-  const user = req.user as User;
-  const { shiftId } = req.params;
-
-  const shiftData = await prisma.shift.findUnique({
-    where: {
-      shiftId,
-    },
-    include: {
-      ShiftGroup: {
-        include: {
-          Project: {
-            include: {
-              Manage: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (!shiftData) {
-    return res.status(404).send("Shift does not exist.");
-  }
-
-  if (
-    shiftData.ShiftGroup.Project.Manage.some(
-      (consultant) => consultant.consultantEmail === user.id,
-    )
-  ) {
-    return res.send(shiftData);
-  }
-
-  const hasReadAllProjectPermission = await checkPermission(
-    user.id,
-    Permission.CAN_READ_ALL_PROJECTS,
-  );
-
-  if (hasReadAllProjectPermission) {
-    return res.send(shiftData);
-  }
-
-  return res
-    .status(401)
-    .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
-});
-
-projectShiftAPIRouter.post("/shift", async (req, res) => {
-  const user = req.user as User;
-  const {
-    projectId,
-    days,
-    headcount,
-    startTime,
-    endTime,
-    shiftGroupId,
-    shiftGroupName,
-  } = req.body;
-
-  if (!projectId) {
-    return res.status(400).send("projectId is required.");
-  }
-
-  if (!days) {
-    return res.status(400).send("days is required.");
-  }
-
-  if (!headcount) {
-    return res.status(400).send("headcount is required.");
-  }
-
-  if (!startTime) {
-    return res.status(400).send("startTime is required.");
-  }
-
-  if (!endTime) {
-    return res.status(400).send("endTime is required.");
-  }
-
-  if (!shiftGroupId && !shiftGroupName) {
-    return res.status(400).send("shiftGroupId or shiftGroupName is required.");
-  }
-
-  if (!Array.isArray(days)) {
-    return res.status(400).send("days must be an array.");
-  }
-
-  const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
-  const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
-
-  if (
-    isNaN(startTimeHour) ||
-    isNaN(startTimeMinute) ||
-    isNaN(endTimeHour) ||
-    isNaN(endTimeMinute)
-  ) {
-    console.log(startTimeHour, startTimeMinute, endTimeHour, endTimeMinute);
-    return res.status(400).send("Invalid time format.");
-  }
-
-  if (startTimeHour < 0 || startTimeHour > 23) {
-    return res.status(400).send("Invalid start time hour.");
-  }
-
-  if (startTimeMinute < 0 || startTimeMinute > 59) {
-    return res.status(400).send("Invalid start time minute.");
-  }
-
-  if (endTimeHour < 0 || endTimeHour > 23) {
-    return res.status(400).send("Invalid end time hour.");
-  }
-
-  if (endTimeMinute < 0 || endTimeMinute > 59) {
-    return res.status(400).send("Invalid end time minute.");
-  }
-
-  const startTimeObject = new Date();
-  startTimeObject.setHours(startTimeHour, startTimeMinute, 0, 0);
-
-  const endTimeObject = new Date();
-  endTimeObject.setHours(endTimeHour, endTimeMinute, 0, 0);
-
-  const projectData = await prisma.project.findUnique({
-    where: {
-      id: projectId,
-    },
-    include: {
-      Manage: true,
-      ShiftGroup: true,
-    },
-  });
-
-  if (!projectData) {
-    return res.status(404).send("Project does not exist.");
-  }
-
-  // Checks if the user is a client holder of the project
-  if (
-    !projectData.Manage.some(
-      (consultant) =>
-        consultant.consultantEmail === user.id &&
-        consultant.role === Role.CLIENT_HOLDER,
-    )
-  ) {
-    const hasEditAllProjectPermission = await checkPermission(
-      user.id,
-      Permission.CAN_EDIT_ALL_PROJECTS,
-    );
-
-    if (!hasEditAllProjectPermission) {
-      return res
-        .status(401)
-        .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
-    }
-  }
-
-  let shiftGroup: any;
-  if (!projectData.ShiftGroup.some((group) => group.id === shiftGroupId)) {
-    shiftGroup = await prisma.shiftGroup.create({
-      data: {
-        name: shiftGroupName,
-        projectId,
-      },
-    });
-  }
-
-  const createData = days.map((day) => {
-    return {
-      day: day.toUpperCase() as DayOfWeek,
-      headcount: parseInt(headcount),
-      startTime: startTimeObject,
-      endTime: endTimeObject,
-      groupId: shiftGroupId || shiftGroup.id,
-    };
-  });
-
-  try {
-    await prisma.shift.createMany({
-      data: createData,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send("Internal server error.");
-  }
-
-  return res.send("Shift created successfully.");
-});
-
 projectShiftAPIRouter.delete("/shift", async (req, res) => {
   const user = req.user as User;
-  const { shiftId } = req.body;
+  const { cuid } = req.body;
 
-  if (!shiftId) {
-    return res.status(400).send("shiftId is required.");
-  }
-
-  const shiftData = await prisma.shift.findUnique({
-    where: {
-      shiftId,
-    },
-    include: {
-      ShiftGroup: {
-        include: {
-          Project: {
-            include: {
-              Manage: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (!shiftData) {
-    return res.status(404).send("Shift does not exist.");
-  }
-
-  if (
-    shiftData.ShiftGroup.Project.Manage.some(
-      (consultant) => consultant.consultantEmail === user.id,
-    )
-  ) {
+  async function deleteShift() {
     await prisma.shift.delete({
       where: {
-        shiftId,
+        cuid,
       },
     });
 
     return res.send("Shift deleted successfully.");
   }
 
-  const hasEditAllProjectPermission = await checkPermission(
-    user.id,
-    Permission.CAN_EDIT_ALL_PROJECTS,
-  );
+  if (!cuid) return res.status(400).send("cuid is required.");
 
-  if (!hasEditAllProjectPermission) {
-    return res
-      .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
+  try {
+    const shiftData = await prisma.shift.findUniqueOrThrow({
+      where: {
+        cuid,
+      },
+      include: {
+        ShiftGroup: {
+          include: {
+            Project: {
+              include: {
+                Manage: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (
+      !shiftData.ShiftGroup.Project.Manage.some(
+        (manage) => manage.consultantCuid === user.cuid,
+      )
+    ) {
+      const hasEditAllProjectPermission = await checkPermission(
+        user.cuid,
+        Permission.CAN_EDIT_ALL_PROJECTS,
+      );
+
+      if (!hasEditAllProjectPermission) {
+        return res
+          .status(401)
+          .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
+      }
+    }
+
+    return deleteShift();
+  } catch (error) {
+    return res.status(404).send("Shift does not exist.");
   }
-
-  await prisma.shift.delete({
-    where: {
-      shiftId,
-    },
-  });
-
-  return res.send("Shift deleted successfully.");
 });
 
 projectShiftAPIRouter.patch("/shift", async (req, res) => {
   const user = req.user as User;
-  const { shiftId, day, headcount, startTime, endTime, shiftNumber } = req.body;
+  const { cuid, day, startTime, endTime } = req.body;
 
-  if (!shiftId) {
-    return res.status(400).send("shiftId is required.");
+  async function updateShift() {
+    await prisma.shift.update({
+      where: {
+        cuid,
+      },
+      data: updateData,
+    });
+
+    return res.send("Shift updated successfully.");
   }
 
-  if (!day && !headcount && !startTime && !endTime && !shiftNumber) {
+  if (!cuid) return res.status(400).send("cuid is required.");
+
+  if (!day && !startTime && !endTime) {
     return res
       .status(400)
-      .send(
-        "At least one field (day, headcount, startTime, endTime, shiftNumber) is required.",
-      );
+      .send("At least one field (day, startTime, endTime) is required.");
   }
 
   if (day && !Object.values(DayOfWeek).includes(day.toUpperCase())) {
     return res.status(400).send("Invalid day.");
-  }
-
-  if (headcount && headcount < 0) {
-    return res
-      .status(400)
-      .send("headcount must be zero or a positive integer.");
   }
 
   let startTimeObject;
@@ -308,69 +115,49 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
 
   const updateData = {
     ...(day && { day: day.toUpperCase() as DayOfWeek }),
-    ...(headcount && { headcount: headcount }),
     ...(startTime && { startTime: startTimeObject }),
     ...(endTime && { endTime: endTimeObject }),
-    ...(shiftNumber && { shiftNumber: shiftNumber }),
   };
 
-  const shiftData = await prisma.shift.findUnique({
-    where: {
-      shiftId,
-    },
-    include: {
-      ShiftGroup: {
-        include: {
-          Project: {
-            include: {
-              Manage: true,
+  try {
+    const shiftData = await prisma.shift.findUniqueOrThrow({
+      where: {
+        cuid,
+      },
+      include: {
+        ShiftGroup: {
+          include: {
+            Project: {
+              include: {
+                Manage: true,
+              },
             },
           },
         },
       },
-    },
-  });
-
-  if (!shiftData) {
-    return res.status(404).send("Shift does not exist.");
-  }
-
-  if (
-    shiftData.ShiftGroup.Project.Manage.some(
-      (consultant) =>
-        consultant.consultantEmail === user.id &&
-        consultant.role === Role.CLIENT_HOLDER,
-    )
-  ) {
-    await prisma.shift.update({
-      where: {
-        shiftId,
-      },
-      data: updateData,
     });
 
-    return res.send("Shift updated successfully.");
+    if (
+      !shiftData.ShiftGroup.Project.Manage.some(
+        (manage) => manage.consultantCuid === user.cuid,
+      )
+    ) {
+      const hasEditAllProjectPermission = await checkPermission(
+        user.cuid,
+        Permission.CAN_EDIT_ALL_PROJECTS,
+      );
+
+      if (!hasEditAllProjectPermission) {
+        return res
+          .status(401)
+          .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
+      }
+    }
+
+    return updateShift();
+  } catch (error) {
+    return res.status(404).send("Shift does not exist.");
   }
-
-  const hasEditAllProjectPermission = await checkPermission(
-    user.id,
-    Permission.CAN_EDIT_ALL_PROJECTS,
-  );
-
-  if (!hasEditAllProjectPermission) {
-    return res
-      .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
-  }
-
-  await prisma.shift.update({
-    where: {
-      shiftId,
-    },
-    data: updateData,
-  });
-
-  return res.send("Shift updated successfully.");
 });
 
 export default projectShiftAPIRouter;

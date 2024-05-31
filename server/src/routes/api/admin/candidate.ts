@@ -12,49 +12,57 @@ import {
   PERMISSION_ERROR_TEMPLATE,
   Permission,
   checkPermission,
-} from "../../../utils/check-permission";
+  maskNRIC,
+} from "../../../utils";
 
 const prisma = new PrismaClient();
 
 const candidateAPIRoutes: Router = Router();
 
-candidateAPIRoutes.get("/candidate/:nric"),
+candidateAPIRoutes.get("/candidate/:cuid"),
   async (req: Request, res: Response) => {
     const user = req.user as User;
-    const { nric } = req.params;
+    const { cuid } = req.params;
 
-    const candidateData = await prisma.candidate.findUnique({
-      where: {
-        nric: nric,
-      },
-    });
+    try {
+      const { name, nric, contact, emergencyContact, ...otherData } =
+        await prisma.candidate.findUniqueOrThrow({
+          where: {
+            cuid,
+          },
+        });
 
-    const hasReadCandidateDetailsPermission = await checkPermission(
-      user.id,
-      Permission.CAN_READ_CANDIDATE_DETAILS,
-    );
+      const hasReadCandidateDetailsPermission = await checkPermission(
+        user.cuid,
+        Permission.CAN_READ_CANDIDATE_DETAILS,
+      );
 
-    if (!candidateData) {
-      return res.status(404).send("Candidate does not exist.");
+      if (hasReadCandidateDetailsPermission) {
+        return res.send({
+          name,
+          nric,
+          contact,
+          emergencyContact,
+          ...otherData,
+        });
+      }
+
+      return res.send({
+        name,
+        nric: maskNRIC(nric),
+        contact,
+        emergencyContact,
+      });
+    } catch (error) {
+      return res.status(404).send("Candidate not found.");
     }
-
-    if (hasReadCandidateDetailsPermission) {
-      return res.send(candidateData);
-    }
-
-    return res.send({
-      name: candidateData.name,
-      nric: candidateData.nric,
-      phoneNumber: candidateData.phoneNumber,
-      emergencyContact: candidateData.emergencyContact,
-    });
   };
 
 candidateAPIRoutes.post("/candidate", async (req, res) => {
   const {
     nric,
     name,
-    phoneNumber,
+    contact,
     nationality,
     dateOfBirth,
     bankDetails,
@@ -63,17 +71,11 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
   } = req.body;
 
   // Checking for the required parameters
-  if (!nric) {
-    return res.status(400).send("nric parameter is required.");
-  }
+  if (!nric) return res.status(400).send("nric parameter is required.");
 
-  if (!name) {
-    return res.status(400).send("name parameter is required.");
-  }
+  if (!name) return res.status(400).send("name parameter is required.");
 
-  if (!phoneNumber) {
-    return res.status(400).send("phoneNumber parameter is required.");
-  }
+  if (!contact) return res.status(400).send("contact parameter is required.");
 
   // Validation for dateOfBirth
   if (dateOfBirth && !Date.parse(dateOfBirth)) {
@@ -90,7 +92,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
         !bankDetailsObject.bankName ||
         !bankDetailsObject.bankNumber
       ) {
-        return res.status(400).send("Invalid bankDetails JSON.");
+        throw new Error();
       }
     } catch (error) {
       return res.status(400).send("Invalid bankDetails JSON.");
@@ -111,7 +113,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
         !addressObject.postal ||
         !addressObject.country
       ) {
-        return res.status(400).send("Invalid address JSON.");
+        throw new Error();
       }
     } catch (error) {
       return res.status(400).send("Invalid address JSON.");
@@ -126,23 +128,19 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
       if (
         !emergencyContactObject.name ||
         !emergencyContactObject.relationship ||
-        !emergencyContactObject.phoneNumber
+        !emergencyContactObject.contact
       ) {
-        return res.status(400).send("Invalid emergencyContact JSON.");
+        throw new Error();
       }
     } catch (error) {
       return res.status(400).send("Invalid emergencyContact JSON.");
     }
   }
 
-  const hasOnboarded =
-    nationality && dateOfBirth && bankDetails && address && emergencyContact;
-
   const createData = {
     nric,
     name,
-    phoneNumber,
-    hasOnboarded,
+    contact,
     ...(nationality && { nationality }),
     ...(dateOfBirth && { dateOfBirth }),
     ...(addressObject && { address: { update: addressObject } }),
@@ -158,7 +156,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
         ...createData,
         User: {
           create: {
-            hash: await bcrypt.hash(phoneNumber, 12),
+            hash: await bcrypt.hash(contact, 12),
           },
         },
       },
@@ -172,12 +170,13 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
         return res.status(400).send("Candidate already exists.");
       }
 
-      if (prismaErrorMetaTarget.includes("phoneNumber")) {
-        return res.status(400).send("Duplicate contact number specified.");
+      if (prismaErrorMetaTarget.includes("contact")) {
+        return res.status(400).send("Another candidate has the same contact.");
       }
     }
 
-    return res.status(500).send(prismaError);
+    console.log(error);
+    return res.status(500).send("Internal server error.");
   }
 
   return res.send(`Candidate ${nric} created successfully.`);
@@ -185,14 +184,12 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
 
 candidateAPIRoutes.delete("/candidate", async (req, res) => {
   const user = req.user as User;
-  const { nric } = req.body;
+  const { cuid } = req.body;
 
-  if (!nric) {
-    return res.status(400).send("nric parameter is required.");
-  }
+  if (!cuid) return res.status(400).send("cuid parameter is required.");
 
   const hasDeleteCandidatePermission = await checkPermission(
-    user.id,
+    user.cuid,
     Permission.CAN_DELETE_CANDIDATES,
   );
 
@@ -205,26 +202,26 @@ candidateAPIRoutes.delete("/candidate", async (req, res) => {
   try {
     await prisma.candidate.delete({
       where: {
-        nric: nric,
+        cuid,
         Assign: {
           none: {},
         },
       },
     });
   } catch (error) {
-    const prismaError = error as PrismaError;
-    return res.status(500).send(prismaError);
+    console.log(error);
+    return res.status(500).send("Internal server error.");
   }
 
-  return res.send(`Candidate ${nric} deleted successfully.`);
+  return res.send(`Candidate ${cuid} deleted successfully.`);
 });
 
 candidateAPIRoutes.patch("/candidate", async (req, res) => {
   const user = req.user as User;
   const {
-    nric,
+    cuid,
     name,
-    phoneNumber,
+    contact,
     nationality,
     dateOfBirth,
     bankDetails,
@@ -233,13 +230,11 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   } = req.body;
 
   // Checking for the required identifier
-  if (!nric) {
-    return res.status(400).send("nric parameter is required.");
-  }
+  if (!cuid) return res.status(400).send("cuid parameter is required.");
 
   if (
     !name &&
-    !phoneNumber &&
+    !contact &&
     !nationality &&
     !dateOfBirth &&
     !bankDetails &&
@@ -249,12 +244,12 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     return res
       .status(400)
       .send(
-        "At least one field (name, phoneNumber, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required.",
+        "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required.",
       );
   }
 
   const hasUpdateCandidatePermission = await checkPermission(
-    user.id,
+    user.cuid,
     Permission.CAN_UPDATE_CANDIDATES,
   );
 
@@ -315,7 +310,7 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
       if (
         !emergencyContactObject.name ||
         !emergencyContactObject.relationship ||
-        !emergencyContactObject.phoneNumber
+        !emergencyContactObject.contact
       ) {
         return res.status(400).send("Invalid emergencyContact JSON.");
       }
@@ -327,7 +322,7 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   // Build the update data object with only provided fields
   const updateData = {
     ...(name && { name }),
-    ...(phoneNumber && { phoneNumber }),
+    ...(contact && { contact: contact }),
     ...(nationality && { nationality }),
     ...(dateOfBirth && { dateOfBirth }),
     ...(addressObject && { address: { update: addressObject } }),
@@ -344,42 +339,20 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
 
   try {
     await prisma.candidate.update({
-      where: { nric },
+      where: { cuid },
       data: updateData,
     });
 
-    return res.send(`Candidate ${nric} updated successfully.`);
+    return res.send(`Candidate ${cuid} updated successfully.`);
   } catch (error) {
     const prismaError = error as PrismaError;
     if (prismaError.code === "P2025") {
       return res.status(404).send("Candidate not found.");
     }
-    return res.status(500).send(prismaError);
+
+    console.log(error);
+    return res.status(500).send("Internal server error.");
   }
-});
-
-candidateAPIRoutes.get("/candidates", async (req, res) => {
-  const user = req.user as User;
-
-  const hasReadCandidateDetailsPermission = await checkPermission(
-    user.id,
-    Permission.CAN_READ_CANDIDATE_DETAILS,
-  );
-
-  if (hasReadCandidateDetailsPermission) {
-    const candidatesData = await prisma.candidate.findMany();
-    return res.send(candidatesData);
-  }
-
-  const candidatesData = await prisma.candidate.findMany({
-    select: {
-      name: true,
-      nric: true,
-      phoneNumber: true,
-    },
-  });
-
-  return res.send(candidatesData);
 });
 
 export default candidateAPIRoutes;

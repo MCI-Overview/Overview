@@ -71,7 +71,7 @@ export default function ProjectCandidateHoldersSection({
           <Autocomplete
             sx={{ flexGrow: 1 }}
             placeholder="Select a consultant"
-            options={consultantList.filter((c) => c.email !== user?.id)}
+            options={consultantList.filter((c) => c.cuid !== user?.cuid)}
             getOptionLabel={(option) => `${option.name} - ${option.email}`}
             onChange={(_e, value) => {
               setSelectedConsultant(value);
@@ -116,8 +116,7 @@ export default function ProjectCandidateHoldersSection({
                     onClick={() => {
                       setCandidateHolders(
                         candidateHolders.filter(
-                          (currentHolder) =>
-                            currentHolder.email !== holder.email,
+                          (currentHolder) => currentHolder.cuid !== holder.cuid,
                         ),
                       );
                     }}
