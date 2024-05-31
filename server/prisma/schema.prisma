@@ -22,12 +22,12 @@ model Assign {
 }
 
 model Request {
-  cuid         String        @id @default(cuid())
+  cuid          String        @id @default(cuid())
   candidateCuid String
-  projectCuid  String
-  type RequestType
-  Assign      Assign       @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
-  status       RequestStatus @default(PENDING)
+  projectCuid   String
+  type          RequestType
+  Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
+  status        RequestStatus @default(PENDING)
 }
 
 enum RequestType {
