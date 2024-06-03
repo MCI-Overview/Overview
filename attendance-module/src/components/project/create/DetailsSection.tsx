@@ -8,9 +8,17 @@ import {
   Autocomplete,
   Grid,
 } from "@mui/joy";
-import { ClientCompany, MCICompany, CreateProjectData } from "../../../types";
+import { CreateProjectData } from "../../../types";
+import { Client } from "../../../types/common";
 import axios from "axios";
 import { useState, useEffect, SyntheticEvent, useRef } from "react";
+import { capitalizeWords } from "../../../utils/capitalize";
+
+const NOTICE_PERIOD_UNITS = ["DAY", "WEEK", "MONTH"];
+
+function addS(value: number, string: string) {
+  return Math.abs(value) <= 1 ? string : `${string}s`;
+}
 
 export default function ProjectDetailsSection({
   projectDetails,
@@ -19,7 +27,7 @@ export default function ProjectDetailsSection({
   projectDetails: CreateProjectData;
   setProjectDetails: (projectDetails: CreateProjectData) => void;
 }) {
-  const [clientList, setClientList] = useState<ClientCompany[]>([]);
+  const [clientList, setClientList] = useState<Client[]>([]);
   const [clientExists, setClientExists] = useState<boolean>(false);
   const clientCompanyNameRef = useRef<HTMLInputElement>(null);
 
@@ -79,14 +87,14 @@ export default function ProjectDetailsSection({
           onChange={(_e, value) => {
             setProjectDetails({
               ...projectDetails,
-              employmentBy: value as MCICompany,
+              employmentBy: value as string,
             });
           }}
         >
-          <Option value={MCICompany.MCI_CAREER_SERVICES}>
+          <Option value="MCI Career Services Pte Ltd">
             MCI Career Services Pte Ltd
           </Option>
-          <Option value={MCICompany.MCI_OUTSOURCING}>
+          <Option value="MCI Outsourcing Pte Ltd">
             MCI Outsourcing Pte Ltd
           </Option>
         </Select>
@@ -150,6 +158,52 @@ export default function ProjectDetailsSection({
                 })
               }
             />
+          </FormControl>
+        </Grid>
+      </Grid>
+      <Grid container xs={12}>
+        <Grid xs={6} sx={{ pr: 1 }}>
+          <FormControl required sx={{ flexGrow: 1 }}>
+            <FormLabel>Notice period duration</FormLabel>
+            <Input
+              type="number"
+              placeholder="Enter notice period duration"
+              value={projectDetails.noticePeriodDuration || ""}
+              onKeyDown={(evt) => ["e", "E", "+", "-"].includes(evt.key) && evt.preventDefault()}
+              onChange={(e) => {
+                if (parseInt(e.target.value) === 0) {
+                  setProjectDetails({
+                    ...projectDetails,
+                    noticePeriodDuration: "0",
+                  });
+              } else {
+                setProjectDetails({
+                  ...projectDetails,
+                  noticePeriodDuration: e.target.value,
+                })
+              }}}
+            />
+          </FormControl>
+        </Grid>
+        <Grid xs={6} sx={{ pl: 1 }}>
+          <FormControl required sx={{ flexGrow: 1 }}>
+            <FormLabel>Notice period unit</FormLabel>
+            <Select
+              placeholder="Select notice period unit"
+              onChange={(_e, value) => {
+                setProjectDetails({
+                  ...projectDetails,
+                  noticePeriodUnit: value as string
+                })
+              }
+            }
+            >
+              {NOTICE_PERIOD_UNITS.map((unit) => (
+                <Option key={unit} value={unit}>
+                  {addS(parseInt(projectDetails.noticePeriodDuration ?? "") || 0, capitalizeWords(unit))}
+                </Option>
+              ))}
+              </Select>
           </FormControl>
         </Grid>
       </Grid>

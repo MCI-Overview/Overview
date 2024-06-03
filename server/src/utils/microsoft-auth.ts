@@ -1,5 +1,5 @@
 import { Strategy as MicrosoftStrategy } from "passport-microsoft";
-import { Profile } from "@/types";
+import { MicrosoftProfile } from "@/types";
 import passport from "passport";
 import { PrismaClient } from "@prisma/client";
 
@@ -44,7 +44,7 @@ passport.use(
     async function (
       _accessToken: string,
       _refreshToken: string,
-      profile: Profile,
+      profile: MicrosoftProfile,
       cb: (error: any, user?: any) => void,
     ) {
       const { cuid, name, email } = await prisma.consultant.upsert({

@@ -1,8 +1,9 @@
 import { NextFunction, Router } from "express";
 import userAPIRoutes from "./user";
 import adminAPIRoutes from "./admin";
-import { User } from "@/types";
+import { User } from "@/types/common";
 import { Request, Response } from "express";
+import { getPermissions } from "../../utils/permissions";
 
 const router: Router = Router();
 
@@ -24,8 +25,20 @@ router.use("/user", checkUser, userAPIRoutes);
 router.use("/admin", checkAdmin, adminAPIRoutes);
 
 router.get("/", (req, res) => {
+  if (!req.user) {
+    return res.json({});
+  }
+
   const user = req.user as User;
-  res.send(user || {});
+
+  const permissions = getPermissions(user?.cuid);
+
+  return res.json(
+    {
+      ...user,
+      permissions,
+    } || {},
+  );
 });
 
 export default router;

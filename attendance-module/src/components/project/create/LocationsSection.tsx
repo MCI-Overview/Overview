@@ -13,7 +13,7 @@ import {
   IconButton,
   Stack,
 } from "@mui/joy";
-import { Location } from "../../../types";
+import { Location } from "../../../types/common";
 import { useState } from "react";
 import axios from "axios";
 import { Delete, InfoOutlined } from "@mui/icons-material";
@@ -95,6 +95,14 @@ export default function ProjectLocationsSection({
                 setPostalCode(e.target.value);
               }}
               onKeyDown={(e) => {
+                if (["e", "E", "+", "-"].includes(e.key)) {
+                  e.preventDefault()
+                }
+
+                if (postalCode?.length === 6 && e.key !== "Backspace") {
+                  e.preventDefault();
+                }
+
                 if (e.key === "Enter") {
                   handleAddLocation();
                 }

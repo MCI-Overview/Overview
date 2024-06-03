@@ -1,19 +1,14 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import {
-  Address,
-  BankDetails,
-  EmergencyContact,
-  PrismaError,
-  User,
-} from "@/types";
+import { PrismaError } from "@/types";
+import { Address, BankDetails, EmergencyContact, User } from "@/types/common";
 import bcrypt from "bcrypt";
+import { maskNRIC } from "../../../utils";
 import {
   PERMISSION_ERROR_TEMPLATE,
-  Permission,
   checkPermission,
-  maskNRIC,
-} from "../../../utils";
+  PermissionList,
+} from "../../../utils/permissions";
 
 const prisma = new PrismaClient();
 
@@ -34,7 +29,7 @@ candidateAPIRoutes.get("/candidate/:cuid"),
 
       const hasReadCandidateDetailsPermission = await checkPermission(
         user.cuid,
-        Permission.CAN_READ_CANDIDATE_DETAILS,
+        PermissionList.CAN_READ_CANDIDATE_DETAILS,
       );
 
       if (hasReadCandidateDetailsPermission) {
@@ -190,13 +185,13 @@ candidateAPIRoutes.delete("/candidate", async (req, res) => {
 
   const hasDeleteCandidatePermission = await checkPermission(
     user.cuid,
-    Permission.CAN_DELETE_CANDIDATES,
+    PermissionList.CAN_DELETE_CANDIDATES,
   );
 
   if (!hasDeleteCandidatePermission) {
     return res
       .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_DELETE_CANDIDATES);
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_DELETE_CANDIDATES);
   }
 
   try {
@@ -250,13 +245,13 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
 
   const hasUpdateCandidatePermission = await checkPermission(
     user.cuid,
-    Permission.CAN_UPDATE_CANDIDATES,
+    PermissionList.CAN_UPDATE_CANDIDATES,
   );
 
   if (!hasUpdateCandidatePermission) {
     return res
       .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_UPDATE_CANDIDATES);
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_UPDATE_CANDIDATES);
   }
 
   // Validation for dateOfBirth

@@ -1,5 +1,6 @@
 import { getExactAge } from "../../../utils/date-time";
-import { Candidate } from "../../../types";
+import { CommonCandidate, PermissionList } from "../../../types/common";
+import { useUserContext } from "../../../providers/userContextProvider";
 
 import {
   Box,
@@ -15,7 +16,7 @@ interface CandidateTableProps {
   tableTitle?: string;
   tableDescription?: string;
   tableProps: TableProps;
-  tableData: Candidate[];
+  tableData: (CommonCandidate &  {consultantName: string})[];
   // handleEdit?: (nric: string) => void;
   handleDelete?: (nricList: string[]) => void;
 }
@@ -29,6 +30,7 @@ const CandidateTable = ({
   handleDelete,
 }: CandidateTableProps) => {
   const showActions = handleDelete; // || handleEdit;
+  const { user } = useUserContext();
 
   return (
     <Box>
@@ -42,6 +44,7 @@ const CandidateTable = ({
             <th>Contact Number</th>
             <th>Date of birth</th>
             <th>Age</th>
+            <th>Candidate Holder</th>
             {showActions && <th>Actions</th>}
           </tr>
         </thead>
@@ -51,7 +54,7 @@ const CandidateTable = ({
               <td colSpan={showActions ? 6 : 5}>No candidates found.</td>
             </tr>
           ) : (
-            tableData.map((row: Candidate) => (
+            tableData.map((row) => (
               <tr key={row.cuid}>
                 <td>{row.nric}</td>
                 <td>{row.name}</td>
@@ -62,6 +65,7 @@ const CandidateTable = ({
                     ? getExactAge(row.dateOfBirth as string)
                     : "-"}
                 </td>
+                <td>{row.consultantName}</td>
                 {showActions && (
                   <td>
                     <Box
@@ -89,6 +93,7 @@ const CandidateTable = ({
                             size="sm"
                             color="danger"
                             onClick={() => handleDelete([row.cuid])}
+                            disabled={user.permission !== PermissionList.CAN_EDIT_ALL_PROJECTS }
                           >
                             <Delete />
                           </IconButton>

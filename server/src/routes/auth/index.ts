@@ -1,7 +1,7 @@
 import { Router } from "express";
 import userAuthRoutes from "./user";
 import adminAuthRoutes from "./admin";
-import { User } from "@/types";
+import { User } from "@/types/common";
 
 const router: Router = Router();
 

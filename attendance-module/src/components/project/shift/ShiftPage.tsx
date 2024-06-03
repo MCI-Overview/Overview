@@ -3,6 +3,7 @@ import moment from "moment";
 import CreateShiftModal from "./CreateShiftModal";
 import { capitalizeWords } from "../../../utils/capitalize";
 import { useProjectContext } from "../../../providers/projectContextProvider";
+import { Shift } from "../../../types/common";
 
 const DAYS = [
   "MONDAY",
@@ -17,10 +18,6 @@ const DAYS = [
 export default function RosterPage() {
   const { project } = useProjectContext();
 
-  if (!project) {
-    return null;
-  }
-
   return (
     <Card>
       <Table>
@@ -34,18 +31,18 @@ export default function RosterPage() {
           </tr>
         </thead>
         <tbody>
-          {project.ShiftGroup?.map((group) =>
-            group.Shift.sort((a, b) => {
+          {project?.shifts?.map((group) =>
+            group.shifts.sort((a: Shift, b: Shift) => {
               if (a.day === b.day) {
                 return a.startTime < b.startTime ? -1 : 1;
               }
               return DAYS.indexOf(a.day) < DAYS.indexOf(b.day) ? -1 : 1;
             }).map((shift) => (
-              <tr key={shift.shiftId}>
-                {group.Shift.indexOf(shift) === 0 && (
+              <tr key={shift.cuid}>
+                {group.shifts.indexOf(shift) === 0 && (
                   <>
-                    <td rowSpan={group.Shift.length}>{group.name}</td>
-                    <td rowSpan={group.Shift.length}>{group.headcount}</td>
+                    <td rowSpan={group.shifts.length}>{group.name}</td>
+                    <td rowSpan={group.shifts.length}>{group.headcount}</td>
                   </>
                 )}
                 <td>{capitalizeWords(shift.day)}</td>
