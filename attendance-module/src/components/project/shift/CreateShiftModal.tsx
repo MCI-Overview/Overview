@@ -56,7 +56,7 @@ export default function CreateShiftModal() {
   function handleShiftNameInput(e: SyntheticEvent<Element, Event>) {
     const inputShiftGroupName = (e.target as HTMLSelectElement).value;
 
-    const shiftGroup = project?.ShiftGroup.find(
+    const shiftGroup = project?.shifts.find(
       (group) => group.name === inputShiftGroupName,
     );
     if (shiftGroup) {
@@ -91,7 +91,7 @@ export default function CreateShiftModal() {
                   <FormLabel>Shift Name</FormLabel>
                   <Autocomplete
                     freeSolo
-                    options={project?.ShiftGroup.map((shiftGroup) => ({
+                    options={project?.shifts.map((shiftGroup) => ({
                       label: shiftGroup.name,
                       value: shiftGroup.cuid,
                     }))}

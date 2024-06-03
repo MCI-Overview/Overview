@@ -13,7 +13,7 @@ model Assign {
   projectCuid    String
   startDate      DateTime
   endDate        DateTime
-  Request        Request[]
+  Requests       Request[]
   Candidate      Candidate  @relation(fields: [candidateCuid], references: [cuid])
   Consultant     Consultant @relation(fields: [consultantCuid], references: [cuid])
   Project        Project    @relation(fields: [projectCuid], references: [cuid])
@@ -25,6 +25,7 @@ model Request {
   cuid          String        @id @default(cuid())
   candidateCuid String
   projectCuid   String
+  data          Json
   type          RequestType
   Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
   status        RequestStatus @default(PENDING)
@@ -45,6 +46,7 @@ model Attendance {
   clockInTime   DateTime?
   clockOutTime  DateTime?
   status        AttendanceStatus?
+  leave         LeaveStatus?
   shiftDate     DateTime          @db.Date
   Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
   Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
@@ -162,8 +164,8 @@ enum AttendanceStatus {
 }
 
 enum LeaveStatus {
-  FULL_DAY
-  HALF_DAY
+  FULLDAY
+  HALFDAY
 }
 
 enum DayOfWeek {

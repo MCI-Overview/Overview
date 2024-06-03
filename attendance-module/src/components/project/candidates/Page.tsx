@@ -1,9 +1,11 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState } from "react";
 import AssignCandidateModal from "./AssignCandidateModal";
 import CandidateTable from "./CandidateTable";
-import { Candidate } from "../../../types";
+import { CommonCandidate } from "../../../types/common";
+// import EditCandidateModal from "./EditCandidateModal";
+import DeleteCandidateModal from "./DeleteCandidateModal";
+import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import {
   Box,
@@ -17,17 +19,25 @@ import {
 } from "@mui/joy";
 import toast from "react-hot-toast";
 import { FilterList, FilterListOff } from "@mui/icons-material";
-// import EditCandidateModal from "./EditCandidateModal";
-import DeleteCandidateModal from "./DeleteCandidateModal";
 
 const CandidatePage = () => {
-  const { projectCuid } = useParams();
+  const { project, updateProject } = useProjectContext();
 
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
-
-  const [candidatesData, setCandidatesData] = useState<Candidate[]>([]);
+  const candidatesData = (project?.candidates)?.map((cdd) => {
+    return {
+      cuid: cdd.cuid,
+      nric: cdd.nric,
+      name: cdd.name,
+      contact: cdd.contact,
+      dateOfBirth: cdd.dateOfBirth,
+      consultantCuid: cdd.consultantCuid,
+      consultantName: project?.consultants.find((c) => c.cuid === cdd.consultantCuid)!.name,
+    }
+  }) || [];
   const [searchValue, setSearchValue] = useState("");
   const [ageOrder, setAgeOrder] = useState<"ASC" | "DSC" | null>(null);
+
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   // const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   // const [candidateToEdit, setCandidateToEdit] = useState<string>("");
@@ -35,38 +45,11 @@ const CandidatePage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [candidatesToDelete, setCandidatesToDelete] = useState<string[]>([]);
 
-  // retrieve existing candidates id
-  useEffect(() => {
-    const fetchExistingCandidates = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:3000/api/admin/project/${projectCuid}/candidates`,
-        );
-        console.log(response.data);
-        setCandidatesData(
-          response.data.map((c: Candidate) => {
-            return {
-              cuid: c.cuid,
-              nric: c.nric,
-              name: c.name,
-              contact: c.contact,
-              dateOfBirth: c.dateOfBirth,
-            };
-          }),
-        );
-      } catch (error) {
-        toast.error("Error while fetching candidates. Please try again later.");
-      }
-    };
-
-    fetchExistingCandidates();
-  }, [projectCuid]);
-
-  const matchSearchValue = (c: Candidate) =>
+  const matchSearchValue = (c: CommonCandidate) =>
     c.nric.toLowerCase().includes(searchValue.toLowerCase()) ||
     c.name.toLowerCase().includes(searchValue.toLowerCase());
 
-  const ageComparator = (a: Candidate, b: Candidate) => {
+  const ageComparator = (a: CommonCandidate, b: CommonCandidate) => {
     if (ageOrder === "DSC") {
       return (
         new Date(a.dateOfBirth).getTime() - new Date(b.dateOfBirth).getTime()
@@ -103,12 +86,10 @@ const CandidatePage = () => {
   const handleDeleteCandidates = async () => {
     try {
       await axios.delete(
-        `http://localhost:3000/api/admin/project/${projectCuid}/candidates`,
+        `http://localhost:3000/api/admin/project/${project?.cuid}/candidates`,
         { data: { cuidList: candidatesToDelete } },
       );
-      setCandidatesData((prev) =>
-        prev.filter((c) => !candidatesToDelete.includes(c.cuid)),
-      );
+      updateProject();
 
       setIsDeleteModalOpen(false);
       toast.success("Candidate deleted");

@@ -1,32 +1,30 @@
 import { Router, Request, Response } from "express";
+import { DayOfWeek, PrismaClient, Role, ShiftStatus } from "@prisma/client";
+import { PrismaError } from "@/types";
+import { GetProjectDataResponse, User, Location } from "@/types/common";
 import {
-  Candidate,
-  DayOfWeek,
-  PrismaClient,
-  Role,
-  ShiftStatus,
-} from "@prisma/client";
-import { PrismaError, User, Location } from "@/types";
-import {
-  checkPermission,
-  Permission,
-  PERMISSION_ERROR_TEMPLATE,
-  maskNRIC,
+  processCandidateData,
+  checkLocationsValidity,
+  checkDatesValidity,
+  checkEmploymentByValidity,
+  checkNoticePeriodValidity,
+  checkTimesValidity,
 } from "../../../utils/";
 import bcrypt from "bcrypt";
 
+import {
+  PERMISSION_ERROR_TEMPLATE,
+  checkPermission,
+  getPermissions,
+  PermissionList,
+} from "../../../utils/permissions";
+
 const prisma = new PrismaClient();
 const projectAPIRouter: Router = Router();
-const VALID_EMPLOYMENT_BY = [
-  "MCI Career Services Pte Ltd",
-  "MCI Outsourcing Pte Ltd",
-];
 
 projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
-
-  // TODO: check if user has permission to view project
 
   let projectData;
   try {
@@ -35,7 +33,11 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
         cuid: projectCuid,
       },
       include: {
-        Manage: true,
+        Manage: {
+          include: {
+            Consultant: true,
+          },
+        },
         ShiftGroup: {
           include: {
             Shift: true,
@@ -44,28 +46,91 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
         Assign: {
           include: {
             Candidate: true,
+            Consultant: true,
           },
         },
         Client: true,
       },
     });
 
-    if (
-      !projectData.Manage.some((manage) => manage.consultantCuid === user.cuid)
-    ) {
-      const hasReadAllProjectPermission = await checkPermission(
-        user.cuid,
-        Permission.CAN_READ_ALL_PROJECTS,
-      );
+    const permissionData = await getPermissions(user.cuid);
 
-      if (!hasReadAllProjectPermission) {
-        return res
-          .status(401)
-          .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
-      }
+    const hasPermission =
+      projectData.Manage.some(
+        (manage) => manage.consultantCuid === user.cuid,
+      ) ||
+      (await checkPermission(
+        user.cuid,
+        PermissionList.CAN_READ_ALL_PROJECTS,
+        permissionData,
+      ));
+
+    if (!hasPermission) {
+      return res
+        .status(401)
+        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_READ_ALL_PROJECTS);
     }
 
-    return res.send(projectData);
+    const {
+      cuid,
+      name,
+      employmentBy,
+      locations,
+      startDate,
+      endDate,
+      createdAt,
+      noticePeriodDuration,
+      noticePeriodUnit,
+      status,
+      Client,
+      ShiftGroup,
+      Assign,
+      Manage,
+    } = projectData;
+
+    const processedData: GetProjectDataResponse = {
+      cuid,
+      name,
+      employmentBy,
+      locations: locations as Location[],
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      createdAt: createdAt.toISOString(),
+      noticePeriodDuration,
+      noticePeriodUnit,
+      status,
+      client: {
+        ...Client,
+      },
+      candidates: await processCandidateData(user.cuid, Assign, permissionData),
+      consultants: Manage.map((manage) => {
+        const { role } = manage;
+        const { cuid, name, email } = manage.Consultant;
+
+        return {
+          cuid,
+          name,
+          email,
+          role,
+        };
+      }),
+      shifts: ShiftGroup.map((shiftGroup) => {
+        const { cuid, name, headcount, Shift } = shiftGroup;
+
+        return {
+          cuid,
+          name,
+          headcount,
+          shifts: Shift.map((shift) => {
+            const { cuid, startTime, endTime, day } = shift;
+
+            return { cuid, startTime, endTime, day };
+          }),
+        };
+      }),
+    };
+
+    return res.send(processedData);
   } catch (error) {
     return res.status(404).send("Project does not exist.");
   }
@@ -81,6 +146,8 @@ projectAPIRouter.post("/project", async (req, res) => {
     locations,
     startDate,
     endDate,
+    noticePeriodDuration,
+    noticePeriodUnit,
     candidateHolders,
   } = req.body;
 
@@ -104,56 +171,42 @@ projectAPIRouter.post("/project", async (req, res) => {
     return res.status(400).json({
       message: "Please specify an end date.",
     });
-
-  let endDateObject: Date | undefined;
-  if (endDate) {
-    try {
-      endDateObject = new Date(Date.parse(endDate));
-    } catch (error) {
-      return res.status(400).json({
-        message: "Invalid end date parameter.",
-      });
-    }
-  }
-
-  let startDateObject: Date | undefined;
-  if (startDate) {
-    try {
-      startDateObject = new Date(Date.parse(startDate));
-    } catch (error) {
-      return res.status(400).json({
-        message: "Invalid start date parameter.",
-      });
-    }
-  }
-
-  if (startDateObject && endDateObject && startDateObject > endDateObject) {
+  if (!noticePeriodDuration || !noticePeriodUnit)
     return res.status(400).json({
-      message: "Please ensure that start date is after end date.",
+      message: "Please specify notice period duration and unit.",
+    });
+
+  const datesValidity = checkDatesValidity(startDate, endDate);
+  if (!datesValidity.isValid) {
+    return res.status(400).json({
+      message: datesValidity.message,
     });
   }
 
-  if (locations && !Array.isArray(locations)) {
+  const noticePeriodValidity = checkNoticePeriodValidity(
+    noticePeriodDuration,
+    noticePeriodUnit,
+    startDate,
+    endDate,
+  );
+  if (!noticePeriodValidity.isValid) {
     return res.status(400).json({
-      message: "Invalid locations parameter (Not an array).",
+      message: noticePeriodValidity.message,
     });
   }
 
-  if (locations && Array.isArray(locations)) {
-    try {
-      locations.map((location: Location) => {
-        return {
-          postalCode: location.postalCode,
-          address: location.address,
-          longitude: location.longitude,
-          latitude: location.latitude,
-        };
-      });
-    } catch (error) {
-      return res.status(400).json({
-        message: "Invalid locations parameter (Location object format)",
-      });
-    }
+  const locationsValidity = checkLocationsValidity(locations);
+  if (!locationsValidity.isValid) {
+    return res.status(400).json({
+      message: locationsValidity.message,
+    });
+  }
+
+  const employmentByValidity = checkEmploymentByValidity(employmentBy);
+  if (!employmentByValidity.isValid) {
+    return res.status(400).json({
+      message: employmentByValidity.message,
+    });
   }
 
   if (candidateHolders && !Array.isArray(candidateHolders)) {
@@ -162,14 +215,12 @@ projectAPIRouter.post("/project", async (req, res) => {
     });
   }
 
-  if (!VALID_EMPLOYMENT_BY.includes(employmentBy)) {
-    return res.status(400).send("Invalid employmentBy parameter.");
-  }
-
   const createData = {
     name,
     startDate,
     endDate,
+    noticePeriodDuration: parseInt(noticePeriodDuration),
+    noticePeriodUnit,
     locations,
     employmentBy,
   };
@@ -231,192 +282,12 @@ projectAPIRouter.post("/project", async (req, res) => {
   }
 });
 
-projectAPIRouter.delete("/project", async (req, res) => {
-  const user = req.user as User;
-  const { cuid } = req.body;
-
-  try {
-    await prisma.project.update({
-      where: {
-        cuid,
-        Manage: {
-          some: {
-            consultantCuid: user.cuid,
-          },
-        },
-      },
-      data: {
-        status: "DELETED",
-      },
-    });
-    return res.send("Project deleted");
-  } catch (error) {
-    const prismaError = error as PrismaError;
-
-    if (prismaError.code === "P2025") {
-      return res.status(404).send("Project does not exist.");
-    }
-
-    console.log(error);
-    return res.status(500).send("Internal server error.");
-  }
-});
-
-projectAPIRouter.delete("/project/permanent", async (req, res) => {
-  const user = req.user as User;
-  const { cuid } = req.body;
-
-  const hasHardDeletePermission = await checkPermission(
-    user.cuid,
-    Permission.CAN_HARD_DELETE_PROJECTS,
-  );
-
-  if (!hasHardDeletePermission) {
-    return res
-      .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_HARD_DELETE_PROJECTS);
-  }
-
-  try {
-    await prisma.project.delete({
-      where: {
-        cuid,
-      },
-    });
-
-    return res.send("Project hard deleted.");
-  } catch (error) {
-    return res.status(500).send("Internal server error.");
-  }
-});
-
-projectAPIRouter.patch("/project", async (req, res) => {
-  const user = req.user as User;
-
-  const {
-    cuid,
-    name,
-    clientUEN,
-    employmentBy,
-    locations,
-    startDate,
-    endDate,
-    candidateHolders,
-  } = req.body;
-
-  if (!cuid) return res.status(400).send("cuid is required.");
-
-  if (!VALID_EMPLOYMENT_BY.includes(employmentBy)) {
-    return res.status(400).send("Invalid employmentBy parameter.");
-  }
-
-  let endDateObject: Date | undefined;
-  if (endDate) {
-    try {
-      endDateObject = new Date(Date.parse(endDate));
-    } catch (error) {
-      return res.status(400).send("Invalid endDate parameter.");
-    }
-  }
-
-  let startDateObject: Date | undefined;
-  if (startDate) {
-    try {
-      startDateObject = new Date(Date.parse(startDate));
-    } catch (error) {
-      return res.status(400).send("Invalid startDate parameter.");
-    }
-  }
-
-  if (startDateObject && endDateObject && startDateObject > endDateObject) {
-    return res.status(400).send("startDate cannot be after endDate.");
-  }
-
-  if (locations && !Array.isArray(locations)) {
-    return res.status(400).send("locations must be an array.");
-  }
-
-  if (locations && Array.isArray(locations)) {
-    try {
-      locations.map((location: Location) => {
-        return {
-          postalCode: location.postalCode,
-          address: location.address,
-          longitude: location.longitude,
-          latitude: location.latitude,
-        };
-      });
-    } catch (error) {
-      return res.status(400).send("Invalid locations parameter.");
-    }
-  }
-
-  if (candidateHolders && !Array.isArray(candidateHolders)) {
-    return res.status(400).send("candidateHolders must be an array.");
-  }
-
-  const hasCanEditAllProjects = await checkPermission(
-    user.cuid,
-    Permission.CAN_EDIT_ALL_PROJECTS,
-  );
-
-  let updateData = {
-    ...(name && { name }),
-    ...(clientUEN && { clientUEN }),
-    ...(locations && { locations }),
-    ...(employmentBy && { employmentBy }),
-    ...(startDateObject && { startDate: startDateObject }),
-    ...(endDateObject && { endDate: endDateObject }),
-    ...(candidateHolders && {
-      candidateHolders: { update: candidateHolders },
-    }),
-  };
-
-  if (!hasCanEditAllProjects) {
-    updateData = {
-      ...(name && { name }),
-      ...(locations && { locations }),
-      ...(employmentBy && { employmentBy }),
-      ...(startDateObject && { startDate: startDateObject }),
-      ...(endDateObject && { endDate: endDateObject }),
-      ...(candidateHolders && {
-        candidateHolders: { update: candidateHolders },
-      }),
-    };
-  }
-
-  try {
-    await prisma.project.update({
-      where: {
-        cuid: cuid,
-        Manage: {
-          some: {
-            consultantCuid: user.cuid,
-          },
-        },
-      },
-      data: updateData,
-    });
-
-    return res.send(`Project ${cuid} updated successfully.`);
-  } catch (error) {
-    const prismaError = error as PrismaError;
-    if (prismaError.code === "P2025") {
-      return res.status(404).send("Project not found.");
-    }
-
-    console.log(error);
-    return res.status(500).send("Internal server error.");
-  }
-});
-
-projectAPIRouter.get("/project/:projectCuid/candidates", async (req, res) => {
+projectAPIRouter.delete("/project/:projectCuid", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
 
-  if (!projectCuid) {
-    return res.status(400).send("projectCuid is required.");
-  }
+  if (!projectCuid)
+    return res.status(400).json({ message: "projectCuid is required." });
 
   let projectData;
   try {
@@ -425,11 +296,6 @@ projectAPIRouter.get("/project/:projectCuid/candidates", async (req, res) => {
         cuid: projectCuid,
       },
       include: {
-        Assign: {
-          include: {
-            Candidate: true,
-          },
-        },
         Manage: true,
       },
     });
@@ -445,35 +311,147 @@ projectAPIRouter.get("/project/:projectCuid/candidates", async (req, res) => {
 
   const hasPermission =
     projectData.Manage.some((manage) => manage.consultantCuid === user.cuid) ||
-    (await checkPermission(user.cuid, Permission.CAN_READ_ALL_PROJECTS));
+    (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
   if (!hasPermission) {
     return res
       .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
   }
 
-  let candidateData: any = projectData.Assign.map((assign) => assign.Candidate);
+  try {
+    await prisma.project.update({
+      where: {
+        cuid: projectCuid,
+      },
+      data: {
+        status: "DELETED",
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal server error.");
+  }
 
-  const hasReadCandidateDetailsPermission = await checkPermission(
+  return res.send("Project deleted");
+});
+
+// TODO: Delete related references in other tables first
+projectAPIRouter.delete("/project/permanent", async (req, res) => {
+  const user = req.user as User;
+  const { projectCuid } = req.body;
+
+  const hasHardDeletePermission = await checkPermission(
     user.cuid,
-    Permission.CAN_READ_CANDIDATE_DETAILS,
+    PermissionList.CAN_HARD_DELETE_PROJECTS,
   );
 
-  if (!hasReadCandidateDetailsPermission) {
-    candidateData = candidateData.map((candidate: Candidate) => {
-      const { cuid, nric, name, contact, dateOfBirth } = candidate;
-      return {
-        cuid,
-        nric: maskNRIC(nric),
-        name,
-        contact: contact,
-        dateOfBirth,
-      };
+  if (!hasHardDeletePermission) {
+    return res
+      .status(401)
+      .send(
+        PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_HARD_DELETE_PROJECTS,
+      );
+  }
+
+  try {
+    await prisma.project.delete({
+      where: {
+        cuid: projectCuid,
+      },
+    });
+
+    return res.send("Project hard deleted.");
+  } catch (error) {
+    return res.status(500).send("Internal server error.");
+  }
+});
+
+projectAPIRouter.patch("/project", async (req, res) => {
+  const user = req.user as User;
+
+  const {
+    projectCuid,
+    name,
+    clientUEN,
+    employmentBy,
+    locations,
+    startDate,
+    endDate,
+    candidateHolders,
+  } = req.body;
+
+  if (!projectCuid) return res.status(400).send("projectCuid is required.");
+
+  const employmentByValidity = checkEmploymentByValidity(employmentBy);
+  if (!employmentByValidity.isValid) {
+    return res.status(400).json({
+      message: employmentByValidity.message,
     });
   }
 
-  return res.send(candidateData);
+  const datesValidity = checkDatesValidity(startDate, endDate);
+  if (!datesValidity.isValid) {
+    return res.status(400).json({
+      message: datesValidity.message,
+    });
+  }
+
+  const locationsValidity = checkLocationsValidity(locations);
+  if (!locationsValidity.isValid) {
+    return res.status(400).json({
+      message: locationsValidity.message,
+    });
+  }
+
+  if (candidateHolders && !Array.isArray(candidateHolders)) {
+    return res.status(400).send("candidateHolders must be an array.");
+  }
+
+  const hasCanEditAllProjects = await checkPermission(
+    user.cuid,
+    PermissionList.CAN_EDIT_ALL_PROJECTS,
+  );
+
+  let updateData = {
+    ...(name && { name }),
+    ...(clientUEN && { clientUEN }),
+    ...(locations && { locations }),
+    ...(employmentBy && { employmentBy }),
+    ...(startDate && { startDate: new Date(startDate) }),
+    ...(endDate && { endDate: new Date(startDate) }),
+    ...(candidateHolders && {
+      candidateHolders: { update: candidateHolders },
+    }),
+  };
+
+  if (!hasCanEditAllProjects) {
+    delete updateData.clientUEN;
+  }
+
+  try {
+    await prisma.project.update({
+      where: {
+        cuid: projectCuid,
+        Manage: {
+          some: {
+            consultantCuid: user.cuid,
+          },
+        },
+      },
+      data: updateData,
+    });
+
+    return res.send(`Project ${projectCuid} updated successfully.`);
+  } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2025") {
+      return res.status(404).send("Project not found.");
+    }
+
+    console.log(error);
+    return res.status(500).send("Internal server error.");
+  }
 });
 
 projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
@@ -505,12 +483,12 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
 
   const hasPermission =
     projectData.Manage.some((manage) => manage.consultantCuid === user.cuid) ||
-    (await checkPermission(user.cuid, Permission.CAN_EDIT_ALL_PROJECTS));
+    (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
   if (!hasPermission) {
     return res
       .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
   }
 
   if (!candidates || !Array.isArray(candidates) || candidates.length === 0) {
@@ -546,24 +524,6 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
     return res.status(400).send("Invalid dateOfBirth parameter.");
   }
 
-  // let existingCandidates;
-  // try {
-  //   existingCandidates = await prisma.candidate.findMany({
-  //     where: {
-  //       nric: {
-  //         in: candidateObjects.map((cdd) => cdd.nric),
-  //       },
-  //     },
-  //   });
-  // } catch (error) {
-  //   console.log(error);
-  //   return res.status(500).send("Internal server error.");
-  // }
-
-  // const newCandidates = candidateObjects.filter(
-  //   (cdd) => !existingCandidates.some((existCdd) => existCdd.nric === cdd.nric),
-  // );
-
   try {
     return await prisma.$transaction(async (prisma) => {
       const candidateData = await prisma.candidate.createManyAndReturn({
@@ -597,10 +557,18 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
       });
 
       const assignData = candidates.map((cdd) => {
+        const currentDate = new Date();
+        const candidateStartDate =
+          currentDate > projectData.startDate
+            ? currentDate
+            : projectData.startDate;
+
         return {
           candidateCuid: cdd.cuid,
           consultantCuid: user.cuid,
           projectCuid: projectCuid,
+          startDate: candidateStartDate,
+          endDate: projectData.endDate,
         };
       });
 
@@ -660,12 +628,12 @@ projectAPIRouter.delete(
 
     const hasPermission =
       projectData.Manage.some((m) => m.consultantCuid === user.cuid) ||
-      (await checkPermission(user.cuid, Permission.CAN_EDIT_ALL_PROJECTS));
+      (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
     if (!hasPermission) {
       return res
         .status(401)
-        .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
+        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
     }
 
     try {
@@ -725,12 +693,12 @@ projectAPIRouter.get("/project/:projectCuid/shifts", async (req, res) => {
 
   const hasPermission =
     projectData.Manage.some((manage) => manage.consultantCuid === user.cuid) ||
-    (await checkPermission(user.cuid, Permission.CAN_READ_ALL_PROJECTS));
+    (await checkPermission(user.cuid, PermissionList.CAN_READ_ALL_PROJECTS));
 
   if (!hasPermission) {
     return res
       .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_READ_ALL_PROJECTS);
   }
 
   return res.send(responseData);
@@ -769,19 +737,19 @@ projectAPIRouter.get("/project/:projectCuid/shiftGroups", async (req, res) => {
     return res.status(500).send("Internal server error.");
   }
 
-  const responseData = projectData.ShiftGroup.filter(
-    (shiftGroup) => shiftGroup.shiftStatus === ShiftStatus.ACTIVE,
-  );
-
   const hasPermission =
     projectData.Manage.some((manage) => manage.consultantCuid === user.cuid) ||
-    (await checkPermission(user.cuid, Permission.CAN_READ_ALL_PROJECTS));
+    (await checkPermission(user.cuid, PermissionList.CAN_READ_ALL_PROJECTS));
 
   if (!hasPermission) {
     return res
       .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_READ_ALL_PROJECTS);
   }
+
+  const responseData = projectData.ShiftGroup.filter(
+    (shiftGroup) => shiftGroup.shiftStatus === ShiftStatus.ACTIVE,
+  );
 
   return res.send(responseData);
 });
@@ -818,38 +786,17 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
     return res.status(400).send("days must be a nonempty array.");
   }
 
-  const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
-  const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
-
-  if (
-    isNaN(startTimeHour) ||
-    isNaN(startTimeMinute) ||
-    isNaN(endTimeHour) ||
-    isNaN(endTimeMinute)
-  ) {
-    return res.status(400).send("Invalid time format.");
-  }
-
-  if (startTimeHour < 0 || startTimeHour > 23) {
-    return res.status(400).send("Invalid start time hour.");
-  }
-
-  if (startTimeMinute < 0 || startTimeMinute > 59) {
-    return res.status(400).send("Invalid start time minute.");
-  }
-
-  if (endTimeHour < 0 || endTimeHour > 23) {
-    return res.status(400).send("Invalid end time hour.");
-  }
-
-  if (endTimeMinute < 0 || endTimeMinute > 59) {
-    return res.status(400).send("Invalid end time minute.");
+  const timeValidity = checkTimesValidity(startTime, endTime);
+  if (!timeValidity.isValid) {
+    return res.status(400).send(timeValidity.message);
   }
 
   const startTimeObject = new Date();
+  const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
   startTimeObject.setHours(startTimeHour, startTimeMinute, 0, 0);
 
   const endTimeObject = new Date();
+  const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
   endTimeObject.setHours(endTimeHour, endTimeMinute, 0, 0);
 
   let projectData;
@@ -879,12 +826,13 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
       (manage) =>
         manage.consultantCuid === user.cuid &&
         manage.role === Role.CLIENT_HOLDER,
-    ) || (await checkPermission(user.cuid, Permission.CAN_EDIT_ALL_PROJECTS));
+    ) ||
+    (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
   if (!hasPermission) {
     return res
       .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
   }
 
   let shiftGroup: any;
@@ -974,12 +922,13 @@ projectAPIRouter.get(
     const hasPermission =
       projectData.Manage.some(
         (manage) => manage.consultantCuid === user.cuid,
-      ) || (await checkPermission(user.cuid, Permission.CAN_EDIT_ALL_PROJECTS));
+      ) ||
+      (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
     if (!hasPermission) {
       return res
         .status(401)
-        .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
+        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
     }
 
     try {
@@ -1055,12 +1004,13 @@ projectAPIRouter.get(
     const hasPermission =
       projectData.Manage.some(
         (manage) => manage.consultantCuid === user.cuid,
-      ) || (await checkPermission(user.cuid, Permission.CAN_READ_ALL_PROJECTS));
+      ) ||
+      (await checkPermission(user.cuid, PermissionList.CAN_READ_ALL_PROJECTS));
 
     if (!hasPermission) {
       return res
         .status(401)
-        .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
+        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_READ_ALL_PROJECTS);
     }
 
     try {
@@ -1119,13 +1069,13 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
 
   const hasReadAllProjectsPermission = await checkPermission(
     user.cuid,
-    Permission.CAN_READ_ALL_PROJECTS,
+    PermissionList.CAN_READ_ALL_PROJECTS,
   );
 
   if (!hasReadAllProjectsPermission) {
     return res
       .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_READ_ALL_PROJECTS);
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_READ_ALL_PROJECTS);
   }
 
   try {

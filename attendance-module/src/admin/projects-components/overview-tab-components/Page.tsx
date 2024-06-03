@@ -45,11 +45,11 @@ const ProjectOverview: React.FC = () => {
             >
               <Grid xs={12} sm={12} md={6}>
                 <FormLabel>Client name</FormLabel>
-                <Input value={project?.Client.name} disabled />
+                <Input value={project?.client.name} disabled />
               </Grid>
               <Grid xs={12} sm={12} md={6}>
                 <FormLabel>Client UEN</FormLabel>
-                <Input value={project?.clientUEN} disabled />
+                <Input value={project?.client.uen} disabled />
               </Grid>
               <Grid xs={12} sm={12} md={6}>
                 <FormLabel>Created on</FormLabel>

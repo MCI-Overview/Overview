@@ -1,9 +1,9 @@
-import { User } from "@/types";
+import { User } from "@/types/common";
 import {
   PERMISSION_ERROR_TEMPLATE,
-  Permission,
   checkPermission,
-} from "../../../utils";
+  PermissionList,
+} from "../../../utils/permissions";
 import { DayOfWeek, PrismaClient } from "@prisma/client";
 import { Router } from "express";
 
@@ -52,13 +52,15 @@ projectShiftAPIRouter.delete("/shift", async (req, res) => {
     ) {
       const hasEditAllProjectPermission = await checkPermission(
         user.cuid,
-        Permission.CAN_EDIT_ALL_PROJECTS,
+        PermissionList.CAN_EDIT_ALL_PROJECTS,
       );
 
       if (!hasEditAllProjectPermission) {
         return res
           .status(401)
-          .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
+          .send(
+            PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS,
+          );
       }
     }
 
@@ -144,13 +146,15 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
     ) {
       const hasEditAllProjectPermission = await checkPermission(
         user.cuid,
-        Permission.CAN_EDIT_ALL_PROJECTS,
+        PermissionList.CAN_EDIT_ALL_PROJECTS,
       );
 
       if (!hasEditAllProjectPermission) {
         return res
           .status(401)
-          .send(PERMISSION_ERROR_TEMPLATE + Permission.CAN_EDIT_ALL_PROJECTS);
+          .send(
+            PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS,
+          );
       }
     }
 

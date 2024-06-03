@@ -6,11 +6,9 @@ import {
 } from "react-router-dom";
 import LoginAdmin from "./login/login-admin";
 import LoginUser from "./login/login-user";
-import Box from "@mui/joy/Box";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import { CssVarsProvider } from "@mui/joy/styles";
-import CssBaseline from "@mui/joy/CssBaseline";
 import { useEffect, useState } from "react";
 import AdminProjects from "./admin/Projects";
 import AdminHome from "./admin/Home";
@@ -23,9 +21,9 @@ import UserNew from "./user/UserNew";
 import UserHome from "./user/UserHome";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { User } from "./types";
+import { User } from "./types/common";
 import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
-import { CircularProgress } from "@mui/joy";
+import { CircularProgress, CssBaseline, Box } from "@mui/joy";
 import { UserContextProvider } from "./providers/userContextProvider";
 import { ProjectContextProvider } from "./providers/projectContextProvider";
 
@@ -33,7 +31,6 @@ function App() {
   const location = useLocation();
   const hideSidebarRoutes = ["/", "/admin", "/user/new"];
   const shouldHideSidebar = hideSidebarRoutes.includes(location.pathname);
-  const isUserRoute = location.pathname.startsWith("/user");
 
   useEffect(() => {
     document.title = "Overview";
