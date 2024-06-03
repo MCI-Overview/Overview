@@ -26,6 +26,7 @@ import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
 import { CircularProgress, CssBaseline, Box } from "@mui/joy";
 import { UserContextProvider } from "./providers/userContextProvider";
 import { ProjectContextProvider } from "./providers/projectContextProvider";
+import axiosRetry from "axios-retry";
 
 function App() {
   const location = useLocation();
@@ -38,6 +39,7 @@ function App() {
 
   axios.defaults.baseURL = "http://localhost:3000";
   axios.defaults.withCredentials = true;
+  axiosRetry(axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
 
   const [user, setUser] = useState<User | null>(null);
 
