@@ -10,10 +10,11 @@ import {
   Input,
   Chip,
   Button,
-  Autocomplete,
+  FormHelperText,
+  Table,
 } from "@mui/joy";
 import axios from "axios";
-import { SyntheticEvent, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { CreateShiftData } from "../../../types";
 
@@ -27,20 +28,41 @@ const DAYS = [
   "Sunday",
 ];
 
+function getShiftDuration(startTime: string | null, endTime: string | null) {
+  if (!startTime || !endTime) return 0;
+
+  const [startHour, startMinute] = startTime.split(":").map(Number);
+  const [endHour, endMinute] = endTime.split(":").map(Number);
+
+  const start = startHour + startMinute / 60;
+  const end = endHour + endMinute / 60;
+
+  if (start > end) {
+    return 24 - start + end;
+  }
+
+  return end - start;
+}
+
 export default function CreateShiftModal() {
   const { project, updateProject } = useProjectContext();
   const [isOpen, setIsOpen] = useState(false);
   const [shiftData, setShiftData] = useState<CreateShiftData>({
-    shiftGroupName: null,
-    shiftGroupCuid: null,
-    startTime: "00:00",
-    endTime: "00:00",
+    startTime: null,
+    endTime: null,
+    halfDayStartTime: null,
+    halfDayEndTime: null,
     headcount: null,
+    breakDuration: null,
     days: [],
   });
   const [days, setDays] = useState<string[]>([]);
-  const [shiftGroupExists, setShiftGroupExists] = useState<boolean>(false);
-  const headcountInputRef = useRef<HTMLInputElement>(null);
+  const breakDurationInputRef = useRef<HTMLInputElement>(null);
+  const shiftDuration = getShiftDuration(
+    shiftData.startTime,
+    shiftData.endTime,
+  );
+  const hasHalfDay = shiftDuration > 6;
 
   if (!project) return null;
 
@@ -53,101 +75,13 @@ export default function CreateShiftModal() {
     updateProject();
   }
 
-  function handleShiftNameInput(e: SyntheticEvent<Element, Event>) {
-    const inputShiftGroupName = (e.target as HTMLSelectElement).value;
-
-    const shiftGroup = project?.shifts.find(
-      (group) => group.name === inputShiftGroupName,
-    );
-    if (shiftGroup) {
-      setShiftData({
-        ...shiftData,
-        shiftGroupCuid: shiftGroup.cuid,
-        shiftGroupName: null,
-        headcount: shiftGroup.headcount.toString(),
-      });
-      setShiftGroupExists(true);
-    } else {
-      setShiftData({
-        ...shiftData,
-        shiftGroupCuid: null,
-        shiftGroupName: inputShiftGroupName,
-        headcount: null,
-      });
-      setShiftGroupExists(false);
-    }
-  }
-
   return (
     <>
       <Modal open={isOpen}>
         <ModalDialog sx={{ minWidth: "34rem" }}>
           <ModalClose onClick={() => setIsOpen(false)} />
-          <Typography level="title-lg">Create a shift</Typography>
+          <Typography level="title-lg">Create shifts</Typography>
           <Stack spacing={1}>
-            <Grid container spacing={1}>
-              <Grid xs={6}>
-                <FormControl required>
-                  <FormLabel>Shift Name</FormLabel>
-                  <Autocomplete
-                    freeSolo
-                    options={project?.shifts.map((shiftGroup) => ({
-                      label: shiftGroup.name,
-                      value: shiftGroup.cuid,
-                    }))}
-                    onSelect={handleShiftNameInput}
-                  />
-                </FormControl>
-              </Grid>
-              <Grid xs={6}>
-                <FormControl required>
-                  <FormLabel>Headcount</FormLabel>
-                  <Input
-                    ref={headcountInputRef}
-                    disabled={shiftGroupExists}
-                    type="number"
-                    value={shiftData.headcount || ""}
-                    onChange={(e) => {
-                      if (parseInt(e.target.value) < 0) {
-                        setShiftData({
-                          ...shiftData,
-                          headcount: "0",
-                        });
-                      } else {
-                        setShiftData({
-                          ...shiftData,
-                          headcount: e.target.value,
-                        });
-                      }
-                    }}
-                  />
-                </FormControl>
-              </Grid>
-            </Grid>
-            <Grid container xs={12} spacing={1}>
-              <Grid xs={6}>
-                <FormControl required>
-                  <FormLabel>Start Time</FormLabel>
-                  <Input
-                    type="time"
-                    onChange={(e) =>
-                      setShiftData({ ...shiftData, startTime: e.target.value })
-                    }
-                  />
-                </FormControl>
-              </Grid>
-              <Grid xs={6}>
-                <FormControl required>
-                  <FormLabel>End Time</FormLabel>
-                  <Input
-                    type="time"
-                    onChange={(e) =>
-                      setShiftData({ ...shiftData, endTime: e.target.value })
-                    }
-                  />
-                </FormControl>
-              </Grid>
-            </Grid>
             <Stack
               spacing={1}
               sx={{
@@ -177,6 +111,153 @@ export default function CreateShiftModal() {
                 })}
               </Grid>
             </Stack>
+            <Grid container spacing={1}>
+              <Grid xs={6}>
+                <FormControl required>
+                  <FormLabel>Headcount</FormLabel>
+                  <Input
+                    type="number"
+                    value={shiftData.headcount || ""}
+                    onChange={(e) => {
+                      if (parseInt(e.target.value) < 0) {
+                        setShiftData({
+                          ...shiftData,
+                          headcount: "0",
+                        });
+                      } else {
+                        setShiftData({
+                          ...shiftData,
+                          headcount: e.target.value,
+                        });
+                      }
+                    }}
+                  />
+                </FormControl>
+              </Grid>
+              <Grid xs={6}>
+                <FormControl
+                  required
+                  error={
+                    shiftDuration >= 8 &&
+                    parseInt(shiftData.breakDuration || "0") < 45
+                  }
+                >
+                  <FormLabel>Break Duration</FormLabel>
+                  <Input
+                    type="number"
+                    endDecorator="minutes"
+                    ref={breakDurationInputRef}
+                    value={shiftData.breakDuration || ""}
+                    onChange={(e) => {
+                      if (parseInt(e.target.value) < 0) {
+                        setShiftData({
+                          ...shiftData,
+                          breakDuration: "0",
+                        });
+                      } else {
+                        setShiftData({
+                          ...shiftData,
+                          breakDuration: e.target.value,
+                        });
+                      }
+                    }}
+                  />
+                  <FormHelperText>
+                    {shiftDuration >= 8 &&
+                      parseInt(shiftData.breakDuration || "0") < 45 &&
+                      "Must be at least 45 minutes"}
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+            </Grid>
+            <Grid container xs={12} spacing={1}>
+              <Grid xs={6}>
+                <FormControl required>
+                  <FormLabel>Start Time</FormLabel>
+                  <Input
+                    type="time"
+                    onChange={(e) =>
+                      setShiftData({ ...shiftData, startTime: e.target.value })
+                    }
+                  />
+                </FormControl>
+              </Grid>
+              <Grid xs={6}>
+                <FormControl required>
+                  <FormLabel>End Time</FormLabel>
+                  <Input
+                    type="time"
+                    onChange={(e) =>
+                      setShiftData({ ...shiftData, endTime: e.target.value })
+                    }
+                  />
+                </FormControl>
+              </Grid>
+            </Grid>
+            <Grid container xs={12} spacing={1}>
+              <Grid xs={6}>
+                <FormControl required>
+                  <FormLabel>Half Day End Time</FormLabel>
+                  <Input
+                    type="time"
+                    disabled={!hasHalfDay}
+                    onChange={(e) =>
+                      setShiftData({
+                        ...shiftData,
+                        halfDayEndTime: e.target.value,
+                      })
+                    }
+                  />
+                </FormControl>
+              </Grid>
+              <Grid xs={6}>
+                <FormControl required>
+                  <FormLabel>Half Day Start Time</FormLabel>
+                  <Input
+                    type="time"
+                    disabled={!hasHalfDay}
+                    onChange={(e) =>
+                      setShiftData({
+                        ...shiftData,
+                        halfDayStartTime: e.target.value,
+                      })
+                    }
+                  />
+                </FormControl>
+              </Grid>
+            </Grid>
+            <Table borderAxis="bothBetween">
+              <thead>
+                <tr>
+                  <td />
+                  <td>Full</td>
+                  <td>AM</td>
+                  <td>PM</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Shift Duration</td>
+                  <td>{shiftDuration.toFixed(1)}h</td>
+                  <td>
+                    {hasHalfDay
+                      ? getShiftDuration(
+                          shiftData.startTime,
+                          shiftData.halfDayEndTime,
+                        ).toFixed(1) + "h"
+                      : "-"}
+                  </td>
+                  <td>
+                    {hasHalfDay
+                      ? getShiftDuration(
+                          shiftData.halfDayStartTime,
+                          shiftData.endTime,
+                        ).toFixed(1) + "h"
+                      : "-"}
+                  </td>
+                </tr>
+              </tbody>
+            </Table>
           </Stack>
           <Button onClick={handleCreateShift}>Create Shift</Button>
         </ModalDialog>

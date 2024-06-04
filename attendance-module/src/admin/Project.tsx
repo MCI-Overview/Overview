@@ -12,11 +12,11 @@ import {
   AdminBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
-import ProjectOverview from "./projects-components/overview-tab-components/Page.tsx";
+import ProjectOverview from "../components/project/overview/Page";
 import AssignCandidatePage from "../components/project/candidates/Page";
-import RosterPage from "../components/project/roster/RosterPage.tsx";
+import RosterPage from "../components/project/roster/RosterPage";
 import { useProjectContext } from "../providers/projectContextProvider";
-import ShiftPage from "../components/project/shift/ShiftPage.tsx";
+import ShiftPage from "../components/project/shift/ShiftPage";
 
 const tabs: Tab[] = [
   {

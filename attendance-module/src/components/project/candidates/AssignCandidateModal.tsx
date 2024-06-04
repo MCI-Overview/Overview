@@ -58,6 +58,7 @@ const AssignCandidateModal = ({
   };
 
   useEffect(() => {
+    console.log(data);
     setValidCddList(data.validData);
     setInvalidCddList(data.invalidData);
   }, [data]);
@@ -97,6 +98,39 @@ const AssignCandidateModal = ({
       alternateMatches: ["date of birth", "dob", "birth date"],
       fieldType: { type: "input" },
       example: "1965-08-09",
+    },
+    {
+      label: "Start Date",
+      key: "startDate",
+      alternateMatches: ["start date", "start"],
+      fieldType: { type: "input" },
+      example: "2024-05-13",
+    },
+    {
+      label: "End Date",
+      key: "endDate",
+      alternateMatches: ["end date", "end"],
+      fieldType: { type: "input" },
+      example: "2024-08-02",
+    },
+    {
+      label: "Job Type",
+      key: "employmentType",
+      alternateMatches: [
+        "type",
+        "employment type",
+        "job type",
+        "employmentType",
+      ],
+      fieldType: {
+        type: "select",
+        options: [
+          { label: "Full-time", value: "FULL_TIME" },
+          { label: "Part-time", value: "PART_TIME" },
+          { label: "Contract", value: "CONTRACT" },
+        ],
+      },
+      example: "Full-time",
     },
   ];
 
@@ -160,6 +194,13 @@ const AssignCandidateModal = ({
       dateOfBirth: row.dateOfBirth
         ? (row.dateOfBirth as string).trim()
         : row.dateOfBirth,
+      startDate: row.startDate
+        ? (row.startDate as string).trim()
+        : row.startDate,
+      endDate: row.endDate ? (row.endDate as string).trim() : row.endDate,
+      employmentType: row.type
+        ? (row.type as string).trim()
+        : row.employmentType,
     };
   };
 

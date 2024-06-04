@@ -10,12 +10,13 @@ export type CreateProjectData = {
 };
 
 export type CreateShiftData = {
-  startTime: string;
-  endTime: string;
-  headcount: string | null;
-  shiftGroupCuid: string | null;
   days: string[];
-  shiftGroupName: string | null;
+  headcount: string | null;
+  breakDuration: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  halfDayStartTime: string | null;
+  halfDayEndTime: string | null;
 };
 
 export type Manage = {

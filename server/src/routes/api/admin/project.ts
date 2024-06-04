@@ -1,7 +1,18 @@
 import { Router, Request, Response } from "express";
-import { DayOfWeek, PrismaClient, Role, ShiftStatus } from "@prisma/client";
+import {
+  EmploymentType,
+  DayOfWeek,
+  PrismaClient,
+  Role,
+  ShiftStatus,
+} from "@prisma/client";
 import { PrismaError } from "@/types";
-import { GetProjectDataResponse, User, Location } from "@/types/common";
+import {
+  GetProjectDataResponse,
+  User,
+  Location,
+  ShiftGroup,
+} from "@/types/common";
 import {
   processCandidateData,
   checkLocationsValidity,
@@ -38,15 +49,19 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
             Consultant: true,
           },
         },
-        ShiftGroup: {
-          include: {
-            Shift: true,
+        Shift: {
+          where: {
+            status: ShiftStatus.ACTIVE,
           },
         },
         Assign: {
           include: {
             Candidate: true,
-            Consultant: true,
+            Consultant: {
+              select: {
+                cuid: true,
+              },
+            },
           },
         },
         Client: true,
@@ -83,7 +98,8 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
       noticePeriodUnit,
       status,
       Client,
-      ShiftGroup,
+      shiftGroups,
+      Shift,
       Assign,
       Manage,
     } = projectData;
@@ -99,6 +115,8 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
       noticePeriodDuration,
       noticePeriodUnit,
       status,
+      shiftGroups: shiftGroups as unknown as ShiftGroup[],
+      shifts: Shift,
       client: {
         ...Client,
       },
@@ -112,20 +130,6 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
           name,
           email,
           role,
-        };
-      }),
-      shifts: ShiftGroup.map((shiftGroup) => {
-        const { cuid, name, headcount, Shift } = shiftGroup;
-
-        return {
-          cuid,
-          name,
-          headcount,
-          shifts: Shift.map((shift) => {
-            const { cuid, startTime, endTime, day } = shift;
-
-            return { cuid, startTime, endTime, day };
-          }),
         };
       }),
     };
@@ -497,7 +501,12 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
 
   // verify all candidates have nric, name, contact, dateOfBirth
   const invalidCandidates = candidates.filter(
-    (cdd: any) => !cdd.nric || !cdd.name || !cdd.contact || !cdd.dateOfBirth,
+    (cdd: any) =>
+      !cdd.nric ||
+      !cdd.name ||
+      !cdd.contact ||
+      !cdd.dateOfBirth ||
+      !cdd.employmentType,
   );
 
   if (invalidCandidates.length > 0) {
@@ -548,7 +557,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
       );
 
       // retrieve cuids
-      const candidates = await prisma.candidate.findMany({
+      const candidatesInDb = await prisma.candidate.findMany({
         where: {
           nric: {
             in: candidateObjects.map((cdd) => cdd.nric),
@@ -556,7 +565,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
         },
       });
 
-      const assignData = candidates.map((cdd) => {
+      const assignData = candidatesInDb.map((cdd) => {
         const currentDate = new Date();
         const candidateStartDate =
           currentDate > projectData.startDate
@@ -569,6 +578,8 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
           projectCuid: projectCuid,
           startDate: candidateStartDate,
           endDate: projectData.endDate,
+          employmentType: candidates.find((c) => c.nric === cdd.nric)
+            .employmentType as EmploymentType,
         };
       });
 
@@ -591,6 +602,10 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
   }
 });
 
+// TODO: revisit candidate deletion logic. Proposed steps:
+// 1. Delete scheduled future attendances (if they exist)
+// 2. If candidate has no past attendances, hard delete candidate
+// 3. Otherwise, soft delete candidate by setting endDate to current date
 projectAPIRouter.delete(
   "/project/:projectCuid/candidates",
   async (req, res) => {
@@ -654,106 +669,6 @@ projectAPIRouter.delete(
   },
 );
 
-projectAPIRouter.get("/project/:projectCuid/shifts", async (req, res) => {
-  const user = req.user as User;
-  const { projectCuid } = req.params;
-
-  if (!projectCuid) {
-    return res.status(400).send("projectCuid is required.");
-  }
-
-  let projectData;
-  try {
-    projectData = await prisma.project.findUniqueOrThrow({
-      where: {
-        cuid: projectCuid,
-      },
-      include: {
-        Manage: true,
-        ShiftGroup: {
-          include: {
-            Shift: true,
-          },
-        },
-      },
-    });
-  } catch (error) {
-    const prismaError = error as PrismaError;
-    if (prismaError.code === "P2025") {
-      return res.status(404).send("Project does not exist.");
-    }
-
-    console.log(error);
-    return res.status(500).send("Internal server error.");
-  }
-
-  const responseData = projectData.ShiftGroup.filter(
-    (shift) => shift.shiftStatus === ShiftStatus.ACTIVE,
-  ).map((shiftGroup) => shiftGroup.Shift);
-
-  const hasPermission =
-    projectData.Manage.some((manage) => manage.consultantCuid === user.cuid) ||
-    (await checkPermission(user.cuid, PermissionList.CAN_READ_ALL_PROJECTS));
-
-  if (!hasPermission) {
-    return res
-      .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_READ_ALL_PROJECTS);
-  }
-
-  return res.send(responseData);
-});
-
-projectAPIRouter.get("/project/:projectCuid/shiftGroups", async (req, res) => {
-  const user = req.user as User;
-  const { projectCuid } = req.params;
-
-  if (!projectCuid) {
-    return res.status(400).send("projectCuid is required.");
-  }
-
-  let projectData;
-  try {
-    projectData = await prisma.project.findUniqueOrThrow({
-      where: {
-        cuid: projectCuid,
-      },
-      include: {
-        Manage: true,
-        ShiftGroup: {
-          include: {
-            Shift: true,
-          },
-        },
-      },
-    });
-  } catch (error) {
-    const prismaError = error as PrismaError;
-    if (prismaError.code === "P2025") {
-      return res.status(404).send("Project does not exist.");
-    }
-
-    console.log(error);
-    return res.status(500).send("Internal server error.");
-  }
-
-  const hasPermission =
-    projectData.Manage.some((manage) => manage.consultantCuid === user.cuid) ||
-    (await checkPermission(user.cuid, PermissionList.CAN_READ_ALL_PROJECTS));
-
-  if (!hasPermission) {
-    return res
-      .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_READ_ALL_PROJECTS);
-  }
-
-  const responseData = projectData.ShiftGroup.filter(
-    (shiftGroup) => shiftGroup.shiftStatus === ShiftStatus.ACTIVE,
-  );
-
-  return res.send(responseData);
-});
-
 projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
@@ -762,8 +677,9 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
     headcount,
     startTime,
     endTime,
-    shiftGroupCuid,
-    shiftGroupName,
+    halfDayEndTime,
+    halfDayStartTime,
+    breakDuration,
   } = req.body;
 
   if (!days) return res.status(400).send("days is required.");
@@ -776,10 +692,17 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
 
   if (!endTime) return res.status(400).send("endTime is required.");
 
-  if (!shiftGroupCuid && !shiftGroupName) {
+  if (
+    (halfDayEndTime && !halfDayStartTime) ||
+    (!halfDayEndTime && halfDayStartTime)
+  ) {
     return res
       .status(400)
-      .send("shiftGroupCuid or shiftGroupName is required.");
+      .send("specify both/neither halfDayEndTime and halfDayStartTime.");
+  }
+
+  if (breakDuration && parseInt(breakDuration) < 0) {
+    return res.status(400).send("breakDuration cannot be negative.");
   }
 
   if (!Array.isArray(days) || days.length === 0) {
@@ -799,6 +722,23 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
   const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
   endTimeObject.setHours(endTimeHour, endTimeMinute, 0, 0);
 
+  if (startTimeObject >= endTimeObject) {
+    endTimeObject.setDate(endTimeObject.getDate() + 1);
+  }
+
+  const shiftDuration =
+    (endTimeObject.getTime() - startTimeObject.getTime()) / 1000 / 60;
+
+  if (shiftDuration >= 8 && breakDuration < 45) {
+    return res
+      .status(400)
+      .send(
+        `Minimum break duration is 45 minutes for a ${shiftDuration.toFixed(
+          1,
+        )}h shift.`,
+      );
+  }
+
   let projectData;
   try {
     projectData = await prisma.project.findUniqueOrThrow({
@@ -807,7 +747,7 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
       },
       include: {
         Manage: true,
-        ShiftGroup: true,
+        Shift: true,
       },
     });
   } catch (error) {
@@ -835,34 +775,16 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
       .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
   }
 
-  let shiftGroup: any;
-  if (
-    !projectData.ShiftGroup.some(
-      (shiftGroup) => shiftGroup.cuid === shiftGroupCuid,
-    )
-  ) {
-    try {
-      shiftGroup = await prisma.shiftGroup.create({
-        data: {
-          name: shiftGroupName,
-          headcount: parseInt(headcount),
-          projectCuid,
-        },
-      });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).send("Internal server error.");
-    }
-  } else {
-    // TODO: check for clashes in timings with existing shifts
-  }
-
   const createData = days.map((day) => {
     return {
       day: day.toUpperCase() as DayOfWeek,
       startTime: startTimeObject,
       endTime: endTimeObject,
-      groupCuid: shiftGroupCuid || shiftGroup.cuid,
+      halfDayEndTime: new Date(halfDayEndTime),
+      halfDayStartTime: new Date(halfDayStartTime),
+      breakDuration: parseInt(breakDuration),
+      headcount: parseInt(headcount),
+      projectCuid,
     };
   });
 
@@ -877,6 +799,8 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
 
   return res.send("Shift created successfully.");
 });
+
+// TODO: check for clashes in timings with existing shifts (For shift groups)
 
 projectAPIRouter.get(
   "/project/:projectCuid/attendance/:date&:candidateCuid",
@@ -938,11 +862,6 @@ projectAPIRouter.get(
           shiftDate: {
             gte: startDate,
             lte: endDate,
-          },
-          Shift: {
-            ShiftGroup: {
-              projectCuid: projectCuid,
-            },
           },
           NOT: {
             status: null,
@@ -1024,9 +943,7 @@ projectAPIRouter.get(
             lte: endDate,
           },
           Shift: {
-            ShiftGroup: {
-              projectCuid: projectCuid,
-            },
+            projectCuid: projectCuid,
           },
           status: null,
         },

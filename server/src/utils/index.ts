@@ -1,6 +1,12 @@
-import { Assign, Candidate, Consultant } from "@prisma/client";
+import { Assign, Candidate } from "@prisma/client";
 import { JsonObject } from "@prisma/client/runtime/library";
-import { Location, CommonCandidate, Address, BankDetails, EmergencyContact } from "@/types/common";
+import {
+  Location,
+  CommonCandidate,
+  Address,
+  BankDetails,
+  EmergencyContact,
+} from "@/types/common";
 import { PermissionList, checkPermission } from "./permissions";
 
 export function maskNRIC(nric: string): string {
@@ -49,7 +55,9 @@ export function checkLocationsValidity(locations: any): ParameterValidity {
   }
 }
 
-export function checkEmploymentByValidity(employmentBy: string): ParameterValidity {
+export function checkEmploymentByValidity(
+  employmentBy: string,
+): ParameterValidity {
   const VALID_EMPLOYMENT_BY = [
     "MCI Career Services Pte Ltd",
     "MCI Outsourcing Pte Ltd",
@@ -81,72 +89,84 @@ export function checkDatesValidity(
   let endDate: Date | null = null;
 
   if (startDateString) {
-  try {
-    startDate = new Date(Date.parse(startDateString))
-  } catch {
-    return {
-      isValid: false,
-      message: "Invalid start date parameter"
-    }
-  }
-}
-
-  if (endDateString) {
     try {
-      endDate = new Date(Date.parse(endDateString))
+      startDate = new Date(Date.parse(startDateString));
     } catch {
       return {
         isValid: false,
-        message: "Invalid end date parameter"
-      }
+        message: "Invalid start date parameter",
+      };
+    }
+  }
+
+  if (endDateString) {
+    try {
+      endDate = new Date(Date.parse(endDateString));
+    } catch {
+      return {
+        isValid: false,
+        message: "Invalid end date parameter",
+      };
     }
   }
 
   if (startDate && endDate && startDate > endDate) {
     return {
       isValid: false,
-      message: "Start date cannot be later than end date"
-    }
+      message: "Start date cannot be later than end date",
+    };
   }
 
   return {
-    isValid: true
-  }
+    isValid: true,
+  };
 }
 
-export function checkNoticePeriodValidity(noticePeriodDurationString: string, noticePeriodUnit: string, projectStartDateString: string, projectEndDateString: string) {
-  let noticePeriodDuration
+export function checkNoticePeriodValidity(
+  noticePeriodDurationString: string,
+  noticePeriodUnit: string,
+  projectStartDateString: string,
+  projectEndDateString: string,
+) {
+  let noticePeriodDuration;
   try {
     noticePeriodDuration = parseInt(noticePeriodDurationString);
   } catch {
     return {
       isValid: false,
-      message: "Invalid notice period input"
-    }
+      message: "Invalid notice period input",
+    };
   }
 
   if (noticePeriodDuration < 0) {
     return {
       isValid: false,
-      message: "Notice period duration must not be negative"
-    }
+      message: "Notice period duration must not be negative",
+    };
   }
 
-  if (noticePeriodUnit !== "DAY" && noticePeriodUnit !== "WEEK" && noticePeriodUnit !== "MONTH") {
+  if (
+    noticePeriodUnit !== "DAY" &&
+    noticePeriodUnit !== "WEEK" &&
+    noticePeriodUnit !== "MONTH"
+  ) {
     return {
       isValid: false,
-      message: "Invalid notice period unit"
-    }
+      message: "Invalid notice period unit",
+    };
   }
 
-  if(!projectStartDateString || !projectEndDateString) {
+  if (!projectStartDateString || !projectEndDateString) {
     return {
       isValid: false,
-      message: "Project start date and end date must be provided"
-    }
+      message: "Project start date and end date must be provided",
+    };
   }
 
-  const projectDateValidity = checkDatesValidity(projectStartDateString, projectEndDateString);
+  const projectDateValidity = checkDatesValidity(
+    projectStartDateString,
+    projectEndDateString,
+  );
 
   if (!projectDateValidity.isValid) {
     return projectDateValidity;
@@ -158,34 +178,43 @@ export function checkNoticePeriodValidity(noticePeriodDurationString: string, no
   const startDatePlusNoticePeriod = new Date(startDate);
   switch (noticePeriodUnit) {
     case "DAY":
-      startDatePlusNoticePeriod.setDate(startDate.getDate() + noticePeriodDuration);
+      startDatePlusNoticePeriod.setDate(
+        startDate.getDate() + noticePeriodDuration,
+      );
       break;
     case "WEEK":
-      startDatePlusNoticePeriod.setDate(startDate.getDate() + noticePeriodDuration * 7);
+      startDatePlusNoticePeriod.setDate(
+        startDate.getDate() + noticePeriodDuration * 7,
+      );
       break;
     case "MONTH":
-      startDatePlusNoticePeriod.setMonth(startDate.getMonth() + noticePeriodDuration);
+      startDatePlusNoticePeriod.setMonth(
+        startDate.getMonth() + noticePeriodDuration,
+      );
       break;
   }
 
   if (startDatePlusNoticePeriod > endDate) {
     return {
       isValid: false,
-      message: "Notice period exceeds project duration"
-    }
+      message: "Notice period exceeds project duration",
+    };
   }
 
   return {
-    isValid: true
-  }
+    isValid: true,
+  };
 }
 
-export function checkTimesValidity(startTime: string, endTime: string): ParameterValidity {
+export function checkTimesValidity(
+  startTime: string,
+  endTime: string,
+): ParameterValidity {
   if (!startTime || !endTime) {
     return {
       isValid: false,
-      message: "Start time and end time must be provided"
-    }
+      message: "Start time and end time must be provided",
+    };
   }
 
   const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
@@ -199,46 +228,49 @@ export function checkTimesValidity(startTime: string, endTime: string): Paramete
   ) {
     return {
       isValid: false,
-      message: "Invalid time format"
-    }
+      message: "Invalid time format",
+    };
   }
 
   if (startTimeHour < 0 || startTimeHour > 23) {
     return {
       isValid: false,
-      message: "Invalid start time hour"
-    }
+      message: "Invalid start time hour",
+    };
   }
 
   if (startTimeMinute < 0 || startTimeMinute > 59) {
     return {
       isValid: false,
-      message: "Invalid start time minute"
-    }
+      message: "Invalid start time minute",
+    };
   }
 
   if (endTimeHour < 0 || endTimeHour > 23) {
     return {
       isValid: false,
-      message: "Invalid end time hour"
-    }
+      message: "Invalid end time hour",
+    };
   }
 
   if (endTimeMinute < 0 || endTimeMinute > 59) {
     return {
       isValid: false,
-      message: "Invalid end time minute"
-    }
+      message: "Invalid end time minute",
+    };
   }
 
   return {
-    isValid: true
-  }
+    isValid: true,
+  };
 }
 
 export async function processCandidateData(
   userCuid: string,
-  assignData: (Assign & { Consultant: Consultant, Candidate: Candidate })[],
+  assignData: (Assign & {
+    Consultant: { cuid: string };
+    Candidate: Candidate;
+  })[],
   permissionData?: JsonObject,
 ): Promise<CommonCandidate[]> {
   const hasReadCandidateDetailsPermission = await checkPermission(
@@ -257,6 +289,9 @@ export async function processCandidateData(
         contact: contact,
         dateOfBirth,
         consultantCuid: assign.Consultant.cuid,
+        startDate: assign.startDate,
+        endDate: assign.endDate,
+        employmentType: assign.employmentType,
       };
     });
   }
@@ -264,10 +299,13 @@ export async function processCandidateData(
   return assignData.map((assign) => {
     return {
       ...assign.Candidate,
+      startDate: assign.startDate,
+      endDate: assign.endDate,
+      employmentType: assign.employmentType,
       consultantCuid: assign.Consultant.cuid,
       address: assign.Candidate.address as Address,
       bankDetails: assign.Candidate.bankDetails as BankDetails,
       emergencyContact: assign.Candidate.emergencyContact as EmergencyContact,
     };
-  });;
+  });
 }
