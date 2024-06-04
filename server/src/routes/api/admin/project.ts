@@ -423,7 +423,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
     ...(locations && { locations }),
     ...(employmentBy && { employmentBy }),
     ...(startDate && { startDate: new Date(startDate) }),
-    ...(endDate && { endDate: new Date(startDate) }),
+    ...(endDate && { endDate: new Date(endDate) }),
     ...(candidateHolders && {
       candidateHolders: { update: candidateHolders },
     }),

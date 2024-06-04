@@ -1,5 +1,7 @@
-import { Location } from "../../../types/common";
+import axios from "axios";
 import toast from "react-hot-toast";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+import { Location } from "../../../types/common";
 
 import { Modal, ModalDialog, Button, Stack, Typography } from "@mui/joy";
 
@@ -7,7 +9,6 @@ interface DeleteLocationModalProps {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
   locations: Location[];
-  setLocations: (value: Location[]) => void;
   locationToDelete: Location;
 }
 
@@ -15,21 +16,26 @@ const DeleteLocationModal = ({
   isOpen,
   setIsOpen,
   locations,
-  setLocations,
   locationToDelete,
 }: DeleteLocationModalProps) => {
+  const { project, updateProject } = useProjectContext();
+  if (!project) return null;
+
   const handleDeleteLocation = async () => {
+    const updatedLocations = locations.filter(
+      (location) => location.postalCode !== locationToDelete.postalCode
+    );
+
     try {
-      // api call to delete location
-      console.log("Deleting location", locationToDelete);
-
-      // update project context
-      const updatedLocations = locations.filter(
-        (location) => location.postalCode !== locationToDelete.postalCode
-      );
-      setLocations(updatedLocations);
-
-      toast.success("Location deleted successfully");
+      axios
+        .patch("http://localhost:3000/api/admin/project", {
+          projectCuid: project.cuid,
+          locations: updatedLocations,
+        })
+        .then(() => {
+          updateProject();
+          toast.success("Location deleted successfully");
+        });
     } catch (error) {
       toast.error("Failed to delete location");
       console.log(error);
