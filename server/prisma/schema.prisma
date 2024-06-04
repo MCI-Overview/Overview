@@ -14,10 +14,10 @@ model Assign {
   startDate      DateTime
   endDate        DateTime
   employmentType EmploymentType
-  Requests       Request[]
   Candidate      Candidate      @relation(fields: [candidateCuid], references: [cuid])
   Consultant     Consultant     @relation(fields: [consultantCuid], references: [cuid])
   Project        Project        @relation(fields: [projectCuid], references: [cuid])
+  Requests       Request[]
 
   @@id([projectCuid, candidateCuid])
 }
@@ -28,16 +28,8 @@ model Request {
   projectCuid   String
   data          Json
   type          RequestType
-  Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
   status        RequestStatus @default(PENDING)
-}
-
-enum RequestType {
-  CLAIM
-  PAID_LEAVE
-  UNPAID_LEAVE
-  RESIGNATION
-  CANCEL
+  Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
 }
 
 model Attendance {
@@ -150,6 +142,14 @@ model User {
   username  String    @unique
   hash      String
   Candidate Candidate @relation(fields: [cuid], references: [cuid])
+}
+
+enum RequestType {
+  CLAIM
+  PAID_LEAVE
+  UNPAID_LEAVE
+  RESIGNATION
+  CANCEL
 }
 
 enum AttendanceStatus {

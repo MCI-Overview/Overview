@@ -18,6 +18,7 @@ import {
   Typography,
 } from "@mui/joy";
 import { Delete } from "@mui/icons-material";
+import AddLocationsModal from "./AddLocationsModal";
 
 const LocationsSection = () => {
   const { user } = useUserContext();
@@ -25,11 +26,11 @@ const LocationsSection = () => {
 
   const hasDeletePermission =
     project?.consultants.find(
-      (consultant) => consultant.role === "CLIENT_HOLDER",
+      (consultant) => consultant.role === "CLIENT_HOLDER"
     )?.cuid === user?.cuid ||
-    checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS);
+    (user && checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
-  const [locations, setLocations] = useState(project?.locations);
+  const [locations, setLocations] = useState(project?.locations || []);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -83,7 +84,7 @@ const LocationsSection = () => {
                   {hasDeletePermission && (
                     <IconButton
                       onClick={() => {
-                        setLocationToDelete(location.postalCode);
+                        setLocationToDelete(location);
                         setIsDeleteModalOpen(true);
                       }}
                     >
@@ -97,14 +98,20 @@ const LocationsSection = () => {
         </Card>
       </Stack>
 
-
-
-      <DeleteLocationModal
-        isOpen={isDeleteModalOpen}
-        setIsOpen={setIsDeleteModalOpen}
-        locationToDelete={locationToDelete}
-        handleDeleteLocation={handleDeleteLocation}
+      <AddLocationsModal
+        isOpen={isAddModalOpen}
+        setIsOpen={setIsAddModalOpen}
       />
+
+      {locationToDelete && (
+        <DeleteLocationModal
+          isOpen={isDeleteModalOpen}
+          setIsOpen={setIsDeleteModalOpen}
+          locations={locations}
+          setLocations={setLocations}
+          locationToDelete={locationToDelete}
+        />
+      )}
     </>
   );
 };

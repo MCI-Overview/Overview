@@ -1,6 +1,7 @@
-import { getExactAge } from "../../../utils/date-time";
-import { CommonCandidate, PermissionList } from "../../../types/common";
 import { useUserContext } from "../../../providers/userContextProvider";
+import { getExactAge } from "../../../utils/date-time";
+import { checkPermission } from "../../../utils/permission";
+import { CommonCandidate, PermissionList } from "../../../types/common";
 
 import {
   Box,
@@ -19,7 +20,7 @@ interface CandidateTableProps {
   tableData: (CommonCandidate & { consultantName: string })[];
   // handleEdit?: (nric: string) => void;
   handleDelete?: (nricList: string[]) => void;
-  showCanidateHolder?: boolean;
+  showCandidateHolder?: boolean;
 }
 
 const CandidateTable = ({
@@ -29,7 +30,7 @@ const CandidateTable = ({
   tableData,
   // handleEdit,
   handleDelete,
-  showCanidateHolder = false,
+  showCandidateHolder = false,
 }: CandidateTableProps) => {
   const showActions = handleDelete; // || handleEdit;
   const { user } = useUserContext();
@@ -49,7 +50,7 @@ const CandidateTable = ({
             <th>Start Date</th>
             <th>End Date</th>
             <th>Type</th>
-            {showCanidateHolder && <th>Candidate Holder</th>}
+            {showCandidateHolder && <th>Candidate Holder</th>}
             {showActions && <th>Actions</th>}
           </tr>
         </thead>
@@ -64,16 +65,17 @@ const CandidateTable = ({
                 <td>{row.nric}</td>
                 <td>{row.name}</td>
                 <td>{row.contact}</td>
-                <td>{row.dateOfBirth ? row.dateOfBirth.slice(0, 10) : ""}</td>
                 <td>
-                  {row.dateOfBirth
-                    ? getExactAge(row.dateOfBirth as string)
-                    : "-"}
+                  {/* {row.dateOfBirth
+                    ? row.dateOfBirth.toISOString().slice(0, 10)
+                    : ""} */}
+                  {row.dateOfBirth.toString().slice(0, 10)}
                 </td>
-                <td>{row.startDate.slice(0, 10)}</td>
-                <td>{row.endDate.slice(0, 10)}</td>
+                <td>{row.dateOfBirth ? getExactAge(row.dateOfBirth) : "-"}</td>
+                <td>{row.startDate.toString().slice(0, 10)}</td>
+                <td>{row.endDate.toString().slice(0, 10)}</td>
                 <td>{row.employmentType}</td>
-                {showCanidateHolder && <td>{row.consultantName}</td>}
+                {showCandidateHolder && <td>{row.consultantName}</td>}
                 {showActions && (
                   <td>
                     <Box
@@ -102,8 +104,12 @@ const CandidateTable = ({
                             color="danger"
                             onClick={() => handleDelete([row.cuid])}
                             disabled={
-                              user.permission !==
-                              PermissionList.CAN_EDIT_ALL_PROJECTS
+                              user
+                                ? !checkPermission(
+                                    user,
+                                    PermissionList.CAN_EDIT_ALL_PROJECTS
+                                  )
+                                : false
                             }
                           >
                             <Delete />

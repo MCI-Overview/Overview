@@ -1,5 +1,4 @@
-export function getExactAge(dateOfBirth: string) {
-  const dob = new Date(dateOfBirth);
+export function getExactAge(dob: Date) {
   const currentDate = new Date();
   const age = currentDate.getFullYear() - dob.getFullYear();
   const hasBirthdayOccurred =
@@ -14,9 +13,8 @@ export function getExactAge(dateOfBirth: string) {
   return age;
 }
 
-export function formatDate(date: string) {
-  const dateObj = new Date(date);
-  return dateObj.toLocaleDateString("en-SG", {
+export function formatDate(date: Date) {
+  return date.toLocaleDateString("en-SG", {
     year: "numeric",
     month: "numeric",
     day: "numeric",
