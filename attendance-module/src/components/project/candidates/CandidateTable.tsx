@@ -1,5 +1,5 @@
 import { useUserContext } from "../../../providers/userContextProvider";
-import { getExactAge } from "../../../utils/date-time";
+import { formatDate, getExactAge } from "../../../utils/date-time";
 import { checkPermission } from "../../../utils/permission";
 import { CommonCandidate, PermissionList } from "../../../types/common";
 
@@ -66,14 +66,14 @@ const CandidateTable = ({
                 <td>{row.name}</td>
                 <td>{row.contact}</td>
                 <td>
-                  {/* {row.dateOfBirth
-                    ? row.dateOfBirth.toISOString().slice(0, 10)
-                    : ""} */}
-                  {row.dateOfBirth.toString().slice(0, 10)}
+                  {row.dateOfBirth
+                    ? // ? row.dateOfBirth.toISOString().slice(0, 10)
+                      formatDate(row.dateOfBirth)
+                    : ""}
                 </td>
                 <td>{row.dateOfBirth ? getExactAge(row.dateOfBirth) : "-"}</td>
-                <td>{row.startDate.toString().slice(0, 10)}</td>
-                <td>{row.endDate.toString().slice(0, 10)}</td>
+                <td>{formatDate(row.startDate)}</td>
+                <td>{formatDate(row.endDate)}</td>
                 <td>{row.employmentType}</td>
                 {showCandidateHolder && <td>{row.consultantName}</td>}
                 {showActions && (
