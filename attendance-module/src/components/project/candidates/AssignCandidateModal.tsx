@@ -49,7 +49,7 @@ const AssignCandidateModal = ({
   const handleSubmitModalClose = () => {
     if (isSubmitModalOpen) {
       const confirmClose = window.confirm(
-        "Are you sure you want to close the modal? Uploaded information will be lost.",
+        "Are you sure you want to close the modal? Uploaded information will be lost."
       );
       if (confirmClose) {
         setIsSubmitModalOpen(false);
@@ -180,7 +180,7 @@ const AssignCandidateModal = ({
         message: "Invalid format. Please use YYYY-MM-DD",
         level: "error",
       });
-    } else if (getExactAge(row.dateOfBirth as string) < 16) {
+    } else if (getExactAge(new Date(row.dateOfBirth as string)) < 16) {
       addError("dateOfBirth", {
         message: "Candidate below 16 years old",
         level: "error",
@@ -225,7 +225,7 @@ const AssignCandidateModal = ({
     try {
       const response = await axios.post(
         `http://localhost:3000/api/admin/project/${projectCuid}/candidates`,
-        validCddList,
+        validCddList
       );
 
       toast.success("Candidates added successfully");
