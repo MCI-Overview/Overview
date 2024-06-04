@@ -1,4 +1,7 @@
+// TODO: Update these API routes
+
 import { User } from "@/types/common";
+import { PrismaError } from "@/types";
 import {
   PERMISSION_ERROR_TEMPLATE,
   checkPermission,
@@ -13,79 +16,77 @@ const projectShiftAPIRouter: Router = Router();
 
 projectShiftAPIRouter.delete("/shift", async (req, res) => {
   const user = req.user as User;
-  const { cuid } = req.body;
+  const { shiftCuid } = req.body;
 
-  async function deleteShift() {
-    await prisma.shift.delete({
-      where: {
-        cuid,
-      },
-    });
+  if (!shiftCuid) return res.status(400).send("shiftCuid is required.");
 
-    return res.send("Shift deleted successfully.");
-  }
-
-  if (!cuid) return res.status(400).send("cuid is required.");
-
+  let shiftData;
   try {
-    const shiftData = await prisma.shift.findUniqueOrThrow({
+    shiftData = await prisma.shift.findUniqueOrThrow({
       where: {
-        cuid,
+        cuid: shiftCuid,
       },
       include: {
-        ShiftGroup: {
+        Project: {
           include: {
-            Project: {
-              include: {
-                Manage: true,
-              },
-            },
+            Manage: true,
           },
         },
       },
     });
-
-    if (
-      !shiftData.ShiftGroup.Project.Manage.some(
-        (manage) => manage.consultantCuid === user.cuid,
-      )
-    ) {
-      const hasEditAllProjectPermission = await checkPermission(
-        user.cuid,
-        PermissionList.CAN_EDIT_ALL_PROJECTS,
-      );
-
-      if (!hasEditAllProjectPermission) {
-        return res
-          .status(401)
-          .send(
-            PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS,
-          );
-      }
+  } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2025") {
+      return res.status(404).send("Shift does not exist.");
     }
 
-    return deleteShift();
-  } catch (error) {
-    return res.status(404).send("Shift does not exist.");
+    console.log(error);
+    return res.status(500).send("Internal server error.");
   }
+
+  const hasPermission =
+    shiftData.Project.Manage.some(
+      (manage) => manage.consultantCuid === user.cuid,
+    ) ||
+    (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+  if (!hasPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+  }
+
+  // TODO: prevent/soft/hard delete based on attendance
+  // scheduled future attendances => prevent delete
+  // past attendances => soft delete
+  // no attendances => hard delete
+  await prisma.shift.update({
+    where: {
+      cuid: shiftCuid,
+    },
+    data: {
+      status: "ARCHIVED",
+    },
+  });
+
+  return res.send("Shift deleted successfully.");
 });
 
+// TODO: include commented fields
 projectShiftAPIRouter.patch("/shift", async (req, res) => {
   const user = req.user as User;
-  const { cuid, day, startTime, endTime } = req.body;
+  const {
+    shiftCuid,
+    // headcount
+    day,
+    startTime,
+    // halfDayEndTime,
+    // halfDayStartTime,
+    endTime,
+    // breakDuration,
+  } = req.body;
 
-  async function updateShift() {
-    await prisma.shift.update({
-      where: {
-        cuid,
-      },
-      data: updateData,
-    });
-
-    return res.send("Shift updated successfully.");
-  }
-
-  if (!cuid) return res.status(400).send("cuid is required.");
+  if (!shiftCuid) return res.status(400).send("shiftCuid is required.");
 
   if (!day && !startTime && !endTime) {
     return res
@@ -121,47 +122,50 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
     ...(endTime && { endTime: endTimeObject }),
   };
 
+  let shiftData;
   try {
-    const shiftData = await prisma.shift.findUniqueOrThrow({
+    shiftData = await prisma.shift.findUniqueOrThrow({
       where: {
-        cuid,
+        cuid: shiftCuid,
       },
       include: {
-        ShiftGroup: {
+        Project: {
           include: {
-            Project: {
-              include: {
-                Manage: true,
-              },
-            },
+            Manage: true,
           },
         },
       },
     });
-
-    if (
-      !shiftData.ShiftGroup.Project.Manage.some(
-        (manage) => manage.consultantCuid === user.cuid,
-      )
-    ) {
-      const hasEditAllProjectPermission = await checkPermission(
-        user.cuid,
-        PermissionList.CAN_EDIT_ALL_PROJECTS,
-      );
-
-      if (!hasEditAllProjectPermission) {
-        return res
-          .status(401)
-          .send(
-            PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS,
-          );
-      }
+  } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2025") {
+      return res.status(404).send("Shift does not exist.");
     }
 
-    return updateShift();
-  } catch (error) {
+    console.log(error);
     return res.status(404).send("Shift does not exist.");
   }
+
+  const hasPermission =
+    shiftData.Project.Manage.some(
+      (manage) => manage.consultantCuid === user.cuid,
+    ) ||
+    (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+  if (!hasPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+  }
+
+  await prisma.shift.update({
+    where: {
+      cuid: shiftCuid,
+    },
+    data: updateData,
+  });
+
+  return res.send("Shift updated successfully.");
 });
 
 export default projectShiftAPIRouter;

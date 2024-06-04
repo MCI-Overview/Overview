@@ -19,8 +19,6 @@ import Project from "./admin/Project";
 import { Toaster } from "react-hot-toast";
 import UserNew from "./user/UserNew";
 import UserHome from "./user/UserHome";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 import { User } from "./types/common";
 import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
 import { CircularProgress, CssBaseline, Box } from "@mui/joy";
@@ -74,65 +72,63 @@ function App() {
   }
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <CssVarsProvider disableTransitionOnChange>
-        <UserContextProvider>
-          <CssBaseline />
-          <Box sx={{ display: "flex", minHeight: "100dvh" }}>
-            {!shouldHideSidebar && <Sidebar />}
-            {!shouldHideSidebar && <Header />}
+    <CssVarsProvider disableTransitionOnChange>
+      <UserContextProvider>
+        <CssBaseline />
+        <Box sx={{ display: "flex", minHeight: "100dvh" }}>
+          {!shouldHideSidebar && <Sidebar />}
+          {!shouldHideSidebar && <Header />}
 
-            <Box
-              component="main"
-              className="MainContent"
-              sx={{
-                pt: { xs: "calc(12px + var(--Header-height))", md: 3 },
-                pb: { xs: 2, sm: 2, md: 3 },
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                minWidth: 0,
-                height: "100dvh",
-                gap: 1,
-                overflow: "auto",
-              }}
-            >
-              <RemoveTrailingSlash />
-              <ProjectContextProvider>
-                <Routes>
-                  {/* User routes */}
-                  {/* <Route element={<PrivateUserRoutes/>}>
+          <Box
+            component="main"
+            className="MainContent"
+            sx={{
+              pt: { xs: "calc(12px + var(--Header-height))", md: 3 },
+              pb: { xs: 2, sm: 2, md: 3 },
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              minWidth: 0,
+              height: "100dvh",
+              gap: 1,
+              overflow: "auto",
+            }}
+          >
+            <RemoveTrailingSlash />
+            <ProjectContextProvider>
+              <Routes>
+                {/* User routes */}
+                {/* <Route element={<PrivateUserRoutes/>}>
               <Route path="/user" element={<LoginUser />} />
               <Route path="/user/home" element={<MyProfile />} />
             </Route> */}
-                  <Route element={<PrivateUserRoutes />}>
-                    <Route path="/" element={<LoginUser />} />
-                    <Route path="/user/new" element={<UserNew />} />
-                    <Route path="/user/home" element={<UserHome />} />
-                  </Route>
+                <Route element={<PrivateUserRoutes />}>
+                  <Route path="/" element={<LoginUser />} />
+                  <Route path="/user/new" element={<UserNew />} />
+                  <Route path="/user/home" element={<UserHome />} />
+                </Route>
 
-                  {/* Admin routes */}
+                {/* Admin routes */}
 
-                  <Route element={<PrivateAdminRoutes />}>
-                    <Route path="/admin" element={<LoginAdmin />} />
-                    <Route path="/admin/home" element={<AdminHome />} />
-                    <Route
-                      path="/admin/project/:projectCuid?"
-                      element={<Project />}
-                    />
-                    <Route path="/admin/projects" element={<AdminProjects />} />
-                    <Route
-                      path="/admin/candidates"
-                      element={<AdminCandidates />}
-                    />
-                  </Route>
-                </Routes>
-              </ProjectContextProvider>
-            </Box>
+                <Route element={<PrivateAdminRoutes />}>
+                  <Route path="/admin" element={<LoginAdmin />} />
+                  <Route path="/admin/home" element={<AdminHome />} />
+                  <Route
+                    path="/admin/project/:projectCuid?"
+                    element={<Project />}
+                  />
+                  <Route path="/admin/projects" element={<AdminProjects />} />
+                  <Route
+                    path="/admin/candidates"
+                    element={<AdminCandidates />}
+                  />
+                </Route>
+              </Routes>
+            </ProjectContextProvider>
           </Box>
-        </UserContextProvider>
-      </CssVarsProvider>
-    </DndProvider>
+        </Box>
+      </UserContextProvider>
+    </CssVarsProvider>
   );
 }
 

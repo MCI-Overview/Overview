@@ -7,6 +7,9 @@ export type CommonCandidate = {
   contact: string;
   dateOfBirth: Date;
   consultantCuid: string;
+  startDate: Date;
+  endDate: Date;
+  employmentType: "PART_TIME" | "FULL_TIME" | "CONTRACT";
   nationality?: string | null;
   address?: Address;
   bankDetails?: BankDetails;
@@ -73,18 +76,22 @@ export type CandidateUser = {
   userType: "User";
 };
 
-export type ShiftGroup = {
-  cuid: string;
-  name: string;
-  headcount: number;
-  shifts: Shift[];
-};
-
 export type Shift = {
   cuid: string;
+  projectCuid: string;
   day: string;
   startTime: Date;
   endTime: Date;
+  halfDayStartTime: Date | null;
+  halfDayEndTime: Date | null;
+  breakDuration: number;
+  headcount: number;
+  status: "ACTIVE" | "ARCHIVED";
+};
+
+export type ShiftGroup = {
+  name: string;
+  shifts: Shift[];
 };
 
 export type GetProjectDataResponse = {
@@ -92,6 +99,7 @@ export type GetProjectDataResponse = {
   name: string;
   employmentBy: string;
   locations: Location[];
+  shiftGroups: ShiftGroup[];
   startDate: string;
   endDate: string;
   createdAt: string;
@@ -104,5 +112,5 @@ export type GetProjectDataResponse = {
   };
   candidates: CommonCandidate[];
   consultants: Consultant[];
-  shifts: ShiftGroup[];
+  shifts: Shift[];
 };

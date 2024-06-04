@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("ALTERNATIVE_DATABASE_URL")
 }
 
 model Assign {
@@ -13,10 +13,11 @@ model Assign {
   projectCuid    String
   startDate      DateTime
   endDate        DateTime
+  employmentType EmploymentType
   Requests       Request[]
-  Candidate      Candidate  @relation(fields: [candidateCuid], references: [cuid])
-  Consultant     Consultant @relation(fields: [consultantCuid], references: [cuid])
-  Project        Project    @relation(fields: [projectCuid], references: [cuid])
+  Candidate      Candidate      @relation(fields: [candidateCuid], references: [cuid])
+  Consultant     Consultant     @relation(fields: [consultantCuid], references: [cuid])
+  Project        Project        @relation(fields: [projectCuid], references: [cuid])
 
   @@id([projectCuid, candidateCuid])
 }
@@ -105,7 +106,8 @@ model Project {
   name                 String
   clientUEN            String
   employmentBy         String
-  locations            Json             @default("[]")
+  locations            Json[]           @default([])
+  shiftGroups          Json[]           @default([])
   createdAt            DateTime         @default(now())
   endDate              DateTime         @db.Date
   startDate            DateTime         @db.Date
@@ -115,7 +117,7 @@ model Project {
   Assign               Assign[]
   Manage               Manage[]
   Client               Client           @relation(fields: [clientUEN], references: [uen])
-  ShiftGroup           ShiftGroup[]
+  Shift                Shift[]
 }
 
 model Session {
@@ -127,27 +129,20 @@ model Session {
 }
 
 model Shift {
-  cuid       String       @id @default(cuid())
-  groupCuid  String
-  day        DayOfWeek
-  startTime  DateTime     @db.Time(6)
-  endTime    DateTime     @db.Time(6)
-  Attendance Attendance[]
-  ShiftGroup ShiftGroup   @relation(fields: [groupCuid], references: [cuid])
+  cuid             String       @id @default(cuid())
+  projectCuid      String
+  day              DayOfWeek
+  headcount        Int
+  startTime        DateTime     @db.Time(6)
+  endTime          DateTime     @db.Time(6)
+  halfDayStartTime DateTime?    @db.Time(6)
+  halfDayEndTime   DateTime?    @db.Time(6)
+  breakDuration    Int          @default(0)
+  status           ShiftStatus  @default(ACTIVE)
+  Attendance       Attendance[]
+  Project          Project      @relation(fields: [projectCuid], references: [cuid])
 
-  @@unique([groupCuid, day, startTime, endTime])
-}
-
-model ShiftGroup {
-  cuid        String      @id @default(cuid())
-  projectCuid String
-  name        String
-  headcount   Int
-  shiftStatus ShiftStatus @default(ACTIVE)
-  Shift       Shift[]
-  Project     Project     @relation(fields: [projectCuid], references: [cuid])
-
-  @@unique([projectCuid, name])
+  @@unique([projectCuid, day, startTime, endTime])
 }
 
 model User {
@@ -176,6 +171,12 @@ enum DayOfWeek {
   FRIDAY
   SATURDAY
   SUNDAY
+}
+
+enum EmploymentType {
+  PART_TIME
+  FULL_TIME
+  CONTRACT
 }
 
 enum EmploymentStatus {

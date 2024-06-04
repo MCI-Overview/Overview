@@ -1,3 +1,9 @@
+import { useProjectContext } from "../../../providers/projectContextProvider";
+import HeadcountSection from "./HeadcountSection";
+import DailyAttendanceSection from "./DailyAttendanceSection";
+import DailyHeadcountSection from "./DailyHeadcountSection";
+import LocationsSection from "./LocationsSection";
+
 import {
   Box,
   Divider,
@@ -9,11 +15,6 @@ import {
   Input,
   Grid,
 } from "@mui/joy";
-import ProjectHeadcount from "./project-headcount";
-import DailyAttendanceReport from "./project-daily-attendance";
-import ProjectDailyHeadcount from "./project-daily-headcount";
-import { useProjectContext } from "../../../providers/projectContextProvider";
-import ProjectLocations from "./project-locations";
 
 const ProjectOverview: React.FC = () => {
   const { project } = useProjectContext();
@@ -84,30 +85,8 @@ const ProjectOverview: React.FC = () => {
         </Card>
       </Stack>
 
-      <Stack
-        spacing={4}
-        sx={{
-          display: "flex",
-          maxWidth: "800px",
-          mx: "auto",
-          px: { xs: 2, md: 6 },
-          py: { xs: 2, md: 3 },
-        }}
-      >
-        <Card>
-          <Box sx={{ mb: 1 }}>
-            <Typography level="title-md">Locations</Typography>
-            <Typography level="body-sm">
-              Add site locations to your project
-            </Typography>
-          </Box>
-          <Divider />
-          <ProjectLocations />
-          <CardOverflow
-            sx={{ borderTop: "1px solid", borderColor: "divider" }}
-          ></CardOverflow>
-        </Card>
-      </Stack>
+      <LocationsSection />
+
       <Grid
         container
         spacing={4}
@@ -120,16 +99,16 @@ const ProjectOverview: React.FC = () => {
       >
         <Grid xs={12} md={6}>
           <Stack spacing={4}>
-            <ProjectHeadcount />
+            <HeadcountSection />
           </Stack>
         </Grid>
         <Grid xs={12} md={6}>
           <Stack spacing={4}>
-            <ProjectDailyHeadcount />
+            <DailyHeadcountSection />
           </Stack>
         </Grid>
       </Grid>
-      <DailyAttendanceReport />
+      <DailyAttendanceSection />
     </>
   );
 };

@@ -16,9 +16,10 @@ interface CandidateTableProps {
   tableTitle?: string;
   tableDescription?: string;
   tableProps: TableProps;
-  tableData: (CommonCandidate &  {consultantName: string})[];
+  tableData: (CommonCandidate & { consultantName: string })[];
   // handleEdit?: (nric: string) => void;
   handleDelete?: (nricList: string[]) => void;
+  showCanidateHolder?: boolean;
 }
 
 const CandidateTable = ({
@@ -28,6 +29,7 @@ const CandidateTable = ({
   tableData,
   // handleEdit,
   handleDelete,
+  showCanidateHolder = false,
 }: CandidateTableProps) => {
   const showActions = handleDelete; // || handleEdit;
   const { user } = useUserContext();
@@ -44,14 +46,17 @@ const CandidateTable = ({
             <th>Contact Number</th>
             <th>Date of birth</th>
             <th>Age</th>
-            <th>Candidate Holder</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Type</th>
+            {showCanidateHolder && <th>Candidate Holder</th>}
             {showActions && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
           {tableData.length === 0 ? (
             <tr>
-              <td colSpan={showActions ? 6 : 5}>No candidates found.</td>
+              <td colSpan={showActions ? 10 : 9}>No candidates found.</td>
             </tr>
           ) : (
             tableData.map((row) => (
@@ -65,7 +70,10 @@ const CandidateTable = ({
                     ? getExactAge(row.dateOfBirth as string)
                     : "-"}
                 </td>
-                <td>{row.consultantName}</td>
+                <td>{row.startDate.slice(0, 10)}</td>
+                <td>{row.endDate.slice(0, 10)}</td>
+                <td>{row.employmentType}</td>
+                {showCanidateHolder && <td>{row.consultantName}</td>}
                 {showActions && (
                   <td>
                     <Box
@@ -93,7 +101,10 @@ const CandidateTable = ({
                             size="sm"
                             color="danger"
                             onClick={() => handleDelete([row.cuid])}
-                            disabled={user.permission !== PermissionList.CAN_EDIT_ALL_PROJECTS }
+                            disabled={
+                              user.permission !==
+                              PermissionList.CAN_EDIT_ALL_PROJECTS
+                            }
                           >
                             <Delete />
                           </IconButton>

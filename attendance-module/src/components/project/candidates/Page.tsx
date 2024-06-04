@@ -23,17 +23,23 @@ import { FilterList, FilterListOff } from "@mui/icons-material";
 const CandidatePage = () => {
   const { project, updateProject } = useProjectContext();
 
-  const candidatesData = (project?.candidates)?.map((cdd) => {
-    return {
-      cuid: cdd.cuid,
-      nric: cdd.nric,
-      name: cdd.name,
-      contact: cdd.contact,
-      dateOfBirth: cdd.dateOfBirth,
-      consultantCuid: cdd.consultantCuid,
-      consultantName: project?.consultants.find((c) => c.cuid === cdd.consultantCuid)!.name,
-    }
-  }) || [];
+  const candidatesData =
+    project?.candidates?.map((cdd) => {
+      return {
+        cuid: cdd.cuid,
+        nric: cdd.nric,
+        name: cdd.name,
+        contact: cdd.contact,
+        dateOfBirth: cdd.dateOfBirth,
+        startDate: cdd.startDate,
+        endDate: cdd.endDate,
+        employmentType: cdd.employmentType,
+        consultantCuid: cdd.consultantCuid,
+        consultantName: project?.consultants.find(
+          (c) => c.cuid === cdd.consultantCuid,
+        )!.name,
+      };
+    }) || [];
   const [searchValue, setSearchValue] = useState("");
   const [ageOrder, setAgeOrder] = useState<"ASC" | "DSC" | null>(null);
 
@@ -104,7 +110,7 @@ const CandidatePage = () => {
       spacing={1}
       sx={{
         display: "flex",
-        maxWidth: "1000px",
+        // maxWidth: "1000px",
         mx: "auto",
         px: { xs: 2, md: 6 },
       }}
@@ -154,6 +160,7 @@ const CandidatePage = () => {
               .sort(ageComparator)}
             // handleEdit={handleEdit}
             handleDelete={handleConfirmDeletion}
+            showCanidateHolder={true}
           />
         </CardOverflow>
       </Card>
