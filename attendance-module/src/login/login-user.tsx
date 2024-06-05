@@ -35,6 +35,11 @@ const AdminLogin: React.FC = () => {
       });
   };
 
+  const handleAdminLogin = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    event.preventDefault();
+    navigate('/admin');
+  };
+
   return (
     <>
       <Stack
@@ -81,7 +86,7 @@ const AdminLogin: React.FC = () => {
           <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
             <CardActions sx={{ pt: 2 }}>
               <Typography level="body-sm">
-                <a href="/admin ">Login as Administrator instead.</a>
+                <a href="/admin" onClick={handleAdminLogin}>Login as Administrator instead.</a>
               </Typography>
             </CardActions>
           </CardOverflow>

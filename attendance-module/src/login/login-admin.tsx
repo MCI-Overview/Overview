@@ -8,10 +8,16 @@ import {
   CardActions,
   Card,
 } from "@mui/joy";
+import { useNavigate } from "react-router-dom";
 
 const serverLink = "http://localhost:3000";
 
 const AdminLogin: React.FC = () => {
+  const navigate = useNavigate();
+  const handleUserLogin = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    event.preventDefault();
+    navigate('/');
+  };
   return (
     <>
       <Stack
@@ -45,7 +51,7 @@ const AdminLogin: React.FC = () => {
             <CardActions sx={{ pt: 2 }}>
               <Typography level="body-sm">
                 Not an Administrator?&nbsp;
-                <a href="/">Login as user instead.</a>
+                <a href="/" onClick={handleUserLogin}>Login as user instead.</a>
               </Typography>
             </CardActions>
           </CardOverflow>
