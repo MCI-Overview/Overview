@@ -23,6 +23,7 @@ import {
   ModalDialog,
   ModalOverflow,
   Stack,
+  Typography,
 } from "@mui/joy";
 
 interface AssignCandidateModalProps {
@@ -390,16 +391,24 @@ const AssignCandidateModal = ({
                 </Box>
               ))}
 
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Checkbox
-                onChange={() => setIsSubmitDisabled(!isSubmitDisabled)}
-                label="I have reviewed all candidate information."
-                sx={{ fontSize: "sm" }}
-              />
-            </Stack>
-            <Button onClick={handleSubmitData} disabled={isSubmitDisabled}>
-              Submit
-            </Button>
+            {validCddList.length !== 0 ? (
+              <>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Checkbox
+                    onChange={() => setIsSubmitDisabled(!isSubmitDisabled)}
+                    label="I have reviewed all candidate information."
+                    sx={{ fontSize: "sm" }}
+                  />
+                </Stack>
+                <Button onClick={handleSubmitData} disabled={isSubmitDisabled}>
+                  Submit
+                </Button>
+              </>
+            ) : (
+              <Typography level="title-sm" sx={{ textAlign: "center" }}>
+                Please provide valid data.
+              </Typography>
+            )}
           </ModalDialog>
         </ModalOverflow>
       </Modal>
