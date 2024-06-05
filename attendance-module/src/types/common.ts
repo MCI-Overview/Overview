@@ -129,3 +129,8 @@ export type GetProjectDataResponse = {
   consultants: Consultant[];
   shifts: Shift[];
 };
+
+export type Assign = {
+  consultantCuid: string | null;
+  candidateCuid: string;
+}
