@@ -1,12 +1,17 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { ReactSpreadsheetImport } from "react-spreadsheet-import";
-import { Data, Result } from "react-spreadsheet-import/types/types";
-import { getExactAge } from "../../../utils/date-time";
-import CandidateTable from "./CandidateTable";
 import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
+import { ReactSpreadsheetImport } from "react-spreadsheet-import";
+import { Result, RowHook } from "react-spreadsheet-import/types/types";
+import { useUserContext } from "../../../providers/userContextProvider";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+import { getExactAge } from "../../../utils/date-time";
 import { dateRegex, nricRegex, contactRegex } from "../../../utils/validation";
+import { generateCapitalizations } from "../../../utils/capitalize";
+import CandidateTable, {
+  CandidateTableProps,
+  CddTableDataType,
+} from "./CandidateTable";
 
 import {
   Box,
@@ -29,16 +34,20 @@ const AssignCandidateModal = ({
   isUploadOpen,
   setIsUploadOpen,
 }: AssignCandidateModalProps) => {
-  const { projectCuid } = useParams();
+  const { user } = useUserContext();
+  const { project, updateProject } = useProjectContext();
+  if (!project || !user) return null;
 
-  const [validCddList, setValidCddList] = useState<Data<string>[]>([]);
-  const [invalidCddList, setInvalidCddList] = useState<Data<string>[]>([]);
+  const projectCuid = project.cuid;
 
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
+  const [validCddList, setValidCddList] = useState<CddTableDataType[]>([]);
+  const [invalidCddList, setInvalidCddList] = useState<CddTableDataType[]>([]);
 
-  const [overlapCddList, setOverlapCddList] = useState<Data<string>[]>([]);
-  const [isOverlapModalOpen, setIsOverlapModalOpen] = useState(false);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState<boolean>(false);
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState<boolean>(true);
+
+  const [overlapCddList, setOverlapCddList] = useState<CddTableDataType[]>([]);
+  const [isOverlapModalOpen, setIsOverlapModalOpen] = useState<boolean>(false);
 
   const [data, setData] = useState<Result<string>>({
     validData: [],
@@ -58,16 +67,15 @@ const AssignCandidateModal = ({
   };
 
   useEffect(() => {
-    console.log(data);
-    setValidCddList(data.validData);
-    setInvalidCddList(data.invalidData);
+    setValidCddList(data.validData as unknown as CddTableDataType[]);
+    setInvalidCddList(data.invalidData as unknown as CddTableDataType[]);
   }, [data]);
 
   const fields = [
     {
       label: "NRIC",
       key: "nric",
-      alternateMatches: ["nric", "id"],
+      alternateMatches: generateCapitalizations(["nric", "fin"]),
       fieldType: { type: "input" },
       example: "S1234567A",
       validations: [
@@ -81,47 +89,60 @@ const AssignCandidateModal = ({
     {
       label: "Full name",
       key: "name",
-      alternateMatches: ["full name", "name", "candidate name"],
+      alternateMatches: generateCapitalizations([
+        "full name",
+        "name",
+        "candidate name",
+      ]),
       fieldType: { type: "input" },
       example: "John Doe Xiao Ming",
     },
     {
       label: "Contact",
       key: "contact",
-      alternateMatches: ["phone number", "phone", "contact"],
+      alternateMatches: generateCapitalizations([
+        "phone number",
+        "phone",
+        "contact",
+      ]),
       fieldType: { type: "input" },
       example: "98765432",
     },
     {
       label: "Date of birth",
       key: "dateOfBirth",
-      alternateMatches: ["date of birth", "dob", "birth date"],
+      alternateMatches: generateCapitalizations([
+        "date of birth",
+        "dob",
+        "birth date",
+        "birthday",
+      ]),
       fieldType: { type: "input" },
       example: "1965-08-09",
     },
     {
       label: "Start Date",
       key: "startDate",
-      alternateMatches: ["start date", "start"],
+      alternateMatches: generateCapitalizations(["start date", "start"]),
       fieldType: { type: "input" },
       example: "2024-05-13",
     },
     {
       label: "End Date",
       key: "endDate",
-      alternateMatches: ["end date", "end"],
+      alternateMatches: generateCapitalizations(["end date", "end"]),
       fieldType: { type: "input" },
       example: "2024-08-02",
     },
     {
       label: "Job Type",
       key: "employmentType",
-      alternateMatches: [
+      alternateMatches: generateCapitalizations([
         "type",
         "employment type",
         "job type",
         "employmentType",
-      ],
+      ]),
       fieldType: {
         type: "select",
         options: [
@@ -134,7 +155,7 @@ const AssignCandidateModal = ({
     },
   ];
 
-  const rowHook = (row: Data<string>, addError) => {
+  const rowHook: RowHook<string> = (row, addError) => {
     // nric validation
     if (!row.nric) {
       addError("nric", {
@@ -187,6 +208,63 @@ const AssignCandidateModal = ({
       });
     }
 
+    // start date validation
+    if (!row.startDate) {
+      addError("startDate", {
+        message: "Start date is required",
+        level: "error",
+      });
+    } else if (!dateRegex.test(row.startDate as string)) {
+      addError("startDate", {
+        message: "Invalid format. Please use YYYY-MM-DD",
+        level: "error",
+      });
+    } else if (
+      new Date(row.endDate as string) < new Date(row.startDate as string)
+    ) {
+      addError("startDate", {
+        message: "Start date cannot be after end date",
+        level: "error",
+      });
+    }
+
+    // end date validation
+    if (!row.endDate) {
+      addError("endDate", {
+        message: "End date is required",
+        level: "error",
+      });
+    } else if (!dateRegex.test(row.endDate as string)) {
+      addError("endDate", {
+        message: "Invalid format. Please use YYYY-MM-DD",
+        level: "error",
+      });
+    } else if (
+      new Date(row.endDate as string) < new Date(row.startDate as string)
+    ) {
+      addError("endDate", {
+        message: "End date cannot be before start date",
+        level: "error",
+      });
+    }
+
+    // employment type validation
+    if (!row.employmentType) {
+      addError("employmentType", {
+        message: "Employment type is required",
+        level: "error",
+      });
+    } else if (
+      !["FULL_TIME", "PART_TIME", "CONTRACT"].includes(
+        row.employmentType as string
+      )
+    ) {
+      addError("employmentType", {
+        message: "Invalid employment type",
+        level: "error",
+      });
+    }
+
     return {
       nric: row.nric ? (row.nric as string).trim() : row.nric,
       name: row.name ? (row.name as string).trim() : row.name,
@@ -204,7 +282,7 @@ const AssignCandidateModal = ({
     };
   };
 
-  const candidateTableProps = [
+  const candidateTableProps: CandidateTableProps[] = [
     {
       tableTitle: "Valid Candidates",
       tableDescription:
@@ -230,13 +308,20 @@ const AssignCandidateModal = ({
 
       toast.success("Candidates added successfully");
 
+      updateProject();
+      setIsSubmitModalOpen(false);
+
+      // response is a cuid list of candidates already in the project
       if (response.data.length !== 0) {
-        setOverlapCddList(response.data);
+        let overlappingCdds = project.candidates
+          .filter((cdd) => response.data.includes(cdd.cuid))
+          .map((cdd) => ({
+            ...cdd,
+            consultantName: user.name,
+          }));
+
+        setOverlapCddList(overlappingCdds);
         setIsOverlapModalOpen(true);
-        setIsSubmitModalOpen(false);
-      } else {
-        setIsSubmitModalOpen(false);
-        setTimeout(() => window.location.reload(), 1000);
       }
     } catch (error) {
       toast.error("Error while adding candidates");
@@ -254,6 +339,7 @@ const AssignCandidateModal = ({
           }}
           onSubmit={(result) => {
             setData(result);
+            setIsSubmitDisabled(true);
             setIsSubmitModalOpen(true);
           }}
           fields={fields}
@@ -294,7 +380,10 @@ const AssignCandidateModal = ({
 
       <Modal
         open={isOverlapModalOpen}
-        onClose={() => setIsOverlapModalOpen(false)}
+        onClose={() => {
+          setIsOverlapModalOpen(false);
+          updateProject();
+        }}
       >
         <ModalOverflow>
           <ModalClose />
@@ -309,7 +398,7 @@ const AssignCandidateModal = ({
               <Button
                 onClick={() => {
                   setIsOverlapModalOpen(false);
-                  setTimeout(() => window.location.reload(), 1000);
+                  updateProject();
                 }}
                 fullWidth
               >

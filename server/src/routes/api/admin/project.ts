@@ -588,10 +588,12 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
         skipDuplicates: true,
       });
 
-      const alreadyAssignedCandidates = candidates.filter(
-        (cdd) =>
-          !createdAssigns.some((assign) => assign.candidateCuid === cdd.cuid)
-      );
+      const alreadyAssignedCandidates = candidatesInDb
+        .filter(
+          (cdd) =>
+            !createdAssigns.some((assign) => assign.candidateCuid === cdd.cuid)
+        )
+        .map((cdd) => cdd.cuid);
 
       return res.send(alreadyAssignedCandidates);
     });
