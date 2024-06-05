@@ -49,7 +49,7 @@ const AssignCandidateModal = ({
   const handleSubmitModalClose = () => {
     if (isSubmitModalOpen) {
       const confirmClose = window.confirm(
-        "Are you sure you want to close the modal? Uploaded information will be lost.",
+        "Are you sure you want to close the modal? Uploaded information will be lost."
       );
       if (confirmClose) {
         setIsSubmitModalOpen(false);
@@ -225,7 +225,7 @@ const AssignCandidateModal = ({
     try {
       const response = await axios.post(
         `http://localhost:3000/api/admin/project/${projectCuid}/candidates`,
-        validCddList,
+        validCddList
       );
 
       toast.success("Candidates added successfully");

@@ -72,12 +72,12 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
 
     const hasPermission =
       projectData.Manage.some(
-        (manage) => manage.consultantCuid === user.cuid,
+        (manage) => manage.consultantCuid === user.cuid
       ) ||
       (await checkPermission(
         user.cuid,
         PermissionList.CAN_READ_ALL_PROJECTS,
-        permissionData,
+        permissionData
       ));
 
     if (!hasPermission) {
@@ -191,7 +191,7 @@ projectAPIRouter.post("/project", async (req, res) => {
     noticePeriodDuration,
     noticePeriodUnit,
     startDate,
-    endDate,
+    endDate
   );
   if (!noticePeriodValidity.isValid) {
     return res.status(400).json({
@@ -347,14 +347,14 @@ projectAPIRouter.delete("/project/permanent", async (req, res) => {
 
   const hasHardDeletePermission = await checkPermission(
     user.cuid,
-    PermissionList.CAN_HARD_DELETE_PROJECTS,
+    PermissionList.CAN_HARD_DELETE_PROJECTS
   );
 
   if (!hasHardDeletePermission) {
     return res
       .status(401)
       .send(
-        PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_HARD_DELETE_PROJECTS,
+        PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_HARD_DELETE_PROJECTS
       );
   }
 
@@ -414,7 +414,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
 
   const hasCanEditAllProjects = await checkPermission(
     user.cuid,
-    PermissionList.CAN_EDIT_ALL_PROJECTS,
+    PermissionList.CAN_EDIT_ALL_PROJECTS
   );
 
   let updateData = {
@@ -506,7 +506,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
       !cdd.name ||
       !cdd.contact ||
       !cdd.dateOfBirth ||
-      !cdd.employmentType,
+      !cdd.employmentType
   );
 
   if (invalidCandidates.length > 0) {
@@ -552,8 +552,8 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
                 },
               },
             },
-          }),
-        ),
+          })
+        )
       );
 
       // retrieve cuids
@@ -590,7 +590,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
 
       const alreadyAssignedCandidates = candidates.filter(
         (cdd) =>
-          !createdAssigns.some((assign) => assign.candidateCuid === cdd.cuid),
+          !createdAssigns.some((assign) => assign.candidateCuid === cdd.cuid)
       );
 
       return res.send(alreadyAssignedCandidates);
@@ -666,7 +666,7 @@ projectAPIRouter.delete(
     }
 
     return res.send("Candidates removed successfully.");
-  },
+  }
 );
 
 projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
@@ -734,8 +734,8 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
       .status(400)
       .send(
         `Minimum break duration is 45 minutes for a ${shiftDuration.toFixed(
-          1,
-        )}h shift.`,
+          1
+        )}h shift.`
       );
   }
 
@@ -765,7 +765,7 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
     projectData.Manage.some(
       (manage) =>
         manage.consultantCuid === user.cuid &&
-        manage.role === Role.CLIENT_HOLDER,
+        manage.role === Role.CLIENT_HOLDER
     ) ||
     (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
@@ -845,7 +845,7 @@ projectAPIRouter.get(
 
     const hasPermission =
       projectData.Manage.some(
-        (manage) => manage.consultantCuid === user.cuid,
+        (manage) => manage.consultantCuid === user.cuid
       ) ||
       (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
@@ -874,7 +874,7 @@ projectAPIRouter.get(
       console.log(error);
       return res.status(500).send("Internal server error.");
     }
-  },
+  }
 );
 
 projectAPIRouter.get("/project/:projectCuid/candidates/roster",
@@ -921,7 +921,7 @@ projectAPIRouter.get("/project/:projectCuid/candidates/roster",
 
     const hasPermission =
       projectData.Manage.some(
-        (manage) => manage.consultantCuid === user.cuid,
+        (manage) => manage.consultantCuid === user.cuid
       ) ||
       (await checkPermission(user.cuid, PermissionList.CAN_READ_ALL_PROJECTS));
 
@@ -953,7 +953,7 @@ projectAPIRouter.get("/project/:projectCuid/candidates/roster",
       console.log(error);
       return res.status(500).send("Internal server error.");
     }
-  },
+  }
 );
 
 projectAPIRouter.get("/projects", async (req, res) => {
@@ -985,7 +985,7 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
 
   const hasReadAllProjectsPermission = await checkPermission(
     user.cuid,
-    PermissionList.CAN_READ_ALL_PROJECTS,
+    PermissionList.CAN_READ_ALL_PROJECTS
   );
 
   if (!hasReadAllProjectsPermission) {

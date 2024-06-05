@@ -30,7 +30,7 @@ export function ProjectContextProvider({
     axios
       .get(`/api/admin/project/${projectCuid || previousProjectCuid}`)
       .then((res) => {
-        setProject(res.data);
+        setProject(convertToDateType(res.data));
         console.log(project);
       });
   }
@@ -46,8 +46,22 @@ export function useProjectContext() {
   const context = useContext(ProjectContext);
   if (context === undefined) {
     throw new Error(
-      "useProjectContext must be used within a ProjectContextProvider",
+      "useProjectContext must be used within a ProjectContextProvider"
     );
   }
   return context;
+}
+
+function convertToDateType(
+  response: GetProjectDataResponse
+): GetProjectDataResponse {
+  return {
+    ...response,
+    candidates: response.candidates.map((candidate) => ({
+      ...candidate,
+      dateOfBirth: new Date(candidate.dateOfBirth),
+      startDate: new Date(candidate.startDate),
+      endDate: new Date(candidate.endDate),
+    })),
+  };
 }
