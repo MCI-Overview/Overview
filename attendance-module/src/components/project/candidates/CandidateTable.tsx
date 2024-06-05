@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useUserContext } from "../../../providers/userContextProvider";
+import { useProjectContext } from "../../../providers/projectContextProvider";
 import { formatDate, getExactAge } from "../../../utils/date-time";
 import { checkPermission } from "../../../utils/permission";
 import { CommonCandidate, PermissionList } from "../../../types/common";
@@ -11,29 +13,100 @@ import {
   Tooltip,
   IconButton,
 } from "@mui/joy";
-import { Delete } from "@mui/icons-material";
+import {
+  Delete,
+  ArrowUpward,
+  ArrowDownward,
+  SwapVert,
+} from "@mui/icons-material";
 
-interface CandidateTableProps {
+export type CddTableDataType = CommonCandidate & {
+  consultantName: string;
+};
+
+export interface CandidateTableProps {
   tableTitle?: string;
   tableDescription?: string;
-  tableProps: TableProps;
-  tableData: (CommonCandidate & { consultantName: string })[];
-  // handleEdit?: (nric: string) => void;
+  tableProps?: TableProps;
+  tableData: CddTableDataType[];
   handleDelete?: (nricList: string[]) => void;
   showCandidateHolder?: boolean;
 }
+
+// List of sortable keys
+type SortableKeys = "age" | "startDate" | "endDate";
 
 const CandidateTable = ({
   tableTitle,
   tableDescription,
   tableProps,
   tableData,
-  // handleEdit,
   handleDelete,
   showCandidateHolder = false,
 }: CandidateTableProps) => {
-  const showActions = handleDelete; // || handleEdit;
   const { user } = useUserContext();
+  const { project } = useProjectContext();
+  if (!project || !user) return null;
+
+  const hasEditProjectPermission =
+    project.consultants.find((c) => c.role === "CLIENT_HOLDER")?.cuid ===
+      user.cuid || checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS);
+
+  const isHolder = (cddCuid: string) => {
+    return (
+      project.candidates.find((c) => c.cuid === cddCuid)?.consultantCuid ===
+      user.cuid
+    );
+  };
+
+  const [sortConfig, setSortConfig] = useState<{
+    key: SortableKeys | "";
+    direction: "ascending" | "descending";
+  }>({
+    key: "",
+    direction: "ascending",
+  });
+
+  const sortedData = [...tableData].sort((a, b) => {
+    if (sortConfig.key) {
+      const getValue = (row: CddTableDataType, key: SortableKeys) => {
+        if (key === "age") {
+          return getExactAge(row.dateOfBirth);
+        } else if (key === "startDate" || key === "endDate") {
+          return new Date(row[key]).getTime();
+        }
+      };
+
+      const aValue = getValue(a, sortConfig.key);
+      const bValue = getValue(b, sortConfig.key);
+
+      if (aValue !== undefined && bValue !== undefined) {
+        if (aValue < bValue)
+          return sortConfig.direction === "ascending" ? -1 : 1;
+        if (aValue > bValue)
+          return sortConfig.direction === "ascending" ? 1 : -1;
+      }
+    }
+    return 0;
+  });
+
+  const requestSort = (key: SortableKeys) => {
+    let direction: "ascending" | "descending" = "ascending";
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const renderSortIcon = (key: SortableKeys) => {
+    if (sortConfig.key !== key) {
+      return <SwapVert fontSize="medium" color="disabled" />;
+    }
+    if (sortConfig.direction === "ascending") {
+      return <ArrowUpward fontSize="large" />;
+    }
+    return <ArrowDownward fontSize="small" />;
+  };
 
   return (
     <Box>
@@ -44,39 +117,40 @@ const CandidateTable = ({
           <tr>
             <th>NRIC</th>
             <th>Full name</th>
-            <th>Contact Number</th>
+            <th>Contact number</th>
             <th>Date of birth</th>
-            <th>Age</th>
-            <th>Start Date</th>
-            <th>End Date</th>
+            <th onClick={() => requestSort("age")}>
+              {renderSortIcon("age")} Age
+            </th>
+            <th onClick={() => requestSort("startDate")}>
+              {renderSortIcon("startDate")} Start date
+            </th>
+            <th onClick={() => requestSort("endDate")}>
+              {renderSortIcon("endDate")} End date
+            </th>
             <th>Type</th>
-            {showCandidateHolder && <th>Candidate Holder</th>}
-            {showActions && <th>Actions</th>}
+            {showCandidateHolder && <th>Candidate holder</th>}
+            {handleDelete && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
-          {tableData.length === 0 ? (
+          {sortedData.length === 0 ? (
             <tr>
-              <td colSpan={showActions ? 10 : 9}>No candidates found.</td>
+              <td colSpan={handleDelete ? 10 : 9}>No candidates found.</td>
             </tr>
           ) : (
-            tableData.map((row) => (
+            sortedData.map((row) => (
               <tr key={row.cuid}>
                 <td>{row.nric}</td>
                 <td>{row.name}</td>
                 <td>{row.contact}</td>
-                <td>
-                  {row.dateOfBirth
-                    ? // ? row.dateOfBirth.toISOString().slice(0, 10)
-                      formatDate(row.dateOfBirth)
-                    : ""}
-                </td>
+                <td>{row.dateOfBirth ? formatDate(row.dateOfBirth) : ""}</td>
                 <td>{row.dateOfBirth ? getExactAge(row.dateOfBirth) : "-"}</td>
                 <td>{formatDate(row.startDate)}</td>
                 <td>{formatDate(row.endDate)}</td>
                 <td>{row.employmentType}</td>
                 {showCandidateHolder && <td>{row.consultantName}</td>}
-                {showActions && (
+                {handleDelete && (
                   <td>
                     <Box
                       sx={{
@@ -86,17 +160,6 @@ const CandidateTable = ({
                         gap: 1,
                       }}
                     >
-                      {/* {handleEdit && (
-                        <Tooltip size="sm" title="Edit" placement="left">
-                          <IconButton
-                            size="sm"
-                            color="neutral"
-                            onClick={() => handleEdit(row.cuid)}
-                          >
-                            <Edit />
-                          </IconButton>
-                        </Tooltip>
-                      )} */}
                       {handleDelete && (
                         <Tooltip size="sm" title="Delete" placement="right">
                           <IconButton
@@ -104,12 +167,7 @@ const CandidateTable = ({
                             color="danger"
                             onClick={() => handleDelete([row.cuid])}
                             disabled={
-                              user
-                                ? !checkPermission(
-                                    user,
-                                    PermissionList.CAN_EDIT_ALL_PROJECTS
-                                  )
-                                : false
+                              !hasEditProjectPermission && !isHolder(row.cuid)
                             }
                           >
                             <Delete />

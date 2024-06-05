@@ -1,14 +1,14 @@
-import { useState } from "react";
-import DeleteLocationModal from "./DeleteLocationModal";
-import { capitalizeWords } from "../../../utils/capitalize";
-import { checkPermission } from "../../../utils/permission";
+import { useEffect, useState } from "react";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
+import { capitalizeWords } from "../../../utils/capitalize";
+import { checkPermission } from "../../../utils/permission";
 import { Location, PermissionList } from "../../../types/common";
+import AddLocationsModal from "./AddLocationsModal";
+import DeleteLocationModal from "./DeleteLocationModal";
 
 import {
   Box,
-  Button,
   Card,
   Divider,
   IconButton,
@@ -17,8 +17,7 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
-import { Delete } from "@mui/icons-material";
-import AddLocationsModal from "./AddLocationsModal";
+import { ControlPoint, Delete } from "@mui/icons-material";
 
 const LocationsSection = () => {
   const { user } = useUserContext();
@@ -39,11 +38,9 @@ const LocationsSection = () => {
 
   if (!project) return null;
 
-  const handleAddLocation = () => {
-    // TODO: api call to add locations
-
-    setIsAddModalOpen(false);
-  };
+  useEffect(() => {
+    setLocations(project.locations);
+  }, [project.locations]);
 
   return (
     <>
@@ -65,9 +62,12 @@ const LocationsSection = () => {
                 Add site locations to your project
               </Typography>
             </Box>
-            <Button onClick={() => setIsAddModalOpen(true)}>
-              Add location
-            </Button>
+            <IconButton
+              onClick={() => setIsAddModalOpen(true)}
+              sx={{ px: { xs: 1.25 } }}
+            >
+              <ControlPoint />
+            </IconButton>
           </Box>
           <Divider />
 
@@ -78,7 +78,7 @@ const LocationsSection = () => {
             {locations.map((location) => (
               <ListItem key={location.postalCode}>
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography level="body-sm">
+                  <Typography level="body-md">
                     {location.postalCode} - {capitalizeWords(location.address)}
                   </Typography>
                   {hasDeletePermission && (
@@ -101,6 +101,7 @@ const LocationsSection = () => {
       <AddLocationsModal
         isOpen={isAddModalOpen}
         setIsOpen={setIsAddModalOpen}
+        locations={locations}
       />
 
       {locationToDelete && (
@@ -108,7 +109,6 @@ const LocationsSection = () => {
           isOpen={isDeleteModalOpen}
           setIsOpen={setIsDeleteModalOpen}
           locations={locations}
-          setLocations={setLocations}
           locationToDelete={locationToDelete}
         />
       )}

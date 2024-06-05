@@ -1,4 +1,11 @@
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
+import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
+import { formatDate } from "../../../utils/date-time";
+import { checkPermission } from "../../../utils/permission";
+import { PermissionList } from "../../../types/common";
 import HeadcountSection from "./HeadcountSection";
 import DailyAttendanceSection from "./DailyAttendanceSection";
 import DailyHeadcountSection from "./DailyHeadcountSection";
@@ -6,18 +13,67 @@ import LocationsSection from "./LocationsSection";
 
 import {
   Box,
+  Card,
   Divider,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Grid,
+  Input,
   Stack,
   Typography,
-  Card,
-  CardOverflow,
-  FormLabel,
-  Input,
-  Grid,
 } from "@mui/joy";
+import { InfoOutlined } from "@mui/icons-material";
 
 const ProjectOverview: React.FC = () => {
-  const { project } = useProjectContext();
+  const { user } = useUserContext();
+  const { project, updateProject } = useProjectContext();
+  if (!project) return null;
+
+  const [startDate, setStartDate] = useState<string>(
+    project.startDate.split("T")[0]
+  );
+  const [endDate, setEndDate] = useState<string>(project.endDate.split("T")[0]);
+  const [dateError, setDateError] = useState<boolean>(false);
+
+  const hasEditPermission =
+    project.consultants.find(
+      (consultant) => consultant.role === "CLIENT_HOLDER"
+    )?.cuid === user?.cuid ||
+    (user
+      ? checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS)
+      : false);
+
+  useEffect(() => {
+    setDateError(new Date(endDate) < new Date(startDate));
+
+    if (
+      startDate === project.startDate.split("T")[0] &&
+      endDate === project.endDate.split("T")[0]
+    ) {
+      return;
+    }
+
+    if (dateError) {
+      return;
+    }
+
+    try {
+      axios
+        .patch("http://localhost:3000/api/admin/project", {
+          projectCuid: project.cuid,
+          startDate: startDate,
+          endDate: endDate,
+        })
+        .then(() => {
+          updateProject();
+          toast.success("Project dates updated successfully");
+        });
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to update project dates");
+    }
+  }, [startDate, endDate]);
 
   return (
     <>
@@ -44,44 +100,66 @@ const ProjectOverview: React.FC = () => {
               columns={{ xs: 4, sm: 8, md: 12 }}
               sx={{ flexGrow: 2 }}
             >
-              <Grid xs={12} sm={12} md={6}>
+              <Grid xs={4} md={6}>
                 <FormLabel>Client name</FormLabel>
-                <Input value={project?.client.name} disabled />
+                <Input value={project.client.name} disabled />
               </Grid>
-              <Grid xs={12} sm={12} md={6}>
+              <Grid xs={4} md={6}>
                 <FormLabel>Client UEN</FormLabel>
-                <Input value={project?.client.uen} disabled />
+                <Input value={project.client.uen} disabled />
               </Grid>
-              <Grid xs={12} sm={12} md={6}>
+              <Grid xs={4} md={6}>
                 <FormLabel>Created on</FormLabel>
                 <Input
-                  value={new Date(project?.createdAt || 0).toLocaleDateString()}
+                  value={formatDate(new Date(project.createdAt || 0))}
                   disabled
                 />
               </Grid>
-              <Grid xs={12} sm={12} md={6}>
+              <Grid xs={4} md={6}>
                 <FormLabel>Employment by</FormLabel>
-                <Input value={project?.employmentBy} disabled />
+                <Input value={project.employmentBy} disabled />
               </Grid>
-              <Grid xs={12} sm={12} md={6}>
+              <Grid xs={4} md={6}>
                 <FormLabel>Start date</FormLabel>
-                <Input
-                  value={new Date(project?.startDate || 0).toLocaleDateString()}
-                  disabled
-                />
+                <FormControl sx={{ flexGrow: 1 }} error={dateError}>
+                  <Input
+                    type="date"
+                    value={startDate}
+                    disabled={!hasEditPermission}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                  <FormHelperText>
+                    {dateError && (
+                      <>
+                        <InfoOutlined />
+                        Start date must be before end date
+                      </>
+                    )}
+                  </FormHelperText>
+                </FormControl>
               </Grid>
-              <Grid xs={12} sm={12} md={6}>
+              <Grid xs={4} md={6}>
                 <FormLabel>End date</FormLabel>
-                <Input
-                  value={new Date(project?.endDate || 0).toLocaleDateString()}
-                  disabled
-                />
+
+                <FormControl sx={{ flexGrow: 1 }} error={dateError}>
+                  <Input
+                    type="date"
+                    value={endDate}
+                    disabled={!hasEditPermission}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                  <FormHelperText>
+                    {dateError && (
+                      <>
+                        <InfoOutlined />
+                        End date must be after start date
+                      </>
+                    )}
+                  </FormHelperText>
+                </FormControl>
               </Grid>
             </Grid>
           </Stack>
-          <CardOverflow
-            sx={{ borderTop: "1px solid", borderColor: "divider" }}
-          ></CardOverflow>
         </Card>
       </Stack>
 

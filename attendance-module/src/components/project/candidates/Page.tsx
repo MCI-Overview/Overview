@@ -3,22 +3,11 @@ import { useState } from "react";
 import AssignCandidateModal from "./AssignCandidateModal";
 import CandidateTable from "./CandidateTable";
 import { CommonCandidate } from "../../../types/common";
-// import EditCandidateModal from "./EditCandidateModal";
 import DeleteCandidateModal from "./DeleteCandidateModal";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import {
-  Box,
-  Button,
-  Card,
-  CardOverflow,
-  IconButton,
-  Input,
-  Stack,
-  Tooltip,
-} from "@mui/joy";
+import { Box, Button, Card, CardOverflow, Input, Stack } from "@mui/joy";
 import toast from "react-hot-toast";
-import { FilterList, FilterListOff } from "@mui/icons-material";
 
 const CandidatePage = () => {
   const { project, updateProject } = useProjectContext();
@@ -40,13 +29,10 @@ const CandidatePage = () => {
         )!.name,
       };
     }) || [];
+
   const [searchValue, setSearchValue] = useState("");
-  const [ageOrder, setAgeOrder] = useState<"ASC" | "DSC" | null>(null);
 
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-
-  // const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  // const [candidateToEdit, setCandidateToEdit] = useState<string>("");
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [candidatesToDelete, setCandidatesToDelete] = useState<string[]>([]);
@@ -54,35 +40,6 @@ const CandidatePage = () => {
   const matchSearchValue = (c: CommonCandidate) =>
     c.nric.toLowerCase().includes(searchValue.toLowerCase()) ||
     c.name.toLowerCase().includes(searchValue.toLowerCase());
-
-  const ageComparator = (a: CommonCandidate, b: CommonCandidate) => {
-    if (ageOrder === "DSC") {
-      return (
-        new Date(a.dateOfBirth).getTime() - new Date(b.dateOfBirth).getTime()
-      );
-    } else if (ageOrder === "ASC") {
-      return (
-        new Date(b.dateOfBirth).getTime() - new Date(a.dateOfBirth).getTime()
-      );
-    } else {
-      return 0;
-    }
-  };
-
-  const handleSortByAgeClick = () => {
-    if (ageOrder === null) {
-      setAgeOrder("ASC");
-    } else if (ageOrder === "ASC") {
-      setAgeOrder("DSC");
-    } else {
-      setAgeOrder(null);
-    }
-  };
-
-  // const handleEdit = (cuid: string) => {
-  //   setCandidateToEdit(cuid);
-  //   setIsEditModalOpen(true);
-  // };
 
   const handleConfirmDeletion = async (cuidList: string[]) => {
     setCandidatesToDelete(cuidList);
@@ -130,19 +87,6 @@ const CandidatePage = () => {
           fullWidth
         />
 
-        <Tooltip title="Sort by age" placement="top" size="sm">
-          <IconButton
-            onClick={handleSortByAgeClick}
-            disabled={candidatesData.length === 0}
-          >
-            {ageOrder === "ASC" && (
-              <FilterList style={{ transform: "rotate(180deg)" }} />
-            )}
-            {ageOrder === "DSC" && <FilterList />}
-            {ageOrder === null && <FilterListOff />}
-          </IconButton>
-        </Tooltip>
-
         <Button
           onClick={() => setIsUploadOpen(true)}
           sx={{ whiteSpace: "nowrap" }}
@@ -155,9 +99,7 @@ const CandidatePage = () => {
         <CardOverflow sx={{ px: "0px" }}>
           <CandidateTable
             tableProps={{ stripe: "odd", size: "sm" }}
-            tableData={candidatesData
-              .filter((c) => matchSearchValue(c))
-              .sort(ageComparator)}
+            tableData={candidatesData.filter((c) => matchSearchValue(c))}
             // handleEdit={handleEdit}
             handleDelete={handleConfirmDeletion}
             showCandidateHolder={true}
@@ -169,16 +111,6 @@ const CandidatePage = () => {
         isUploadOpen={isUploadOpen}
         setIsUploadOpen={setIsUploadOpen}
       />
-
-      {/* {candidateToEdit && (
-        <EditCandidateModal
-          candidate={candidatesData.find((c) => c.cuid === candidateToEdit)!}
-          isEditModalOpen={isEditModalOpen}
-          setIsEditModalOpen={setIsEditModalOpen}
-          candidatesData={candidatesData}
-          setCandidatesData={setCandidatesData}
-        />
-      )} */}
 
       <DeleteCandidateModal
         isDeleteModalOpen={isDeleteModalOpen}

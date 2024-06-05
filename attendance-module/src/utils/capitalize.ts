@@ -14,3 +14,20 @@ function capitalize(str: string) {
   }
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
+
+export function generateCapitalizations(arr: string[]) {
+  function getAllCapitalizations(word: string) {
+    let lower = word.toLowerCase();
+    let capitalized = lower.charAt(0).toUpperCase() + lower.slice(1);
+    let upper = lower.toUpperCase();
+    return [lower, capitalized, upper];
+  }
+
+  let result: string[] = [];
+
+  arr.forEach((item) => {
+    result = result.concat(getAllCapitalizations(item));
+  });
+
+  return result;
+}
