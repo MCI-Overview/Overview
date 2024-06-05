@@ -27,6 +27,7 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
+    "react-lottie": "^1.2.4",
     "react-router-dom": "^6.23.1",
     "react-spreadsheet-import": "^4.6.1",
     "use-count-up": "^3.0.1"
@@ -35,6 +36,7 @@
     "@types/node": "^20.12.12",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
+    "@types/react-lottie": "^1.2.10",
     "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
