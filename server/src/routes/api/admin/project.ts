@@ -499,18 +499,43 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
     return res.status(400).send("Nonempty candidates array is required.");
   }
 
-  // verify all candidates have nric, name, contact, dateOfBirth
+  // verify all candidates have nric, name, contact, dateOfBirth, startDate, endDate, employmentType
   const invalidCandidates = candidates.filter(
     (cdd: any) =>
       !cdd.nric ||
       !cdd.name ||
       !cdd.contact ||
       !cdd.dateOfBirth ||
+      !cdd.startDate ||
+      !cdd.endDate ||
       !cdd.employmentType
   );
 
   if (invalidCandidates.length > 0) {
     return res.status(400).send("Invalid candidate data.");
+  }
+
+  for (const cdd of candidates) {
+    const datesValidity = checkDatesValidity(cdd.startDate, cdd.endDate);
+    if (!datesValidity.isValid) {
+      return res.status(400).json({
+        message: datesValidity.message,
+      });
+    }
+
+    // set cdd end date to project end date if it exceeds
+    const startDate = new Date(cdd.startDate);
+    const endDate = new Date(cdd.endDate);
+    if (
+      startDate < projectData.startDate ||
+      endDate < projectData.startDate ||
+      startDate > projectData.endDate ||
+      endDate > projectData.endDate
+    ) {
+      return res
+        .status(400)
+        .send("Candidate start/end dates must fall within project period.");
+    }
   }
 
   let candidateObjects;
@@ -566,18 +591,16 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
       });
 
       const assignData = candidatesInDb.map((cdd) => {
-        const currentDate = new Date();
-        const candidateStartDate =
-          currentDate > projectData.startDate
-            ? currentDate
-            : projectData.startDate;
-
         return {
           candidateCuid: cdd.cuid,
           consultantCuid: user.cuid,
           projectCuid: projectCuid,
-          startDate: candidateStartDate,
-          endDate: projectData.endDate,
+          startDate: new Date(
+            candidates.find((c) => c.nric === cdd.nric).startDate
+          ),
+          endDate: new Date(
+            candidates.find((c) => c.nric === cdd.nric).endDate
+          ),
           employmentType: candidates.find((c) => c.nric === cdd.nric)
             .employmentType as EmploymentType,
         };

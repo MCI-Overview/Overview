@@ -226,6 +226,19 @@ const AssignCandidateModal = ({
         message: "Start date cannot be after end date",
         level: "error",
       });
+    } else if (
+      new Date(row.startDate as string) < new Date(project.startDate) ||
+      new Date(row.startDate as string) > new Date(project.endDate)
+    ) {
+      addError("startDate", {
+        message:
+          "Start date must be within project period (" +
+          project.startDate.slice(0, 10) +
+          " to " +
+          project.endDate.slice(0, 10) +
+          ")",
+        level: "error",
+      });
     }
 
     // end date validation
@@ -244,6 +257,19 @@ const AssignCandidateModal = ({
     ) {
       addError("endDate", {
         message: "End date cannot be before start date",
+        level: "error",
+      });
+    } else if (
+      new Date(row.endDate as string) < new Date(project.startDate) ||
+      new Date(row.endDate as string) > new Date(project.endDate)
+    ) {
+      addError("endDate", {
+        message:
+          "End date must be within project period (" +
+          project.startDate.slice(0, 10) +
+          " to " +
+          project.endDate.slice(0, 10) +
+          ")",
         level: "error",
       });
     }
