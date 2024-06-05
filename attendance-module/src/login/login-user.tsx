@@ -73,7 +73,7 @@ const AdminLogin: React.FC = () => {
                   required
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <Button>Login</Button>
+                <Button onClick={handleSubmit}>Login</Button>
               </Stack>
             </form>
           </Stack>

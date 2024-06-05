@@ -17,6 +17,7 @@ import AssignCandidatePage from "../components/project/candidates/Page";
 import RosterPage from "../components/project/roster/RosterPage";
 import { useProjectContext } from "../providers/projectContextProvider";
 import ShiftPage from "../components/project/shift/ShiftPage";
+import Settings from "./Settings.tsx";
 
 const tabs: Tab[] = [
   {
@@ -38,6 +39,10 @@ const tabs: Tab[] = [
   {
     label: "Roster",
     content: <RosterPage />,
+  },
+  {
+    label: "Settings",
+    content: <Settings />,
   },
 ];
 
@@ -65,6 +70,9 @@ const AdminProjects: React.FC = () => {
         break;
       case "roster":
         setTabValue(4);
+        break;
+      case "settings":
+        setTabValue(5);
         break;
       default:
         setTabValue(0);
@@ -108,6 +116,9 @@ const AdminProjects: React.FC = () => {
         break;
       case 4:
         navigate(`/admin/project/${project.cuid}#roster`);
+        break;
+      case 5:
+        navigate(`/admin/project/${project.cuid}#settings`);
         break;
       default:
         break;

@@ -180,7 +180,7 @@ const AssignCandidateModal = ({
         message: "Invalid format. Please use YYYY-MM-DD",
         level: "error",
       });
-    } else if (getExactAge(row.dateOfBirth as string) < 16) {
+    } else if (getExactAge(new Date(row.dateOfBirth as string)) < 16) {
       addError("dateOfBirth", {
         message: "Candidate below 16 years old",
         level: "error",
