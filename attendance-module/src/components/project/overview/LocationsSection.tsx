@@ -30,17 +30,17 @@ const LocationsSection = () => {
     (user && checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
   const [locations, setLocations] = useState(project?.locations || []);
-
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
-  const [locationToDelete, setLocationToDelete] = useState<Location>();
+  const [locationToDelete, setLocationToDelete] = useState<Location | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  if (!project) return null;
-
   useEffect(() => {
-    setLocations(project.locations);
-  }, [project.locations]);
+    if (project) {
+      setLocations(project.locations);
+    }
+  }, [project]);
+
+  if (!project) return null;
 
   return (
     <>

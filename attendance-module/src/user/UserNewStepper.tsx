@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Candidate } from "./types";
 
 import {
   Button,
@@ -20,14 +19,21 @@ import ContactsRoundedIcon from "@mui/icons-material/ContactsRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import WavingHandIcon from "@mui/icons-material/WavingHand";
 
+type ExampleCandidate = {
+  nric: string,
+  name: string,
+  dateOfBirth: string,
+  contact: string
+};
+
 export default function UserNewStepper() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
-  const [userData, setUserData] = useState<Candidate>({
+  const [userData, setUserData] = useState<ExampleCandidate>({
     nric: "T1234567A",
     name: "Alice Smith",
-    dateOfBirth: "2000-01-01",
-    phone: "98765432",
+    dateOfBirth: "1990-01-01",
+    contact: "98765432",
   });
 
   // useEffect(() => {
@@ -108,7 +114,7 @@ export default function UserNewStepper() {
             <FormLabel>Contact Number</FormLabel>
             <Input
               name="contact"
-              value={userData.phone}
+              value={userData.contact}
               onChange={handleDataChange}
             />
           </FormControl>
@@ -116,7 +122,6 @@ export default function UserNewStepper() {
             <FormLabel>Nationality</FormLabel>
             <Input
               name="nationality"
-              value={userData.nationality}
               onChange={handleDataChange}
             />
           </FormControl>
@@ -124,7 +129,6 @@ export default function UserNewStepper() {
             <FormLabel>Postal code</FormLabel>
             <Input
               name="address.postalCode"
-              value={userData.address?.postalCode | ""}
               onChange={handleDataChange}
             />
           </FormControl>
@@ -165,8 +169,8 @@ export default function UserNewStepper() {
         {step === 0
           ? "Let's get to know you better!"
           : step === 1
-          ? "Please provide the following information:"
-          : "Your information has been submitted successfully."}
+            ? "Please provide the following information:"
+            : "Your information has been submitted successfully."}
       </Typography>
 
       <Divider />

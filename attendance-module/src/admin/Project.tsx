@@ -1,4 +1,3 @@
-// ./login/choose-role.tsx
 import { useEffect, useState } from "react";
 import {
   Navigate,
@@ -14,7 +13,6 @@ import {
 } from "../components/project/ui/AdminBreadcrumb";
 import ProjectOverview from "../components/project/overview/Page";
 import AssignCandidatePage from "../components/project/candidates/Page";
-import RosterPage from "../components/project/roster/RosterPage";
 import { useProjectContext } from "../providers/projectContextProvider";
 import ShiftPage from "../components/project/shift/ShiftPage";
 import Settings from "./Settings.tsx";
@@ -38,7 +36,7 @@ const tabs: Tab[] = [
   },
   {
     label: "Roster",
-    content: <RosterPage />,
+    content: <div>Roster</div>,
   },
   {
     label: "Settings",
@@ -54,7 +52,9 @@ const AdminProjects: React.FC = () => {
 
   const [tabValue, setTabValue] = useState<number>(0);
 
-  useEffect(() => updateProject(projectCuid), []);
+  useEffect(() => {
+    updateProject(projectCuid);
+  }, [projectCuid, updateProject]);
 
   useEffect(() => {
     const hash = location.hash.replace("#", "");
