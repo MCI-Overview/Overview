@@ -134,3 +134,28 @@ export type Assign = {
   consultantCuid: string | null;
   candidateCuid: string;
 }
+
+export type Manage = {
+  role: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
+  consultantCuid: string;
+  projectCuid: string;
+}
+
+export type Project = {
+  cuid: string;
+  name: string;
+  clientUEN: string;
+  employmentBy: string;
+  locations: JSON;
+  shiftGroups: JSON;
+  createdAt: Date;
+  endDate: Date;
+  startDate: Date;
+  noticePeriodDuration: number;
+  noticePeriodUnit: "DAY" | "WEEK" | "MONTH";
+  status: "ACTIVE" | "EXPIRED" | "DELETED";
+  Assign: Assign[];
+  Manage: Manage[];
+  Client: Client;
+  Shift: Shift[];
+}
