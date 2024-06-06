@@ -21,7 +21,7 @@ const AdminHome: React.FC = () => {
             position: "sticky",
             top: { sm: -100, md: -110 },
             bgcolor: "background.body",
-            zIndex: 9995,
+            zIndex: 12,
           }}
         >
           <Box sx={{ px: { xs: 2, md: 6 } }}>
