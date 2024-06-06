@@ -1,11 +1,6 @@
 import { Router, Request, Response } from "express";
-import {
-  EmploymentType,
-  DayOfWeek,
-  PrismaClient,
-  Role,
-  ShiftStatus,
-} from "@prisma/client";
+import { prisma } from "../../../client";
+import { EmploymentType, DayOfWeek, Role, ShiftStatus } from "@prisma/client";
 import { PrismaError } from "@/types";
 import {
   GetProjectDataResponse,
@@ -30,7 +25,6 @@ import {
   PermissionList,
 } from "../../../utils/permissions";
 
-const prisma = new PrismaClient();
 const projectAPIRouter: Router = Router();
 
 projectAPIRouter.get("/project/:projectCuid", async (req, res) => {

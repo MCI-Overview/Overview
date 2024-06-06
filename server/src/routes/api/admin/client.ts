@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../../client";
 import { PrismaError } from "@/types";
 import { User } from "@/types/common";
 import {
@@ -7,8 +7,6 @@ import {
   checkPermission,
   PERMISSION_ERROR_TEMPLATE,
 } from "../../../utils/permissions";
-
-const prisma = new PrismaClient();
 
 const clientAPIRoutes: Router = Router();
 
@@ -63,7 +61,7 @@ clientAPIRoutes.delete("/client", async (req, res) => {
 
   const hasDeleteClientPermission = checkPermission(
     user.cuid,
-    PermissionList.CAN_DELETE_CLIENTS,
+    PermissionList.CAN_DELETE_CLIENTS
   );
 
   if (!hasDeleteClientPermission) {
@@ -107,7 +105,7 @@ async function updateClient(req: Request, res: Response) {
 
   const hasUpdateClientPermission = checkPermission(
     user.cuid,
-    PermissionList.CAN_UPDATE_CLIENTS,
+    PermissionList.CAN_UPDATE_CLIENTS
   );
 
   if (!hasUpdateClientPermission) {

@@ -1,9 +1,7 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../client";
 import bcrypt from "bcrypt";
-
-const prisma = new PrismaClient();
 
 passport.use(
   new LocalStrategy(async function verify(username, password, cb) {
@@ -35,5 +33,5 @@ passport.use(
     } catch (error) {
       return cb(null, false, { message: "Invalid username or password." });
     }
-  }),
+  })
 );

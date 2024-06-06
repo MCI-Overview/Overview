@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../../client";
 import { PrismaError } from "@/types";
 import { Address, BankDetails, EmergencyContact, User } from "@/types/common";
 import bcrypt from "bcrypt";
@@ -9,8 +9,6 @@ import {
   checkPermission,
   PermissionList,
 } from "../../../utils/permissions";
-
-const prisma = new PrismaClient();
 
 const candidateAPIRoutes: Router = Router();
 
@@ -29,7 +27,7 @@ candidateAPIRoutes.get("/candidate/:cuid"),
 
       const hasReadCandidateDetailsPermission = await checkPermission(
         user.cuid,
-        PermissionList.CAN_READ_CANDIDATE_DETAILS,
+        PermissionList.CAN_READ_CANDIDATE_DETAILS
       );
 
       if (hasReadCandidateDetailsPermission) {
@@ -185,7 +183,7 @@ candidateAPIRoutes.delete("/candidate", async (req, res) => {
 
   const hasDeleteCandidatePermission = await checkPermission(
     user.cuid,
-    PermissionList.CAN_DELETE_CANDIDATES,
+    PermissionList.CAN_DELETE_CANDIDATES
   );
 
   if (!hasDeleteCandidatePermission) {
@@ -239,13 +237,13 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     return res
       .status(400)
       .send(
-        "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required.",
+        "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required."
       );
   }
 
   const hasUpdateCandidatePermission = await checkPermission(
     user.cuid,
-    PermissionList.CAN_UPDATE_CANDIDATES,
+    PermissionList.CAN_UPDATE_CANDIDATES
   );
 
   if (!hasUpdateCandidatePermission) {

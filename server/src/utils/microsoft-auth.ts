@@ -1,30 +1,28 @@
 import { Strategy as MicrosoftStrategy } from "passport-microsoft";
 import { MicrosoftProfile } from "@/types";
 import passport from "passport";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../client";
 
 const clientID = process.env.MICROSOFT_CLIENT_ID as string;
 const clientSecret = process.env.MICROSOFT_CLIENT_SECRET as string;
 const tenantID = process.env.MICROSOFT_TENANT_ID as string;
 const SERVER_URL = process.env.SERVER_URL as string;
 
-const prisma = new PrismaClient();
-
 if (!clientID) {
   throw new Error(
-    "MICROSOFT_CLIENT_ID must be defined in your environment variables",
+    "MICROSOFT_CLIENT_ID must be defined in your environment variables"
   );
 }
 
 if (!clientSecret) {
   throw new Error(
-    "MICROSOFT_CLIENT_SECRET must be defined in your environment variables",
+    "MICROSOFT_CLIENT_SECRET must be defined in your environment variables"
   );
 }
 
 if (!tenantID) {
   throw new Error(
-    "MICROSOFT_TENANT_ID must be defined in your environment variables",
+    "MICROSOFT_TENANT_ID must be defined in your environment variables"
   );
 }
 
@@ -45,7 +43,7 @@ passport.use(
       _accessToken: string,
       _refreshToken: string,
       profile: MicrosoftProfile,
-      cb: (error: any, user?: any) => void,
+      cb: (error: any, user?: any) => void
     ) {
       const { cuid, name, email } = await prisma.consultant.upsert({
         where: {
@@ -68,6 +66,6 @@ passport.use(
         email,
         userType: "Admin",
       });
-    },
-  ),
+    }
+  )
 );
