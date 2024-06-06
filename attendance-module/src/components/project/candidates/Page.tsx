@@ -25,7 +25,7 @@ const CandidatePage = () => {
         employmentType: cdd.employmentType,
         consultantCuid: cdd.consultantCuid,
         consultantName: project?.consultants.find(
-          (c) => c.cuid === cdd.consultantCuid
+          (c) => c.cuid === cdd.consultantCuid,
         )!.name,
       };
     }) || [];
@@ -37,7 +37,7 @@ const CandidatePage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [candidatesToDelete, setCandidatesToDelete] = useState<string[]>([]);
 
-  const matchSearchValue = (c: CommonCandidate) =>
+  const matchSearchValue = (c: Candidate) =>
     c.nric.toLowerCase().includes(searchValue.toLowerCase()) ||
     c.name.toLowerCase().includes(searchValue.toLowerCase());
 
@@ -50,7 +50,7 @@ const CandidatePage = () => {
     try {
       await axios.delete(
         `http://localhost:3000/api/admin/project/${project?.cuid}/candidates`,
-        { data: { cuidList: candidatesToDelete } }
+        { data: { cuidList: candidatesToDelete } },
       );
       updateProject();
 

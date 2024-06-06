@@ -40,7 +40,7 @@ model Attendance {
   clockOutTime  DateTime?
   status        AttendanceStatus?
   leave         LeaveStatus?
-  shiftDate     DateTime          @db.Date
+  shiftDate     DateTime
   Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
   Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
 
@@ -101,8 +101,8 @@ model Project {
   locations            Json[]           @default([])
   shiftGroups          Json[]           @default([])
   createdAt            DateTime         @default(now())
-  endDate              DateTime         @db.Date
-  startDate            DateTime         @db.Date
+  endDate              DateTime
+  startDate            DateTime
   noticePeriodDuration Int
   noticePeriodUnit     NoticePeriodUnit
   status               ProjectStatus    @default(ACTIVE)
@@ -125,10 +125,10 @@ model Shift {
   projectCuid      String
   day              DayOfWeek
   headcount        Int
-  startTime        DateTime     @db.Time(6)
-  endTime          DateTime     @db.Time(6)
-  halfDayStartTime DateTime?    @db.Time(6)
-  halfDayEndTime   DateTime?    @db.Time(6)
+  startTime        DateTime
+  endTime          DateTime
+  halfDayStartTime DateTime?
+  halfDayEndTime   DateTime?
   breakDuration    Int          @default(0)
   status           ShiftStatus  @default(ACTIVE)
   Attendance       Attendance[]

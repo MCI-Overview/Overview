@@ -1,4 +1,4 @@
-import { CommonCandidate } from "../../../types/common";
+import { Candidate } from "../../../types/common";
 
 import {
   Button,
@@ -13,7 +13,7 @@ import {
 interface DeleteCandidateModal {
   isDeleteModalOpen: boolean;
   setIsDeleteModalOpen: (isOpen: boolean) => void;
-  candidatesData: CommonCandidate[];
+  candidatesData: Candidate[];
   candidatesToDelete: string[];
   handleDeleteCandidates: () => void;
 }

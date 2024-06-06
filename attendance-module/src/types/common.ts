@@ -1,12 +1,14 @@
+import { Dayjs } from "dayjs";
+
 export type CommonCandidate = {
   cuid: string;
   nric: string;
   name: string;
   contact: string;
-  dateOfBirth: Date;
+  dateOfBirth: Dayjs;
   consultantCuid: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: Dayjs;
+  endDate: Dayjs;
   employmentType: "PART_TIME" | "FULL_TIME" | "CONTRACT";
   nationality?: string | null;
   address?: Address;
@@ -95,10 +97,10 @@ export type Shift = {
   cuid: string;
   projectCuid: string;
   day: string;
-  startTime: Date;
-  endTime: Date;
-  halfDayStartTime: Date | null;
-  halfDayEndTime: Date | null;
+  startTime: Dayjs;
+  endTime: Dayjs;
+  halfDayStartTime: Dayjs | null;
+  halfDayEndTime: Dayjs | null;
   breakDuration: number;
   headcount: number;
   status: "ACTIVE" | "ARCHIVED";
@@ -107,6 +109,34 @@ export type Shift = {
 export type ShiftGroup = {
   name: string;
   shifts: Shift[];
+};
+
+export type Project = {
+  cuid: string;
+  name: string;
+  employmentBy: string;
+  locations: Location[];
+  shiftGroups: ShiftGroup[];
+  startDate: Dayjs;
+  endDate: Dayjs;
+  createdAt: Dayjs;
+  noticePeriodDuration: number;
+  noticePeriodUnit: string;
+  status: string;
+  client: {
+    name: string;
+    uen: string;
+  };
+  candidates: CommonCandidate[];
+  consultants: Consultant[];
+  shifts: Shift[];
+};
+
+export type Attendance = {
+  startDateTime: Dayjs;
+  endDateTime: Dayjs;
+  status: string | null;
+  leave: string | null;
 };
 
 export type GetProjectDataResponse = {

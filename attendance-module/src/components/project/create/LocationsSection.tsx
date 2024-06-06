@@ -13,7 +13,7 @@ import {
   IconButton,
   Stack,
 } from "@mui/joy";
-import { Location } from "../../../types/common";
+import { CommonLocation } from "../../../types/common";
 import { useState } from "react";
 import axios from "axios";
 import { Delete, InfoOutlined } from "@mui/icons-material";
@@ -23,8 +23,8 @@ export default function ProjectLocationsSection({
   locations,
   setLocations,
 }: {
-  locations: Location[];
-  setLocations: (locations: Location[]) => void;
+  locations: CommonLocation[];
+  setLocations: (locations: CommonLocation[]) => void;
 }) {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [postalCode, setPostalCode] = useState<string | null>(null);
@@ -96,7 +96,7 @@ export default function ProjectLocationsSection({
               }}
               onKeyDown={(e) => {
                 if (["e", "E", "+", "-"].includes(e.key)) {
-                  e.preventDefault()
+                  e.preventDefault();
                 }
 
                 if (postalCode?.length === 6 && e.key !== "Backspace") {

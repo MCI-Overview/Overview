@@ -3,7 +3,7 @@ import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { formatDate, getExactAge } from "../../../utils/date-time";
 import { checkPermission } from "../../../utils/permission";
-import { CommonCandidate, PermissionList } from "../../../types/common";
+import { Candidate, PermissionList } from "../../../types/common";
 
 import {
   Box,
@@ -60,7 +60,7 @@ const CandidateTable = ({
 
   const hasEditProjectPermission =
     project.consultants.find((c) => c.role === "CLIENT_HOLDER")?.cuid ===
-    user.cuid || checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS);
+      user.cuid || checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS);
 
   const isHolder = (cddCuid: string) => {
     return (
