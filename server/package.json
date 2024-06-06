@@ -5,9 +5,9 @@
   "main": "src/index.ts",
   "scripts": {
     "prestart": "npm run build",
-    "build": "npx tsc",
+    "build": "npx prisma db push && npx tsc",
     "dev": "nodemon src/index.ts",
-    "start": "npx prisma db push && node dist/src/index.js"
+    "start": "node dist/src/index.js"
   },
   "keywords": [],
   "author": "",
