@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import Lottie from 'react-lottie';
 import animationData from "../../public/coolstuff.json";
 
-const serverLink = "http://localhost:3000";
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -65,7 +65,7 @@ const AdminLogin: React.FC = () => {
           <Divider />
 
           <Stack spacing={2} sx={{ my: 1 }}>
-            <a href={`${serverLink}/admin/login`}>
+            <a href={`${SERVER_URL}/admin/login`}>
               <img src="/microsoft-login.svg" alt="Microsoft Login" />
             </a>
           </Stack>

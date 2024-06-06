@@ -28,7 +28,7 @@ const DeleteLocationModal = ({
 
     try {
       axios
-        .patch("http://localhost:3000/api/admin/project", {
+        .patch("/api/admin/project", {
           projectCuid: project.cuid,
           locations: updatedLocations,
         })

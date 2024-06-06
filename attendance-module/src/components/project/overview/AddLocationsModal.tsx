@@ -55,7 +55,7 @@ const AddLocationsModal = ({
     if (!project || !newLocation) return;
 
     try {
-      await axios.patch("http://localhost:3000/api/admin/project", {
+      await axios.patch("/api/admin/project", {
         projectCuid: project.cuid,
         locations: [...locations, newLocation],
       });
