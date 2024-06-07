@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useUserContext } from "../../providers/userContextProvider";
 import { formatDate } from "../../utils/date-time";
 
@@ -194,7 +194,7 @@ const MyCandidatesPage = () => {
                 {Object.entries(groupByCandidates(candidateData))
                   .filter(matchSearchValue)
                   .map(([candidateCuid, projects]) => (
-                    <>
+                    <Fragment key={candidateCuid}>
                       {projects.sort(dateComparator).map((project, index) => (
                         <tr key={project.projectCuid}>
                           {index === 0 && (
@@ -231,7 +231,7 @@ const MyCandidatesPage = () => {
                           <td>{formatDate(project.endDate)}</td>
                         </tr>
                       ))}
-                    </>
+                    </Fragment>
                   ))}
               </tbody>
             </Table>
@@ -249,6 +249,7 @@ const MyCandidatesPage = () => {
         <Typography level="title-sm">Legend:</Typography>
         {legendFields.map((field) => (
           <Box
+            key={field.name}
             fontSize="small"
             sx={{
               display: "flex",
