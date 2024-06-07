@@ -25,6 +25,7 @@ import { CircularProgress, CssBaseline, Box } from "@mui/joy";
 import { UserContextProvider } from "./providers/userContextProvider";
 import { ProjectContextProvider } from "./providers/projectContextProvider";
 import axiosRetry from "axios-retry";
+import CandidateProfile from "./user/Profile";
 
 function App() {
   const location = useLocation();
@@ -121,6 +122,10 @@ function App() {
                   <Route
                     path="/admin/candidates"
                     element={<AdminCandidates />}
+                  />
+                  <Route
+                    path="/admin/candidate/:candidateCuid"
+                    element={<CandidateProfile />}
                   />
                 </Route>
               </Routes>

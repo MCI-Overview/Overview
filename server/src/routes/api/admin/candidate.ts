@@ -12,18 +12,30 @@ import {
 
 const candidateAPIRoutes: Router = Router();
 
-candidateAPIRoutes.get("/candidate/:cuid"),
+candidateAPIRoutes.get(
+  "/candidate/:candidateCuid",
   async (req: Request, res: Response) => {
     const user = req.user as User;
-    const { cuid } = req.params;
+    const { candidateCuid } = req.params;
+
+    if (user.userType !== "Admin") {
+      // TODO: redirect request to user api endpoint
+    }
 
     try {
-      const { name, nric, contact, emergencyContact, ...otherData } =
-        await prisma.candidate.findUniqueOrThrow({
-          where: {
-            cuid,
-          },
-        });
+      const {
+        cuid,
+        name,
+        nric,
+        contact,
+        dateOfBirth,
+        emergencyContact,
+        ...otherData
+      } = await prisma.candidate.findUniqueOrThrow({
+        where: {
+          cuid: candidateCuid,
+        },
+      });
 
       const hasReadCandidateDetailsPermission = await checkPermission(
         user.cuid,
@@ -32,24 +44,29 @@ candidateAPIRoutes.get("/candidate/:cuid"),
 
       if (hasReadCandidateDetailsPermission) {
         return res.send({
+          cuid: candidateCuid,
           name,
           nric,
           contact,
+          dateOfBirth,
           emergencyContact,
           ...otherData,
         });
       }
 
       return res.send({
+        cuid: candidateCuid,
         name,
         nric: maskNRIC(nric),
         contact,
+        dateOfBirth,
         emergencyContact,
       });
     } catch (error) {
       return res.status(404).send("Candidate not found.");
     }
-  };
+  }
+);
 
 candidateAPIRoutes.post("/candidate", async (req, res) => {
   const {
@@ -221,6 +238,8 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     address,
     emergencyContact,
   } = req.body;
+
+  console.log(req.body);
 
   // Checking for the required identifier
   if (!cuid) return res.status(400).send("cuid parameter is required.");
