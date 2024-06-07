@@ -28,16 +28,13 @@ import { InfoOutlined } from "@mui/icons-material";
 const ProjectOverview: React.FC = () => {
   const { user } = useUserContext();
   const { project, updateProject } = useProjectContext();
-  if (!project) return null;
 
-  const [startDate, setStartDate] = useState<string>(
-    project.startDate.split("T")[0]
-  );
-  const [endDate, setEndDate] = useState<string>(project.endDate.split("T")[0]);
+  const [startDate, setStartDate] = useState<string>(project?.startDate.split("T")[0] || "");
+  const [endDate, setEndDate] = useState<string>(project?.endDate.split("T")[0] || "");
   const [dateError, setDateError] = useState<boolean>(false);
 
   const hasEditPermission =
-    project.consultants.find(
+    project?.consultants.find(
       (consultant) => consultant.role === "CLIENT_HOLDER"
     )?.cuid === user?.cuid ||
     (user
@@ -45,6 +42,8 @@ const ProjectOverview: React.FC = () => {
       : false);
 
   useEffect(() => {
+    if (!project) return;
+
     setDateError(new Date(endDate) < new Date(startDate));
 
     if (
@@ -60,7 +59,7 @@ const ProjectOverview: React.FC = () => {
 
     try {
       axios
-        .patch("http://localhost:3000/api/admin/project", {
+        .patch("/api/admin/project", {
           projectCuid: project.cuid,
           startDate: startDate,
           endDate: endDate,
@@ -73,7 +72,9 @@ const ProjectOverview: React.FC = () => {
       console.log(error);
       toast.error("Failed to update project dates");
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, project, dateError, updateProject]);
+
+  if (!project) return null;
 
   return (
     <>
@@ -140,7 +141,6 @@ const ProjectOverview: React.FC = () => {
               </Grid>
               <Grid xs={4} md={6}>
                 <FormLabel>End date</FormLabel>
-
                 <FormControl sx={{ flexGrow: 1 }} error={dateError}>
                   <Input
                     type="date"

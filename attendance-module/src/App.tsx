@@ -27,6 +27,8 @@ import { ProjectContextProvider } from "./providers/projectContextProvider";
 import axiosRetry from "axios-retry";
 import CandidateProfile from "./user/Profile";
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+
 function App() {
   const location = useLocation();
   const hideSidebarRoutes = ["/", "/admin", "/user/new"];
@@ -36,7 +38,7 @@ function App() {
     document.title = "Overview";
   }, []);
 
-  axios.defaults.baseURL = "http://localhost:3000";
+  axios.defaults.baseURL = SERVER_URL;
   axios.defaults.withCredentials = true;
   axiosRetry(axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
 

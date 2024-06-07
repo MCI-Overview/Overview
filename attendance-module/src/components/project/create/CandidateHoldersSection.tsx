@@ -13,7 +13,7 @@ import {
 } from "@mui/joy";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { Consultant, User } from "../../../types";
+import { Consultant, User } from "../../../types/common";
 import { Delete } from "@mui/icons-material";
 
 export default function ProjectCandidateHoldersSection({
@@ -96,9 +96,8 @@ export default function ProjectCandidateHoldersSection({
         <AccordionSummary>
           {candidateHolders.length === 0
             ? "No candidate holder added"
-            : `${candidateHolders.length} candidate holder${
-                candidateHolders.length > 1 ? "s" : ""
-              } added`}
+            : `${candidateHolders.length} candidate holder${candidateHolders.length > 1 ? "s" : ""
+            } added`}
         </AccordionSummary>
         <AccordionDetails>
           <List component="ol" marker="decimal">

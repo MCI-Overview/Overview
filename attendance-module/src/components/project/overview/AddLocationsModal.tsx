@@ -21,7 +21,6 @@ const AddLocationsModal = ({
   const [newLocation, setNewLocation] = useState<Location | null>(null);
 
   const { project, updateProject } = useProjectContext();
-  if (!project) return null;
 
   useEffect(() => {
     if (!newPostalCode || newPostalCode.length !== 6) {
@@ -29,47 +28,47 @@ const AddLocationsModal = ({
       return;
     }
 
-    try {
-      axios
-        .get(
-          `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${newPostalCode}&returnGeom=Y&getAddrDetails=N`,
-          { withCredentials: false }
-        )
-        .then((res) => {
-          if (res.data.found === 0) {
-            setNewLocation(null);
-            return;
-          }
+    axios
+      .get(
+        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${newPostalCode}&returnGeom=Y&getAddrDetails=N`,
+        { withCredentials: false }
+      )
+      .then((res) => {
+        if (res.data.found === 0) {
+          setNewLocation(null);
+          return;
+        }
 
-          setNewLocation({
-            postalCode: newPostalCode,
-            address: res.data.results[0].SEARCHVAL,
-            latitude: res.data.results[0].LATITUDE,
-            longitude: res.data.results[0].LONGITUDE,
-          });
+        setNewLocation({
+          postalCode: newPostalCode,
+          address: res.data.results[0].SEARCHVAL,
+          latitude: res.data.results[0].LATITUDE,
+          longitude: res.data.results[0].LONGITUDE,
         });
-    } catch (error) {
-      toast.error("Failed to fetch location details");
-    }
+      })
+      .catch(() => {
+        toast.error("Failed to fetch location details");
+      });
   }, [newPostalCode]);
 
   const handleAddLocation = async () => {
+    if (!project || !newLocation) return;
+
     try {
-      await axios
-        .patch("http://localhost:3000/api/admin/project", {
-          projectCuid: project.cuid,
-          locations: [...locations, newLocation],
-        })
-        .then((_res) => {
-          updateProject();
-          setNewPostalCode("");
-          toast.success("Location added successfully");
-        });
+      await axios.patch("/api/admin/project", {
+        projectCuid: project.cuid,
+        locations: [...locations, newLocation],
+      });
+      updateProject();
+      setNewPostalCode("");
+      toast.success("Location added successfully");
     } catch (error) {
       console.log(error);
       toast.error("Failed to add location");
     }
   };
+
+  if (!project) return null;
 
   return (
     <Modal open={isOpen} onClose={() => setIsOpen(false)}>
@@ -90,10 +89,10 @@ const AddLocationsModal = ({
           {!newLocation
             ? "Please enter a valid postal code"
             : locations.some(
-                (location) => location.postalCode === newPostalCode
-              )
-            ? "Location already added"
-            : newLocation.address}
+              (location) => location.postalCode === newPostalCode
+            )
+              ? "Location already added"
+              : newLocation.address}
         </Typography>
 
         <Stack direction="row" spacing={1}>
@@ -101,7 +100,7 @@ const AddLocationsModal = ({
             Cancel
           </Button>
           <Button
-            onClick={() => handleAddLocation()}
+            onClick={handleAddLocation}
             color="danger"
             fullWidth
             disabled={

@@ -896,8 +896,7 @@ projectAPIRouter.get(
   }
 );
 
-projectAPIRouter.get(
-  "/project/:projectCuid/candidates/roster",
+projectAPIRouter.get("/project/:projectCuid/candidates/roster",
   async (req: Request, res: Response) => {
     const user = req.user as User;
     const { startDate, endDate } = req.query as {
@@ -1023,5 +1022,156 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
     return res.status(500).send("Internal server error.");
   }
 });
+
+const checkProjectRole = async (req: Request, projectCuid: string): Promise<boolean> => {
+  const user = req.user as User;
+  const response = await prisma.manage.findFirst({
+    where: {
+      projectCuid,
+      consultantCuid: user.cuid,
+    },
+  });
+
+  return response?.role === 'CLIENT_HOLDER';
+};
+
+const validateProjectAndConsultant = async (projectCuid: string, consultantCuid: string): Promise<{ projectExists: boolean, consultantExists: boolean }> => {
+  const [project, consultant] = await Promise.all([
+    prisma.project.findUnique({ where: { cuid: projectCuid } }),
+    prisma.consultant.findUnique({ where: { cuid: consultantCuid } }),
+  ]);
+
+  return {
+    projectExists: !!project,
+    consultantExists: !!consultant,
+  };
+};
+
+const handleValidationError = (res: Response, message: string) => res.status(400).send({ error: message });
+
+projectAPIRouter.post('/project/:projectCuid/manage/add', async (req, res) => {
+  const { projectCuid } = req.params;
+  const { consultantCuid } = req.body;
+
+  if (!(await checkProjectRole(req, projectCuid))) {
+    return res.status(403).send({ error: 'User has no access.' });
+  }
+
+  try {
+    const { projectExists, consultantExists } = await validateProjectAndConsultant(projectCuid, consultantCuid);
+
+    if (!projectExists) {
+      return handleValidationError(res, 'Project does not exist.');
+    }
+
+    if (!consultantExists) {
+      return handleValidationError(res, 'Consultant does not exist.');
+    }
+
+    const existingCollaboration = await prisma.manage.findUnique({
+      where: {
+        consultantCuid_projectCuid: {
+          consultantCuid,
+          projectCuid,
+        },
+      },
+    });
+
+    if (existingCollaboration) {
+      return handleValidationError(res, 'Consultant is already a collaborator.');
+    }
+
+    const manageData = await prisma.manage.create({
+      data: {
+        consultantCuid,
+        projectCuid,
+        role: 'CANDIDATE_HOLDER',
+      },
+    });
+
+    return res.status(200).send(manageData);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ error: 'Internal server error.' });
+  }
+});
+
+projectAPIRouter.post('/project/:projectCuid/manage/remove', async (req, res) => {
+  const { projectCuid } = req.params;
+  const { consultantCuid, reassign } = req.body;
+
+  if (!(await checkProjectRole(req, projectCuid))) {
+    return res.status(403).send({ error: 'User has no access.' });
+  }
+
+  try {
+    const manageEntry = await prisma.manage.findFirst({
+      where: {
+        projectCuid,
+        consultantCuid,
+      },
+    });
+
+    if (!manageEntry) {
+      return res.status(404).send({ error: 'Manage entry not found.' });
+    }
+
+    if (Array.isArray(reassign)) {
+      for (const item of reassign) {
+        const { consultantCuid: newConsultantCuid, candidateCuid } = item;
+
+        const assignEntry = await prisma.assign.findFirst({
+          where: {
+            projectCuid,
+            candidateCuid,
+          },
+        });
+
+        if (!assignEntry) {
+          return res.status(404).send({ error: `Assign entry not found for candidateCuid: ${candidateCuid}` });
+        }
+
+        await prisma.assign.update({
+          where: {
+            projectCuid_candidateCuid: {
+              projectCuid,
+              candidateCuid,
+            },
+          },
+          data: {
+            consultantCuid: newConsultantCuid,
+          },
+        });
+      }
+    }
+
+    const remainingAssignments = await prisma.assign.findMany({
+      where: {
+        consultantCuid,
+        projectCuid,
+      },
+    });
+
+    if (remainingAssignments.length > 0) {
+      return res.status(400).send({ error: 'Consultant cannot be removed as they are still assigned to candidates in this project.' });
+    }
+
+    await prisma.manage.delete({
+      where: {
+        consultantCuid_projectCuid: {
+          consultantCuid,
+          projectCuid,
+        },
+      },
+    });
+
+    return res.status(200).send({ message: 'Successfully removed collaborator and updated Assign table.' });
+  } catch (error) {
+    console.error('Error while removing collaborator:', error);
+    return res.status(500).send({ error: 'Internal server error.' });
+  }
+});
+
+
 
 export default projectAPIRouter;

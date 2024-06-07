@@ -14,7 +14,7 @@ import {
 } from "@mui/joy";
 import axios from "axios";
 import ProjectDisplay from "../../components/project/ui/Project";
-import { Project } from "../../types";
+import { Project } from "../../types/common";
 
 const MyProjects: React.FC = () => {
   const navigate = useNavigate();

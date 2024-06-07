@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios, { AxiosError } from "axios";
-import { Consultant, Location, CreateProjectData } from "../../../types";
+import { Consultant, Location } from "../../../types/common";
+import { CreateProjectData } from "../../../types";
 import ProjectDetailsSection from "./DetailsSection";
 
 import {
@@ -18,6 +19,11 @@ import ProjectCandidateHoldersSection from "./CandidateHoldersSection";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
+// Define the interface for the error response data
+interface ErrorResponseData {
+  message: string;
+}
+
 const CreateProjectPage = () => {
   const [projectDetails, setProjectDetails] = useState<CreateProjectData>({
     name: null,
@@ -26,6 +32,8 @@ const CreateProjectPage = () => {
     employmentBy: null,
     startDate: null,
     endDate: null,
+    noticePeriodDuration: null,
+    noticePeriodUnit: null
   });
   const [locations, setLocations] = useState<Location[]>([]);
   const [candidateHolders, setCandidateHolders] = useState<Consultant[]>([]);
@@ -48,10 +56,10 @@ const CreateProjectPage = () => {
 
       toast.error(data.message);
     } catch (error) {
-      const axiosError = error as AxiosError;
+      const axiosError = error as AxiosError<ErrorResponseData>;
       toast.error(
         axiosError.response?.data.message ||
-          "Error while creating project. Please try again later.",
+        "Error while creating project. Please try again later."
       );
     }
   };

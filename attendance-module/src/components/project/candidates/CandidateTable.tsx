@@ -46,18 +46,6 @@ const CandidateTable = ({
 }: CandidateTableProps) => {
   const { user } = useUserContext();
   const { project } = useProjectContext();
-  if (!project || !user) return null;
-
-  const hasEditProjectPermission =
-    project.consultants.find((c) => c.role === "CLIENT_HOLDER")?.cuid ===
-      user.cuid || checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS);
-
-  const isHolder = (cddCuid: string) => {
-    return (
-      project.candidates.find((c) => c.cuid === cddCuid)?.consultantCuid ===
-      user.cuid
-    );
-  };
 
   const [sortConfig, setSortConfig] = useState<{
     key: SortableKeys | "";
@@ -66,6 +54,20 @@ const CandidateTable = ({
     key: "",
     direction: "ascending",
   });
+
+  // Early return if user or project is null
+  if (!project || !user) return null;
+
+  const hasEditProjectPermission =
+    project.consultants.find((c) => c.role === "CLIENT_HOLDER")?.cuid ===
+    user.cuid || checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS);
+
+  const isHolder = (cddCuid: string) => {
+    return (
+      project.candidates.find((c) => c.cuid === cddCuid)?.consultantCuid ===
+      user.cuid
+    );
+  };
 
   const sortedData = [...tableData].sort((a, b) => {
     if (sortConfig.key) {

@@ -17,9 +17,9 @@ function capitalize(str: string) {
 
 export function generateCapitalizations(arr: string[]) {
   function getAllCapitalizations(word: string) {
-    let lower = word.toLowerCase();
-    let capitalized = lower.charAt(0).toUpperCase() + lower.slice(1);
-    let upper = lower.toUpperCase();
+    const lower = word.toLowerCase();
+    const capitalized = lower.charAt(0).toUpperCase() + lower.slice(1);
+    const upper = lower.toUpperCase();
     return [lower, capitalized, upper];
   }
 

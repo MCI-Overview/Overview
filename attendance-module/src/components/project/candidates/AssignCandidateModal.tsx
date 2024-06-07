@@ -37,24 +37,27 @@ const AssignCandidateModal = ({
 }: AssignCandidateModalProps) => {
   const { user } = useUserContext();
   const { project, updateProject } = useProjectContext();
-  if (!project || !user) return null;
-
-  const projectCuid = project.cuid;
 
   const [validCddList, setValidCddList] = useState<CddTableDataType[]>([]);
   const [invalidCddList, setInvalidCddList] = useState<CddTableDataType[]>([]);
-
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState<boolean>(false);
   const [isSubmitDisabled, setIsSubmitDisabled] = useState<boolean>(true);
-
   const [overlapCddList, setOverlapCddList] = useState<CddTableDataType[]>([]);
   const [isOverlapModalOpen, setIsOverlapModalOpen] = useState<boolean>(false);
-
   const [data, setData] = useState<Result<string>>({
     validData: [],
     all: [],
     invalidData: [],
   });
+
+  useEffect(() => {
+    setValidCddList(data.validData as unknown as CddTableDataType[]);
+    setInvalidCddList(data.invalidData as unknown as CddTableDataType[]);
+  }, [data]);
+
+  if (!project || !user) return null;
+
+  const projectCuid = project.cuid;
 
   const handleSubmitModalClose = () => {
     if (isSubmitModalOpen) {
@@ -66,11 +69,6 @@ const AssignCandidateModal = ({
       }
     }
   };
-
-  useEffect(() => {
-    setValidCddList(data.validData as unknown as CddTableDataType[]);
-    setInvalidCddList(data.invalidData as unknown as CddTableDataType[]);
-  }, [data]);
 
   const fields = [
     {
@@ -340,7 +338,7 @@ const AssignCandidateModal = ({
 
       // response is a cuid list of candidates already in the project
       if (response.data.length !== 0) {
-        let overlappingCdds = project.candidates
+        const overlappingCdds = project.candidates
           .filter((cdd) => response.data.includes(cdd.cuid))
           .map((cdd) => ({
             ...cdd,
