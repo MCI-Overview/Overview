@@ -74,7 +74,7 @@ const AdminLogin = () => {
         <Card>
           <Box sx={{ mb: 1, display: "flex", alignItems: "center" }}>
             <img
-              src="./images/ovlogo1.svg"
+              src="/Images/ovlogo1.svg"
               alt="Overview Logo"
               style={{ marginRight: "1rem", width: "40px" }}
             />
