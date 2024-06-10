@@ -54,7 +54,7 @@ const AdminProjects: React.FC = () => {
 
   useEffect(() => {
     updateProject(projectCuid);
-  }, [projectCuid, updateProject]);
+  }, []);
 
   useEffect(() => {
     const hash = location.hash.replace("#", "");
@@ -97,7 +97,7 @@ const AdminProjects: React.FC = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null,
+    newValue: string | number | null
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);

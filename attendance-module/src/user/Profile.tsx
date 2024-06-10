@@ -22,9 +22,12 @@ const CandidateProfile: React.FC = () => {
 
   const [tabValue, setTabValue] = useState<number>(0);
 
-  if (!user) return <Navigate to="/login" />;
+  if (!user) return <Navigate to="/" />;
 
-  if (user.userType === "User") {
+  const isAdmin = user.userType === "Admin";
+  const path = isAdmin ? `/admin/candidate/${candidateCuid}` : "/user/profile";
+
+  if (!isAdmin) {
     // candidate can only access their own profile
     candidateCuid = user.cuid;
   } else if (!candidateCuid) {
@@ -35,14 +38,14 @@ const CandidateProfile: React.FC = () => {
   const breadcrumbs: BreadcrumbPart[] = [
     {
       label: "profile",
-      link: `/admin/candidate/${candidateCuid}`,
+      link: path,
     },
   ];
 
   useEffect(() => {
     const hash = location.hash.replace("#", "");
     switch (hash) {
-      case "create":
+      case "requests":
         setTabValue(1);
         break;
       default:
@@ -50,8 +53,6 @@ const CandidateProfile: React.FC = () => {
         break;
     }
   }, [location.hash]);
-
-  if (user.userType !== "Admin") return null;
 
   const tabs: Tab[] = [
     {
@@ -72,10 +73,10 @@ const CandidateProfile: React.FC = () => {
     setTabValue(newValue);
     switch (newValue) {
       case 0:
-        navigate(`/admin/candidate/${candidateCuid}`);
+        navigate(path);
         break;
       case 1:
-        navigate(`/admin/candidate/${candidateCuid}#requests`);
+        navigate(`${path}#requests`);
         break;
       default:
         break;

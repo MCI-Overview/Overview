@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../../../client";
-import { EmploymentType, DayOfWeek, Role, ShiftStatus } from "@prisma/client";
+import { EmploymentType, Role, ShiftStatus } from "@prisma/client";
 import { PrismaError } from "@/types";
 import {
   GetProjectDataResponse,
@@ -692,7 +692,6 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
   const {
-    days,
     headcount,
     startTime,
     endTime,
@@ -700,8 +699,6 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
     halfDayStartTime,
     breakDuration,
   } = req.body;
-
-  if (!days) return res.status(400).send("days is required.");
 
   if (parseInt(headcount) <= 0) {
     return res.status(400).send("positive headcount is required.");
@@ -722,10 +719,6 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
 
   if (breakDuration && parseInt(breakDuration) < 0) {
     return res.status(400).send("breakDuration cannot be negative.");
-  }
-
-  if (!Array.isArray(days) || days.length === 0) {
-    return res.status(400).send("days must be a nonempty array.");
   }
 
   const timeValidity = checkTimesValidity(startTime, endTime);
@@ -794,18 +787,15 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
       .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
   }
 
-  const createData = days.map((day) => {
-    return {
-      day: day.toUpperCase() as DayOfWeek,
-      startTime: startTimeObject,
-      endTime: endTimeObject,
-      halfDayEndTime: new Date(halfDayEndTime),
-      halfDayStartTime: new Date(halfDayStartTime),
-      breakDuration: parseInt(breakDuration),
-      headcount: parseInt(headcount),
-      projectCuid,
-    };
-  });
+  const createData = {
+    startTime: startTimeObject,
+    endTime: endTimeObject,
+    halfDayEndTime: new Date(halfDayEndTime),
+    halfDayStartTime: new Date(halfDayStartTime),
+    breakDuration: parseInt(breakDuration),
+    headcount: parseInt(headcount),
+    projectCuid,
+  };
 
   try {
     await prisma.shift.createMany({
@@ -896,7 +886,8 @@ projectAPIRouter.get(
   }
 );
 
-projectAPIRouter.get("/project/:projectCuid/candidates/roster",
+projectAPIRouter.get(
+  "/project/:projectCuid/candidates/roster",
   async (req: Request, res: Response) => {
     const user = req.user as User;
     const { startDate, endDate } = req.query as {
@@ -1023,7 +1014,10 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
   }
 });
 
-const checkProjectRole = async (req: Request, projectCuid: string): Promise<boolean> => {
+const checkProjectRole = async (
+  req: Request,
+  projectCuid: string
+): Promise<boolean> => {
   const user = req.user as User;
   const response = await prisma.manage.findFirst({
     where: {
@@ -1032,10 +1026,13 @@ const checkProjectRole = async (req: Request, projectCuid: string): Promise<bool
     },
   });
 
-  return response?.role === 'CLIENT_HOLDER';
+  return response?.role === "CLIENT_HOLDER";
 };
 
-const validateProjectAndConsultant = async (projectCuid: string, consultantCuid: string): Promise<{ projectExists: boolean, consultantExists: boolean }> => {
+const validateProjectAndConsultant = async (
+  projectCuid: string,
+  consultantCuid: string
+): Promise<{ projectExists: boolean; consultantExists: boolean }> => {
   const [project, consultant] = await Promise.all([
     prisma.project.findUnique({ where: { cuid: projectCuid } }),
     prisma.consultant.findUnique({ where: { cuid: consultantCuid } }),
@@ -1047,25 +1044,27 @@ const validateProjectAndConsultant = async (projectCuid: string, consultantCuid:
   };
 };
 
-const handleValidationError = (res: Response, message: string) => res.status(400).send({ error: message });
+const handleValidationError = (res: Response, message: string) =>
+  res.status(400).send({ error: message });
 
-projectAPIRouter.post('/project/:projectCuid/manage/add', async (req, res) => {
+projectAPIRouter.post("/project/:projectCuid/manage/add", async (req, res) => {
   const { projectCuid } = req.params;
   const { consultantCuid } = req.body;
 
   if (!(await checkProjectRole(req, projectCuid))) {
-    return res.status(403).send({ error: 'User has no access.' });
+    return res.status(403).send({ error: "User has no access." });
   }
 
   try {
-    const { projectExists, consultantExists } = await validateProjectAndConsultant(projectCuid, consultantCuid);
+    const { projectExists, consultantExists } =
+      await validateProjectAndConsultant(projectCuid, consultantCuid);
 
     if (!projectExists) {
-      return handleValidationError(res, 'Project does not exist.');
+      return handleValidationError(res, "Project does not exist.");
     }
 
     if (!consultantExists) {
-      return handleValidationError(res, 'Consultant does not exist.');
+      return handleValidationError(res, "Consultant does not exist.");
     }
 
     const existingCollaboration = await prisma.manage.findUnique({
@@ -1078,100 +1077,111 @@ projectAPIRouter.post('/project/:projectCuid/manage/add', async (req, res) => {
     });
 
     if (existingCollaboration) {
-      return handleValidationError(res, 'Consultant is already a collaborator.');
+      return handleValidationError(
+        res,
+        "Consultant is already a collaborator."
+      );
     }
 
     const manageData = await prisma.manage.create({
       data: {
         consultantCuid,
         projectCuid,
-        role: 'CANDIDATE_HOLDER',
+        role: "CANDIDATE_HOLDER",
       },
     });
 
     return res.status(200).send(manageData);
   } catch (error) {
     console.error(error);
-    return res.status(500).send({ error: 'Internal server error.' });
+    return res.status(500).send({ error: "Internal server error." });
   }
 });
 
-projectAPIRouter.post('/project/:projectCuid/manage/remove', async (req, res) => {
-  const { projectCuid } = req.params;
-  const { consultantCuid, reassign } = req.body;
+projectAPIRouter.post(
+  "/project/:projectCuid/manage/remove",
+  async (req, res) => {
+    const { projectCuid } = req.params;
+    const { consultantCuid, reassign } = req.body;
 
-  if (!(await checkProjectRole(req, projectCuid))) {
-    return res.status(403).send({ error: 'User has no access.' });
-  }
-
-  try {
-    const manageEntry = await prisma.manage.findFirst({
-      where: {
-        projectCuid,
-        consultantCuid,
-      },
-    });
-
-    if (!manageEntry) {
-      return res.status(404).send({ error: 'Manage entry not found.' });
+    if (!(await checkProjectRole(req, projectCuid))) {
+      return res.status(403).send({ error: "User has no access." });
     }
 
-    if (Array.isArray(reassign)) {
-      for (const item of reassign) {
-        const { consultantCuid: newConsultantCuid, candidateCuid } = item;
+    try {
+      const manageEntry = await prisma.manage.findFirst({
+        where: {
+          projectCuid,
+          consultantCuid,
+        },
+      });
 
-        const assignEntry = await prisma.assign.findFirst({
-          where: {
-            projectCuid,
-            candidateCuid,
-          },
-        });
+      if (!manageEntry) {
+        return res.status(404).send({ error: "Manage entry not found." });
+      }
 
-        if (!assignEntry) {
-          return res.status(404).send({ error: `Assign entry not found for candidateCuid: ${candidateCuid}` });
-        }
+      if (Array.isArray(reassign)) {
+        for (const item of reassign) {
+          const { consultantCuid: newConsultantCuid, candidateCuid } = item;
 
-        await prisma.assign.update({
-          where: {
-            projectCuid_candidateCuid: {
+          const assignEntry = await prisma.assign.findFirst({
+            where: {
               projectCuid,
               candidateCuid,
             },
-          },
-          data: {
-            consultantCuid: newConsultantCuid,
-          },
-        });
+          });
+
+          if (!assignEntry) {
+            return res.status(404).send({
+              error: `Assign entry not found for candidateCuid: ${candidateCuid}`,
+            });
+          }
+
+          await prisma.assign.update({
+            where: {
+              projectCuid_candidateCuid: {
+                projectCuid,
+                candidateCuid,
+              },
+            },
+            data: {
+              consultantCuid: newConsultantCuid,
+            },
+          });
+        }
       }
-    }
 
-    const remainingAssignments = await prisma.assign.findMany({
-      where: {
-        consultantCuid,
-        projectCuid,
-      },
-    });
-
-    if (remainingAssignments.length > 0) {
-      return res.status(400).send({ error: 'Consultant cannot be removed as they are still assigned to candidates in this project.' });
-    }
-
-    await prisma.manage.delete({
-      where: {
-        consultantCuid_projectCuid: {
+      const remainingAssignments = await prisma.assign.findMany({
+        where: {
           consultantCuid,
           projectCuid,
         },
-      },
-    });
+      });
 
-    return res.status(200).send({ message: 'Successfully removed collaborator and updated Assign table.' });
-  } catch (error) {
-    console.error('Error while removing collaborator:', error);
-    return res.status(500).send({ error: 'Internal server error.' });
+      if (remainingAssignments.length > 0) {
+        return res.status(400).send({
+          error:
+            "Consultant cannot be removed as they are still assigned to candidates in this project.",
+        });
+      }
+
+      await prisma.manage.delete({
+        where: {
+          consultantCuid_projectCuid: {
+            consultantCuid,
+            projectCuid,
+          },
+        },
+      });
+
+      return res.status(200).send({
+        message: "Successfully removed collaborator and updated Assign table.",
+      });
+    } catch (error) {
+      console.error("Error while removing collaborator:", error);
+      return res.status(500).send({ error: "Internal server error." });
+    }
   }
-});
-
-
+);
 
 export default projectAPIRouter;

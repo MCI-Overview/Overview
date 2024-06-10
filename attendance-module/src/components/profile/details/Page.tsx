@@ -1,19 +1,23 @@
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useUserContext } from "../../../providers/userContextProvider";
+import { Address, BankDetails, EmergencyContact } from "../../../types/common";
+
 import {
   Box,
   Button,
   Card,
   CardActions,
   CardContent,
+  Checkbox,
+  Divider,
   FormLabel,
   Input,
   Stack,
+  Typography,
 } from "@mui/joy";
-import { Address, BankDetails, EmergencyContact } from "../../../types/common";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import toast from "react-hot-toast";
-import { useNavigate, useParams } from "react-router-dom";
 
 export type Candidate = {
   cuid: string;
@@ -28,11 +32,7 @@ export type Candidate = {
   emergencyContact?: EmergencyContact;
 };
 
-interface CandidateDetailsProps {
-  // candidateCuid: string;
-}
-
-const CandidateDetails = ({}: CandidateDetailsProps) => {
+const CandidateDetails = () => {
   const navigate = useNavigate();
   const { candidateCuid } = useParams();
   const { user } = useUserContext();
@@ -40,44 +40,106 @@ const CandidateDetails = ({}: CandidateDetailsProps) => {
   const [candidate, setCandidate] = useState<Candidate | null>(null);
   const [isUpdateMode, setIsUpdateMode] = useState(false);
 
+  const [isLanded, setIsLanded] = useState<boolean>(false);
+
   if (!user) return null;
 
   useEffect(() => {
     if (user.userType === "Admin") {
       axios
         .get(`/api/admin/candidate/${candidateCuid}`)
-        .then((response) => setCandidate(response.data))
+        .then((response) => {
+          setCandidate(response.data);
+        })
         .catch(() => navigate("/admin/candidates"));
       return;
     } else if (user.userType === "User") {
       axios
-        .get(`/api/user/candidate/${candidateCuid}`)
-        .then((response) => setCandidate(response.data))
-        .catch(() => navigate("/user"));
+        .get(`/api/user/${user.cuid}`)
+        .then((response) => {
+          setCandidate(response.data);
+          if (response.data.address) {
+            response.data.address.unit ? setIsLanded(false) : setIsLanded(true);
+          } else {
+            navigate("/user/new");
+          }
+        })
+        .catch(() => navigate("/user/profile"));
       return;
     }
-    navigate("/login");
+    navigate("/");
   }, [candidateCuid]);
 
   if (!candidate) return null;
-  const isOwner = user.cuid !== candidate.cuid;
+  const isOwner = user.cuid === candidate.cuid;
+
+  if (isOwner && !candidate.hasOnboarded) {
+    navigate("/user/new");
+  }
 
   const handleUpdateClick = () => {
     setIsUpdateMode(true);
   };
 
-  const handleSubmitClick = () => {
-    console.log(candidate);
+  const handlePostalCodeChange = async (postalCode: string) => {
+    setCandidate({
+      ...candidate,
+      address: {
+        ...candidate.address!,
+        postal: postalCode,
+      },
+    });
+
+    if (postalCode.length !== 6) {
+      return;
+    }
+
+    try {
+      await axios
+        .get(
+          `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${postalCode}&returnGeom=N&getAddrDetails=Y`,
+          { withCredentials: false }
+        )
+        .then((res) => {
+          setCandidate({
+            ...candidate,
+            address: {
+              block: res.data.results[0].BLK_NO,
+              building: res.data.results[0].BUILDING,
+              floor: candidate.address!.floor,
+              unit: candidate.address!.unit,
+              street: res.data.results[0].ROAD_NAME,
+              postal: postalCode,
+              country: "Singapore",
+            },
+          });
+        });
+    } catch (error) {
+      toast.error("Invalid postal code.");
+      return;
+    }
+  };
+
+  const handleSubmitClick = async () => {
+    const apiEndpoint =
+      user.userType === "Admin" ? "/api/admin/candidate" : "/api/user";
+
+    let errorMessage = verifyCandidateData(isLanded, candidate);
+    if (errorMessage) {
+      toast.error(errorMessage);
+      return;
+    }
 
     axios
-      .patch("/api/admin/candidate", candidate)
+      .patch(apiEndpoint, candidate)
       .then(() => {
         toast.success("Update successful");
-        setIsUpdateMode(false);
       })
       .catch((error) => {
         toast.error("Update failed");
         console.log(error);
+      })
+      .finally(() => {
         setIsUpdateMode(false);
       });
   };
@@ -138,39 +200,77 @@ const CandidateDetails = ({}: CandidateDetailsProps) => {
 
           {candidate.address && (
             <>
-              <FormLabel>Address</FormLabel>
-              {Object.entries(candidate.address).map(([key, value]) => {
-                return (
-                  <Box key={key} sx={{ display: "flex" }}>
-                    <FormLabel sx={{ marginRight: 2 }}>
-                      {key.charAt(0).toUpperCase() + key.slice(1)}
-                    </FormLabel>
-                    <Input
-                      value={value}
-                      disabled={!isUpdateMode}
-                      onChange={(e) =>
-                        setCandidate({
-                          ...candidate,
-                          address: {
-                            ...candidate.address!,
-                            [key]: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </Box>
-                );
-              })}
+              <Divider sx={{ my: 1 }} />
+              <Typography level="title-lg">Address</Typography>
+
+              <FormLabel>Postal Code</FormLabel>
+              <Input
+                value={candidate.address!.postal}
+                disabled={!isUpdateMode}
+                onChange={(e) => handlePostalCodeChange(e.target.value)}
+              />
+
+              <Checkbox
+                label="Landed property"
+                checked={isLanded}
+                onChange={() => {
+                  setIsLanded(!isLanded);
+                  setCandidate({
+                    ...candidate,
+                    address: {
+                      ...candidate.address!,
+                      floor: "",
+                      unit: "",
+                    },
+                  });
+                }}
+                disabled={!isUpdateMode}
+              />
+
+              {!isLanded && (
+                <>
+                  <FormLabel>Floor</FormLabel>
+                  <Input
+                    value={candidate.address!.floor || ""}
+                    disabled={!isUpdateMode || isLanded}
+                    onChange={(e) =>
+                      setCandidate({
+                        ...candidate,
+                        address: {
+                          ...candidate.address!,
+                          floor: e.target.value,
+                        },
+                      })
+                    }
+                  />
+
+                  <FormLabel>Unit</FormLabel>
+                  <Input
+                    value={candidate.address!.unit || ""}
+                    disabled={!isUpdateMode || isLanded}
+                    onChange={(e) =>
+                      setCandidate({
+                        ...candidate,
+                        address: {
+                          ...candidate.address!,
+                          unit: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </>
+              )}
             </>
           )}
 
           {candidate.bankDetails && (
             <>
-              <FormLabel>Bank Details</FormLabel>
+              <Divider sx={{ my: 1 }} />
+              <Typography level="title-lg">Bank Details</Typography>
               {Object.entries(candidate.bankDetails).map(([key, value]) => {
                 return (
-                  <Box key={key} sx={{ display: "flex" }}>
-                    <FormLabel sx={{ marginRight: 2 }}>
+                  <Box key={key}>
+                    <FormLabel>
                       {key.charAt(0).toUpperCase() + key.slice(1)}
                     </FormLabel>
                     <Input
@@ -194,12 +294,13 @@ const CandidateDetails = ({}: CandidateDetailsProps) => {
 
           {candidate.emergencyContact && (
             <>
-              <FormLabel>Emergency Contact</FormLabel>
+              <Divider sx={{ my: 1 }} />
+              <Typography level="title-lg">Emergency Contact</Typography>
               {Object.entries(candidate.emergencyContact).map(
                 ([key, value]) => {
                   return (
-                    <Box key={key} sx={{ display: "flex" }}>
-                      <FormLabel sx={{ marginRight: 2 }}>
+                    <Box key={key}>
+                      <FormLabel>
                         {key.charAt(0).toUpperCase() + key.slice(1)}
                       </FormLabel>
                       <Input
@@ -232,6 +333,58 @@ const CandidateDetails = ({}: CandidateDetailsProps) => {
       </Card>
     </Stack>
   );
+};
+
+const verifyCandidateData = (isLanded: boolean, candidate: Candidate) => {
+  if (!candidate.name) {
+    return "Name cannot be empty.";
+  }
+
+  if (!candidate.contact) {
+    return "Contact cannot be empty.";
+  }
+
+  if (!candidate.dateOfBirth) {
+    return "Date of Birth cannot be empty.";
+  }
+
+  if (!candidate.address) {
+    return "Address fields cannot be empty.";
+  }
+
+  for (const [key, value] of Object.entries(candidate.address)) {
+    if (isLanded && ["floor", "unit"].includes(key)) {
+      continue;
+    }
+
+    if (!value) {
+      return `Address ${key} cannot be empty.`;
+    }
+  }
+
+  if (!candidate.bankDetails) {
+    return "Bank Details fields cannot be empty.";
+  }
+
+  for (const [key, value] of Object.entries(candidate.bankDetails)) {
+    if (!value) {
+      return `Bank Details ${key} cannot be empty.`;
+    }
+  }
+
+  if (!candidate.emergencyContact) {
+    return "Emergency Contact fields cannot be empty.";
+  }
+
+  for (const [key, value] of Object.entries(candidate.emergencyContact)) {
+    if (!value) {
+      return `Emergency Contact ${key} cannot be empty.`;
+    }
+  }
+
+  // TODO: Incomplete, add more validation checks
+
+  return "";
 };
 
 export default CandidateDetails;

@@ -8,7 +8,6 @@ import {
   PermissionList,
 } from "../../../utils/permissions";
 import { prisma } from "../../../client";
-import { DayOfWeek } from "@prisma/client";
 import { Router } from "express";
 
 const projectShiftAPIRouter: Router = Router();
@@ -93,10 +92,6 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
       .send("At least one field (day, startTime, endTime) is required.");
   }
 
-  if (day && !Object.values(DayOfWeek).includes(day.toUpperCase())) {
-    return res.status(400).send("Invalid day.");
-  }
-
   let startTimeObject;
   if (startTime) {
     try {
@@ -116,7 +111,6 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
   }
 
   const updateData = {
-    ...(day && { day: day.toUpperCase() as DayOfWeek }),
     ...(startTime && { startTime: startTimeObject }),
     ...(endTime && { endTime: endTimeObject }),
   };

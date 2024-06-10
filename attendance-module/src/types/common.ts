@@ -31,8 +31,8 @@ export type Location = {
 export type Address = {
   block: string;
   building: string;
-  floor: string;
-  unit: string;
+  floor?: string;
+  unit?: string;
   street: string;
   postal: string;
   country: string;
@@ -133,13 +133,13 @@ export type GetProjectDataResponse = {
 export type Assign = {
   consultantCuid: string | null;
   candidateCuid: string;
-}
+};
 
 export type Manage = {
   role: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
   consultantCuid: string;
   projectCuid: string;
-}
+};
 
 export type Project = {
   cuid: string;
@@ -158,4 +158,4 @@ export type Project = {
   Manage: Manage[];
   Client: Client;
   Shift: Shift[];
-}
+};

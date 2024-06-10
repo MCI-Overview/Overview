@@ -1,21 +1,37 @@
 import { useLocation, Outlet, Navigate } from "react-router-dom";
 import { useUserContext } from "../providers/userContextProvider";
 import axios from "axios";
+import { useEffect, useState } from "react";
 
 export function PrivateUserRoutes() {
   const { user, setUser } = useUserContext();
+  const currentPath = useLocation().pathname;
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get("/api");
+        setLoading(false);
+        setUser(response.data);
+      } catch (error) {
+        setLoading(false);
+        if (currentPath !== "/") {
+          return <Navigate to="/" />;
+        }
+      }
+    };
+
+    if (!user) {
+      fetchUser();
+    } else {
+      setLoading(false);
+    }
+  }, [user, setUser]);
+
+  if (loading) return null;
 
   if (!user) {
-    axios.get("/api").then((response) => {
-      setUser(response.data);
-    });
-  }
-
-  const currentPath = useLocation().pathname;
-
-  if (user === null) return;
-
-  if (!user || (user && !(user.userType == "User"))) {
     if (currentPath === "/") {
       return <Outlet />;
     }
@@ -23,8 +39,12 @@ export function PrivateUserRoutes() {
     return <Navigate to="/" />;
   }
 
-  if (user && currentPath === "/user") {
-    return <Navigate to="/user" />;
+  if (user.userType === "Admin") {
+    return <Navigate to="/admin/home" />;
+  }
+
+  if (currentPath === "/") {
+    return <Navigate to="/user/home" />;
   }
 
   return <Outlet />;
@@ -32,23 +52,42 @@ export function PrivateUserRoutes() {
 
 export function PrivateAdminRoutes() {
   const { user, setUser } = useUserContext();
+  const currentPath = useLocation().pathname;
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get("/api");
+        setLoading(false);
+        setUser(response.data);
+      } catch (error) {
+        setLoading(false);
+        if (currentPath !== "/admin") {
+          return <Navigate to="/admin" />;
+        }
+      }
+    };
+
+    if (!user) {
+      fetchUser();
+    } else {
+      setLoading(false);
+    }
+  }, [user, setUser]);
+
+  if (loading) return null;
 
   if (!user) {
-    axios.get("/api").then((response) => {
-      setUser(response.data);
-    });
-  }
-
-  const currentPath = useLocation().pathname;
-
-  if (!user) return;
-
-  if (!user || (user && !(user.userType == "Admin"))) {
     if (currentPath === "/admin") {
       return <Outlet />;
     }
 
     return <Navigate to="/admin" />;
+  }
+
+  if (user.userType === "User") {
+    return <Navigate to="/user/home" />;
   }
 
   if (user && currentPath === "/admin") {

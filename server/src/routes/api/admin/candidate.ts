@@ -239,8 +239,6 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     emergencyContact,
   } = req.body;
 
-  console.log(req.body);
-
   // Checking for the required identifier
   if (!cuid) return res.status(400).send("cuid parameter is required.");
 

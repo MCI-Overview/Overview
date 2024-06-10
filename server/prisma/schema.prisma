@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("ALTERNATIVE_DATABASE_URL")
 }
 
 model Assign {
@@ -41,6 +41,7 @@ model Attendance {
   status        AttendanceStatus?
   leave         LeaveStatus?
   shiftDate     DateTime
+  shiftType     ShiftType         @default(FULL_DAY)
   Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
   Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
 
@@ -123,8 +124,6 @@ model Session {
 model Shift {
   cuid             String       @id @default(cuid())
   projectCuid      String
-  day              DayOfWeek
-  headcount        Int
   startTime        DateTime
   endTime          DateTime
   halfDayStartTime DateTime?
@@ -133,8 +132,6 @@ model Shift {
   status           ShiftStatus  @default(ACTIVE)
   Attendance       Attendance[]
   Project          Project      @relation(fields: [projectCuid], references: [cuid])
-
-  @@unique([projectCuid, day, startTime, endTime])
 }
 
 model User {
@@ -161,16 +158,6 @@ enum AttendanceStatus {
 enum LeaveStatus {
   FULLDAY
   HALFDAY
-}
-
-enum DayOfWeek {
-  MONDAY
-  TUESDAY
-  WEDNESDAY
-  THURSDAY
-  FRIDAY
-  SATURDAY
-  SUNDAY
 }
 
 enum EmploymentType {
@@ -211,4 +198,10 @@ enum RequestStatus {
   REJECTED
   PENDING
   CANCELLED
+}
+
+enum ShiftType {
+  FULL_DAY
+  FIRST_HALF
+  SECOND_HALF
 }

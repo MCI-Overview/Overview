@@ -1,4 +1,7 @@
-import React from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
+
 import {
   Box,
   Typography,
@@ -11,26 +14,23 @@ import {
   Card,
   FormLabel,
 } from "@mui/joy";
-import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
-import toast from "react-hot-toast";
-import Lottie from 'react-lottie';
+import Lottie from "react-lottie";
 import animationData from "../../public/coolstuff.json";
+import { FormEvent, useState } from "react";
 
-const AdminLogin: React.FC = () => {
-  const navigate = useNavigate();
-  const [username, setUsername] = React.useState("");
-  const [password, setPassword] = React.useState("");
+const AdminLogin = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const defaultOptions = {
     loop: true,
     autoplay: true,
     animationData: animationData,
     rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice"
-    }
+      preserveAspectRatio: "xMidYMid slice",
+    },
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     axios
       .post("/user/login", {
@@ -39,7 +39,7 @@ const AdminLogin: React.FC = () => {
       })
       .then((res) => {
         if (res.status === 200) {
-          navigate("/user/home");
+          window.location.reload();
         } else {
           toast.error("Invalid username or password");
         }
@@ -47,12 +47,19 @@ const AdminLogin: React.FC = () => {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+      }}
+    >
       <Lottie
         options={defaultOptions}
-        height={'100%'}
-        width={'100%'}
-        style={{ position: 'absolute', top: 0, left: 0 }}
+        height={"100%"}
+        width={"100%"}
+        style={{ position: "absolute", top: 0, left: 0 }}
       />
       <Stack
         spacing={4}
@@ -65,11 +72,11 @@ const AdminLogin: React.FC = () => {
         }}
       >
         <Card>
-          <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ mb: 1, display: "flex", alignItems: "center" }}>
             <img
               src="./images/ovlogo1.svg"
               alt="Overview Logo"
-              style={{ marginRight: '1rem', width: '40px' }}
+              style={{ marginRight: "1rem", width: "40px" }}
             />
             <Box>
               <Typography level="title-md">Overview Attendance</Typography>

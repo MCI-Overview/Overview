@@ -79,13 +79,13 @@ export type CandidateUser = {
 export type Shift = {
   cuid: string;
   projectCuid: string;
-  day: string;
+  // day: string;
   startTime: Date;
   endTime: Date;
   halfDayStartTime: Date | null;
   halfDayEndTime: Date | null;
   breakDuration: number;
-  headcount: number;
+  // headcount: number;
   status: "ACTIVE" | "ARCHIVED";
 };
 
