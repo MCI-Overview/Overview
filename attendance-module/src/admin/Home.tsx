@@ -1,18 +1,17 @@
-// ./login/choose-role.tsx
-import React from "react";
-import Box from "@mui/joy/Box";
-import Typography from "@mui/joy/Typography";
-import Tabs from "@mui/joy/Tabs";
-import TabList from "@mui/joy/TabList";
-import Tab, { tabClasses } from "@mui/joy/Tab";
-import Breadcrumbs from "@mui/joy/Breadcrumbs";
-import Link from "@mui/joy/Link";
-import { TabPanel } from "@mui/joy";
+import {
+  Box,
+  tabClasses,
+  Tab,
+  TabList,
+  Tabs,
+  Typography,
+  Breadcrumbs,
+  Link,
+  TabPanel,
+} from "@mui/joy";
+import { HomeRounded, ChevronRightRounded } from "@mui/icons-material";
 
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
-
-const AdminHome: React.FC = () => {
+const AdminHome = () => {
   return (
     <>
       <Box sx={{ flex: 1, width: "100%" }}>
@@ -28,7 +27,7 @@ const AdminHome: React.FC = () => {
             <Breadcrumbs
               size="sm"
               aria-label="breadcrumbs"
-              separator={<ChevronRightRoundedIcon />}
+              separator={<ChevronRightRounded />}
               sx={{ pl: 0 }}
             >
               <Link
@@ -37,7 +36,7 @@ const AdminHome: React.FC = () => {
                 href="#some-link"
                 aria-label="Home"
               >
-                <HomeRoundedIcon />
+                <HomeRounded />
               </Link>
               <Typography color="primary" fontWeight={500} fontSize={12}>
                 Home

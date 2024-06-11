@@ -1,4 +1,13 @@
-import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import { useUserContext } from "../../../providers/userContextProvider";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+import { CommonCandidate, Consultant } from "../../../types/common";
+import { Assign } from "../../../types";
+import RemoveConsultantModal from "./RemoveConsultantModal";
+import InviteCollaborators from "./InviteCollaborators";
+import CollaboratorsTable from "./CollaboratorsTable";
+
 import {
   Box,
   Divider,
@@ -6,25 +15,23 @@ import {
   Typography,
   Card,
   CardOverflow,
-  CardActions
+  CardActions,
 } from "@mui/joy";
-import { useProjectContext } from "../../../providers/projectContextProvider";
-import axios from "axios";
-import { CommonCandidate, Consultant, Assign } from "../../../types/common";
-import { useUserContext } from "../../../providers/userContextProvider";
-import RemoveConsultantModal from './RemoveConsultantModal';
-import InviteCollaborators from './InviteCollaborators';
-import CollaboratorsTable from './CollaboratorsTable';
 
-const ManageProjectAccess: React.FC = () => {
+const ManageProjectAccess = () => {
   const [consultants, setConsultants] = useState<Consultant[]>([]);
-  const [selectedCollaborators, setSelectedCollaborators] = useState<Consultant[]>([]);
+  const [selectedCollaborators, setSelectedCollaborators] = useState<
+    Consultant[]
+  >([]);
   const [rowSelections, setRowSelections] = useState<Assign[]>([]);
-  const [emailConfirmation, setEmailConfirmation] = useState<string>('');
+  const [emailConfirmation, setEmailConfirmation] = useState<string>("");
   const [invitationError, setInvitationError] = useState<string | null>(null);
   const [openRemoveModal, setOpenRemoveModal] = useState(false);
-  const [candidatesToReassign, setCandidatesToReassign] = useState<CommonCandidate[]>([]);
-  const [consultantToRemove, setConsultantToRemove] = useState<Consultant | null>(null);
+  const [candidatesToReassign, setCandidatesToReassign] = useState<
+    CommonCandidate[]
+  >([]);
+  const [consultantToRemove, setConsultantToRemove] =
+    useState<Consultant | null>(null);
 
   const { project, updateProject } = useProjectContext();
   const collaborators = project?.consultants ?? [];
@@ -33,7 +40,9 @@ const ManageProjectAccess: React.FC = () => {
   const currentUserCuid = user?.cuid;
 
   // Determine the current user's role based on their cuid
-  const currentUserRole = collaborators.find(collaborator => collaborator.cuid === currentUserCuid)?.role;
+  const currentUserRole = collaborators.find(
+    (collaborator) => collaborator.cuid === currentUserCuid
+  )?.role;
 
   const filteredConsultants = consultants.filter(
     (consultant) => !collaborators.some((row) => row.cuid === consultant.cuid)
@@ -42,7 +51,7 @@ const ManageProjectAccess: React.FC = () => {
   useEffect(() => {
     const fetchConsultants = async () => {
       try {
-        const { data } = await axios.get('/api/admin/consultants');
+        const { data } = await axios.get("/api/admin/consultants");
         setConsultants(data);
       } catch (error) {
         console.error("Failed to fetch consultants", error);
@@ -53,22 +62,40 @@ const ManageProjectAccess: React.FC = () => {
 
   const handleApplyToAll = (value: Consultant | null) => {
     const consultantCuid = value ? value.cuid : null;
-    setRowSelections(candidatesToReassign.map((candidate) => ({ consultantCuid, candidateCuid: candidate.cuid })));
+    setRowSelections(
+      candidatesToReassign.map((candidate) => ({
+        consultantCuid,
+        candidateCuid: candidate.cuid,
+      }))
+    );
   };
 
-  const handleRowSelectionChange = (index: number, value: Consultant | null) => {
+  const handleRowSelectionChange = (
+    index: number,
+    value: Consultant | null
+  ) => {
     const updatedSelections = [...rowSelections];
-    updatedSelections[index] = { consultantCuid: value?.cuid ?? null, candidateCuid: candidatesToReassign[index].cuid };
+    updatedSelections[index] = {
+      consultantCuid: value?.cuid ?? null,
+      candidateCuid: candidatesToReassign[index].cuid,
+    };
     setRowSelections(updatedSelections);
   };
 
   const handleRemoveClick = (cuid: string) => {
     const consultant = collaborators.find((collab) => collab.cuid === cuid);
     if (consultant) {
-      const candidatesOfConsultant = candidates.filter((candidate) => candidate.consultantCuid === cuid);
+      const candidatesOfConsultant = candidates.filter(
+        (candidate) => candidate.consultantCuid === cuid
+      );
       setConsultantToRemove(consultant);
       setCandidatesToReassign(candidatesOfConsultant);
-      setRowSelections(candidatesOfConsultant.map((candidate) => ({ consultantCuid: null, candidateCuid: candidate.cuid })));
+      setRowSelections(
+        candidatesOfConsultant.map((candidate) => ({
+          consultantCuid: null,
+          candidateCuid: candidate.cuid,
+        }))
+      );
       setOpenRemoveModal(true);
     }
   };
@@ -76,7 +103,7 @@ const ManageProjectAccess: React.FC = () => {
   const handleCloseRemoveModal = () => {
     setOpenRemoveModal(false);
     setRowSelections([]);
-    setEmailConfirmation('');
+    setEmailConfirmation("");
     setCandidatesToReassign([]);
     setConsultantToRemove(null);
   };
@@ -104,12 +131,14 @@ const ManageProjectAccess: React.FC = () => {
   };
 
   const handleConfirmRemove = async () => {
-    if (emailConfirmation === '' || !consultantToRemove) return;
+    if (emailConfirmation === "" || !consultantToRemove) return;
     try {
       const projectCuid = project?.cuid;
       if (!projectCuid) throw new Error("Project ID is missing");
 
-      const reassignments = rowSelections.filter((rowSelection) => rowSelection.consultantCuid !== null);
+      const reassignments = rowSelections.filter(
+        (rowSelection) => rowSelection.consultantCuid !== null
+      );
 
       await axios.post(`/api/admin/project/${projectCuid}/manage/remove`, {
         consultantCuid: consultantToRemove.cuid,
@@ -123,9 +152,13 @@ const ManageProjectAccess: React.FC = () => {
     }
   };
 
-  const availableCollaborators = collaborators.filter((consultant) => consultant.cuid !== consultantToRemove?.cuid);
+  const availableCollaborators = collaborators.filter(
+    (consultant) => consultant.cuid !== consultantToRemove?.cuid
+  );
 
-  const allCandidatesReassigned = rowSelections.every((selection) => selection.consultantCuid !== null);
+  const allCandidatesReassigned = rowSelections.every(
+    (selection) => selection.consultantCuid !== null
+  );
 
   return (
     <>
@@ -154,7 +187,9 @@ const ManageProjectAccess: React.FC = () => {
         <Card>
           <Box sx={{ mb: 1 }}>
             <Typography level="title-md">Project collaborators</Typography>
-            <Typography level="body-sm">Only collaborators are allowed access to this project. </Typography>
+            <Typography level="body-sm">
+              Only collaborators are allowed access to this project.{" "}
+            </Typography>
           </Box>
           <Divider />
           <Stack spacing={2} sx={{ my: 1 }}>
@@ -176,11 +211,11 @@ const ManageProjectAccess: React.FC = () => {
               handleRemoveClick={handleRemoveClick}
             />
           </Stack>
-          <CardOverflow
-            sx={{ borderTop: "1px solid", borderColor: "divider" }}
-          >
+          <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
             <CardActions sx={{ alignSelf: "flex-start", pt: 2 }}>
-              <Typography level="body-sm">Only client holders can invite and remove collaborators.</Typography>
+              <Typography level="body-sm">
+                Only client holders can invite and remove collaborators.
+              </Typography>
             </CardActions>
           </CardOverflow>
         </Card>

@@ -1,10 +1,11 @@
-import { Breadcrumbs, Typography, Link } from "@mui/joy";
-import { HomeRounded, ChevronRightRounded } from "@mui/icons-material";
-import React from "react";
+import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { Breadcrumbs, Typography, Link } from "@mui/joy";
+import { HomeRounded, ChevronRightRounded } from "@mui/icons-material";
+
 export type BreadcrumbPart = {
-  label: React.ReactNode;
+  label: ReactNode;
   link: string;
 };
 

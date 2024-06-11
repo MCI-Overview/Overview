@@ -49,8 +49,6 @@ userAPIRouter.patch("/", async (req, res) => {
     return res.status(401).send("Unauthorized");
   }
 
-  console.log(address);
-
   try {
     await prisma.candidate.update({
       where: {

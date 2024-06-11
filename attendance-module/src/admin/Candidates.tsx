@@ -1,13 +1,13 @@
-// ./login/choose-role.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tab, TabBar } from "../components/TabBar";
-import { Typography, Box } from "@mui/joy";
 import {
   AdminBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
 import MyCandidatesPage from "../components/candidates/Page";
+
+import { Typography, Box } from "@mui/joy";
 
 const tabs: Tab[] = [
   {
@@ -20,7 +20,7 @@ const tabs: Tab[] = [
   },
 ];
 
-const AdminCandidates: React.FC = () => {
+const AdminCandidates = () => {
   const location = useLocation();
   const navigate = useNavigate();
 

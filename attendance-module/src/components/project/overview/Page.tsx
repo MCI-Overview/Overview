@@ -25,12 +25,16 @@ import {
 } from "@mui/joy";
 import { InfoOutlined } from "@mui/icons-material";
 
-const ProjectOverview: React.FC = () => {
+const ProjectOverview = () => {
   const { user } = useUserContext();
   const { project, updateProject } = useProjectContext();
 
-  const [startDate, setStartDate] = useState<string>(project?.startDate.split("T")[0] || "");
-  const [endDate, setEndDate] = useState<string>(project?.endDate.split("T")[0] || "");
+  const [startDate, setStartDate] = useState<string>(
+    project?.startDate.split("T")[0] || ""
+  );
+  const [endDate, setEndDate] = useState<string>(
+    project?.endDate.split("T")[0] || ""
+  );
   const [dateError, setDateError] = useState<boolean>(false);
 
   const hasEditPermission =

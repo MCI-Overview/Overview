@@ -1,4 +1,4 @@
-import React from "react";
+import { MouseEvent } from "react";
 import {
   Box,
   Typography,
@@ -17,11 +17,9 @@ const SERVER_URL =
     ? import.meta.env.VITE_SERVER_URL
     : "http://localhost:3000";
 
-const AdminLogin: React.FC = () => {
+const AdminLogin = () => {
   const navigate = useNavigate();
-  const handleUserLogin = (
-    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
-  ) => {
+  const handleUserLogin = (event: MouseEvent) => {
     event.preventDefault();
     navigate("/");
   };

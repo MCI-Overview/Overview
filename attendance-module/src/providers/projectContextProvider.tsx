@@ -31,7 +31,6 @@ export function ProjectContextProvider({
       .get(`/api/admin/project/${projectCuid || previousProjectCuid}`)
       .then((res) => {
         setProject(convertToDateType(res.data));
-        console.log(project);
       });
   }
 

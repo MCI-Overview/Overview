@@ -1,5 +1,4 @@
-// ./login/choose-role.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tab, TabBar } from "../components/TabBar";
 import { Typography, Box } from "@mui/joy";
@@ -25,7 +24,7 @@ const tabs: Tab[] = [
   },
 ];
 
-const AdminProjects: React.FC = () => {
+const AdminProjects = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -55,7 +54,7 @@ const AdminProjects: React.FC = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null,
+    newValue: string | number | null
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);

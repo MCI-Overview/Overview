@@ -44,7 +44,7 @@ const tabs: Tab[] = [
   },
 ];
 
-const AdminProjects: React.FC = () => {
+const AdminProjects = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { projectCuid } = useParams();

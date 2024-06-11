@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Navigate,
   useLocation,
@@ -14,7 +14,7 @@ import {
 import CandidateDetails from "../components/profile/details/Page";
 import { useUserContext } from "../providers/userContextProvider";
 
-const CandidateProfile: React.FC = () => {
+const CandidateProfile = () => {
   const location = useLocation();
   const navigate = useNavigate();
   let { candidateCuid } = useParams();
