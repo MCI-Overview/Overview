@@ -24,21 +24,19 @@ function checkUser(req: Request, res: Response, next: NextFunction) {
 router.use("/user", checkUser, userAPIRoutes);
 router.use("/admin", checkAdmin, adminAPIRoutes);
 
-router.get("/", (req, res) => {
+router.get("/", (req: Request, res: Response) => {
   if (!req.user) {
-    return res.json({});
+    return res.status(401).send("Unauthorized, no user login.");
   }
 
   const user = req.user as User;
 
   const permissions = getPermissions(user?.cuid);
 
-  return res.json(
-    {
-      ...user,
-      permissions,
-    } || {},
-  );
+  return res.json({
+    ...user,
+    permissions,
+  });
 });
 
 export default router;

@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("ALTERNATIVE_DATABASE_URL")
 }
 
 model Assign {
@@ -40,7 +40,8 @@ model Attendance {
   clockOutTime  DateTime?
   status        AttendanceStatus?
   leave         LeaveStatus?
-  shiftDate     DateTime          @db.Date
+  shiftDate     DateTime
+  shiftType     ShiftType         @default(FULL_DAY)
   Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
   Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
 
@@ -101,8 +102,8 @@ model Project {
   locations            Json[]           @default([])
   shiftGroups          Json[]           @default([])
   createdAt            DateTime         @default(now())
-  endDate              DateTime         @db.Date
-  startDate            DateTime         @db.Date
+  endDate              DateTime
+  startDate            DateTime
   noticePeriodDuration Int
   noticePeriodUnit     NoticePeriodUnit
   status               ProjectStatus    @default(ACTIVE)
@@ -123,18 +124,14 @@ model Session {
 model Shift {
   cuid             String       @id @default(cuid())
   projectCuid      String
-  day              DayOfWeek
-  headcount        Int
-  startTime        DateTime     @db.Time(6)
-  endTime          DateTime     @db.Time(6)
-  halfDayStartTime DateTime?    @db.Time(6)
-  halfDayEndTime   DateTime?    @db.Time(6)
+  startTime        DateTime
+  endTime          DateTime
+  halfDayStartTime DateTime?
+  halfDayEndTime   DateTime?
   breakDuration    Int          @default(0)
   status           ShiftStatus  @default(ACTIVE)
   Attendance       Attendance[]
   Project          Project      @relation(fields: [projectCuid], references: [cuid])
-
-  @@unique([projectCuid, day, startTime, endTime])
 }
 
 model User {
@@ -161,16 +158,6 @@ enum AttendanceStatus {
 enum LeaveStatus {
   FULLDAY
   HALFDAY
-}
-
-enum DayOfWeek {
-  MONDAY
-  TUESDAY
-  WEDNESDAY
-  THURSDAY
-  FRIDAY
-  SATURDAY
-  SUNDAY
 }
 
 enum EmploymentType {
@@ -211,4 +198,10 @@ enum RequestStatus {
   REJECTED
   PENDING
   CANCELLED
+}
+
+enum ShiftType {
+  FULL_DAY
+  FIRST_HALF
+  SECOND_HALF
 }

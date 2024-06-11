@@ -33,8 +33,8 @@ export type Location = {
 export type Address = {
   block: string;
   building: string;
-  floor: string;
-  unit: string;
+  floor?: string;
+  unit?: string;
   street: string;
   postal: string;
   country: string;
@@ -79,13 +79,11 @@ export type CandidateUser = {
 export type Shift = {
   cuid: string;
   projectCuid: string;
-  day: string;
   startTime: Date;
   endTime: Date;
   halfDayStartTime: Date | null;
   halfDayEndTime: Date | null;
   breakDuration: number;
-  headcount: number;
   status: "ACTIVE" | "ARCHIVED";
 };
 

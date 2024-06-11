@@ -7,10 +7,8 @@ import {
   checkPermission,
   PermissionList,
 } from "../../../utils/permissions";
-import { DayOfWeek, PrismaClient } from "@prisma/client";
+import { prisma } from "../../../client";
 import { Router } from "express";
-
-const prisma = new PrismaClient();
 
 const projectShiftAPIRouter: Router = Router();
 
@@ -46,7 +44,7 @@ projectShiftAPIRouter.delete("/shift", async (req, res) => {
 
   const hasPermission =
     shiftData.Project.Manage.some(
-      (manage) => manage.consultantCuid === user.cuid,
+      (manage) => manage.consultantCuid === user.cuid
     ) ||
     (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
@@ -94,10 +92,6 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
       .send("At least one field (day, startTime, endTime) is required.");
   }
 
-  if (day && !Object.values(DayOfWeek).includes(day.toUpperCase())) {
-    return res.status(400).send("Invalid day.");
-  }
-
   let startTimeObject;
   if (startTime) {
     try {
@@ -117,7 +111,6 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
   }
 
   const updateData = {
-    ...(day && { day: day.toUpperCase() as DayOfWeek }),
     ...(startTime && { startTime: startTimeObject }),
     ...(endTime && { endTime: endTimeObject }),
   };
@@ -148,7 +141,7 @@ projectShiftAPIRouter.patch("/shift", async (req, res) => {
 
   const hasPermission =
     shiftData.Project.Manage.some(
-      (manage) => manage.consultantCuid === user.cuid,
+      (manage) => manage.consultantCuid === user.cuid
     ) ||
     (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 

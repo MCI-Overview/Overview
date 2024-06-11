@@ -1,6 +1,8 @@
-// ./login/choose-role.tsx
-import React, { useEffect } from "react";
+import axios from "axios";
+import { FC, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Project } from "../../types/index";
+import ProjectDisplay from "../../components/project/ui/Project";
 
 import {
   Box,
@@ -12,20 +14,15 @@ import {
   CardActions,
   CardOverflow,
 } from "@mui/joy";
-import axios from "axios";
-import ProjectDisplay from "../../components/project/ui/Project";
-import { Project } from "../../types/common";
 
-const MyProjects: React.FC = () => {
+const MyProjects: FC = () => {
   const navigate = useNavigate();
 
   const handleCreateProjectClick = () => {
     navigate("/admin/projects#create");
   };
 
-  const [projectsList, setProjectsList] = React.useState<Project[] | null>(
-    null,
-  );
+  const [projectsList, setProjectsList] = useState<Project[] | null>(null);
 
   useEffect(() => {
     axios.get("/api/admin/projects").then((response) => {

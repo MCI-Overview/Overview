@@ -1,22 +1,19 @@
-// ./login/choose-role.tsx
-import React from "react";
-import Typography from "@mui/joy/Typography";
-import { Divider } from "@mui/joy";
 import ManageProjectAccess from "../components/project/manage/ManageProjectAccess";
 
 import {
+  Divider,
   List,
   ListItem,
   ListItemButton,
   ListItemDecorator,
   ListItemContent,
-  Grid
+  Grid,
+  Typography,
 } from "@mui/joy";
-
 import { KeyboardArrowRight } from "@mui/icons-material";
-import GroupIcon from '@mui/icons-material/Group';
+import GroupIcon from "@mui/icons-material/Group";
 
-const Settings: React.FC = () => {
+const Settings = () => {
   return (
     <>
       <Grid container spacing={2} sx={{ flexGrow: 1 }}>
@@ -25,7 +22,9 @@ const Settings: React.FC = () => {
           <List>
             <ListItem>
               <ListItemButton>
-                <ListItemDecorator><GroupIcon /></ListItemDecorator>
+                <ListItemDecorator>
+                  <GroupIcon />
+                </ListItemDecorator>
                 <ListItemContent>Collaborators</ListItemContent>
                 <KeyboardArrowRight />
               </ListItemButton>

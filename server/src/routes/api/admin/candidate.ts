@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../../client";
 import { PrismaError } from "@/types";
 import { Address, BankDetails, EmergencyContact, User } from "@/types/common";
 import bcrypt from "bcrypt";
@@ -10,48 +10,63 @@ import {
   PermissionList,
 } from "../../../utils/permissions";
 
-const prisma = new PrismaClient();
-
 const candidateAPIRoutes: Router = Router();
 
-candidateAPIRoutes.get("/candidate/:cuid"),
+candidateAPIRoutes.get(
+  "/candidate/:candidateCuid",
   async (req: Request, res: Response) => {
     const user = req.user as User;
-    const { cuid } = req.params;
+    const { candidateCuid } = req.params;
+
+    if (user.userType !== "Admin") {
+      // TODO: redirect request to user api endpoint
+    }
 
     try {
-      const { name, nric, contact, emergencyContact, ...otherData } =
-        await prisma.candidate.findUniqueOrThrow({
-          where: {
-            cuid,
-          },
-        });
+      const {
+        cuid,
+        name,
+        nric,
+        contact,
+        dateOfBirth,
+        emergencyContact,
+        ...otherData
+      } = await prisma.candidate.findUniqueOrThrow({
+        where: {
+          cuid: candidateCuid,
+        },
+      });
 
       const hasReadCandidateDetailsPermission = await checkPermission(
         user.cuid,
-        PermissionList.CAN_READ_CANDIDATE_DETAILS,
+        PermissionList.CAN_READ_CANDIDATE_DETAILS
       );
 
       if (hasReadCandidateDetailsPermission) {
         return res.send({
+          cuid: candidateCuid,
           name,
           nric,
           contact,
+          dateOfBirth,
           emergencyContact,
           ...otherData,
         });
       }
 
       return res.send({
+        cuid: candidateCuid,
         name,
         nric: maskNRIC(nric),
         contact,
+        dateOfBirth,
         emergencyContact,
       });
     } catch (error) {
       return res.status(404).send("Candidate not found.");
     }
-  };
+  }
+);
 
 candidateAPIRoutes.post("/candidate", async (req, res) => {
   const {
@@ -185,7 +200,7 @@ candidateAPIRoutes.delete("/candidate", async (req, res) => {
 
   const hasDeleteCandidatePermission = await checkPermission(
     user.cuid,
-    PermissionList.CAN_DELETE_CANDIDATES,
+    PermissionList.CAN_DELETE_CANDIDATES
   );
 
   if (!hasDeleteCandidatePermission) {
@@ -239,13 +254,13 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     return res
       .status(400)
       .send(
-        "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required.",
+        "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required."
       );
   }
 
   const hasUpdateCandidatePermission = await checkPermission(
     user.cuid,
-    PermissionList.CAN_UPDATE_CANDIDATES,
+    PermissionList.CAN_UPDATE_CANDIDATES
   );
 
   if (!hasUpdateCandidatePermission) {

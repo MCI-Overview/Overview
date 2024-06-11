@@ -31,8 +31,8 @@ export type Location = {
 export type Address = {
   block: string;
   building: string;
-  floor: string;
-  unit: string;
+  floor?: string;
+  unit?: string;
   street: string;
   postal: string;
   country: string;
@@ -94,13 +94,11 @@ export type CandidateUser = {
 export type Shift = {
   cuid: string;
   projectCuid: string;
-  day: string;
   startTime: Date;
   endTime: Date;
   halfDayStartTime: Date | null;
   halfDayEndTime: Date | null;
   breakDuration: number;
-  headcount: number;
   status: "ACTIVE" | "ARCHIVED";
 };
 
@@ -129,33 +127,3 @@ export type GetProjectDataResponse = {
   consultants: Consultant[];
   shifts: Shift[];
 };
-
-export type Assign = {
-  consultantCuid: string | null;
-  candidateCuid: string;
-}
-
-export type Manage = {
-  role: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
-  consultantCuid: string;
-  projectCuid: string;
-}
-
-export type Project = {
-  cuid: string;
-  name: string;
-  clientUEN: string;
-  employmentBy: string;
-  locations: JSON;
-  shiftGroups: JSON;
-  createdAt: Date;
-  endDate: Date;
-  startDate: Date;
-  noticePeriodDuration: number;
-  noticePeriodUnit: "DAY" | "WEEK" | "MONTH";
-  status: "ACTIVE" | "EXPIRED" | "DELETED";
-  Assign: Assign[];
-  Manage: Manage[];
-  Client: Client;
-  Shift: Shift[];
-}

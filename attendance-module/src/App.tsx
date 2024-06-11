@@ -3,6 +3,7 @@ import {
   Route,
   Routes,
   useLocation,
+  Navigate,
 } from "react-router-dom";
 import LoginAdmin from "./login/login-admin";
 import LoginUser from "./login/login-user";
@@ -19,18 +20,21 @@ import Project from "./admin/Project";
 import { Toaster } from "react-hot-toast";
 import UserNew from "./user/UserNew";
 import UserHome from "./user/UserHome";
-import { User } from "./types/common";
 import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
 import { CircularProgress, CssBaseline, Box } from "@mui/joy";
 import { UserContextProvider } from "./providers/userContextProvider";
 import { ProjectContextProvider } from "./providers/projectContextProvider";
 import axiosRetry from "axios-retry";
+import CandidateProfile from "./user/Profile";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+const SERVER_URL =
+  import.meta.env.NODE_ENV === "production"
+    ? import.meta.env.VITE_SERVER_URL
+    : "http://localhost:3000";
 
 function App() {
   const location = useLocation();
-  const hideSidebarRoutes = ["/", "/admin", "/user/new"];
+  const hideSidebarRoutes = ["/", "/admin", "/user/new", "/404"];
   const shouldHideSidebar = hideSidebarRoutes.includes(location.pathname);
 
   useEffect(() => {
@@ -41,27 +45,26 @@ function App() {
   axios.defaults.withCredentials = true;
   axiosRetry(axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
 
-  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const startTime = Date.now();
 
     axios
       .get("/api")
-      .then((response) => {
+      .then()
+      .catch()
+      .finally(() => {
         const elapsedTime = Date.now() - startTime;
         const remainingTime = Math.max(0, 1000 - elapsedTime);
 
         setTimeout(() => {
-          setUser(response.data);
+          setLoading(false);
         }, remainingTime);
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the data!", error);
       });
   }, []);
 
-  if (!user) {
+  if (loading) {
     return (
       <Box
         sx={{ display: "flex", width: "100dvw", height: "100dvh" }}
@@ -99,15 +102,11 @@ function App() {
             <RemoveTrailingSlash />
             <ProjectContextProvider>
               <Routes>
-                {/* User routes */}
-                {/* <Route element={<PrivateUserRoutes/>}>
-              <Route path="/user" element={<LoginUser />} />
-              <Route path="/user/home" element={<MyProfile />} />
-            </Route> */}
                 <Route element={<PrivateUserRoutes />}>
                   <Route path="/" element={<LoginUser />} />
                   <Route path="/user/new" element={<UserNew />} />
                   <Route path="/user/home" element={<UserHome />} />
+                  <Route path="/user/profile" element={<CandidateProfile />} />
                 </Route>
 
                 {/* Admin routes */}
@@ -124,7 +123,30 @@ function App() {
                     path="/admin/candidates"
                     element={<AdminCandidates />}
                   />
+                  <Route
+                    path="/admin/candidate/:candidateCuid"
+                    element={<CandidateProfile />}
+                  />
                 </Route>
+
+                <Route path="*" element={<Navigate to="/404" />} />
+                <Route
+                  path="/404"
+                  element={
+                    <h1
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: "100vh",
+                        margin: 0,
+                        textAlign: "center",
+                      }}
+                    >
+                      TODO: 404 Page
+                    </h1>
+                  }
+                />
               </Routes>
             </ProjectContextProvider>
           </Box>

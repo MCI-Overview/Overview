@@ -1,56 +1,69 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { Tab, TabBar } from "../components/TabBar";
 import { Typography, Box } from "@mui/joy";
 import {
   AdminBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
-import MyProjects from "./projects-components/my-projects";
-import CreateProjectPage from "../components/project/create/CreatePage";
+import CandidateDetails from "../components/profile/details/Page";
+import { useUserContext } from "../providers/userContextProvider";
 
-const tabs: Tab[] = [
-  {
-    label: "Projects",
-    content: <MyProjects />,
-  },
-  {
-    label: "Create",
-    content: <CreateProjectPage />,
-  },
-  {
-    label: "Plan",
-    content: <div>Plan</div>,
-  },
-];
-
-const AdminProjects = () => {
+const CandidateProfile = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  let { candidateCuid } = useParams();
+  const { user } = useUserContext();
 
   const [tabValue, setTabValue] = useState<number>(0);
 
+  if (!user) return <Navigate to="/" />;
+
+  const isAdmin = user.userType === "Admin";
+  const path = isAdmin ? `/admin/candidate/${candidateCuid}` : "/user/profile";
+
+  if (!isAdmin) {
+    // candidate can only access their own profile
+    candidateCuid = user.cuid;
+  } else if (!candidateCuid) {
+    // consultantCuid needs to specify candidateCuid
+    return <Navigate to="/admin/candidates" />;
+  }
+
   const breadcrumbs: BreadcrumbPart[] = [
     {
-      label: "Projects",
-      link: "/admin/projects",
+      label: "profile",
+      link: path,
     },
   ];
 
   useEffect(() => {
     const hash = location.hash.replace("#", "");
     switch (hash) {
-      case "create":
+      case "requests":
         setTabValue(1);
-        break;
-      case "plan":
-        setTabValue(2);
         break;
       default:
         setTabValue(0);
         break;
     }
   }, [location.hash]);
+
+  const tabs: Tab[] = [
+    {
+      label: "Details",
+      content: <CandidateDetails />,
+    },
+    {
+      label: "Requests",
+      content: <div>Requests</div>,
+    },
+  ];
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
@@ -60,16 +73,10 @@ const AdminProjects = () => {
     setTabValue(newValue);
     switch (newValue) {
       case 0:
-        navigate("/admin/projects");
+        navigate(path);
         break;
       case 1:
-        navigate("/admin/projects#create");
-        break;
-      case 2:
-        navigate("/admin/projects#plan");
-        break;
-      case 3:
-        navigate("/admin/projects#billing");
+        navigate(`${path}#requests`);
         break;
       default:
         break;
@@ -88,7 +95,7 @@ const AdminProjects = () => {
         <Box sx={{ px: { xs: 2, md: 6 } }}>
           <AdminBreadcrumb breadcrumbs={breadcrumbs} />
           <Typography level="h2" component="h1" sx={{ mt: 1, mb: 2 }}>
-            Projects
+            Candidate Profile
           </Typography>
         </Box>
         <TabBar
@@ -101,4 +108,4 @@ const AdminProjects = () => {
   );
 };
 
-export default AdminProjects;
+export default CandidateProfile;

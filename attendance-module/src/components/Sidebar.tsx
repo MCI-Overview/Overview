@@ -1,4 +1,8 @@
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { closeSidebar } from "../utils/toggle-sidebar";
+import { useUserContext } from "../providers/userContextProvider";
+import ColorSchemeToggle from "./ColorSchemeToggle";
 
 import {
   GlobalStyles,
@@ -11,9 +15,8 @@ import {
   Typography,
   ListItemContent,
   ListItemButton,
+  listItemButtonClasses,
 } from "@mui/joy";
-
-import { listItemButtonClasses } from "@mui/joy/ListItemButton";
 
 import {
   Group,
@@ -26,31 +29,68 @@ import {
   LogoutRounded,
   Accessibility,
   ReceiptLong,
+  Person,
 } from "@mui/icons-material";
 
-import ColorSchemeToggle from "./ColorSchemeToggle";
-import { closeSidebar } from "../utils/toggle-sidebar";
-import { useUserContext } from "../providers/userContextProvider";
-import axios from "axios";
+interface SideBarListProps {
+  isAdmin: boolean;
+}
 
-function AdminList() {
+const SideBarList = ({ isAdmin }: SideBarListProps) => {
   const navigate = useNavigate();
 
-  const handleHomeClick = () => {
-    navigate("/admin/home");
-  };
+  const userSideBarFields = [
+    {
+      name: "Home",
+      icon: <HomeRounded />,
+      onClick: () => navigate("/user/home"),
+    },
+    {
+      name: "Shifts",
+      icon: <DashboardRounded />,
+      onClick: () => navigate("/user/shift"),
+    },
+    {
+      name: "Leave",
+      icon: <Accessibility />,
+      onClick: () => navigate("/user/leave"),
+    },
+    {
+      name: "Claims",
+      icon: <ReceiptLong />,
+      onClick: () => navigate("/user/claims"),
+    },
+    {
+      name: "Profile",
+      icon: <Person />,
+      onClick: () => navigate("/user/profile"),
+    },
+  ];
 
-  const handleDashboardClick = () => {
-    navigate("/admin/dashboard");
-  };
+  const adminSideBarFields = [
+    {
+      name: "Home",
+      icon: <HomeRounded />,
+      onClick: () => navigate("/admin/home"),
+    },
+    {
+      name: "Dashboard",
+      icon: <DashboardRounded />,
+      onClick: () => navigate("/admin/dashboard"),
+    },
+    {
+      name: "Projects",
+      icon: <AccountTree />,
+      onClick: () => navigate("/admin/projects"),
+    },
+    {
+      name: "Candidates",
+      icon: <Group />,
+      onClick: () => navigate("/admin/candidates"),
+    },
+  ];
 
-  const handleCandidatesClick = () => {
-    navigate("/admin/candidates");
-  };
-
-  const handleProjectsClick = () => {
-    navigate("/admin/projects");
-  };
+  const fields = isAdmin ? adminSideBarFields : userSideBarFields;
 
   return (
     <List
@@ -61,111 +101,19 @@ function AdminList() {
         "--ListItem-radius": (theme) => theme.vars.radius.sm,
       }}
     >
-      <ListItem>
-        <ListItemButton onClick={handleHomeClick}>
-          <HomeRounded />
-          <ListItemContent>
-            <Typography level="title-sm">Home</Typography>
-          </ListItemContent>
-        </ListItemButton>
-      </ListItem>
-
-      <ListItem>
-        <ListItemButton onClick={handleDashboardClick}>
-          <DashboardRounded />
-          <ListItemContent>
-            <Typography level="title-sm">Dashboard</Typography>
-          </ListItemContent>
-        </ListItemButton>
-      </ListItem>
-
-      <ListItem>
-        <ListItemButton onClick={handleProjectsClick}>
-          <AccountTree />
-          <ListItemContent>
-            <Typography level="title-sm">Projects</Typography>
-          </ListItemContent>
-        </ListItemButton>
-      </ListItem>
-
-      <ListItem>
-        <ListItemButton onClick={handleCandidatesClick}>
-          <Group />
-          <ListItemContent>
-            <Typography level="title-sm">Candidates</Typography>
-          </ListItemContent>
-        </ListItemButton>
-      </ListItem>
+      {fields.map((field) => (
+        <ListItem>
+          <ListItemButton onClick={field.onClick}>
+            {field.icon}
+            <ListItemContent>
+              <Typography level="title-sm">{field.name}</Typography>
+            </ListItemContent>
+          </ListItemButton>
+        </ListItem>
+      ))}
     </List>
   );
-}
-
-function UserList() {
-  const navigate = useNavigate();
-
-  const handleHomeClick = () => {
-    navigate("/user/home");
-  };
-
-  const handleShiftClick = () => {
-    navigate("/user/shift");
-  };
-
-  const handleLeaveClick = () => {
-    navigate("/user/leave");
-  };
-
-  const handleClaimsClick = () => {
-    navigate("/user/claims");
-  };
-
-  return (
-    <List
-      size="sm"
-      sx={{
-        gap: 1,
-        "--List-nestedInsetStart": "30px",
-        "--ListItem-radius": (theme) => theme.vars.radius.sm,
-      }}
-    >
-      <ListItem>
-        <ListItemButton onClick={handleHomeClick}>
-          <HomeRounded />
-          <ListItemContent>
-            <Typography level="title-sm">Home</Typography>
-          </ListItemContent>
-        </ListItemButton>
-      </ListItem>
-
-      <ListItem>
-        <ListItemButton onClick={handleShiftClick}>
-          <DashboardRounded />
-          <ListItemContent>
-            <Typography level="title-sm">Shifts</Typography>
-          </ListItemContent>
-        </ListItemButton>
-      </ListItem>
-
-      <ListItem>
-        <ListItemButton onClick={handleLeaveClick}>
-          <Accessibility />
-          <ListItemContent>
-            <Typography level="title-sm">Leave</Typography>
-          </ListItemContent>
-        </ListItemButton>
-      </ListItem>
-
-      <ListItem>
-        <ListItemButton onClick={handleClaimsClick}>
-          <ReceiptLong />
-          <ListItemContent>
-            <Typography level="title-sm">Claims</Typography>
-          </ListItemContent>
-        </ListItemButton>
-      </ListItem>
-    </List>
-  );
-}
+};
 
 export default function Sidebar() {
   const { user, setUser } = useUserContext();
@@ -242,8 +190,7 @@ export default function Sidebar() {
           },
         }}
       >
-        {user?.userType == "Admin" && <AdminList />}
-        {user?.userType == "User" && <UserList />}
+        <SideBarList isAdmin={user?.userType === "Admin"} />
         <List
           size="sm"
           sx={{
