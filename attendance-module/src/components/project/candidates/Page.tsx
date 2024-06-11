@@ -22,6 +22,7 @@ const CandidatePage = () => {
         dateOfBirth: cdd.dateOfBirth,
         startDate: cdd.startDate,
         endDate: cdd.endDate,
+        hasOnboarded: cdd.hasOnboarded,
         employmentType: cdd.employmentType,
         consultantCuid: cdd.consultantCuid,
         consultantName: project?.consultants.find(

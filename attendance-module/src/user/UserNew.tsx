@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tab, TabBar } from "../components/TabBar";
-import { Box } from "@mui/joy";
 import {
     AdminBreadcrumb,
     BreadcrumbPart,
