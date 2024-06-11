@@ -12,10 +12,7 @@ import { useNavigate } from "react-router-dom";
 import Lottie from "react-lottie";
 import animationData from "../../public/coolstuff.json";
 
-const SERVER_URL =
-  import.meta.env.NODE_ENV === "production"
-    ? import.meta.env.VITE_SERVER_URL
-    : "http://localhost:3000";
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const AdminLogin = () => {
   const navigate = useNavigate();
