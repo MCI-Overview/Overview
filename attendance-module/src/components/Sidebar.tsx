@@ -32,56 +32,11 @@ import {
   Person,
 } from "@mui/icons-material";
 
-function AdminList() {
-  const navigate = useNavigate();
-
-  const adminSideBarFields = [
-    {
-      name: "Home",
-      icon: <HomeRounded />,
-      onClick: () => navigate("/admin/home"),
-    },
-    {
-      name: "Dashboard",
-      icon: <DashboardRounded />,
-      onClick: () => navigate("/admin/dashboard"),
-    },
-    {
-      name: "Projects",
-      icon: <AccountTree />,
-      onClick: () => navigate("/admin/projects"),
-    },
-    {
-      name: "Candidates",
-      icon: <Group />,
-      onClick: () => navigate("/admin/candidates"),
-    },
-  ];
-
-  return (
-    <List
-      size="sm"
-      sx={{
-        gap: 1,
-        "--List-nestedInsetStart": "30px",
-        "--ListItem-radius": (theme) => theme.vars.radius.sm,
-      }}
-    >
-      {adminSideBarFields.map((field) => (
-        <ListItem>
-          <ListItemButton onClick={field.onClick}>
-            {field.icon}
-            <ListItemContent>
-              <Typography level="title-sm">{field.name}</Typography>
-            </ListItemContent>
-          </ListItemButton>
-        </ListItem>
-      ))}
-    </List>
-  );
+interface SideBarListProps {
+  isAdmin: boolean;
 }
 
-function UserList() {
+const SideBarList = ({ isAdmin }: SideBarListProps) => {
   const navigate = useNavigate();
 
   const userSideBarFields = [
@@ -112,6 +67,31 @@ function UserList() {
     },
   ];
 
+  const adminSideBarFields = [
+    {
+      name: "Home",
+      icon: <HomeRounded />,
+      onClick: () => navigate("/admin/home"),
+    },
+    {
+      name: "Dashboard",
+      icon: <DashboardRounded />,
+      onClick: () => navigate("/admin/dashboard"),
+    },
+    {
+      name: "Projects",
+      icon: <AccountTree />,
+      onClick: () => navigate("/admin/projects"),
+    },
+    {
+      name: "Candidates",
+      icon: <Group />,
+      onClick: () => navigate("/admin/candidates"),
+    },
+  ];
+
+  const fields = isAdmin ? adminSideBarFields : userSideBarFields;
+
   return (
     <List
       size="sm"
@@ -121,7 +101,7 @@ function UserList() {
         "--ListItem-radius": (theme) => theme.vars.radius.sm,
       }}
     >
-      {userSideBarFields.map((field) => (
+      {fields.map((field) => (
         <ListItem>
           <ListItemButton onClick={field.onClick}>
             {field.icon}
@@ -133,7 +113,7 @@ function UserList() {
       ))}
     </List>
   );
-}
+};
 
 export default function Sidebar() {
   const { user, setUser } = useUserContext();
@@ -210,8 +190,7 @@ export default function Sidebar() {
           },
         }}
       >
-        {user?.userType == "Admin" && <AdminList />}
-        {user?.userType == "User" && <UserList />}
+        <SideBarList isAdmin={user?.userType === "Admin"} />
         <List
           size="sm"
           sx={{
