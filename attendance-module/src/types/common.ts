@@ -12,6 +12,7 @@ export type CommonCandidate = {
   address?: Address;
   bankDetails?: BankDetails;
   emergencyContact?: EmergencyContact;
+  hasOnboarded: boolean;
 };
 
 export type Consultant = {
@@ -84,10 +85,7 @@ export type ConsultantUser = {
   };
 };
 
-export type CandidateUser = {
-  cuid: string;
-  name: string;
-  nric: string;
+export type CandidateUser = CommonCandidate & {
   userType: "User";
 };
 

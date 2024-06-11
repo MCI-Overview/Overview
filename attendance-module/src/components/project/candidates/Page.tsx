@@ -49,7 +49,7 @@ const CandidatePage = () => {
   const handleDeleteCandidates = async () => {
     try {
       await axios.delete(
-        `http://localhost:3000/api/admin/project/${project?.cuid}/candidates`,
+        `/api/admin/project/${project?.cuid}/candidates`,
         { data: { cuidList: candidatesToDelete } }
       );
       updateProject();

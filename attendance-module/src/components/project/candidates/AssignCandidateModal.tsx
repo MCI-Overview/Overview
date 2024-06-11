@@ -327,7 +327,7 @@ const AssignCandidateModal = ({
   const handleSubmitData = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:3000/api/admin/project/${projectCuid}/candidates`,
+        `/api/admin/project/${projectCuid}/candidates`,
         validCddList
       );
 

@@ -43,6 +43,10 @@ export function PrivateUserRoutes() {
     return <Navigate to="/admin/home" />;
   }
 
+  if (!user.hasOnboarded && !currentPath.startsWith("/user/new")) {
+    return <Navigate to="/user/new" />;
+  }
+
   if (currentPath === "/") {
     return <Navigate to="/user/home" />;
   }
