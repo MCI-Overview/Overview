@@ -1,5 +1,5 @@
 import {
-  HashRouter as Router,
+  BrowserHistory as Router,
   Route,
   Routes,
   useLocation,
