@@ -14,21 +14,21 @@ import {
   Card,
   FormLabel,
 } from "@mui/joy";
-import Lottie from "react-lottie";
-import animationData from "../../public/coolstuff.json";
+// import Lottie from "react-lottie";
+// import animationData from "../../public/coolstuff.json";
 import { FormEvent, useState } from "react";
 
 const AdminLogin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const defaultOptions = {
-    loop: true,
-    autoplay: true,
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice",
-    },
-  };
+  // const defaultOptions = {
+  //   loop: true,
+  //   autoplay: true,
+  //   animationData: animationData,
+  //   rendererSettings: {
+  //     preserveAspectRatio: "xMidYMid slice",
+  //   },
+  // };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -55,12 +55,12 @@ const AdminLogin = () => {
         overflow: "hidden",
       }}
     >
-      <Lottie
+      {/* <Lottie
         options={defaultOptions}
         height={"100%"}
         width={"100%"}
         style={{ position: "absolute", top: 0, left: 0 }}
-      />
+      /> */}
       <Stack
         spacing={4}
         sx={{
