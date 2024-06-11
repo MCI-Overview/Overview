@@ -12,7 +12,7 @@ passport.use(
       });
 
       const { hash, Candidate } = loginData;
-      const { cuid, name } = Candidate;
+      const { cuid, name, hasOnboarded } = Candidate;
 
       bcrypt.compare(password, hash, function (err, result) {
         if (err) {
@@ -28,6 +28,7 @@ passport.use(
           name,
           nric: username,
           userType: "User",
+          hasOnboarded
         });
       });
     } catch (error) {

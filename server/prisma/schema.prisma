@@ -26,9 +26,9 @@ model Request {
   cuid          String        @id @default(cuid())
   candidateCuid String
   projectCuid   String
-  data          Json
   type          RequestType
   status        RequestStatus @default(PENDING)
+  data          Json
   Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
 }
 
@@ -99,14 +99,14 @@ model Project {
   name                 String
   clientUEN            String
   employmentBy         String
-  locations            Json[]           @default([])
-  shiftGroups          Json[]           @default([])
   createdAt            DateTime         @default(now())
   endDate              DateTime
   startDate            DateTime
   noticePeriodDuration Int
   noticePeriodUnit     NoticePeriodUnit
   status               ProjectStatus    @default(ACTIVE)
+  shiftGroups          Json[]           @default([])
+  locations            Json[]           @default([])
   Assign               Assign[]
   Manage               Manage[]
   Client               Client           @relation(fields: [clientUEN], references: [uen])
@@ -123,6 +123,14 @@ model Session {
 
 model Shift {
   cuid             String       @id @default(cuid())
+  day              DayOfWeek
+  startTime        DateTime     @db.Time(6)
+  endTime          DateTime     @db.Time(6)
+  breakDuration    Int          @default(0)
+  halfDayEndTime   DateTime?    @db.Time(6)
+  halfDayStartTime DateTime?    @db.Time(6)
+  headcount        Int
+  projectCuid      String
   projectCuid      String
   startTime        DateTime
   endTime          DateTime
