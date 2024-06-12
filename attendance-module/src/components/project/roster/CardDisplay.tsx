@@ -71,14 +71,7 @@ export default function CardDisplay({
                     Object.entries(
                       collectedRosterData[date.format("YYYY-MM-DD")],
                     ).map(([shiftCuid, shiftCounts]) => {
-                      if (!project.shiftDict[shiftCuid])
-                        return (
-                          <tr>
-                            <td colSpan={3}>
-                              An issue occured while fetching rostered data.
-                            </td>
-                          </tr>
-                        );
+                      if (!project.shiftDict[shiftCuid]) return null;
 
                       const { FULL_DAY, FIRST_HALF, SECOND_HALF } = shiftCounts;
                       const {

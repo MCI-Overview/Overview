@@ -73,7 +73,7 @@ function App() {
           setLoading(false);
         }, remainingTime);
       });
-  }, []);
+  }, [setUser]);
 
   if (loading) {
     return (

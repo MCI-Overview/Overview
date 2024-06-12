@@ -23,12 +23,11 @@ import { CandidateUser } from "../types/common";
 
 export default function UserNewStepper() {
   const userData = useUserContext().user as CandidateUser | null;
-  if (!userData) return null;
-
-  console.log(userData.dateOfBirth);
 
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+
+  if (!userData) return null;
 
   // useEffect(() => {
   //   // retrieve and set user data
@@ -74,43 +73,27 @@ export default function UserNewStepper() {
         <>
           <FormControl required>
             <FormLabel>NRIC</FormLabel>
-            <Input
-              name="nric"
-              value={userData.nric}
-            />
+            <Input name="nric" value={userData.nric} />
           </FormControl>
           <FormControl required>
             <FormLabel>Full Name</FormLabel>
-            <Input
-              name="name"
-              value={userData.name}
-            />
+            <Input name="name" value={userData.name} />
           </FormControl>
           <FormControl required>
             <FormLabel>Date of Birth</FormLabel>
-            <Input
-              type="date"
-              name="dateOfBirth"
-            />
+            <Input type="date" name="dateOfBirth" />
           </FormControl>
           <FormControl required>
             <FormLabel>Contact Number</FormLabel>
-            <Input
-              name="contact"
-              value={userData.contact}
-            />
+            <Input name="contact" value={userData.contact} />
           </FormControl>
           <FormControl required>
             <FormLabel>Nationality</FormLabel>
-            <Input
-              name="nationality"
-            />
+            <Input name="nationality" />
           </FormControl>
           <FormControl required>
             <FormLabel>Postal code</FormLabel>
-            <Input
-              name="address.postalCode"
-            />
+            <Input name="address.postalCode" />
           </FormControl>
           <Button onClick={handleBack}>Back</Button>
           <Button onClick={handleSubmit}>Submit</Button>
@@ -149,8 +132,8 @@ export default function UserNewStepper() {
         {step === 0
           ? "Let's get to know you better!"
           : step === 1
-            ? "Please provide the following information:"
-            : "Your information has been submitted successfully."}
+          ? "Please provide the following information:"
+          : "Your information has been submitted successfully."}
       </Typography>
 
       <Divider />

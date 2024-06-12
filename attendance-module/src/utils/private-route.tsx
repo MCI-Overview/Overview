@@ -29,7 +29,7 @@ export function PrivateUserRoutes() {
     } else {
       setLoading(false);
     }
-  }, [user, setUser]);
+  }, [user, setUser, currentPath]);
 
   if (loading) return null;
 
@@ -82,7 +82,7 @@ export function PrivateAdminRoutes() {
     } else {
       setLoading(false);
     }
-  }, [user, setUser]);
+  }, [user, setUser, currentPath]);
 
   if (loading) return null;
 

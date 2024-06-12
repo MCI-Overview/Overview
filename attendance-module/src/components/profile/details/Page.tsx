@@ -3,7 +3,11 @@ import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserContext } from "../../../providers/userContextProvider";
-import { Address, BankDetails, EmergencyContact } from "../../../types/common";
+import {
+  CommonAddress,
+  BankDetails,
+  EmergencyContact,
+} from "../../../types/common";
 
 import {
   Box,
@@ -28,7 +32,7 @@ export type Candidate = {
   hasOnboarded: boolean;
   nationality?: string;
   bankDetails?: BankDetails;
-  address?: Address;
+  address?: CommonAddress;
   emergencyContact?: EmergencyContact;
 };
 
@@ -42,9 +46,9 @@ const CandidateDetails = () => {
 
   const [isLanded, setIsLanded] = useState<boolean>(false);
 
-  if (!user) return null;
-
   useEffect(() => {
+    if (!user) return;
+
     if (user.userType === "Admin") {
       axios
         .get(`/api/admin/candidate/${candidateCuid}`)
@@ -68,10 +72,10 @@ const CandidateDetails = () => {
       return;
     }
     navigate("/");
-  }, [candidateCuid]);
+  }, [candidateCuid, navigate, user]);
 
   if (!candidate) return null;
-  const isOwner = user.cuid === candidate.cuid;
+  const isOwner = user?.cuid === candidate.cuid;
 
   if (isOwner && !candidate.hasOnboarded) {
     navigate("/user/new");
@@ -98,7 +102,7 @@ const CandidateDetails = () => {
       await axios
         .get(
           `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${postalCode}&returnGeom=N&getAddrDetails=Y`,
-          { withCredentials: false }
+          { withCredentials: false },
         )
         .then((res) => {
           setCandidate({
@@ -122,9 +126,9 @@ const CandidateDetails = () => {
 
   const handleSubmitClick = async () => {
     const apiEndpoint =
-      user.userType === "Admin" ? "/api/admin/candidate" : "/api/user";
+      user?.userType === "Admin" ? "/api/admin/candidate" : "/api/user";
 
-    let errorMessage = verifyCandidateData(isLanded, candidate);
+    const errorMessage = verifyCandidateData(isLanded, candidate);
     if (errorMessage) {
       toast.error(errorMessage);
       return;
@@ -318,7 +322,7 @@ const CandidateDetails = () => {
                       />
                     </Box>
                   );
-                }
+                },
               )}
             </>
           )}
