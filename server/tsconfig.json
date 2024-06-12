@@ -5,7 +5,7 @@
     "module": "commonjs",
     "outDir": "dist",
     "removeComments": false,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": false,
     "paths": {
       "@/*": [
