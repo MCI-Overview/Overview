@@ -23,7 +23,7 @@ const LocationsSection = () => {
   const { user } = useUserContext();
   const { project } = useProjectContext();
 
-  const hasDeletePermission =
+  const hasEditProjectsPermission =
     project?.consultants.find(
       (consultant) => consultant.role === "CLIENT_HOLDER",
     )?.cuid === user?.cuid ||
@@ -60,15 +60,17 @@ const LocationsSection = () => {
             <Box sx={{ mb: 1 }}>
               <Typography level="title-md">Locations</Typography>
               <Typography level="body-sm">
-                Add site locations to your project
+                Site locations of your project
               </Typography>
             </Box>
-            <IconButton
-              onClick={() => setIsAddModalOpen(true)}
-              sx={{ px: { xs: 1.25 } }}
-            >
-              <ControlPoint />
-            </IconButton>
+            {hasEditProjectsPermission && (
+              <IconButton
+                onClick={() => setIsAddModalOpen(true)}
+                sx={{ px: { xs: 1.25 } }}
+              >
+                <ControlPoint />
+              </IconButton>
+            )}
           </Box>
           <Divider />
 
@@ -82,7 +84,7 @@ const LocationsSection = () => {
                   <Typography level="body-md">
                     {location.postalCode} - {capitalizeWords(location.address)}
                   </Typography>
-                  {hasDeletePermission && (
+                  {hasEditProjectsPermission && (
                     <IconButton
                       onClick={() => {
                         setLocationToDelete(location);

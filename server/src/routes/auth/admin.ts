@@ -25,10 +25,10 @@ adminAuthRouter.get(
 adminAuthRouter.get(
   "/auth/callback",
   passport.authenticate("microsoft", {
-    failureRedirect: `${SERVER_URL}/admin/login`,
+    failureRedirect: `${SERVER_URL}/#/admin/login`,
   }),
   (_req, res) => {
-    res.redirect(`${CLIENT_URL}/admin`);
+    res.redirect(`${CLIENT_URL}/#/admin`);
   },
 );
 

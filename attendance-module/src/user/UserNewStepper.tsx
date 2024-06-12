@@ -18,23 +18,17 @@ import {
 import ContactsRoundedIcon from "@mui/icons-material/ContactsRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import WavingHandIcon from "@mui/icons-material/WavingHand";
-
-type ExampleCandidate = {
-  nric: string,
-  name: string,
-  dateOfBirth: string,
-  contact: string
-};
+import { useUserContext } from "../providers/userContextProvider";
+import { CandidateUser } from "../types/common";
 
 export default function UserNewStepper() {
+  const userData = useUserContext().user as CandidateUser | null;
+  if (!userData) return null;
+
+  console.log(userData.dateOfBirth);
+
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
-  const [userData, setUserData] = useState<ExampleCandidate>({
-    nric: "T1234567A",
-    name: "Alice Smith",
-    dateOfBirth: "1990-01-01",
-    contact: "98765432",
-  });
 
   // useEffect(() => {
   //   // retrieve and set user data
@@ -46,14 +40,6 @@ export default function UserNewStepper() {
 
   const handleBack = () => {
     setStep((prevStep) => Math.max(prevStep - 1, 0));
-  };
-
-  const handleDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUserData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
   };
 
   const handleSubmit = () => {
@@ -91,7 +77,6 @@ export default function UserNewStepper() {
             <Input
               name="nric"
               value={userData.nric}
-              onChange={handleDataChange}
             />
           </FormControl>
           <FormControl required>
@@ -99,15 +84,13 @@ export default function UserNewStepper() {
             <Input
               name="name"
               value={userData.name}
-              onChange={handleDataChange}
             />
           </FormControl>
           <FormControl required>
             <FormLabel>Date of Birth</FormLabel>
             <Input
+              type="date"
               name="dateOfBirth"
-              value={userData.dateOfBirth}
-              onChange={handleDataChange}
             />
           </FormControl>
           <FormControl required>
@@ -115,21 +98,18 @@ export default function UserNewStepper() {
             <Input
               name="contact"
               value={userData.contact}
-              onChange={handleDataChange}
             />
           </FormControl>
           <FormControl required>
             <FormLabel>Nationality</FormLabel>
             <Input
               name="nationality"
-              onChange={handleDataChange}
             />
           </FormControl>
           <FormControl required>
             <FormLabel>Postal code</FormLabel>
             <Input
               name="address.postalCode"
-              onChange={handleDataChange}
             />
           </FormControl>
           <Button onClick={handleBack}>Back</Button>

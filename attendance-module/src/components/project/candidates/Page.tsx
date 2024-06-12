@@ -22,6 +22,7 @@ const CandidatePage = () => {
         dateOfBirth: cdd.dateOfBirth,
         startDate: cdd.startDate,
         endDate: cdd.endDate,
+        hasOnboarded: cdd.hasOnboarded,
         employmentType: cdd.employmentType,
         consultantCuid: cdd.consultantCuid,
         consultantName: project?.consultants.find(
@@ -37,7 +38,10 @@ const CandidatePage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [candidatesToDelete, setCandidatesToDelete] = useState<string[]>([]);
 
-  const matchSearchValue = (c: CommonCandidate) =>
+  // TODO: Fix type
+  const matchSearchValue = (
+    c: Omit<Omit<Omit<CommonCandidate, "dateOfBirth">, "startDate">, "endDate">,
+  ) =>
     c.nric.toLowerCase().includes(searchValue.toLowerCase()) ||
     c.name.toLowerCase().includes(searchValue.toLowerCase());
 
@@ -98,7 +102,14 @@ const CandidatePage = () => {
         <CardOverflow sx={{ px: "0px" }}>
           <CandidateTable
             tableProps={{ stripe: "odd", size: "sm" }}
-            tableData={candidatesData.filter((c) => matchSearchValue(c))}
+            tableData={candidatesData
+              .filter((c) => matchSearchValue(c))
+              .map((c) => ({
+                ...c,
+                startDate: c.startDate.toISOString(),
+                endDate: c.endDate.toISOString(),
+                dateOfBirth: c.dateOfBirth.toISOString(),
+              }))}
             // handleEdit={handleEdit}
             handleDelete={handleConfirmDeletion}
             showCandidateHolder={true}

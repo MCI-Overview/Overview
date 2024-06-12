@@ -1,4 +1,5 @@
 import { Dayjs } from "dayjs";
+import { Client, CommonShift } from "./common";
 
 export type CreateProjectData = {
   name: string | null;
@@ -32,4 +33,28 @@ export type DraggableChipProps = {
   cuid: string;
   startTime: Dayjs;
   endTime: Dayjs;
+};
+
+export type Assign = {
+  consultantCuid: string | null;
+  candidateCuid: string;
+};
+
+export type Project = {
+  cuid: string;
+  name: string;
+  clientUEN: string;
+  employmentBy: string;
+  locations: JSON;
+  shiftGroups: JSON;
+  createdAt: Date;
+  endDate: Date;
+  startDate: Date;
+  noticePeriodDuration: number;
+  noticePeriodUnit: "DAY" | "WEEK" | "MONTH";
+  status: "ACTIVE" | "EXPIRED" | "DELETED";
+  Assign: Assign[];
+  Manage: Manage[];
+  Client: Client;
+  Shift: CommonShift[];
 };

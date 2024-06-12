@@ -1,10 +1,6 @@
 import { Router, Request, Response } from "express";
-import {
-  EmploymentType,
-  PrismaClient,
-  Role,
-  ShiftStatus,
-} from "@prisma/client";
+import { prisma } from "../../../client";
+import { EmploymentType, Role, ShiftStatus } from "@prisma/client";
 import { PrismaError } from "@/types";
 import {
   GetProjectDataResponse,
@@ -31,7 +27,6 @@ import {
 } from "../../../utils/permissions";
 import dayjs from "dayjs";
 
-const prisma = new PrismaClient();
 const projectAPIRouter: Router = Router();
 
 dayjs.extend(customParseFormat);
@@ -1256,8 +1251,11 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
 });
 
 const checkProjectRole = async (
+
   req: Request,
+
   projectCuid: string,
+
 ): Promise<boolean> => {
   const user = req.user as User;
   const response = await prisma.manage.findFirst({

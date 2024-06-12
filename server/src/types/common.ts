@@ -33,8 +33,8 @@ export type CommonLocation = {
 export type CommonAddress = {
   block: string;
   building: string;
-  floor: string;
-  unit: string;
+  floor?: string;
+  unit?: string;
   street: string;
   postal: string;
   country: string;

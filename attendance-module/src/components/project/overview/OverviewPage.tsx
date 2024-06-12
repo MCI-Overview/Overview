@@ -25,7 +25,7 @@ import {
 import { InfoOutlined } from "@mui/icons-material";
 import dayjs from "dayjs";
 
-const ProjectOverview: React.FC = () => {
+const ProjectOverview = () => {
   const { user } = useUserContext();
   const { project, updateProject } = useProjectContext();
 
@@ -90,7 +90,7 @@ const ProjectOverview: React.FC = () => {
 
     try {
       axios
-        .patch("http://localhost:3000/api/admin/project", {
+        .patch("/api/admin/project", {
           projectCuid: project.cuid,
           startDate: startDate,
           endDate: endDate,

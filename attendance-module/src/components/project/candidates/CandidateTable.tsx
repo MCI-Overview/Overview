@@ -19,6 +19,8 @@ import {
   SwapVert,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
+
+//TODO: Fix type
 export type CddTableDataType = Omit<
   Omit<Omit<CommonCandidate, "dateOfBirth">, "startDate">,
   "endDate"

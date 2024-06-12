@@ -40,7 +40,7 @@ const tabs: Tab[] = [
   },
 ];
 
-const AdminProjects: React.FC = () => {
+const AdminProjects = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { projectCuid } = useParams();
@@ -91,7 +91,7 @@ const AdminProjects: React.FC = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null,
+    newValue: string | number | null
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);

@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../client";
 import { JsonObject } from "@prisma/client/runtime/library";
-
-const prisma = new PrismaClient();
 
 export const PERMISSION_ERROR_TEMPLATE =
   "Unauthorized. User does not have permission ";
@@ -43,7 +41,7 @@ export async function getPermissions(userCuid: string) {
 export async function checkPermission(
   userCuid: string,
   permissionName: PermissionList,
-  permissions?: JsonObject,
+  permissions?: JsonObject
 ) {
   if (!permissions) {
     permissions = await getPermissions(userCuid);

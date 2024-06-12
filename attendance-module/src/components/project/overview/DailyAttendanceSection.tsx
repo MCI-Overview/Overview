@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import {
@@ -14,7 +13,7 @@ import {
   Input,
 } from "@mui/joy";
 
-const DailyAttendanceSection: React.FC = () => {
+const DailyAttendanceSection = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,7 +26,7 @@ const DailyAttendanceSection: React.FC = () => {
     nric: number,
     clockin: string,
     clockout: string,
-    postalcode: number,
+    postalcode: number
   ) {
     return { name, nric, clockin, clockout, postalcode };
   }

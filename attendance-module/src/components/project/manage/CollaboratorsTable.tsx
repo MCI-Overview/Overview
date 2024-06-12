@@ -1,4 +1,3 @@
-import React from "react";
 import { Table, Button } from "@mui/joy";
 import { CommonConsultant } from "../../../types/common";
 
@@ -8,11 +7,11 @@ interface CollaboratorsTableProps {
   handleRemoveClick: (cuid: string) => void;
 }
 
-const CollaboratorsTable: React.FC<CollaboratorsTableProps> = ({
+const CollaboratorsTable = ({
   collaborators,
   currentUserRole,
   handleRemoveClick,
-}) => {
+}: CollaboratorsTableProps) => {
   return (
     <Table hoverRow>
       <thead>

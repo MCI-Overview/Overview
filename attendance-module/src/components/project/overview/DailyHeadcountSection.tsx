@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import {
@@ -18,7 +17,7 @@ import { Doughnut } from "react-chartjs-2";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const DailyHeadcountSection: React.FC = () => {
+const DailyHeadcountSection = () => {
   const navigate = useNavigate();
   const location = useLocation();
 

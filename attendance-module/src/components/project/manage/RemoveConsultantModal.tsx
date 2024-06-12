@@ -1,4 +1,4 @@
-import React from "react";
+import { Dispatch, SetStateAction } from "react";
 import {
   Modal,
   ModalClose,
@@ -11,11 +11,8 @@ import {
   Button,
   Autocomplete,
 } from "@mui/joy";
-import {
-  CommonConsultant,
-  Assign,
-  CommonCandidate,
-} from "../../../types/common";
+import { Consultant as CommonConsultant, CommonCandidate } from "../../../types/common";
+import { Assign } from "../../../types";
 
 interface RemoveConsultantModalProps {
   open: boolean;
@@ -25,17 +22,14 @@ interface RemoveConsultantModalProps {
   rowSelections: Assign[];
   availableCollaborators: CommonConsultant[];
   handleApplyToAll: (value: CommonConsultant | null) => void;
-  handleRowSelectionChange: (
-    index: number,
-    value: CommonConsultant | null,
-  ) => void;
+  handleRowSelectionChange: (index: number, value: CommonConsultant | null) => void;
   emailConfirmation: string;
-  setEmailConfirmation: React.Dispatch<React.SetStateAction<string>>;
+  setEmailConfirmation: Dispatch<SetStateAction<string>>;
   handleConfirmRemove: () => void;
   allCandidatesReassigned: boolean;
 }
 
-const RemoveConsultantModal: React.FC<RemoveConsultantModalProps> = ({
+const RemoveConsultantModal = ({
   open,
   onClose,
   consultantToRemove,
@@ -48,7 +42,7 @@ const RemoveConsultantModal: React.FC<RemoveConsultantModalProps> = ({
   setEmailConfirmation,
   handleConfirmRemove,
   allCandidatesReassigned,
-}) => {
+}: RemoveConsultantModalProps) => {
   return (
     <Modal
       aria-labelledby="modal-title"
@@ -123,7 +117,7 @@ const RemoveConsultantModal: React.FC<RemoveConsultantModalProps> = ({
                             availableCollaborators.find(
                               (consultant) =>
                                 consultant.cuid ===
-                                rowSelections[index]?.consultantCuid,
+                                rowSelections[index]?.consultantCuid
                             ) || null
                           }
                           getOptionLabel={(option) => option.email}

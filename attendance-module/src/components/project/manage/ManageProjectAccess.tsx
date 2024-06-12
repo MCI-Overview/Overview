@@ -1,4 +1,13 @@
-import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import { useUserContext } from "../../../providers/userContextProvider";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+import { CommonCandidate, CommonConsultant } from "../../../types/common";
+import { Assign } from "../../../types";
+import RemoveConsultantModal from "./RemoveConsultantModal";
+import InviteCollaborators from "./InviteCollaborators";
+import CollaboratorsTable from "./CollaboratorsTable";
+
 import {
   Box,
   Divider,
@@ -8,19 +17,8 @@ import {
   CardOverflow,
   CardActions,
 } from "@mui/joy";
-import { useProjectContext } from "../../../providers/projectContextProvider";
-import axios from "axios";
-import {
-  CommonCandidate,
-  CommonConsultant,
-  Assign,
-} from "../../../types/common";
-import { useUserContext } from "../../../providers/userContextProvider";
-import RemoveConsultantModal from "./RemoveConsultantModal";
-import InviteCollaborators from "./InviteCollaborators";
-import CollaboratorsTable from "./CollaboratorsTable";
 
-const ManageProjectAccess: React.FC = () => {
+const ManageProjectAccess = () => {
   const [consultants, setConsultants] = useState<CommonConsultant[]>([]);
   const [selectedCollaborators, setSelectedCollaborators] = useState<
     CommonConsultant[]
@@ -43,7 +41,7 @@ const ManageProjectAccess: React.FC = () => {
 
   // Determine the current user's role based on their cuid
   const currentUserRole = collaborators.find(
-    (collaborator) => collaborator.cuid === currentUserCuid,
+    (collaborator) => collaborator.cuid === currentUserCuid
   )?.role;
 
   const filteredConsultants = consultants.filter(
@@ -68,13 +66,13 @@ const ManageProjectAccess: React.FC = () => {
       candidatesToReassign.map((candidate) => ({
         consultantCuid,
         candidateCuid: candidate.cuid,
-      })),
+      }))
     );
   };
 
   const handleRowSelectionChange = (
     index: number,
-    value: CommonConsultant | null,
+    value: CommonConsultant | null
   ) => {
     const updatedSelections = [...rowSelections];
     updatedSelections[index] = {
@@ -97,6 +95,12 @@ const ManageProjectAccess: React.FC = () => {
           consultantCuid: null,
           candidateCuid: candidate.cuid,
         })),
+      );
+      setRowSelections(
+        candidatesOfConsultant.map((candidate) => ({
+          consultantCuid: null,
+          candidateCuid: candidate.cuid,
+        }))
       );
       setOpenRemoveModal(true);
     }
@@ -157,9 +161,8 @@ const ManageProjectAccess: React.FC = () => {
   const availableCollaborators = collaborators.filter(
     (consultant) => consultant.cuid !== consultantToRemove?.cuid,
   );
-
   const allCandidatesReassigned = rowSelections.every(
-    (selection) => selection.consultantCuid !== null,
+    (selection) => selection.consultantCuid !== null
   );
 
   return (

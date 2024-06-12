@@ -1,24 +1,22 @@
-import React from "react";
+import { Dispatch, SetStateAction } from "react";
 import { Stack, Typography, Autocomplete, Button } from "@mui/joy";
 import { CommonConsultant } from "../../../types/common";
 
 interface InviteCollaboratorsProps {
   filteredConsultants: CommonConsultant[];
   selectedCollaborators: CommonConsultant[];
-  setSelectedCollaborators: React.Dispatch<
-    React.SetStateAction<CommonConsultant[]>
-  >;
+  setSelectedCollaborators: Dispatch<SetStateAction<CommonConsultant[]>>;
   handleConfirmInvite: () => void;
   invitationError: string | null;
 }
 
-const InviteCollaborators: React.FC<InviteCollaboratorsProps> = ({
+const InviteCollaborators = ({
   filteredConsultants,
   selectedCollaborators,
   setSelectedCollaborators,
   handleConfirmInvite,
   invitationError,
-}) => {
+}: InviteCollaboratorsProps) => {
   return (
     <Stack spacing={2}>
       <Typography level="title-md">Invite collaborators</Typography>
