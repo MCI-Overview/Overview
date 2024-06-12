@@ -4,20 +4,19 @@
     "target": "es2016",
     "module": "commonjs",
     "outDir": "./dist",
-    "removeComments": false,
-    "esModuleInterop": false,
-    "forceConsistentCasingInFileNames": false,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
+
     /* Type Checking */
-    "strict": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": false,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
     "allowUnreachableCode": false,
-    "skipLibCheck": false
+    "skipLibCheck": true
   }
 }

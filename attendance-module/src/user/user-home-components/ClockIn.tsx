@@ -15,7 +15,7 @@ import Clock from "./Clock";
 import toast from "react-hot-toast";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Location } from "../../types/common";
+import { CommonLocation } from "../../types/common";
 import L from "leaflet";
 
 export default function ClockIn() {
@@ -25,7 +25,9 @@ export default function ClockIn() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [currLatitude, setCurrLatitude] = useState<number | null>(null);
   const [currLongitude, setCurrLongitude] = useState<number | null>(null);
-  const [projectLocations, setProjectLocations] = useState<Location[]>([]);
+  const [projectLocations, setProjectLocations] = useState<CommonLocation[]>(
+    []
+  );
   const webcamRef = useRef<Webcam>(null);
 
   const videoConstraints = {
@@ -118,7 +120,12 @@ export default function ClockIn() {
           <Divider />
 
           <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
-            <Button onClick={() => setIsLocationModalOpen(true)}>
+            <Button
+              onClick={() => {
+                handleGetLocation();
+                setIsLocationModalOpen(true);
+              }}
+            >
               Clock In
             </Button>
             <Button>Clock Out</Button>
@@ -135,6 +142,7 @@ export default function ClockIn() {
             />
           </Box>
         )}
+
         <Modal
           open={isLocationModalOpen}
           onClose={() => setIsLocationModalOpen(false)}
