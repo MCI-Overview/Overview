@@ -29,7 +29,8 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "passport-microsoft": "^2.1.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "nodemon": "^3.1.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
