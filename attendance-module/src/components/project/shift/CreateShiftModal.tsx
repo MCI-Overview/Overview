@@ -8,25 +8,15 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Chip,
   Button,
   FormHelperText,
   Table,
+  Chip,
 } from "@mui/joy";
 import axios from "axios";
 import { useRef, useState } from "react";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { CreateShiftData } from "../../../types";
-
-const DAYS = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
 
 function getShiftDuration(startTime: string | null, endTime: string | null) {
   if (!startTime || !endTime) return 0;
@@ -56,7 +46,6 @@ export default function CreateShiftModal() {
     breakDuration: null,
     days: [],
   });
-  const [days, setDays] = useState<string[]>([]);
   const breakDurationInputRef = useRef<HTMLInputElement>(null);
   const shiftDuration = getShiftDuration(
     shiftData.startTime,
@@ -69,7 +58,6 @@ export default function CreateShiftModal() {
   async function handleCreateShift() {
     await axios.post(`/api/admin/project/${project?.cuid}/shifts`, {
       ...shiftData,
-      days: days,
     });
     setIsOpen(false);
     updateProject();
@@ -87,53 +75,8 @@ export default function CreateShiftModal() {
               sx={{
                 pl: "0.25rem",
               }}
-            >
-              <FormLabel>Days</FormLabel>
-              <Grid container gap={1}>
-                {DAYS.map((name) => {
-                  const checked = days.includes(name);
-                  return (
-                    <Chip
-                      key={name}
-                      variant={checked ? "solid" : "outlined"}
-                      color={checked ? "primary" : "neutral"}
-                      onClick={() =>
-                        setDays(
-                          checked
-                            ? days.filter((day) => day !== name)
-                            : [...days, name],
-                        )
-                      }
-                    >
-                      {name.substring(0, 3)}
-                    </Chip>
-                  );
-                })}
-              </Grid>
-            </Stack>
+            ></Stack>
             <Grid container spacing={1}>
-              <Grid xs={6}>
-                <FormControl required>
-                  <FormLabel>Headcount</FormLabel>
-                  <Input
-                    type="number"
-                    value={shiftData.headcount || ""}
-                    onChange={(e) => {
-                      if (parseInt(e.target.value) < 0) {
-                        setShiftData({
-                          ...shiftData,
-                          headcount: "0",
-                        });
-                      } else {
-                        setShiftData({
-                          ...shiftData,
-                          headcount: e.target.value,
-                        });
-                      }
-                    }}
-                  />
-                </FormControl>
-              </Grid>
               <Grid xs={6}>
                 <FormControl
                   required
@@ -262,7 +205,14 @@ export default function CreateShiftModal() {
           <Button onClick={handleCreateShift}>Create Shift</Button>
         </ModalDialog>
       </Modal>
-      <Button onClick={() => setIsOpen(true)}>Create Shift</Button>
+      <Chip
+        onClick={() => setIsOpen(true)}
+        sx={{ height: "2rem" }}
+        variant="solid"
+        color="primary"
+      >
+        Create Shift
+      </Chip>
     </>
   );
 }

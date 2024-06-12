@@ -2,14 +2,14 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { Location } from "../../../types/common";
+import { CommonLocation } from "../../../types/common";
 
 import { Modal, ModalDialog, Typography, Input, Stack, Button } from "@mui/joy";
 
 interface AddLocationsModalProps {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
-  locations: Location[];
+  locations: CommonLocation[];
 }
 
 const AddLocationsModal = ({
@@ -18,7 +18,7 @@ const AddLocationsModal = ({
   locations,
 }: AddLocationsModalProps) => {
   const [newPostalCode, setNewPostalCode] = useState("");
-  const [newLocation, setNewLocation] = useState<Location | null>(null);
+  const [newLocation, setNewLocation] = useState<CommonLocation | null>(null);
 
   const { project, updateProject } = useProjectContext();
 
@@ -31,7 +31,7 @@ const AddLocationsModal = ({
     axios
       .get(
         `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${newPostalCode}&returnGeom=Y&getAddrDetails=N`,
-        { withCredentials: false }
+        { withCredentials: false },
       )
       .then((res) => {
         if (res.data.found === 0) {
@@ -89,10 +89,10 @@ const AddLocationsModal = ({
           {!newLocation
             ? "Please enter a valid postal code"
             : locations.some(
-              (location) => location.postalCode === newPostalCode
-            )
-              ? "Location already added"
-              : newLocation.address}
+                (location) => location.postalCode === newPostalCode,
+              )
+            ? "Location already added"
+            : newLocation.address}
         </Typography>
 
         <Stack direction="row" spacing={1}>

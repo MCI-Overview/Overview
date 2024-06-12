@@ -3,7 +3,6 @@ import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { formatDate } from "../../../utils/date-time";
 import { checkPermission } from "../../../utils/permission";
 import { PermissionList } from "../../../types/common";
 import HeadcountSection from "./HeadcountSection";
@@ -24,22 +23,24 @@ import {
   Typography,
 } from "@mui/joy";
 import { InfoOutlined } from "@mui/icons-material";
+import dayjs from "dayjs";
 
 const ProjectOverview = () => {
   const { user } = useUserContext();
   const { project, updateProject } = useProjectContext();
 
-  const [startDate, setStartDate] = useState<string>(
-    project?.startDate.split("T")[0] || ""
+  const [startDate, setStartDate] = useState<string | undefined>(
+    project?.startDate.format("YYYY-MM-DD"),
   );
-  const [endDate, setEndDate] = useState<string>(
-    project?.endDate.split("T")[0] || ""
+  const [endDate, setEndDate] = useState<string | undefined>(
+    project?.endDate.format("YYYY-MM-DD"),
   );
-  const [dateError, setDateError] = useState<boolean>(false);
+  const [startDateError, setStartDateError] = useState<string>("");
+  const [endDateError, setEndDateError] = useState<string>("");
 
   const hasEditPermission =
     project?.consultants.find(
-      (consultant) => consultant.role === "CLIENT_HOLDER"
+      (consultant) => consultant.role === "CLIENT_HOLDER",
     )?.cuid === user?.cuid ||
     (user
       ? checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS)
@@ -48,16 +49,42 @@ const ProjectOverview = () => {
   useEffect(() => {
     if (!project) return;
 
-    setDateError(new Date(endDate) < new Date(startDate));
+    setStartDateError("");
+    setEndDateError("");
+
+    if (!startDate) return setStartDateError("Invalid start date");
+    if (!endDate) return setEndDateError("Invalid end date");
+
+    const newStartDate = dayjs(startDate);
+    const newEndDate = dayjs(endDate);
+
+    if (newStartDate.isAfter(newEndDate)) {
+      setStartDateError("Start date must be before end date");
+      setEndDateError("End date must be after start date");
+      return;
+    }
+    const threshold = dayjs("2000-01-01");
+
+    if (newStartDate.isBefore(threshold)) {
+      return setStartDateError("Start date must be after 2000-01-01");
+    }
+
+    if (newEndDate.isBefore(threshold)) {
+      return setEndDateError("End date must be after 2000-01-01");
+    }
 
     if (
-      startDate === project.startDate.split("T")[0] &&
-      endDate === project.endDate.split("T")[0]
+      newStartDate.isSame(dayjs(project.startDate)) &&
+      newEndDate.isSame(dayjs(project.endDate))
     ) {
       return;
     }
 
-    if (dateError) {
+    if (
+      newStartDate.format("YYYY-MM-DD") ===
+        project.startDate.format("YYYY-MM-DD") &&
+      newEndDate.format("YYYY-MM-DD") === project.endDate.format("YYYY-MM-DD")
+    ) {
       return;
     }
 
@@ -76,7 +103,14 @@ const ProjectOverview = () => {
       console.log(error);
       toast.error("Failed to update project dates");
     }
-  }, [startDate, endDate, project, dateError, updateProject]);
+  }, [
+    startDate,
+    endDate,
+    project,
+    startDateError,
+    endDateError,
+    updateProject,
+  ]);
 
   if (!project) return null;
 
@@ -116,7 +150,7 @@ const ProjectOverview = () => {
               <Grid xs={4} md={6}>
                 <FormLabel>Created on</FormLabel>
                 <Input
-                  value={formatDate(new Date(project.createdAt || 0))}
+                  value={project.createdAt.format("DD/MM/YYYY HH:mm ")}
                   disabled
                 />
               </Grid>
@@ -126,18 +160,18 @@ const ProjectOverview = () => {
               </Grid>
               <Grid xs={4} md={6}>
                 <FormLabel>Start date</FormLabel>
-                <FormControl sx={{ flexGrow: 1 }} error={dateError}>
+                <FormControl sx={{ flexGrow: 1 }} error={startDateError !== ""}>
                   <Input
                     type="date"
                     value={startDate}
                     disabled={!hasEditPermission}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    onChange={(e) => console.log(setStartDate(e.target.value))}
                   />
                   <FormHelperText>
-                    {dateError && (
+                    {startDateError && (
                       <>
                         <InfoOutlined />
-                        Start date must be before end date
+                        {startDateError}
                       </>
                     )}
                   </FormHelperText>
@@ -145,7 +179,7 @@ const ProjectOverview = () => {
               </Grid>
               <Grid xs={4} md={6}>
                 <FormLabel>End date</FormLabel>
-                <FormControl sx={{ flexGrow: 1 }} error={dateError}>
+                <FormControl sx={{ flexGrow: 1 }} error={endDateError !== ""}>
                   <Input
                     type="date"
                     value={endDate}
@@ -153,10 +187,10 @@ const ProjectOverview = () => {
                     onChange={(e) => setEndDate(e.target.value)}
                   />
                   <FormHelperText>
-                    {dateError && (
+                    {endDateError && (
                       <>
                         <InfoOutlined />
-                        End date must be after start date
+                        {endDateError}
                       </>
                     )}
                   </FormHelperText>

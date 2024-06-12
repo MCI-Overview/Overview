@@ -22,6 +22,18 @@ const CandidateProfile = () => {
 
   const [tabValue, setTabValue] = useState<number>(0);
 
+  useEffect(() => {
+    const hash = location.hash.replace("#", "");
+    switch (hash) {
+      case "requests":
+        setTabValue(1);
+        break;
+      default:
+        setTabValue(0);
+        break;
+    }
+  }, [location.hash]);
+
   if (!user) return <Navigate to="/" />;
 
   const isAdmin = user.userType === "Admin";
@@ -42,18 +54,6 @@ const CandidateProfile = () => {
     },
   ];
 
-  useEffect(() => {
-    const hash = location.hash.replace("#", "");
-    switch (hash) {
-      case "requests":
-        setTabValue(1);
-        break;
-      default:
-        setTabValue(0);
-        break;
-    }
-  }, [location.hash]);
-
   const tabs: Tab[] = [
     {
       label: "Details",
@@ -67,7 +67,7 @@ const CandidateProfile = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null
+    newValue: string | number | null,
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);

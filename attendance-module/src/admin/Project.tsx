@@ -11,10 +11,10 @@ import {
   AdminBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
-import ProjectOverview from "../components/project/overview/Page";
+import ProjectOverview from "../components/project/overview/OverviewPage.tsx";
 import AssignCandidatePage from "../components/project/candidates/Page";
 import { useProjectContext } from "../providers/projectContextProvider";
-import ShiftPage from "../components/project/shift/ShiftPage";
+import RosterPage from "../components/project/roster/RosterPage";
 import Settings from "./Settings.tsx";
 
 const tabs: Tab[] = [
@@ -31,12 +31,8 @@ const tabs: Tab[] = [
     content: <AssignCandidatePage />,
   },
   {
-    label: "Shifts",
-    content: <ShiftPage />,
-  },
-  {
     label: "Roster",
-    content: <div>Roster</div>,
+    content: <RosterPage />,
   },
   {
     label: "Settings",
@@ -54,6 +50,7 @@ const AdminProjects = () => {
 
   useEffect(() => {
     updateProject(projectCuid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -65,14 +62,11 @@ const AdminProjects = () => {
       case "candidates":
         setTabValue(2);
         break;
-      case "shifts":
+      case "roster":
         setTabValue(3);
         break;
-      case "roster":
-        setTabValue(4);
-        break;
       case "settings":
-        setTabValue(5);
+        setTabValue(4);
         break;
       default:
         setTabValue(0);
@@ -112,12 +106,9 @@ const AdminProjects = () => {
         navigate(`/admin/project/${project.cuid}#candidates`);
         break;
       case 3:
-        navigate(`/admin/project/${project.cuid}#shifts`);
-        break;
-      case 4:
         navigate(`/admin/project/${project.cuid}#roster`);
         break;
-      case 5:
+      case 4:
         navigate(`/admin/project/${project.cuid}#settings`);
         break;
       default:
@@ -128,6 +119,7 @@ const AdminProjects = () => {
   return (
     <Box sx={{ flex: 1, width: "100%" }}>
       <Box
+        height={"100dvh"}
         sx={{
           position: "sticky",
           top: { sm: -100, md: -110 },

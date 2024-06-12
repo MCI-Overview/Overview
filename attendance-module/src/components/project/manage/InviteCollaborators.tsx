@@ -1,11 +1,11 @@
 import { Dispatch, SetStateAction } from "react";
 import { Stack, Typography, Autocomplete, Button } from "@mui/joy";
-import { Consultant } from "../../../types/common";
+import { CommonConsultant } from "../../../types/common";
 
 interface InviteCollaboratorsProps {
-  filteredConsultants: Consultant[];
-  selectedCollaborators: Consultant[];
-  setSelectedCollaborators: Dispatch<SetStateAction<Consultant[]>>;
+  filteredConsultants: CommonConsultant[];
+  selectedCollaborators: CommonConsultant[];
+  setSelectedCollaborators: Dispatch<SetStateAction<CommonConsultant[]>>;
   handleConfirmInvite: () => void;
   invitationError: string | null;
 }

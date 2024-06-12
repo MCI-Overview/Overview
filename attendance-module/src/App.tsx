@@ -22,10 +22,19 @@ import UserNew from "./user/UserNew";
 import UserHome from "./user/UserHome";
 import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
 import { CircularProgress, CssBaseline, Box } from "@mui/joy";
-import { UserContextProvider } from "./providers/userContextProvider";
+import {
+  UserContextProvider,
+  useUserContext,
+} from "./providers/userContextProvider";
 import { ProjectContextProvider } from "./providers/projectContextProvider";
 import axiosRetry from "axios-retry";
+import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
+import isoWeek from "dayjs/plugin/isoWeek";
 import CandidateProfile from "./user/Profile";
+
+dayjs.extend(isBetween);
+dayjs.extend(isoWeek);
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -43,13 +52,18 @@ function App() {
   axiosRetry(axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
 
   const [loading, setLoading] = useState(true);
+  const { setUser } = useUserContext();
 
   useEffect(() => {
     const startTime = Date.now();
 
     axios
       .get("/api")
-      .then()
+      .then((response) => {
+        if (response.status == 200) {
+          setUser(response.data);
+        }
+      })
       .catch()
       .finally(() => {
         const elapsedTime = Date.now() - startTime;
@@ -59,7 +73,7 @@ function App() {
           setLoading(false);
         }, remainingTime);
       });
-  }, []);
+  }, [setUser]);
 
   if (loading) {
     return (

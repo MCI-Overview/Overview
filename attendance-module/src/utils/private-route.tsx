@@ -13,7 +13,9 @@ export function PrivateUserRoutes() {
       try {
         const response = await axios.get("/api");
         setLoading(false);
-        setUser(response.data);
+        if (response.status === 200) {
+          setUser(response.data);
+        }
       } catch (error) {
         setLoading(false);
         if (currentPath !== "/") {
@@ -27,7 +29,7 @@ export function PrivateUserRoutes() {
     } else {
       setLoading(false);
     }
-  }, [user, setUser]);
+  }, [user, setUser, currentPath]);
 
   if (loading) return null;
 
@@ -68,7 +70,9 @@ export function PrivateAdminRoutes() {
       try {
         const response = await axios.get("/api");
         setLoading(false);
-        setUser(response.data);
+        if (response.status === 200) {
+          setUser(response.data);
+        }
       } catch (error) {
         setLoading(false);
         if (currentPath !== "/admin") {
@@ -82,7 +86,7 @@ export function PrivateAdminRoutes() {
     } else {
       setLoading(false);
     }
-  }, [user, setUser]);
+  }, [user, setUser, currentPath]);
 
   if (loading) return null;
 

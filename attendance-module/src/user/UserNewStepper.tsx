@@ -25,7 +25,6 @@ import axios from "axios";
 
 export default function UserNewStepper() {
   const userData = useUserContext().user as CandidateUser | null;
-  if (!userData) return null;
 
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
@@ -45,16 +44,31 @@ export default function UserNewStepper() {
   const { setUser } = useUserContext();
 
   useEffect(() => {
-    const { postalCode, isPostalCodeValid, isLandedProperty, floor, unit, nationality } = formData;
-    const isValid = nationality !== "" && postalCode.length === 6 && isPostalCodeValid &&
+    const {
+      postalCode,
+      isPostalCodeValid,
+      isLandedProperty,
+      floor,
+      unit,
+      nationality,
+    } = formData;
+    const isValid =
+      nationality !== "" &&
+      postalCode.length === 6 &&
+      isPostalCodeValid &&
       (isLandedProperty || (floor !== "" && unit !== ""));
     setIsFormValid(isValid);
   }, [formData]);
 
-  const handleNext = () => setStep((prevStep) => Math.min(prevStep + 1, steps.length - 1));
+  if (!userData) return null;
+
+  const handleNext = () =>
+    setStep((prevStep) => Math.min(prevStep + 1, steps.length - 1));
   const handleBack = () => setStep((prevStep) => Math.max(prevStep - 1, 0));
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -62,7 +76,9 @@ export default function UserNewStepper() {
     }));
   };
 
-  const handlePostalCodeChange = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handlePostalCodeChange = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const code = event.target.value;
     setFormData((prevData) => ({
       ...prevData,
@@ -78,7 +94,7 @@ export default function UserNewStepper() {
     if (code.length === 6) {
       try {
         const response = await fetch(
-          `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${code}&returnGeom=N&getAddrDetails=Y`
+          `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${code}&returnGeom=N&getAddrDetails=Y`,
         );
         const data = await response.json();
         if (data.found > 0) {
@@ -104,26 +120,23 @@ export default function UserNewStepper() {
   const handleFinish = async () => {
     const { nationality, addressDetails, postalCode, floor, unit } = formData;
     try {
-      const response = await axios.post(
-        `/api/user/${userData.cuid}/newuser`,
-        {
-          nationality: nationality,
-          address: {
-            unit: unit,
-            floor: floor,
-            building: addressDetails.building,
-            block: addressDetails.block,
-            street: addressDetails.street,
-            postal: postalCode,
-            country: "SINGAPORE",
-          }
-        }
-      );
+      const response = await axios.post(`/api/user/${userData.cuid}/newuser`, {
+        nationality: nationality,
+        address: {
+          unit: unit,
+          floor: floor,
+          building: addressDetails.building,
+          block: addressDetails.block,
+          street: addressDetails.street,
+          postal: postalCode,
+          country: "SINGAPORE",
+        },
+      });
       setUser(response.data as User);
     } catch (error) {
       console.error("Error submitting form:", error);
     }
-  }
+  };
 
   const nationalities = ["Singapore", "Malaysia", "China"];
 
@@ -134,7 +147,8 @@ export default function UserNewStepper() {
       content: (
         <>
           <Typography level="body-sm">
-            We’re glad you’re here. Tell us a bit about yourself so we can track your attendance accurately. Ready to begin?
+            We’re glad you’re here. Tell us a bit about yourself so we can track
+            your attendance accurately. Ready to begin?
           </Typography>
           <Button onClick={handleNext}>Next</Button>
         </>
@@ -168,8 +182,16 @@ export default function UserNewStepper() {
             <Autocomplete
               name="nationality"
               options={nationalities}
-              value={formData.nationality ? nationalities.find(option => option === formData.nationality) : null}
-              onChange={(_event, newValue) => setFormData({ ...formData, nationality: newValue as string })}
+              value={
+                formData.nationality
+                  ? nationalities.find(
+                      (option) => option === formData.nationality,
+                    )
+                  : null
+              }
+              onChange={(_event, newValue) =>
+                setFormData({ ...formData, nationality: newValue as string })
+              }
               isOptionEqualToValue={(option, value) => option === value}
             />
           </FormControl>
@@ -180,7 +202,9 @@ export default function UserNewStepper() {
           <Checkbox
             label="Landed property"
             checked={formData.isLandedProperty}
-            onChange={(e) => setFormData({ ...formData, isLandedProperty: e.target.checked })}
+            onChange={(e) =>
+              setFormData({ ...formData, isLandedProperty: e.target.checked })
+            }
           />
 
           {!formData.isLandedProperty && (
@@ -227,23 +251,42 @@ export default function UserNewStepper() {
             <>
               <FormControl required>
                 <FormLabel>Block</FormLabel>
-                <Input type="text" name="block" value={formData.addressDetails.block} disabled />
+                <Input
+                  type="text"
+                  name="block"
+                  value={formData.addressDetails.block}
+                  disabled
+                />
               </FormControl>
 
               <FormControl required>
                 <FormLabel>Street</FormLabel>
-                <Input type="text" name="street" value={formData.addressDetails.street} disabled />
+                <Input
+                  type="text"
+                  name="street"
+                  value={formData.addressDetails.street}
+                  disabled
+                />
               </FormControl>
 
               <FormControl required>
                 <FormLabel>Building</FormLabel>
-                <Input type="text" name="building" value={formData.addressDetails.building} disabled />
+                <Input
+                  type="text"
+                  name="building"
+                  value={formData.addressDetails.building}
+                  disabled
+                />
               </FormControl>
             </>
           )}
 
-          <Button variant="outlined" onClick={handleBack}>Back</Button>
-          <Button onClick={handleSubmit} disabled={!isFormValid}>Submit</Button>
+          <Button variant="outlined" onClick={handleBack}>
+            Back
+          </Button>
+          <Button onClick={handleSubmit} disabled={!isFormValid}>
+            Submit
+          </Button>
         </>
       ),
     },
@@ -277,8 +320,8 @@ export default function UserNewStepper() {
         {step === 0
           ? "Let's get to know you better!"
           : step === 1
-            ? "Please provide the following information:"
-            : "Your information has been submitted successfully."}
+          ? "Please provide the following information:"
+          : "Your information has been submitted successfully."}
       </Typography>
 
       <Divider />

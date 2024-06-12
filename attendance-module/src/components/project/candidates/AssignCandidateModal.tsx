@@ -5,7 +5,6 @@ import { ReactSpreadsheetImport } from "react-spreadsheet-import";
 import { Result, RowHook } from "react-spreadsheet-import/types/types";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { getExactAge } from "../../../utils/date-time";
 import { dateRegex, nricRegex, contactRegex } from "../../../utils/validation";
 import { generateCapitalizations } from "../../../utils/capitalize";
 import CandidateTable, {
@@ -25,6 +24,7 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
+import dayjs from "dayjs";
 
 interface AssignCandidateModalProps {
   isUploadOpen: boolean;
@@ -62,7 +62,7 @@ const AssignCandidateModal = ({
   const handleSubmitModalClose = () => {
     if (isSubmitModalOpen) {
       const confirmClose = window.confirm(
-        "Are you sure you want to close the modal? Uploaded information will be lost."
+        "Are you sure you want to close the modal? Uploaded information will be lost.",
       );
       if (confirmClose) {
         setIsSubmitModalOpen(false);
@@ -200,7 +200,7 @@ const AssignCandidateModal = ({
         message: "Invalid format. Please use YYYY-MM-DD",
         level: "error",
       });
-    } else if (getExactAge(new Date(row.dateOfBirth as string)) < 16) {
+    } else if (dayjs().diff(dayjs(row.dateOfBirth as string), "years") < 16) {
       addError("dateOfBirth", {
         message: "Candidate below 16 years old",
         level: "error",
@@ -226,15 +226,15 @@ const AssignCandidateModal = ({
         level: "error",
       });
     } else if (
-      new Date(row.startDate as string) < new Date(project.startDate) ||
-      new Date(row.startDate as string) > new Date(project.endDate)
+      dayjs(row.startDate as string).isBefore(project.startDate) ||
+      dayjs(row.startDate as string).isAfter(project.endDate)
     ) {
       addError("startDate", {
         message:
           "Start date must be within project period (" +
-          project.startDate.slice(0, 10) +
+          project.startDate.format("DD/MM/YYYY") +
           " to " +
-          project.endDate.slice(0, 10) +
+          project.endDate.format("DD/MM/YYYY") +
           ")",
         level: "error",
       });
@@ -259,15 +259,15 @@ const AssignCandidateModal = ({
         level: "error",
       });
     } else if (
-      new Date(row.endDate as string) < new Date(project.startDate) ||
-      new Date(row.endDate as string) > new Date(project.endDate)
+      dayjs(row.endDate as string).isBefore(project.startDate) ||
+      dayjs(row.endDate as string).isAfter(project.endDate)
     ) {
       addError("endDate", {
         message:
           "End date must be within project period (" +
-          project.startDate.slice(0, 10) +
+          project.startDate.format("DD/MM/YYYY") +
           " to " +
-          project.endDate.slice(0, 10) +
+          project.endDate.format("DD/MM/YYYY") +
           ")",
         level: "error",
       });
@@ -281,7 +281,7 @@ const AssignCandidateModal = ({
       });
     } else if (
       !["FULL_TIME", "PART_TIME", "CONTRACT"].includes(
-        row.employmentType as string
+        row.employmentType as string,
       )
     ) {
       addError("employmentType", {
@@ -328,7 +328,7 @@ const AssignCandidateModal = ({
     try {
       const response = await axios.post(
         `/api/admin/project/${projectCuid}/candidates`,
-        validCddList
+        validCddList,
       );
 
       toast.success("Candidates added successfully");
@@ -342,6 +342,9 @@ const AssignCandidateModal = ({
           .filter((cdd) => response.data.includes(cdd.cuid))
           .map((cdd) => ({
             ...cdd,
+            startDate: dayjs(cdd.startDate).toISOString(),
+            endDate: dayjs(cdd.endDate).toISOString(),
+            dateOfBirth: dayjs(cdd.dateOfBirth).toISOString(),
             consultantName: user.name,
           }));
 
@@ -357,56 +360,63 @@ const AssignCandidateModal = ({
   return (
     <>
       <Modal open={isUploadOpen} onClose={() => setIsUploadOpen(false)}>
-        <ReactSpreadsheetImport
-          isOpen={isUploadOpen}
-          onClose={() => {
-            setIsUploadOpen(false);
-          }}
-          onSubmit={(result) => {
-            setData(result);
-            setIsSubmitDisabled(true);
-            setIsSubmitModalOpen(true);
-          }}
-          fields={fields}
-          rowHook={rowHook}
-          customTheme={{}}
-          z-index={0}
-        />
+        <ModalDialog>
+          <ReactSpreadsheetImport
+            isOpen={isUploadOpen}
+            onClose={() => {
+              setIsUploadOpen(false);
+            }}
+            onSubmit={(result) => {
+              setData(result);
+              setIsSubmitDisabled(true);
+              setIsSubmitModalOpen(true);
+            }}
+            fields={fields}
+            rowHook={rowHook}
+            customTheme={{}}
+            z-index={0}
+          />
+        </ModalDialog>
       </Modal>
 
       <Modal open={isSubmitModalOpen} onClose={handleSubmitModalClose}>
         <ModalOverflow>
           <ModalClose />
           <ModalDialog style={{ maxWidth: "65%" }}>
-            {candidateTableProps
-              .filter((props) => props.tableData.length > 0)
-              .map((props, index) => (
-                <Box key={props.tableTitle}>
-                  <CandidateTable {...props} />
-                  {index !== candidateTableProps.length - 1 && (
-                    <Divider sx={{ marginTop: "15px" }} />
-                  )}
-                </Box>
-              ))}
+            <>
+              {candidateTableProps
+                .filter((props) => props.tableData.length > 0)
+                .map((props, index) => (
+                  <Box key={props.tableTitle}>
+                    <CandidateTable {...props} />
+                    {index !== candidateTableProps.length - 1 && (
+                      <Divider sx={{ marginTop: "15px" }} />
+                    )}
+                  </Box>
+                ))}
 
-            {validCddList.length !== 0 ? (
-              <>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Checkbox
-                    onChange={() => setIsSubmitDisabled(!isSubmitDisabled)}
-                    label="I have reviewed all candidate information."
-                    sx={{ fontSize: "sm" }}
-                  />
-                </Stack>
-                <Button onClick={handleSubmitData} disabled={isSubmitDisabled}>
-                  Submit
-                </Button>
-              </>
-            ) : (
-              <Typography level="title-sm" sx={{ textAlign: "center" }}>
-                Please provide valid data.
-              </Typography>
-            )}
+              {validCddList.length !== 0 ? (
+                <>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Checkbox
+                      onChange={() => setIsSubmitDisabled(!isSubmitDisabled)}
+                      label="I have reviewed all candidate information."
+                      sx={{ fontSize: "sm" }}
+                    />
+                  </Stack>
+                  <Button
+                    onClick={handleSubmitData}
+                    disabled={isSubmitDisabled}
+                  >
+                    Submit
+                  </Button>
+                </>
+              ) : (
+                <Typography level="title-sm" sx={{ textAlign: "center" }}>
+                  Please provide valid data.
+                </Typography>
+              )}
+            </>
           </ModalDialog>
         </ModalOverflow>
       </Modal>
