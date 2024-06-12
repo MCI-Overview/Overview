@@ -13,7 +13,7 @@ function CustomLink({ breadcrumbPart }: { breadcrumbPart: BreadcrumbPart }) {
     <Link
       underline="none"
       color="neutral"
-      href={breadcrumbPart.link}
+      href={`#${breadcrumbPart.link}`}
       aria-label="Home"
     >
       <Typography color="primary" fontWeight={500} fontSize={12}>
@@ -38,7 +38,7 @@ export function UserBreadcrumb({
       <Link
         underline="none"
         color="neutral"
-        href="/user/home"
+        href="#/user/home"
         aria-label="Home"
       >
         <HomeRounded />
