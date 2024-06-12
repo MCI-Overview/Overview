@@ -30,7 +30,9 @@ export default function ProjectCandidateHoldersSection({
 
   useEffect(() => {
     axios.get("/api").then((response) => {
-      setUser(response.data);
+      if (response.status == 200) {
+        setUser(response.data);
+      }
     });
   }, []);
 
