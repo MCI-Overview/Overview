@@ -28,7 +28,8 @@
     "otp-generator": "^4.0.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
-    "passport-microsoft": "^2.1.0"
+    "passport-microsoft": "^2.1.0",
+    "typescript": "^5.4.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
