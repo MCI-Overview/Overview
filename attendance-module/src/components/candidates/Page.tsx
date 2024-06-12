@@ -41,13 +41,13 @@ const MyCandidatesPage = () => {
   const [candidateData, setCandidateData] = useState<CandidateData[]>([]);
   const [searchValue, setSearchValue] = useState("");
 
-  if (!user) return null;
-
   useEffect(() => {
+    if (!user?.cuid) return;
+
     const fetchData = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:3000/api/admin/consultant/${user.cuid}/candidates`
+          `/api/admin/consultant/${user?.cuid}/candidates`,
         );
         const data = res.data.map((data: ResponseDataType) => ({
           ...data,
@@ -61,7 +61,7 @@ const MyCandidatesPage = () => {
     };
 
     fetchData();
-  }, [user.cuid]);
+  }, [user?.cuid]);
 
   const groupByCandidates = (data: CandidateData[]) => {
     const groupedData: Record<string, CandidateData[]> = {};
@@ -141,7 +141,7 @@ const MyCandidatesPage = () => {
         project.candidateName
           .toLowerCase()
           .includes(searchValue.toLowerCase()) ||
-        project.candidateNric.toLowerCase().includes(searchValue.toLowerCase())
+        project.candidateNric.toLowerCase().includes(searchValue.toLowerCase()),
     );
   };
 

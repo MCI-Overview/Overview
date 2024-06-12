@@ -29,6 +29,37 @@ userAPIRouter.get("/:candidateCuid", async (req, res) => {
   }
 });
 
+userAPIRouter.post("/:candidateCuid/newuser", async (req, res) => {
+  const { candidateCuid } = req.params;
+  const { nationality, address } = req.body;
+  const user = req.user as User;
+
+  try {
+    // Check if the current user is submitting their own details
+    if (user.cuid !== candidateCuid) {
+      return res.status(403).send("Forbidden: You can only submit your own details.");
+    }
+
+    // Update the user data
+    const response = await prisma.candidate.update({
+      where: {
+        cuid: candidateCuid,
+      },
+      data: {
+        nationality: nationality,
+        address: address,
+        hasOnboarded: true,
+      }
+    });
+
+    return res.status(200).send(response);
+  } catch (error) {
+    console.error("Error while updating user data:", error);
+    return res.status(500).send("Internal server error");
+  }
+});
+
+
 userAPIRouter.patch("/", async (req, res) => {
   const user = req.user as User;
   const {

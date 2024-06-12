@@ -13,6 +13,7 @@ import { Client } from "../../../types/common";
 import axios from "axios";
 import { useState, useEffect, SyntheticEvent, useRef } from "react";
 import { capitalizeWords } from "../../../utils/capitalize";
+import dayjs from "dayjs";
 
 const NOTICE_PERIOD_UNITS = ["DAY", "WEEK", "MONTH"];
 
@@ -140,7 +141,7 @@ export default function ProjectDetailsSection({
               onChange={(e) =>
                 setProjectDetails({
                   ...projectDetails,
-                  startDate: new Date(e.target.value),
+                  startDate: dayjs(e.target.value).startOf("day").toDate(),
                 })
               }
             />
@@ -154,7 +155,7 @@ export default function ProjectDetailsSection({
               onChange={(e) =>
                 setProjectDetails({
                   ...projectDetails,
-                  endDate: new Date(e.target.value),
+                  endDate: dayjs(e.target.value).endOf("day").toDate(),
                 })
               }
             />
@@ -169,19 +170,22 @@ export default function ProjectDetailsSection({
               type="number"
               placeholder="Enter notice period duration"
               value={projectDetails.noticePeriodDuration || ""}
-              onKeyDown={(evt) => ["e", "E", "+", "-"].includes(evt.key) && evt.preventDefault()}
+              onKeyDown={(evt) =>
+                ["e", "E", "+", "-"].includes(evt.key) && evt.preventDefault()
+              }
               onChange={(e) => {
                 if (parseInt(e.target.value) === 0) {
                   setProjectDetails({
                     ...projectDetails,
                     noticePeriodDuration: "0",
                   });
-              } else {
-                setProjectDetails({
-                  ...projectDetails,
-                  noticePeriodDuration: e.target.value,
-                })
-              }}}
+                } else {
+                  setProjectDetails({
+                    ...projectDetails,
+                    noticePeriodDuration: e.target.value,
+                  });
+                }
+              }}
             />
           </FormControl>
         </Grid>
@@ -193,17 +197,19 @@ export default function ProjectDetailsSection({
               onChange={(_e, value) => {
                 setProjectDetails({
                   ...projectDetails,
-                  noticePeriodUnit: value as string
-                })
-              }
-            }
+                  noticePeriodUnit: value as string,
+                });
+              }}
             >
               {NOTICE_PERIOD_UNITS.map((unit) => (
                 <Option key={unit} value={unit}>
-                  {addS(parseInt(projectDetails.noticePeriodDuration ?? "") || 0, capitalizeWords(unit))}
+                  {addS(
+                    parseInt(projectDetails.noticePeriodDuration ?? "") || 0,
+                    capitalizeWords(unit),
+                  )}
                 </Option>
               ))}
-              </Select>
+            </Select>
           </FormControl>
         </Grid>
       </Grid>

@@ -1,34 +1,37 @@
+import { Dayjs } from "dayjs";
+
 export type CommonCandidate = {
   cuid: string;
   nric: string;
   name: string;
   contact: string;
-  dateOfBirth: Date;
+  dateOfBirth: Dayjs;
   consultantCuid: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: Dayjs;
+  endDate: Dayjs;
   employmentType: "PART_TIME" | "FULL_TIME" | "CONTRACT";
   nationality?: string | null;
-  address?: Address;
+  address?: CommonAddress;
   bankDetails?: BankDetails;
   emergencyContact?: EmergencyContact;
+  hasOnboarded: boolean;
 };
 
-export type Consultant = {
+export type CommonConsultant = {
   cuid: string;
   email: string;
   name: string;
   role: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
 };
 
-export type Location = {
+export type CommonLocation = {
   postalCode: string;
   address: string;
   longitude: string;
   latitude: string;
 };
 
-export type Address = {
+export type CommonAddress = {
   block: string;
   building: string;
   floor?: string;
@@ -84,35 +87,51 @@ export type ConsultantUser = {
   };
 };
 
-export type CandidateUser = {
-  cuid: string;
-  name: string;
-  nric: string;
+export type CandidateUser = CommonCandidate & {
   userType: "User";
 };
 
-export type Shift = {
+export type CommonShift = {
   cuid: string;
-  projectCuid: string;
-  startTime: Date;
-  endTime: Date;
-  halfDayStartTime: Date | null;
-  halfDayEndTime: Date | null;
-  breakDuration: number;
-  status: "ACTIVE" | "ARCHIVED";
+  startTime: Dayjs;
+  endTime: Dayjs;
+  halfDayStartTime: Dayjs | null;
+  halfDayEndTime: Dayjs | null;
 };
 
-export type ShiftGroup = {
+export type CommonShiftGroup = {
   name: string;
-  shifts: Shift[];
+  shifts: CommonShift[];
+};
+
+export type CommonProject = {
+  cuid: string;
+  name: string;
+  employmentBy: string;
+  locations: CommonLocation[];
+  shiftGroups: CommonShiftGroup[];
+  startDate: Dayjs;
+  endDate: Dayjs;
+  createdAt: Dayjs;
+  noticePeriodDuration: number;
+  noticePeriodUnit: string;
+  status: string;
+  client: {
+    name: string;
+    uen: string;
+  };
+  candidates: CommonCandidate[];
+  consultants: CommonConsultant[];
+  shifts: CommonShift[];
+  shiftDict: Record<string, CommonShift>;
 };
 
 export type GetProjectDataResponse = {
   cuid: string;
   name: string;
   employmentBy: string;
-  locations: Location[];
-  shiftGroups: ShiftGroup[];
+  locations: CommonLocation[];
+  shiftGroups: CommonShiftGroup[];
   startDate: string;
   endDate: string;
   createdAt: string;
@@ -123,7 +142,67 @@ export type GetProjectDataResponse = {
     name: string;
     uen: string;
   };
-  candidates: CommonCandidate[];
-  consultants: Consultant[];
-  shifts: Shift[];
+  candidates: GetCandidateResponse;
+  consultants: CommonConsultant[];
+  shifts: GetShiftResponse;
+};
+
+export type GetShiftResponse = {
+  cuid: string;
+  projectCuid: string;
+  startTime: string;
+  endTime: string;
+  halfDayStartTime: string | null;
+  halfDayEndTime: string | null;
+  breakDuration: number;
+  status: "ACTIVE" | "ARCHIVED";
+}[];
+
+export type GetCandidateResponse = {
+  cuid: string;
+  nric: string;
+  name: string;
+  contact: string;
+  dateOfBirth: string;
+  consultantCuid: string;
+  startDate: string;
+  endDate: string;
+  employmentType: "PART_TIME" | "FULL_TIME" | "CONTRACT";
+  nationality?: string | null;
+  address?: CommonAddress;
+  bankDetails?: BankDetails;
+  emergencyContact?: EmergencyContact;
+  hasOnboarded: boolean;
+}[];
+
+export type GetRosterResponse = {
+  cuid: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  shifts: {
+    shiftType: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+    rosterCuid: string;
+    shiftCuid: string;
+    shiftStartTime: string;
+    shiftEndTime: string;
+    consultantCuid: string;
+  }[];
+}[];
+
+export type MappedRosterResponse = {
+  cuid: string;
+  name: string;
+  startDate: Dayjs;
+  endDate: Dayjs;
+  roster: Roster[];
+}[];
+
+export type Roster = {
+  type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+  rosterCuid: string;
+  shiftCuid: string;
+  startTime: Dayjs;
+  endTime: Dayjs;
+  consultantCuid: string;
 };

@@ -1,4 +1,5 @@
-import { Client, Shift } from "./common";
+import { Dayjs } from "dayjs";
+import { Client, CommonShift } from "./common";
 
 export type CreateProjectData = {
   name: string | null;
@@ -27,6 +28,13 @@ export type Manage = {
   projectCuid: string;
 };
 
+export type DraggableChipProps = {
+  type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+  cuid: string;
+  startTime: Dayjs;
+  endTime: Dayjs;
+};
+
 export type Assign = {
   consultantCuid: string | null;
   candidateCuid: string;
@@ -48,5 +56,5 @@ export type Project = {
   Assign: Assign[];
   Manage: Manage[];
   Client: Client;
-  Shift: Shift[];
+  Shift: CommonShift[];
 };

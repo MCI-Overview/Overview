@@ -22,6 +22,8 @@ export function TabBar({
       value={tabValue}
       onChange={handleTabChange}
       sx={{
+        display: "flex",
+        flexGrow: 1,
         bgcolor: "transparent",
       }}
     >

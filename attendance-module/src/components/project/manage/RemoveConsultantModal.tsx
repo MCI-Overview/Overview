@@ -11,18 +11,18 @@ import {
   Button,
   Autocomplete,
 } from "@mui/joy";
-import { Consultant, CommonCandidate } from "../../../types/common";
+import { CommonConsultant, CommonCandidate } from "../../../types/common";
 import { Assign } from "../../../types";
 
 interface RemoveConsultantModalProps {
   open: boolean;
   onClose: () => void;
-  consultantToRemove: Consultant | null;
+  consultantToRemove: CommonConsultant | null;
   candidatesToReassign: CommonCandidate[];
   rowSelections: Assign[];
-  availableCollaborators: Consultant[];
-  handleApplyToAll: (value: Consultant | null) => void;
-  handleRowSelectionChange: (index: number, value: Consultant | null) => void;
+  availableCollaborators: CommonConsultant[];
+  handleApplyToAll: (value: CommonConsultant | null) => void;
+  handleRowSelectionChange: (index: number, value: CommonConsultant | null) => void;
   emailConfirmation: string;
   setEmailConfirmation: Dispatch<SetStateAction<string>>;
   handleConfirmRemove: () => void;

@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { CommonCandidate, Consultant } from "../../../types/common";
+import { CommonCandidate, CommonConsultant } from "../../../types/common";
 import { Assign } from "../../../types";
 import RemoveConsultantModal from "./RemoveConsultantModal";
 import InviteCollaborators from "./InviteCollaborators";
@@ -19,9 +19,9 @@ import {
 } from "@mui/joy";
 
 const ManageProjectAccess = () => {
-  const [consultants, setConsultants] = useState<Consultant[]>([]);
+  const [consultants, setConsultants] = useState<CommonConsultant[]>([]);
   const [selectedCollaborators, setSelectedCollaborators] = useState<
-    Consultant[]
+    CommonConsultant[]
   >([]);
   const [rowSelections, setRowSelections] = useState<Assign[]>([]);
   const [emailConfirmation, setEmailConfirmation] = useState<string>("");
@@ -31,7 +31,7 @@ const ManageProjectAccess = () => {
     CommonCandidate[]
   >([]);
   const [consultantToRemove, setConsultantToRemove] =
-    useState<Consultant | null>(null);
+    useState<CommonConsultant | null>(null);
 
   const { project, updateProject } = useProjectContext();
   const collaborators = project?.consultants ?? [];
@@ -45,7 +45,7 @@ const ManageProjectAccess = () => {
   )?.role;
 
   const filteredConsultants = consultants.filter(
-    (consultant) => !collaborators.some((row) => row.cuid === consultant.cuid)
+    (consultant) => !collaborators.some((row) => row.cuid === consultant.cuid),
   );
 
   useEffect(() => {
@@ -60,7 +60,7 @@ const ManageProjectAccess = () => {
     fetchConsultants();
   }, []);
 
-  const handleApplyToAll = (value: Consultant | null) => {
+  const handleApplyToAll = (value: CommonConsultant | null) => {
     const consultantCuid = value ? value.cuid : null;
     setRowSelections(
       candidatesToReassign.map((candidate) => ({
@@ -72,7 +72,7 @@ const ManageProjectAccess = () => {
 
   const handleRowSelectionChange = (
     index: number,
-    value: Consultant | null
+    value: CommonConsultant | null
   ) => {
     const updatedSelections = [...rowSelections];
     updatedSelections[index] = {
@@ -86,10 +86,16 @@ const ManageProjectAccess = () => {
     const consultant = collaborators.find((collab) => collab.cuid === cuid);
     if (consultant) {
       const candidatesOfConsultant = candidates.filter(
-        (candidate) => candidate.consultantCuid === cuid
+        (candidate) => candidate.consultantCuid === cuid,
       );
       setConsultantToRemove(consultant);
       setCandidatesToReassign(candidatesOfConsultant);
+      setRowSelections(
+        candidatesOfConsultant.map((candidate) => ({
+          consultantCuid: null,
+          candidateCuid: candidate.cuid,
+        })),
+      );
       setRowSelections(
         candidatesOfConsultant.map((candidate) => ({
           consultantCuid: null,
@@ -122,7 +128,7 @@ const ManageProjectAccess = () => {
           });
 
           return consultant;
-        })
+        }),
       );
       updateProject();
     } catch (error) {
@@ -137,7 +143,7 @@ const ManageProjectAccess = () => {
       if (!projectCuid) throw new Error("Project ID is missing");
 
       const reassignments = rowSelections.filter(
-        (rowSelection) => rowSelection.consultantCuid !== null
+        (rowSelection) => rowSelection.consultantCuid !== null,
       );
 
       await axios.post(`/api/admin/project/${projectCuid}/manage/remove`, {
@@ -153,9 +159,8 @@ const ManageProjectAccess = () => {
   };
 
   const availableCollaborators = collaborators.filter(
-    (consultant) => consultant.cuid !== consultantToRemove?.cuid
+    (consultant) => consultant.cuid !== consultantToRemove?.cuid,
   );
-
   const allCandidatesReassigned = rowSelections.every(
     (selection) => selection.consultantCuid !== null
   );

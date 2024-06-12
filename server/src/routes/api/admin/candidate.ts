@@ -1,7 +1,12 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../../../client";
 import { PrismaError } from "@/types";
-import { Address, BankDetails, EmergencyContact, User } from "@/types/common";
+import {
+  CommonAddress,
+  BankDetails,
+  EmergencyContact,
+  User,
+} from "@/types/common";
 import bcrypt from "bcrypt";
 import { maskNRIC } from "../../../utils";
 import {
@@ -110,10 +115,10 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
   }
 
   // Validation for address
-  let addressObject: Address | undefined;
+  let addressObject: CommonAddress | undefined;
   if (address) {
     try {
-      addressObject = JSON.parse(address) as Address;
+      addressObject = JSON.parse(address) as CommonAddress;
       if (
         !addressObject.block ||
         !addressObject.building ||

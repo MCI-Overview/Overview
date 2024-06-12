@@ -1,8 +1,8 @@
 import { Table, Button } from "@mui/joy";
-import { Consultant } from "../../../types/common";
+import { CommonConsultant } from "../../../types/common";
 
 interface CollaboratorsTableProps {
-  collaborators: Consultant[];
+  collaborators: CommonConsultant[];
   currentUserRole: string | undefined;
   handleRemoveClick: (cuid: string) => void;
 }

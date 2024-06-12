@@ -36,12 +36,12 @@ model Attendance {
   cuid          String            @id @default(cuid())
   candidateCuid String
   shiftCuid     String
+  shiftType     ShiftType         @default(FULL_DAY)
   clockInTime   DateTime?
   clockOutTime  DateTime?
   status        AttendanceStatus?
   leave         LeaveStatus?
   shiftDate     DateTime
-  shiftType     ShiftType         @default(FULL_DAY)
   Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
   Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
 
@@ -132,6 +132,8 @@ model Shift {
   status           ShiftStatus  @default(ACTIVE)
   Attendance       Attendance[]
   Project          Project      @relation(fields: [projectCuid], references: [cuid])
+
+  @@unique([projectCuid, startTime, endTime])
 }
 
 model User {
@@ -166,6 +168,12 @@ enum EmploymentType {
   CONTRACT
 }
 
+enum ShiftType {
+  FULL_DAY
+  FIRST_HALF
+  SECOND_HALF
+}
+
 enum EmploymentStatus {
   ACTIVE
   TERMINATED
@@ -198,10 +206,4 @@ enum RequestStatus {
   REJECTED
   PENDING
   CANCELLED
-}
-
-enum ShiftType {
-  FULL_DAY
-  FIRST_HALF
-  SECOND_HALF
 }

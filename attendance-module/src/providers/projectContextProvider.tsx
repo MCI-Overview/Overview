@@ -1,10 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from "react";
-import { GetProjectDataResponse } from "../types/common";
+import {
+  GetProjectDataResponse,
+  CommonProject,
+  CommonShift,
+} from "../types/common";
 import axios from "axios";
+import dayjs from "dayjs";
 
 const ProjectContext = createContext<{
-  project: GetProjectDataResponse | null;
+  project: CommonProject | null;
   updateProject: (projectCuid?: string | undefined) => void;
 }>({
   project: null,
@@ -16,7 +21,7 @@ export function ProjectContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [project, setProject] = useState<GetProjectDataResponse | null>(null);
+  const [project, setProject] = useState<CommonProject | null>(null);
 
   function updateProject(projectCuid?: string | undefined) {
     const previousProjectCuid = project?.cuid;
@@ -30,7 +35,36 @@ export function ProjectContextProvider({
     axios
       .get(`/api/admin/project/${projectCuid || previousProjectCuid}`)
       .then((res) => {
-        setProject(convertToDateType(res.data));
+        const data = res.data as GetProjectDataResponse;
+        const projectData: CommonProject = {
+          ...data,
+          candidates: data.candidates.map((candidate) => ({
+            ...candidate,
+            dateOfBirth: dayjs(candidate.dateOfBirth),
+            startDate: dayjs(candidate.startDate),
+            endDate: dayjs(candidate.endDate),
+          })),
+          shifts: data.shifts.map((shift) => ({
+            ...shift,
+            startTime: dayjs(shift.startTime),
+            endTime: dayjs(shift.endTime),
+            halfDayStartTime: shift.halfDayStartTime
+              ? dayjs(shift.halfDayStartTime)
+              : null,
+            halfDayEndTime: shift.halfDayEndTime
+              ? dayjs(shift.halfDayEndTime)
+              : null,
+          })),
+          startDate: dayjs(data.startDate),
+          endDate: dayjs(data.endDate),
+          createdAt: dayjs(data.createdAt),
+          shiftDict: {},
+        };
+        projectData["shiftDict"] = projectData.shifts.reduce((acc, shift) => {
+          acc[shift.cuid] = shift;
+          return acc;
+        }, {} as Record<string, CommonShift>);
+        setProject(projectData);
       });
   }
 
@@ -45,22 +79,8 @@ export function useProjectContext() {
   const context = useContext(ProjectContext);
   if (context === undefined) {
     throw new Error(
-      "useProjectContext must be used within a ProjectContextProvider"
+      "useProjectContext must be used within a ProjectContextProvider",
     );
   }
   return context;
-}
-
-function convertToDateType(
-  response: GetProjectDataResponse
-): GetProjectDataResponse {
-  return {
-    ...response,
-    candidates: response.candidates.map((candidate) => ({
-      ...candidate,
-      dateOfBirth: new Date(candidate.dateOfBirth),
-      startDate: new Date(candidate.startDate),
-      endDate: new Date(candidate.endDate),
-    })),
-  };
 }
