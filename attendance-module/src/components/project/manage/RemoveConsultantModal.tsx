@@ -11,7 +11,7 @@ import {
   Button,
   Autocomplete,
 } from "@mui/joy";
-import { Consultant as CommonConsultant, CommonCandidate } from "../../../types/common";
+import { CommonConsultant, CommonCandidate } from "../../../types/common";
 import { Assign } from "../../../types";
 
 interface RemoveConsultantModalProps {
