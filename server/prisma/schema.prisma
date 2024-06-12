@@ -36,6 +36,7 @@ model Attendance {
   cuid          String            @id @default(cuid())
   candidateCuid String
   shiftCuid     String
+  shiftType     ShiftType         @default(FULL_DAY)
   clockInTime   DateTime?
   clockOutTime  DateTime?
   status        AttendanceStatus?
@@ -123,8 +124,6 @@ model Session {
 model Shift {
   cuid             String       @id @default(cuid())
   projectCuid      String
-  day              DayOfWeek
-  headcount        Int
   startTime        DateTime
   endTime          DateTime
   halfDayStartTime DateTime?
@@ -134,7 +133,7 @@ model Shift {
   Attendance       Attendance[]
   Project          Project      @relation(fields: [projectCuid], references: [cuid])
 
-  @@unique([projectCuid, day, startTime, endTime])
+  @@unique([projectCuid, startTime, endTime])
 }
 
 model User {
@@ -163,20 +162,16 @@ enum LeaveStatus {
   HALFDAY
 }
 
-enum DayOfWeek {
-  MONDAY
-  TUESDAY
-  WEDNESDAY
-  THURSDAY
-  FRIDAY
-  SATURDAY
-  SUNDAY
-}
-
 enum EmploymentType {
   PART_TIME
   FULL_TIME
   CONTRACT
+}
+
+enum ShiftType {
+  FULL_DAY
+  FIRST_HALF
+  SECOND_HALF
 }
 
 enum EmploymentStatus {

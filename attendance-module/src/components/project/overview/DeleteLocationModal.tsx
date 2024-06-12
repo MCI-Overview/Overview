@@ -1,15 +1,15 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { Location } from "../../../types/common";
+import { CommonLocation } from "../../../types/common";
 
 import { Modal, ModalDialog, Button, Stack, Typography } from "@mui/joy";
 
 interface DeleteLocationModalProps {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
-  locations: Location[];
-  locationToDelete: Location;
+  locations: CommonLocation[];
+  locationToDelete: CommonLocation;
 }
 
 const DeleteLocationModal = ({
@@ -23,12 +23,12 @@ const DeleteLocationModal = ({
 
   const handleDeleteLocation = async () => {
     const updatedLocations = locations.filter(
-      (location) => location.postalCode !== locationToDelete.postalCode
+      (location) => location.postalCode !== locationToDelete.postalCode,
     );
 
     try {
       axios
-        .patch("http://localhost:3000/api/admin/project", {
+        .patch("/api/admin/project", {
           projectCuid: project.cuid,
           locations: updatedLocations,
         })

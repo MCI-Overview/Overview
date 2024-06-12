@@ -1,24 +1,7 @@
 import { Grid, Typography } from "@mui/joy";
-import WeekBin from "./ShiftBin";
 import { Dayjs } from "dayjs";
-import { Attendance } from "../../../types/common";
-
-function getWeeklyIntervals(startDate: Dayjs, endDate: Dayjs) {
-  const intervals = [];
-  let current = startDate.startOf("day");
-  const end = endDate.endOf("day");
-
-  while (current.isBefore(end) || current.isSame(end, "day")) {
-    const weekEnd = current.endOf("day").add(6, "day");
-    intervals.push({
-      start: current,
-      end: weekEnd.isAfter(end) ? end : weekEnd,
-    });
-    current = current.add(7, "day");
-  }
-
-  return intervals;
-}
+import DayBin from "./DayBin";
+import { Roster } from "../../../types/common";
 
 function getLatestDate(...dates: Dayjs[]) {
   return dates.reduce((acc, date) => (date.isAfter(acc) ? date : acc));
@@ -31,63 +14,71 @@ function getEarliestDate(...dates: Dayjs[]) {
 export default function CandidateDisplay({
   name,
   cuid,
-  shifts,
+  currentRoster,
   startDate,
   endDate,
   firstDay,
   lastDay,
   projectStartDate,
   projectEndDate,
+  updateRosterData,
 }: {
   name: string;
   cuid: string;
-  shifts: Attendance[];
+  currentRoster: Roster[];
   startDate: Dayjs;
   endDate: Dayjs;
   firstDay: Dayjs;
   lastDay: Dayjs;
   projectStartDate: Dayjs;
   projectEndDate: Dayjs;
+  updateRosterData: () => void;
 }) {
-  const intervals = getWeeklyIntervals(startDate, endDate);
-  const processedData = intervals.map((interval) =>
-    shifts.filter((shift) =>
-      shift.shiftStartTime.isBetween(interval.start, interval.end, null, "[]"),
-    ),
+  const disabledTo = getLatestDate(
+    projectStartDate,
+    firstDay.endOf("day").subtract(1, "day"),
   );
 
-  console.log(processedData);
+  const disabledFrom = getEarliestDate(
+    projectEndDate,
+    lastDay.startOf("day").add(1, "day"),
+  );
 
   return (
     <Grid container>
       <Grid xs={2} display="flex" justifyContent="center" alignItems="center">
         <Typography>{name}</Typography>
       </Grid>
-      <Grid container xs={10} columns={intervals.length}>
-        {intervals.map((interval, index) => (
-          <Grid xs={1}>
-            <WeekBin
-              key={
-                interval.start.format("YYYY-MM-DD") +
-                interval.end.format("YYYY-MM-DD")
-              }
-              candidateCuid={cuid}
-              startDate={interval.start}
-              endDate={interval.end}
-              disabledTo={getLatestDate(
-                projectStartDate,
-                interval.start.endOf("day").subtract(1, "day"),
-                firstDay.endOf("day").subtract(1, "day"),
-              )}
-              disabledFrom={getEarliestDate(
-                projectEndDate,
-                interval.end.startOf("day").add(1, "day"),
-                lastDay.startOf("day").add(1, "day"),
-              )}
-              data={processedData[index]}
-            />
-          </Grid>
-        ))}
+      <Grid
+        xs={10}
+        container
+        display="flex"
+        direction="row"
+        columns={endDate.diff(startDate, "days") + 1}
+      >
+        {Array.from({ length: endDate.diff(startDate, "days") + 1 }).map(
+          (_, index) => {
+            const date = startDate.add(index, "days");
+            return (
+              <Grid xs={1}>
+                <DayBin
+                  key={`${cuid} ${index}`}
+                  date={date}
+                  candidateCuid={cuid}
+                  currentRoster={currentRoster.filter((roster) =>
+                    date.isSame(roster.startTime, "day"),
+                  )}
+                  disabled={
+                    date.isBefore(disabledTo) ||
+                    date.isSame(disabledFrom) ||
+                    date.isAfter(disabledFrom)
+                  }
+                  updateRosterData={updateRosterData}
+                />
+              </Grid>
+            );
+          },
+        )}
       </Grid>
     </Grid>
   );

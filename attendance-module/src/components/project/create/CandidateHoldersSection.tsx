@@ -13,19 +13,19 @@ import {
 } from "@mui/joy";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { Consultant, User } from "../../../types/common";
+import { CommonConsultant, User } from "../../../types/common";
 import { Delete } from "@mui/icons-material";
 
 export default function ProjectCandidateHoldersSection({
   candidateHolders,
   setCandidateHolders,
 }: {
-  candidateHolders: Consultant[];
-  setCandidateHolders: (candidateHolders: Consultant[]) => void;
+  candidateHolders: CommonConsultant[];
+  setCandidateHolders: (candidateHolders: CommonConsultant[]) => void;
 }) {
-  const [consultantList, setConsultantList] = useState<Consultant[]>([]);
+  const [consultantList, setConsultantList] = useState<CommonConsultant[]>([]);
   const [selectedConsultant, setSelectedConsultant] =
-    useState<Consultant | null>(null);
+    useState<CommonConsultant | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -96,8 +96,9 @@ export default function ProjectCandidateHoldersSection({
         <AccordionSummary>
           {candidateHolders.length === 0
             ? "No candidate holder added"
-            : `${candidateHolders.length} candidate holder${candidateHolders.length > 1 ? "s" : ""
-            } added`}
+            : `${candidateHolders.length} candidate holder${
+                candidateHolders.length > 1 ? "s" : ""
+              } added`}
         </AccordionSummary>
         <AccordionDetails>
           <List component="ol" marker="decimal">

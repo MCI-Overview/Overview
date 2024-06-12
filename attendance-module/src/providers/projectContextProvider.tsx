@@ -1,16 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from "react";
-import { GetProjectDataResponse, Project } from "../types/common";
+import {
+  GetProjectDataResponse,
+  CommonProject,
+  CommonShift,
+} from "../types/common";
 import axios from "axios";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 const ProjectContext = createContext<{
-  project: Project | null;
+  project: CommonProject | null;
   updateProject: (projectCuid?: string | undefined) => void;
 }>({
   project: null,
@@ -22,7 +21,7 @@ export function ProjectContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [project, setProject] = useState<Project | null>(null);
+  const [project, setProject] = useState<CommonProject | null>(null);
 
   function updateProject(projectCuid?: string | undefined) {
     const previousProjectCuid = project?.cuid;
@@ -37,7 +36,7 @@ export function ProjectContextProvider({
       .get(`/api/admin/project/${projectCuid || previousProjectCuid}`)
       .then((res) => {
         const data = res.data as GetProjectDataResponse;
-        setProject({
+        const projectData: CommonProject = {
           ...data,
           candidates: data.candidates.map((candidate) => ({
             ...candidate,
@@ -59,9 +58,13 @@ export function ProjectContextProvider({
           startDate: dayjs(data.startDate),
           endDate: dayjs(data.endDate),
           createdAt: dayjs(data.createdAt),
-        });
-
-        console.log(project);
+          shiftDict: {},
+        };
+        projectData["shiftDict"] = projectData.shifts.reduce((acc, shift) => {
+          acc[shift.cuid] = shift;
+          return acc;
+        }, {} as Record<string, CommonShift>);
+        setProject(projectData);
       });
   }
 

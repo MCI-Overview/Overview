@@ -1,3 +1,5 @@
+import { Dayjs } from "dayjs";
+
 export type CreateProjectData = {
   name: string | null;
   clientUEN: string | null;
@@ -23,4 +25,11 @@ export type Manage = {
   role: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
   consultantEmail: string;
   projectCuid: string;
+};
+
+export type DraggableChipProps = {
+  type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+  cuid: string;
+  startTime: Dayjs;
+  endTime: Dayjs;
 };

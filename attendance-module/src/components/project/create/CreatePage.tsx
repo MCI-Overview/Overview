@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios, { AxiosError } from "axios";
-import { Consultant, Location } from "../../../types/common";
+import { CommonConsultant, CommonLocation } from "../../../types/common";
 import { CreateProjectData } from "../../../types";
 import ProjectDetailsSection from "./DetailsSection";
 
@@ -33,10 +33,12 @@ const CreateProjectPage = () => {
     startDate: null,
     endDate: null,
     noticePeriodDuration: null,
-    noticePeriodUnit: null
+    noticePeriodUnit: null,
   });
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [candidateHolders, setCandidateHolders] = useState<Consultant[]>([]);
+  const [locations, setLocations] = useState<CommonLocation[]>([]);
+  const [candidateHolders, setCandidateHolders] = useState<CommonConsultant[]>(
+    [],
+  );
 
   const navigate = useNavigate();
 
@@ -59,7 +61,7 @@ const CreateProjectPage = () => {
       const axiosError = error as AxiosError<ErrorResponseData>;
       toast.error(
         axiosError.response?.data.message ||
-        "Error while creating project. Please try again later."
+          "Error while creating project. Please try again later.",
       );
     }
   };

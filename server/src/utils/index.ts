@@ -1,11 +1,11 @@
 import { Assign, Candidate } from "@prisma/client";
 import { JsonObject } from "@prisma/client/runtime/library";
 import {
-  Location,
-  CommonCandidate,
-  Address,
+  CommonLocation,
+  CommonAddress,
   BankDetails,
   EmergencyContact,
+  GetCandidateResponse,
 } from "@/types/common";
 import { PermissionList, checkPermission } from "./permissions";
 
@@ -35,7 +35,7 @@ export function checkLocationsValidity(locations: any): ParameterValidity {
     };
 
   try {
-    locations.map((location: Location) => {
+    locations.map((location: CommonLocation) => {
       return {
         postalCode: location.postalCode,
         address: location.address,
@@ -272,7 +272,7 @@ export async function processCandidateData(
     Candidate: Candidate;
   })[],
   permissionData?: JsonObject,
-): Promise<CommonCandidate[]> {
+): Promise<GetCandidateResponse> {
   const hasReadCandidateDetailsPermission = await checkPermission(
     userCuid,
     PermissionList.CAN_READ_CANDIDATE_DETAILS,
@@ -287,10 +287,10 @@ export async function processCandidateData(
         nric: maskNRIC(nric),
         name,
         contact: contact,
-        dateOfBirth,
+        dateOfBirth: dateOfBirth.toISOString(),
         consultantCuid: assign.Consultant.cuid,
-        startDate: assign.startDate,
-        endDate: assign.endDate,
+        startDate: assign.startDate.toISOString(),
+        endDate: assign.endDate.toISOString(),
         employmentType: assign.employmentType,
       };
     });
@@ -299,11 +299,12 @@ export async function processCandidateData(
   return assignData.map((assign) => {
     return {
       ...assign.Candidate,
-      startDate: assign.startDate,
-      endDate: assign.endDate,
+      dateOfBirth: assign.Candidate.dateOfBirth.toISOString(),
+      startDate: assign.startDate.toISOString(),
+      endDate: assign.endDate.toISOString(),
       employmentType: assign.employmentType,
       consultantCuid: assign.Consultant.cuid,
-      address: assign.Candidate.address as Address,
+      address: assign.Candidate.address as CommonAddress,
       bankDetails: assign.Candidate.bankDetails as BankDetails,
       emergencyContact: assign.Candidate.emergencyContact as EmergencyContact,
     };

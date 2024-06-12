@@ -1,11 +1,22 @@
 import { CircularProgress, IconButton, Stack, Tooltip } from "@mui/joy";
-import { useState } from "react";
 import { CancelOutlined } from "@mui/icons-material";
 import axios from "axios";
 import { useProjectContext } from "../../../providers/projectContextProvider";
+import { Dayjs } from "dayjs";
+import { ReactNode } from "react";
+import { DraggableChipProps } from "../../../types";
+import { Roster } from "../../../types/common";
 
-function ShiftTooltipDisplay({ date, shifts }) {
-  const { project, updateProject } = useProjectContext();
+function ShiftTooltipDisplay({
+  date,
+  shifts,
+  updateRosterData,
+}: {
+  date: Dayjs;
+  shifts: Roster[];
+  updateRosterData: () => void;
+}) {
+  const { project } = useProjectContext();
 
   if (!project) return null;
 
@@ -28,16 +39,16 @@ function ShiftTooltipDisplay({ date, shifts }) {
           }}
         >
           <div>
-            {`${shift.shiftStartTime.format("HHmm")} -
-            ${shift.shiftEndTime.format("HHmm")}`}
+            {`${shift.startTime.format("HHmm")} -
+            ${shift.endTime.format("HHmm")}`}
           </div>
           <IconButton
             size="sm"
             variant="soft"
             onClick={() =>
               axios
-                .delete(`/api/admin/roster/${shift.shiftCuid}`)
-                .then(() => updateProject())
+                .delete(`/api/admin/roster/${shift.rosterCuid}`)
+                .then(() => updateRosterData())
             }
           >
             <CancelOutlined />
@@ -48,112 +59,156 @@ function ShiftTooltipDisplay({ date, shifts }) {
   );
 }
 
+function renderSquare({
+  backgroundColor,
+  firstHalfBackground,
+  secondHalfBackground,
+  tooltip = "",
+  loading = false,
+}: {
+  backgroundColor: string;
+  firstHalfBackground?: string;
+  secondHalfBackground?: string;
+  tooltip?: string | ReactNode;
+  loading?: boolean;
+}) {
+  return (
+    <Tooltip title={tooltip}>
+      <Stack
+        direction="row"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "2rem",
+          width: "100%",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: "50%",
+            height: "100%",
+            backgroundColor: firstHalfBackground || backgroundColor,
+          }}
+        />
+        <div
+          style={{
+            width: "50%",
+            height: "100%",
+            backgroundColor: secondHalfBackground || backgroundColor,
+            boxSizing: "border-box",
+            borderRight: "1px solid",
+            borderColor: "#CDD7E1",
+          }}
+        />
+        {loading && (
+          <CircularProgress size="sm" sx={{ position: "absolute" }} />
+        )}
+      </Stack>
+    </Tooltip>
+  );
+}
+
 export default function Square({
   date,
   canDrop,
   didDrop,
   isOver,
-  shifts,
+  roster,
   disabled,
-  isDate,
+  item,
+  updateRosterData,
+}: {
+  date: Dayjs;
+  canDrop: boolean;
+  didDrop: boolean;
+  isOver: boolean;
+  roster: Roster[];
+  disabled: boolean;
+  item: DraggableChipProps;
+  updateRosterData: () => void;
 }) {
-  const tooltip = <ShiftTooltipDisplay date={date} shifts={shifts} />;
-  const [hover, setHover] = useState(false);
+  const hasFirstHalfItem = item?.type !== "SECOND_HALF";
+  const hasSecondHalfItem = item?.type !== "FIRST_HALF";
 
-  if ((disabled && isDate && isOver) || (!canDrop && isDate && isOver)) {
-    return (
-      <div
-        style={{
-          width: "100%",
-          height: "2rem",
-          backgroundColor: "red",
-        }}
-      />
-    );
+  const hasFirstHalfRoster = roster.some(
+    (r) => r.type === "FIRST_HALF" || r.type === "FULL_DAY",
+  );
+  const hasSecondHalfRoster = roster.some(
+    (r) => r.type === "SECOND_HALF" || r.type === "FULL_DAY",
+  );
+
+  if (didDrop) {
+    return renderSquare({
+      backgroundColor: "orange",
+      loading: true,
+    });
   }
 
-  if (didDrop && isDate) {
-    return (
-      <div
-        style={{
-          width: "100%",
-          height: "2rem",
-          backgroundColor: "orange",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <CircularProgress size="sm" />
-      </div>
-    );
+  if (isOver && disabled) {
+    return renderSquare({
+      backgroundColor: "gray",
+      firstHalfBackground: hasFirstHalfItem ? "red" : "gray",
+      secondHalfBackground: hasSecondHalfItem ? "red" : "gray",
+    });
   }
 
   if (disabled) {
-    return (
-      <div
-        style={{
-          width: "100%",
-          height: "2rem",
-          backgroundColor: "grey",
-        }}
-      />
-    );
+    return renderSquare({
+      backgroundColor: "gray",
+    });
   }
 
-  if (isOver && isDate) {
-    return (
-      <div
-        style={{
-          width: "100%",
-          height: "2rem",
-          backgroundColor: "green",
-        }}
-      />
-    );
+  if (isOver && !canDrop) {
+    return renderSquare({
+      backgroundColor: "transparent",
+      firstHalfBackground: hasFirstHalfItem
+        ? "red"
+        : hasFirstHalfRoster
+        ? "blue"
+        : "transparent",
+      secondHalfBackground: hasSecondHalfItem
+        ? "red"
+        : hasSecondHalfRoster
+        ? "blue"
+        : "transparent",
+    });
   }
 
-  if (shifts && shifts.length > 0) {
-    return (
-      <Tooltip title={tooltip}>
-        <div
-          style={{
-            width: "100%",
-            height: "2rem",
-            backgroundColor: "blue",
-            borderRight: "1px solid rgba(99, 107, 116, 0.2)",
-            transition: "border 0.3s ease-in-out",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onMouseEnter={() => {
-            setHover(true);
-          }}
-          onMouseLeave={() => {
-            setHover(false);
-          }}
-        ></div>
-      </Tooltip>
-    );
+  if (isOver) {
+    return renderSquare({
+      backgroundColor: "transparent",
+      firstHalfBackground: hasFirstHalfItem
+        ? "green"
+        : hasFirstHalfRoster
+        ? "blue"
+        : "transparent",
+      secondHalfBackground: hasSecondHalfItem
+        ? "green"
+        : hasSecondHalfRoster
+        ? "blue"
+        : "transparent",
+    });
   }
 
-  return (
-    <Tooltip title={tooltip}>
-      <div
-        style={{
-          width: "100%",
-          height: "2rem",
-          borderRight: "1px solid rgba(99, 107, 116, 0.2)",
-          transition: "border 0.3s ease-in-out",
-        }}
-        onMouseEnter={() => {
-          setHover(true);
-        }}
-        onMouseLeave={() => {
-          setHover(false);
-        }}
-      />
-    </Tooltip>
-  );
+  if (roster && roster.length > 0) {
+    return renderSquare({
+      backgroundColor: "transparent",
+      tooltip: (
+        <ShiftTooltipDisplay
+          date={date}
+          shifts={roster}
+          updateRosterData={updateRosterData}
+        />
+      ),
+      firstHalfBackground: hasFirstHalfRoster ? "blue" : "transparent",
+      secondHalfBackground: hasSecondHalfRoster ? "blue" : "transparent",
+    });
+  }
+
+  return renderSquare({
+    tooltip: date.format("YYYY-MM-DD"),
+    backgroundColor: "transparent",
+  });
 }

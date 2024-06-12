@@ -25,6 +25,12 @@ import { CircularProgress, CssBaseline, Box } from "@mui/joy";
 import { UserContextProvider } from "./providers/userContextProvider";
 import { ProjectContextProvider } from "./providers/projectContextProvider";
 import axiosRetry from "axios-retry";
+import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
+import isoWeek from "dayjs/plugin/isoWeek";
+
+dayjs.extend(isBetween);
+dayjs.extend(isoWeek);
 
 function App() {
   const location = useLocation();

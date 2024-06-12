@@ -3,7 +3,7 @@ import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { capitalizeWords } from "../../../utils/capitalize";
 import { checkPermission } from "../../../utils/permission";
-import { Location, PermissionList } from "../../../types/common";
+import { CommonLocation, PermissionList } from "../../../types/common";
 import AddLocationsModal from "./AddLocationsModal";
 import DeleteLocationModal from "./DeleteLocationModal";
 
@@ -31,7 +31,8 @@ const LocationsSection = () => {
 
   const [locations, setLocations] = useState(project?.locations || []);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [locationToDelete, setLocationToDelete] = useState<Location | null>(null);
+  const [locationToDelete, setLocationToDelete] =
+    useState<CommonLocation | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
