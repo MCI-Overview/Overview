@@ -44,7 +44,7 @@ candidateAPIRoutes.get(
 
       const hasReadCandidateDetailsPermission = await checkPermission(
         user.cuid,
-        PermissionList.CAN_READ_CANDIDATE_DETAILS
+        PermissionList.CAN_READ_CANDIDATE_DETAILS,
       );
 
       if (hasReadCandidateDetailsPermission) {
@@ -70,7 +70,7 @@ candidateAPIRoutes.get(
     } catch (error) {
       return res.status(404).send("Candidate not found.");
     }
-  }
+  },
 );
 
 candidateAPIRoutes.post("/candidate", async (req, res) => {
@@ -171,6 +171,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
         ...createData,
         User: {
           create: {
+            username: nric,
             hash: await bcrypt.hash(contact, 12),
           },
         },
@@ -205,7 +206,7 @@ candidateAPIRoutes.delete("/candidate", async (req, res) => {
 
   const hasDeleteCandidatePermission = await checkPermission(
     user.cuid,
-    PermissionList.CAN_DELETE_CANDIDATES
+    PermissionList.CAN_DELETE_CANDIDATES,
   );
 
   if (!hasDeleteCandidatePermission) {
@@ -259,13 +260,13 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     return res
       .status(400)
       .send(
-        "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required."
+        "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required.",
       );
   }
 
   const hasUpdateCandidatePermission = await checkPermission(
     user.cuid,
-    PermissionList.CAN_UPDATE_CANDIDATES
+    PermissionList.CAN_UPDATE_CANDIDATES,
   );
 
   if (!hasUpdateCandidatePermission) {
