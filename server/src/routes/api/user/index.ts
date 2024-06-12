@@ -2,8 +2,11 @@ import { Router } from "express";
 import { prisma } from "../../../client";
 import { PrismaError } from "@/types";
 import { User } from "@/types/common";
+import attendanceAPIRoutes from "./attendance";
 
 const userAPIRouter: Router = Router();
+
+userAPIRouter.use("/", attendanceAPIRoutes);
 
 userAPIRouter.get("/:candidateCuid", async (req, res) => {
   const { candidateCuid } = req.params;
