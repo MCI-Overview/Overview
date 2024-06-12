@@ -102,7 +102,7 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
       }}
     >
       {fields.map((field) => (
-        <ListItem>
+        <ListItem key={field.name}>
           <ListItemButton onClick={field.onClick}>
             {field.icon}
             <ListItemContent>
