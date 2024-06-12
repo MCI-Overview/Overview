@@ -20,6 +20,7 @@ type ParameterValidity =
     }
   | {
       isValid: true;
+      message?: string;
     };
 
 export function checkLocationsValidity(locations: any): ParameterValidity {

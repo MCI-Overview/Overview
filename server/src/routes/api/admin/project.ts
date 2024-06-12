@@ -1251,11 +1251,9 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
 });
 
 const checkProjectRole = async (
-
   req: Request,
 
   projectCuid: string,
-
 ): Promise<boolean> => {
   const user = req.user as User;
   const response = await prisma.manage.findFirst({
@@ -1413,9 +1411,12 @@ projectAPIRouter.post(
         },
       });
 
-      return res.status(200).send({
-        message: "Successfully removed collaborator and updated Assign table.",
-      });
+      return res
+        .status(200)
+        .send({
+          message:
+            "Successfully removed collaborator and updated Assign table.",
+        });
     } catch (error) {
       console.error("Error while removing collaborator:", error);
       return res.status(500).send({ error: "Internal server error." });
