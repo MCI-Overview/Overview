@@ -13,8 +13,9 @@ import {
 } from "@mui/joy";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { CommonConsultant, User } from "../../../types/common";
+import { CommonConsultant } from "../../../types/common";
 import { Delete } from "@mui/icons-material";
+import { useUserContext } from "../../../providers/userContextProvider";
 
 export default function ProjectCandidateHoldersSection({
   candidateHolders,
@@ -26,15 +27,7 @@ export default function ProjectCandidateHoldersSection({
   const [consultantList, setConsultantList] = useState<CommonConsultant[]>([]);
   const [selectedConsultant, setSelectedConsultant] =
     useState<CommonConsultant | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    axios.get("/api").then((response) => {
-      if (response.status == 200) {
-        setUser(response.data);
-      }
-    });
-  }, []);
+  const { user } = useUserContext();
 
   useEffect(() => {
     try {

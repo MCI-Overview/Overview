@@ -10,19 +10,19 @@ const SERVER_URL = process.env.SERVER_URL as string;
 
 if (!clientID) {
   throw new Error(
-    "MICROSOFT_CLIENT_ID must be defined in your environment variables"
+    "MICROSOFT_CLIENT_ID must be defined in your environment variables",
   );
 }
 
 if (!clientSecret) {
   throw new Error(
-    "MICROSOFT_CLIENT_SECRET must be defined in your environment variables"
+    "MICROSOFT_CLIENT_SECRET must be defined in your environment variables",
   );
 }
 
 if (!tenantID) {
   throw new Error(
-    "MICROSOFT_TENANT_ID must be defined in your environment variables"
+    "MICROSOFT_TENANT_ID must be defined in your environment variables",
   );
 }
 
@@ -43,9 +43,9 @@ passport.use(
       _accessToken: string,
       _refreshToken: string,
       profile: MicrosoftProfile,
-      cb: (error: any, user?: any) => void
+      cb: (error: any, user?: any) => void,
     ) {
-      const { cuid, name, email } = await prisma.consultant.upsert({
+      const { cuid } = await prisma.consultant.upsert({
         where: {
           email: profile.userPrincipalName.toLowerCase(),
         },
@@ -62,10 +62,8 @@ passport.use(
 
       cb(null, {
         cuid,
-        name,
-        email,
         userType: "Admin",
       });
-    }
-  )
+    },
+  ),
 );

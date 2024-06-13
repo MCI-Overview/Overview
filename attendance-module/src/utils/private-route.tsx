@@ -1,35 +1,19 @@
 import { useLocation, Outlet, Navigate } from "react-router-dom";
 import { useUserContext } from "../providers/userContextProvider";
-import axios from "axios";
 import { useEffect, useState } from "react";
 
 export function PrivateUserRoutes() {
-  const { user, setUser } = useUserContext();
-  const currentPath = useLocation().pathname;
+  const { user, updateUser } = useUserContext();
   const [loading, setLoading] = useState(true);
+  const currentPath = useLocation().pathname;
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get("/api");
-        setLoading(false);
-        if (response.status === 200) {
-          setUser(response.data);
-        }
-      } catch (error) {
-        setLoading(false);
-        if (currentPath !== "/") {
-          return <Navigate to="/" />;
-        }
-      }
-    };
-
     if (!user) {
-      fetchUser();
+      updateUser(() => setLoading(false));
     } else {
       setLoading(false);
     }
-  }, [user, setUser, currentPath]);
+  }, [user, updateUser, currentPath]);
 
   if (loading) return null;
 
@@ -61,32 +45,17 @@ export function PrivateUserRoutes() {
 }
 
 export function PrivateAdminRoutes() {
-  const { user, setUser } = useUserContext();
-  const currentPath = useLocation().pathname;
+  const { user, updateUser } = useUserContext();
   const [loading, setLoading] = useState(true);
+  const currentPath = useLocation().pathname;
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get("/api");
-        setLoading(false);
-        if (response.status === 200) {
-          setUser(response.data);
-        }
-      } catch (error) {
-        setLoading(false);
-        if (currentPath !== "/admin") {
-          return <Navigate to="/admin" />;
-        }
-      }
-    };
-
     if (!user) {
-      fetchUser();
+      updateUser(() => setLoading(false));
     } else {
       setLoading(false);
     }
-  }, [user, setUser, currentPath]);
+  }, [user, updateUser, currentPath]);
 
   if (loading) return null;
 

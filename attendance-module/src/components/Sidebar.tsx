@@ -116,7 +116,7 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
 };
 
 export default function Sidebar() {
-  const { user, setUser } = useUserContext();
+  const { user, updateUser } = useUserContext();
 
   return (
     <Sheet
@@ -228,7 +228,7 @@ export default function Sidebar() {
           size="sm"
           variant="plain"
           color="neutral"
-          onClick={() => axios.post("/logout").then(() => setUser(null))}
+          onClick={() => axios.post("/logout").then(() => updateUser())}
         >
           <LogoutRounded />
         </IconButton>
