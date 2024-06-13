@@ -1,13 +1,9 @@
 import { Router } from "express";
-import { prisma } from "../../../client";
+import { prisma, s3 } from "../../../client";
 import { PrismaError } from "@/types";
 import { User } from "@/types/common";
 import attendanceAPIRoutes from "./attendance";
-import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-} from "@aws-sdk/client-s3";
+import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import multer from "multer";
 import { Readable } from "stream";
 
@@ -48,13 +44,6 @@ userAPIRouter.get("/bankStatement", async (req, res) => {
   const { cuid } = user;
 
   try {
-    const s3 = new S3Client({
-      region: "ap-southeast-1",
-      credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY!,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-      },
-    });
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
       Key: `${cuid}-bankStatement`,
@@ -144,14 +133,6 @@ userAPIRouter.post(
     }
 
     try {
-      const s3 = new S3Client({
-        region: "ap-southeast-1",
-        credentials: {
-          accessKeyId: process.env.S3_ACCESS_KEY!,
-          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-        },
-      });
-
       await Promise.all([
         s3.send(
           new PutObjectCommand({
@@ -189,14 +170,6 @@ userAPIRouter.post(
     }
 
     try {
-      const s3 = new S3Client({
-        region: "ap-southeast-1",
-        credentials: {
-          accessKeyId: process.env.S3_ACCESS_KEY!,
-          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-        },
-      });
-
       await Promise.all([
         s3.send(
           new PutObjectCommand({
@@ -259,13 +232,6 @@ userAPIRouter.get("/nric/front", async (req, res) => {
   const { cuid } = user;
 
   try {
-    const s3 = new S3Client({
-      region: "ap-southeast-1",
-      credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY!,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-      },
-    });
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
       Key: `${cuid}-nricFront`,
@@ -288,13 +254,6 @@ userAPIRouter.get("/nric/back", async (req, res) => {
   const { cuid } = user;
 
   try {
-    const s3 = new S3Client({
-      region: "ap-southeast-1",
-      credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY!,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-      },
-    });
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
       Key: `${cuid}-nricBack`,
