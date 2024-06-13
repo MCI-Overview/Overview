@@ -54,7 +54,10 @@ export default function UploadEmergencyContactDetails({
   return (
     <>
       <Typography level="body-sm">
-        To ensure timely salary processing, please provide your banking details.
+        To ensure we can promptly reach someone on your behalf in case of an
+        emergency, please provide the name, relationship, and contact number of
+        your emergency contact. Thank you for helping us ensure your safety and
+        well-being.
       </Typography>
       <FormControl>
         <FormLabel>Emergency Contact Name</FormLabel>
