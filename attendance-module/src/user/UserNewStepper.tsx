@@ -16,12 +16,22 @@ import {
   Grid,
   Checkbox,
 } from "@mui/joy";
-import ContactsRoundedIcon from "@mui/icons-material/ContactsRounded";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import WavingHandIcon from "@mui/icons-material/WavingHand";
 import { useUserContext } from "../providers/userContextProvider";
-import { CandidateUser, User } from "../types/common";
+import { CandidateUser } from "../types/common";
 import axios from "axios";
+import {
+  AccountBalanceRounded,
+  ContactEmergencyRounded,
+  BadgeRounded,
+  WavingHandRounded,
+  ContactsRounded,
+  CheckCircleRounded,
+} from "@mui/icons-material";
+import UploadNRIC from "./UploadNRIC";
+import UploadBankDetails from "./UploadBankDetails";
+import LoadingRequestButton from "../components/LoadingRequestButton";
+import UserOnboarded from "./UserOnboarded";
+import UploadEmergencyContactDetails from "./UpdateEmergencyContactDetails";
 
 export default function UserNewStepper() {
   const userData = useUserContext().user as CandidateUser | null;
@@ -41,7 +51,6 @@ export default function UserNewStepper() {
     unit: "",
   });
   const [isFormValid, setIsFormValid] = useState(false);
-  const { setUser } = useUserContext();
 
   useEffect(() => {
     const {
@@ -115,12 +124,10 @@ export default function UserNewStepper() {
     }
   };
 
-  const handleSubmit = () => handleNext();
-
-  const handleFinish = async () => {
+  const handleSubmit = async () => {
     const { nationality, addressDetails, postalCode, floor, unit } = formData;
     try {
-      const response = await axios.post(`/api/user/${userData.cuid}/newuser`, {
+      const response = await axios.post(`/api/user/details`, {
         nationality: nationality,
         address: {
           unit: unit,
@@ -132,7 +139,10 @@ export default function UserNewStepper() {
           country: "SINGAPORE",
         },
       });
-      setUser(response.data as User);
+
+      if (response.status === 200) {
+        handleNext();
+      }
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -143,7 +153,7 @@ export default function UserNewStepper() {
   const steps = [
     {
       label: "Welcome!",
-      icon: <WavingHandIcon />,
+      icon: <WavingHandRounded />,
       content: (
         <>
           <Typography level="body-sm">
@@ -156,7 +166,7 @@ export default function UserNewStepper() {
     },
     {
       label: "Your Details",
-      icon: <ContactsRoundedIcon />,
+      icon: <ContactsRounded />,
       content: (
         <>
           <Typography level="title-lg">Personal particulars</Typography>
@@ -284,23 +294,41 @@ export default function UserNewStepper() {
           <Button variant="outlined" onClick={handleBack}>
             Back
           </Button>
-          <Button onClick={handleSubmit} disabled={!isFormValid}>
-            Submit
-          </Button>
+          <LoadingRequestButton
+            promise={handleSubmit}
+            submitLabel="Submit"
+            loadingLabel="Submitting..."
+            disabled={!isFormValid}
+          />
         </>
       ),
     },
     {
-      label: "Thank You!",
-      icon: <CheckCircleRoundedIcon />,
+      label: "Update Emergency Contact",
+      icon: <ContactEmergencyRounded />,
       content: (
-        <>
-          <Typography>
-            Your registration was successful, welcome to Overview!
-          </Typography>
-          <Button onClick={handleFinish}>Lets go!</Button>
-        </>
+        <UploadEmergencyContactDetails
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />
       ),
+    },
+    {
+      label: "Upload NRIC!",
+      icon: <BadgeRounded />,
+      content: <UploadNRIC handleBack={handleBack} handleNext={handleNext} />,
+    },
+    {
+      label: "Upload bank!",
+      icon: <AccountBalanceRounded />,
+      content: (
+        <UploadBankDetails handleBack={handleBack} handleNext={handleNext} />
+      ),
+    },
+    {
+      label: "Thank You!",
+      icon: <CheckCircleRounded />,
+      content: <UserOnboarded />,
     },
   ];
 

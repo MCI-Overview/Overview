@@ -1,13 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from "react";
-import { User } from  "../types/common";
+import { User } from "../types/common";
+import axios from "axios";
 
 const UserContext = createContext<{
   user: User | null;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  updateUser: (finallyFunction?: () => void) => void;
 }>({
   user: null,
-  setUser: () => {},
+  updateUser: () => {},
 });
 
 export function UserContextProvider({
@@ -17,8 +18,26 @@ export function UserContextProvider({
 }) {
   const [user, setUser] = useState<User | null>(null);
 
+  async function updateUser(finallyFunction?: () => void) {
+    await axios
+      .get("/api")
+      .then((response) => {
+        if (response.data.userType === "User") {
+          axios.get("/api/user").then((response) => {
+            setUser(response.data);
+          });
+        } else if (response.data.userType === "Admin") {
+          axios.get("/api/admin").then((response) => {
+            setUser(response.data);
+          });
+        }
+      })
+      .catch(() => setUser(null))
+      .finally(finallyFunction);
+  }
+
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, updateUser }}>
       {children}
     </UserContext.Provider>
   );

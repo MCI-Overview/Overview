@@ -3,7 +3,6 @@ import userAPIRoutes from "./user";
 import adminAPIRoutes from "./admin";
 import { User } from "@/types/common";
 import { Request, Response } from "express";
-import { getPermissions } from "../../utils/permissions";
 
 const router: Router = Router();
 
@@ -31,12 +30,7 @@ router.get("/", (req: Request, res: Response) => {
 
   const user = req.user as User;
 
-  const permissions = getPermissions(user?.cuid);
-
-  return res.json({
-    ...user,
-    permissions,
-  });
+  return res.json(user);
 });
 
 export default router;

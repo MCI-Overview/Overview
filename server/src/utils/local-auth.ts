@@ -12,6 +12,7 @@ passport.use(
       });
 
       const { hash, Candidate } = loginData;
+      const { cuid } = Candidate;
 
       bcrypt.compare(password, hash, function (err, result) {
         if (err) {
@@ -23,12 +24,12 @@ passport.use(
         }
 
         return cb(null, {
-          ...Candidate,
+          cuid,
           userType: "User",
         });
       });
     } catch (error) {
       return cb(null, false, { message: "Invalid username or password." });
     }
-  })
+  }),
 );
