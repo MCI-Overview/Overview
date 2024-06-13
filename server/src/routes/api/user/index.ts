@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../../../client";
 import { PrismaError } from "@/types";
 import { User } from "@/types/common";
+import attendanceAPIRoutes from "./attendance";
 import {
   S3Client,
   PutObjectCommand,
@@ -11,6 +12,8 @@ import multer from "multer";
 import { Readable } from "stream";
 
 const userAPIRouter: Router = Router();
+
+userAPIRouter.use("/", attendanceAPIRoutes);
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -59,9 +62,9 @@ userAPIRouter.get("/bankStatement", async (req, res) => {
 
     const response = await s3.send(command);
     if (response.Body instanceof Readable) {
-      response.Body.pipe(res);
+      return response.Body.pipe(res);
     } else {
-      res.status(500).send("Unexpected response body type");
+      return res.status(500).send("Unexpected response body type");
     }
   } catch (error) {
     console.error("Error while downloading file:", error);
@@ -120,8 +123,17 @@ userAPIRouter.post(
   ]),
   async (req, res) => {
     const { cuid } = req.user as User;
-    const nricFront = req.files["nricFront"]?.[0];
-    const nricBack = req.files["nricBack"]?.[0];
+
+    const files = req.files as {
+      [fieldname: string]: Express.Multer.File[];
+    };
+
+    if (!files) {
+      return res.status(400).send("NRIC images are required.");
+    }
+
+    const nricFront = files["nricFront"]?.[0];
+    const nricBack = files["nricBack"]?.[0];
 
     if (!nricFront) {
       return res.status(400).send("Front of NRIC is required.");
@@ -261,9 +273,9 @@ userAPIRouter.get("/nric/front", async (req, res) => {
 
     const response = await s3.send(command);
     if (response.Body instanceof Readable) {
-      response.Body.pipe(res);
+      return response.Body.pipe(res);
     } else {
-      res.status(500).send("Unexpected response body type");
+      return res.status(500).send("Unexpected response body type");
     }
   } catch (error) {
     console.error("Error while downloading file:", error);
@@ -290,9 +302,9 @@ userAPIRouter.get("/nric/back", async (req, res) => {
 
     const response = await s3.send(command);
     if (response.Body instanceof Readable) {
-      response.Body.pipe(res);
+      return response.Body.pipe(res);
     } else {
-      res.status(500).send("Unexpected response body type");
+      return res.status(500).send("Unexpected response body type");
     }
   } catch (error) {
     console.error("Error while downloading file:", error);

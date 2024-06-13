@@ -130,10 +130,10 @@ const MyCandidatesPage = () => {
     label: string;
     name: string;
   }[] = [
-    { color: "warning", label: "Upcoming", name: "Project Foo" },
-    { color: "success", label: "Ongoing", name: "Project Bar" },
-    { color: "neutral", label: "Former", name: "Project Baz" },
-  ];
+      { color: "warning", label: "Upcoming", name: "Project Foo" },
+      { color: "success", label: "Ongoing", name: "Project Bar" },
+      { color: "neutral", label: "Former", name: "Project Baz" },
+    ];
 
   const matchSearchValue = (cdd: [string, CandidateData[]]) => {
     return cdd[1].some(
@@ -206,7 +206,7 @@ const MyCandidatesPage = () => {
                             <td rowSpan={projects.length}>
                               <Link
                                 variant="soft"
-                                href={`/admin/candidate/${candidateCuid}`} // TODO: Change this to the correct path
+                                href={`#/admin/candidate/${candidateCuid}`} // TODO: Change this to the correct path
                               >
                                 {project.candidateName}
                               </Link>
@@ -219,10 +219,10 @@ const MyCandidatesPage = () => {
                                 new Date() < project.startDate
                                   ? "warning"
                                   : new Date() > project.endDate
-                                  ? "neutral"
-                                  : "success"
+                                    ? "neutral"
+                                    : "success"
                               }
-                              href={`/admin/project/${project.projectCuid}`}
+                              href={`#/admin/project/${project.projectCuid}`}
                             >
                               {project.projectName}
                             </Link>
