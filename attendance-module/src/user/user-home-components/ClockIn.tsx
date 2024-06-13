@@ -1,4 +1,16 @@
+import axios from "axios";
+import toast from "react-hot-toast";
 import { useEffect, useState, useRef } from "react";
+import Webcam from "react-webcam";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import Clock from "./Clock";
+import { CommonLocation, getAttendanceResponse } from "../../types/common";
+import dayjs, { Dayjs } from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
+
 import {
   Box,
   Button,
@@ -8,79 +20,171 @@ import {
   Card,
   Modal,
   ModalDialog,
+  CircularProgress,
 } from "@mui/joy";
-import Webcam from "react-webcam";
-import axios from "axios";
-import Clock from "./Clock";
-import toast from "react-hot-toast";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import { CommonLocation } from "../../types/common";
-import L from "leaflet";
+
+// TODO: these should be set on a per project basis
+const TIME_RANGE = 15; // 15 minutes
+const DISTANCE_RADIUS = 50; // 50m
 
 export default function ClockIn() {
+  const isDarkMode = localStorage.getItem("joy-mode") === "dark";
+
+  const [currAttendance, setCurrAttendance] = useState<
+    getAttendanceResponse | undefined
+  >(undefined);
+  const [projLocations, setProjLocations] = useState<CommonLocation[]>([]);
+  const [startTime, setStartTime] = useState<Dayjs | undefined>(undefined);
+  const [endTime, setEndTime] = useState<Dayjs | undefined>(undefined);
+
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [isPictureModalOpen, setIsPictureModalOpen] = useState(false);
-  const [currAttendance, setCurrAttendance] = useState(undefined);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isFetchingLocations, setIsFetchingLocations] = useState(true);
   const [currLatitude, setCurrLatitude] = useState<number | null>(null);
   const [currLongitude, setCurrLongitude] = useState<number | null>(null);
-  const [projectLocations, setProjectLocations] = useState<CommonLocation[]>(
-    []
-  );
+  const [distance, setDistance] = useState<number | undefined>(undefined);
+  const [nearestLocation, setNearestLocation] = useState<
+    CommonLocation | undefined
+  >(undefined);
+
+  const [isPictureModalOpen, setIsPictureModalOpen] = useState(false);
   const webcamRef = useRef<Webcam>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
-  const videoConstraints = {
-    width: 360,
-    height: 360,
-    facingMode: "user",
-  };
-
-  const handleCaptureImage = () => {
-    if (webcamRef.current) {
-      const imageSrc = webcamRef.current.getScreenshot();
-      if (imageSrc) {
-        setCapturedImage(imageSrc);
-        setIsPictureModalOpen(false);
-
-        // TODO: update attendance and upload image
-
-        toast.success("Successfully clocked in!");
-      } else {
-        toast.error("Failed to capture image, please try again.");
-        return;
-      }
-    }
-  };
-
-  const handleGetLocation = () => {
-    navigator.geolocation.watchPosition(
-      (pos) => {
-        setCurrLatitude(pos.coords.latitude);
-        setCurrLongitude(pos.coords.longitude);
-      },
-      () => {
-        toast.error("Failed to obtain location data.");
-      },
-      { enableHighAccuracy: true }
-    );
-  };
+  const [isClockOutModalOpen, setIsClockOutModalOpen] = useState(false);
 
   useEffect(() => {
     axios
       .get("/api/user/attendance")
       .then((response) => {
-        const curr = getCurrAttendance(response.data);
-        setCurrAttendance(curr);
+        const att = getCurrAttendance(response.data);
+        setCurrAttendance(att);
+        if (!att) return;
 
-        console.log(currAttendance);
+        setProjLocations(att.Shift.Project.locations);
 
-        setProjectLocations(curr.Shift.Project.locations);
+        switch (att.shiftType) {
+          case "FULL_DAY":
+            setStartTime(dayjs(att.Shift.startTime));
+            setEndTime(dayjs(att.Shift.endTime));
+            break;
+          case "FIRST_HALF":
+            setStartTime(dayjs(att.Shift.startTime));
+            setEndTime(dayjs(att.Shift.halfDayEndTime));
+            break;
+          case "SECOND_HALF":
+            setStartTime(dayjs(att.Shift.halfDayStartTime));
+            setEndTime(dayjs(att.Shift.endTime));
+            break;
+          default:
+            throw Error("Invalid shift type");
+        }
       })
       .catch((error) => console.error(error));
   }, []);
 
-  var redIcon = new L.Icon({
+  const isWithinStartTimeRange = () => {
+    if (!currAttendance || !startTime || !endTime) {
+      return false;
+    }
+
+    const { correctStart } = correctTimes(
+      dayjs(currAttendance.shiftDate),
+      startTime,
+      endTime
+    );
+
+    return isWithinTimeRange(correctStart);
+  };
+
+  const isWithinEndTimeRange = () => {
+    if (!currAttendance || !startTime || !endTime) {
+      return false;
+    }
+
+    const { correctEnd } = correctTimes(
+      dayjs(currAttendance.shiftDate),
+      startTime,
+      endTime
+    );
+
+    return isWithinTimeRange(correctEnd);
+  };
+
+  const isWithinTimeRange = (correctTime: Dayjs) => {
+    const now = dayjs();
+    const diff = now.diff(correctTime, "minute");
+
+    console.log(now, correctTime, diff);
+
+    return Math.abs(diff) <= TIME_RANGE;
+  };
+
+  useEffect(() => {
+    if (!currLatitude || !currLongitude || projLocations.length === 0) {
+      setDistance(undefined);
+      setNearestLocation(undefined);
+      return;
+    }
+
+    const getDistance = (
+      lat1: number,
+      lon1: number,
+      lat2: number,
+      lon2: number
+    ) => {
+      const R = 6371e3; // Radius of the earth in meters
+      const dLat = deg2rad(lat2 - lat1);
+      const dLon = deg2rad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(deg2rad(lat1)) *
+          Math.cos(deg2rad(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const d = R * c; // Distance in meters
+      return d;
+    };
+
+    let nearest = projLocations[0];
+    let minDistance = getDistance(
+      currLatitude,
+      currLongitude,
+      parseFloat(nearest.latitude),
+      parseFloat(nearest.longitude)
+    );
+
+    for (let i = 1; i < projLocations.length; i++) {
+      const location = projLocations[i];
+      const distance = getDistance(
+        currLatitude,
+        currLongitude,
+        parseFloat(location.latitude),
+        parseFloat(location.longitude)
+      );
+
+      if (distance < minDistance) {
+        nearest = location;
+        minDistance = distance;
+      }
+    }
+
+    setNearestLocation(nearest);
+    setDistance(
+      getDistance(
+        currLatitude,
+        currLongitude,
+        parseFloat(nearest.latitude),
+        parseFloat(nearest.longitude)
+      )
+    );
+  }, [currLatitude, currLongitude, projLocations]);
+
+  const deg2rad = (deg: number) => {
+    return deg * (Math.PI / 180);
+  };
+
+  const redIcon = new L.Icon({
     iconUrl:
       "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
     shadowUrl:
@@ -91,8 +195,139 @@ export default function ClockIn() {
     shadowSize: [41, 41],
   });
 
-  // retrieve joy-mode light/dark from localStorage
-  const isDarkMode = localStorage.getItem("joy-mode") === "dark";
+  const handleGetLocation = () => {
+    setIsFetchingLocations(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCurrLatitude(pos.coords.latitude);
+        setCurrLongitude(pos.coords.longitude);
+        setIsFetchingLocations(false);
+      },
+      () => {
+        toast.error("Failed to obtain location data.");
+        setIsFetchingLocations(false);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
+
+  const handleCheckLocation = () => {
+    if (!projLocations || projLocations.length === 0) {
+      toast.error("No site locations found.");
+      return;
+    }
+
+    if (!currLatitude || !currLongitude) {
+      toast.error("Unable to retrieve current location.");
+      return;
+    }
+
+    if (!nearestLocation || !distance) {
+      toast.error("Unable to retrieve nearest location.");
+      return;
+    }
+
+    if (distance > DISTANCE_RADIUS) {
+      toast.error(`More than ${DISTANCE_RADIUS} meters from nearest location.`);
+      return;
+    }
+
+    setIsLocationModalOpen(false);
+    setIsPictureModalOpen(true);
+  };
+
+  const handleCaptureImageOrRetake = () => {
+    if (capturedImage) {
+      setCapturedImage(null);
+      return;
+    }
+
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (imageSrc) {
+        setCapturedImage(imageSrc);
+      } else {
+        toast.error("Failed to capture image, please try again.");
+        return;
+      }
+    }
+  };
+
+  const handleClockIn = () => {
+    if (!currAttendance) {
+      toast.error("No upcoming shift.");
+      return;
+    }
+
+    const body = {
+      attendanceCuid: currAttendance.cuid,
+      candidateCuid: currAttendance.candidateCuid,
+      clockInTime: dayjs(),
+      imageData: capturedImage,
+    };
+
+    // update attendance in database
+    axios
+      .patch("/api/user/attendance", body)
+      .then(() => {
+        toast.success("Successfully clocked in!", { duration: 10000 });
+        setIsPictureModalOpen(false);
+      })
+      .catch((error) => {
+        console.error(error);
+        toast.error("Failed to record attendance.", { duration: 10000 });
+      });
+
+    // TODO: Save image to s3
+    console.log("TODO: save image to s3");
+
+    // update local state
+    setCurrAttendance({
+      ...currAttendance,
+      clockInTime: dayjs().toISOString(),
+    });
+  };
+
+  const handleAttemptClockOut = () => {
+    if (!currAttendance || !currAttendance.clockInTime) {
+      toast.error("Not clocked in yet.");
+      return;
+    }
+
+    if (!isWithinEndTimeRange()) {
+      toast.error("Not within clock-out time range.");
+      return;
+    }
+
+    setIsClockOutModalOpen(true);
+  };
+
+  const handleClockOut = () => {
+    if (!currAttendance || !currAttendance.clockInTime) {
+      toast.error("Not clocked in yet.");
+      return;
+    }
+
+    const body = {
+      attendanceCuid: currAttendance.cuid,
+      clockOutTime: dayjs(),
+    };
+
+    // update attendance in database
+    axios
+      .patch("/api/user/attendance", body)
+      .then(() => {
+        toast.success("Succesfully clocked out!", { duration: 10000 });
+        setIsClockOutModalOpen(false);
+      })
+      .catch((error) => {
+        console.error(error);
+        toast.error("Failed to record attendance.", { duration: 10000 });
+      });
+
+    // refresh page
+    window.location.reload();
+  };
 
   return (
     <>
@@ -100,223 +335,293 @@ export default function ClockIn() {
         spacing={4}
         sx={{
           display: "flex",
-          maxWidth: "800px",
+          width: "400px",
+          maxWidth: "1000px",
           mx: "auto",
           px: { xs: 2, md: 6 },
-          py: { xs: 2, md: 3 },
           alignItems: "center",
         }}
       >
-        <Card>
-          <Box>
-            <Typography level="title-md">Clock</Typography>
-            <Typography level="body-sm">Clock your attendance</Typography>
-          </Box>
-
-          <Divider />
-
+        <Card sx={{ width: "100%" }}>
           <Clock />
-
           <Divider />
 
-          <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
-            <Button
-              onClick={() => {
-                handleGetLocation();
-                setIsLocationModalOpen(true);
-              }}
-            >
-              Clock In
-            </Button>
-            <Button>Clock Out</Button>
-          </Box>
-        </Card>
-
-        {/* display captured image */}
-        {capturedImage && (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-            <img
-              src={capturedImage}
-              alt="captured"
-              style={{ width: "100%", height: "auto" }}
-            />
-          </Box>
-        )}
-
-        <Modal
-          open={isLocationModalOpen}
-          onClose={() => setIsLocationModalOpen(false)}
-        >
-          <ModalDialog sx={{ width: "600px" }}>
-            {currLatitude && currLongitude && (
-              <>
-                <MapContainer
-                  center={[currLatitude, currLongitude]}
-                  zoom={15}
-                  style={{ height: "400px", width: "100%" }}
-                  minZoom={12}
-                  maxZoom={18}
-                >
-                  <TileLayer
-                    url={
-                      "https://www.onemap.gov.sg/maps/tiles/" +
-                      (isDarkMode ? "Night" : "Default") +
-                      "/{z}/{x}/{y}.png"
-                    }
-                    attribution='<img src="https://www.onemap.gov.sg/web-assets/images/logo/om_logo.png" style="height:20px;width:20px;"/>&nbsp;<a href="https://www.onemap.gov.sg/" target="_blank" rel="noopener noreferrer">OneMap</a>&nbsp;&copy;&nbsp;contributors&nbsp;&#124;&nbsp;<a href="https://www.sla.gov.sg/" target="_blank" rel="noopener noreferrer">Singapore Land Authority</a>'
-                    detectRetina={true}
-                  />
-
-                  {currLatitude && currLongitude && (
-                    <Marker position={[currLatitude, currLongitude]}>
-                      <Popup>
-                        <Typography level="body-sm">Your location</Typography>
-                      </Popup>
-                    </Marker>
-                  )}
-
-                  {projectLocations.length > 0 &&
-                    projectLocations.map((loc) => (
-                      <Marker
-                        key={loc.postalCode}
-                        icon={redIcon}
-                        position={[
-                          parseFloat(loc.latitude),
-                          parseFloat(loc.longitude),
-                        ]}
-                      >
-                        <Popup>
-                          <Typography level="body-sm">
-                            {loc.address}, {loc.postalCode}
-                          </Typography>
-                        </Popup>
-                      </Marker>
-                    ))}
-                </MapContainer>
-
-                <Divider />
-              </>
-            )}
-
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-              }}
-            >
-              <Button onClick={handleGetLocation} fullWidth>
-                Update Location
-              </Button>
-              <Button
-                onClick={() => {
-                  setIsLocationModalOpen(false);
-                  setIsPictureModalOpen(true);
-                }}
-                fullWidth
-                disabled={!currLatitude || !currLongitude} // TODO: Add check for location within range
-              >
-                Next
-              </Button>
-            </Box>
-          </ModalDialog>
-        </Modal>
-
-        <Modal
-          open={isPictureModalOpen}
-          onClose={() => setIsPictureModalOpen(false)}
-        >
-          <ModalDialog sx={{ width: "400px" }}>
+          {!currAttendance && (
             <Box
               sx={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                height: "100%",
               }}
             >
-              <Webcam
-                audio={false}
-                ref={webcamRef}
-                screenshotFormat="image/jpeg"
-                videoConstraints={videoConstraints}
-              />
-              <Button onClick={handleCaptureImage} sx={{ mt: 2 }} fullWidth>
-                Take photo
-              </Button>
+              <Typography level="title-sm">No upcoming shifts</Typography>
             </Box>
-          </ModalDialog>
-        </Modal>
+          )}
+
+          {currAttendance && (
+            <>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {currAttendance.clockInTime ? (
+                  <Typography level="title-lg" color="success">
+                    Clocked-In To:
+                  </Typography>
+                ) : (
+                  <Typography level="title-lg">Upcoming Shift:</Typography>
+                )}
+                <Typography level="title-md">
+                  {currAttendance.Shift.Project.name}
+                </Typography>
+                <Typography level="title-md">
+                  {startTime?.format("h:mm A")} - {endTime?.format("h:mm A")}
+                </Typography>
+                <Typography level="title-md">
+                  {dayjs(currAttendance.shiftDate).format("dddd, MMMM DD YYYY")}
+                </Typography>
+                <Typography level="title-md">
+                  {`Time range: ${TIME_RANGE} minutes`}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+                <Button
+                  fullWidth
+                  onClick={() => {
+                    if (!isWithinStartTimeRange()) {
+                      toast.error("Not within clock-in time range.");
+                      return;
+                    }
+
+                    if (!currLatitude || !currLongitude) {
+                      handleGetLocation();
+                    }
+                    setIsLocationModalOpen(true);
+                  }}
+                  disabled={
+                    !currAttendance || Boolean(currAttendance.clockInTime)
+                  }
+                >
+                  Clock-In
+                </Button>
+                <Button
+                  fullWidth
+                  onClick={handleAttemptClockOut}
+                  disabled={!currAttendance.clockInTime}
+                >
+                  Clock-Out
+                </Button>
+              </Box>
+            </>
+          )}
+        </Card>
       </Stack>
+
+      <Modal
+        open={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+      >
+        <ModalDialog sx={{ width: "600px" }}>
+          {currLatitude && currLongitude ? (
+            <>
+              <MapContainer
+                center={[currLatitude, currLongitude]}
+                zoom={14}
+                style={{ height: "400px", width: "100%" }}
+                minZoom={12}
+                maxZoom={17}
+              >
+                <TileLayer
+                  url={
+                    "https://www.onemap.gov.sg/maps/tiles/" +
+                    (isDarkMode ? "Night" : "Default") +
+                    "/{z}/{x}/{y}.png"
+                  }
+                  attribution='<img src="https://www.onemap.gov.sg/web-assets/images/logo/om_logo.png" style="height:20px;width:20px;"/>&nbsp;<a href="https://www.onemap.gov.sg/" target="_blank" rel="noopener noreferrer">OneMap</a>&nbsp;&copy;&nbsp;contributors&nbsp;&#124;&nbsp;<a href="https://www.sla.gov.sg/" target="_blank" rel="noopener noreferrer">Singapore Land Authority</a>'
+                  detectRetina={true}
+                />
+
+                {currLatitude && currLongitude && (
+                  <Marker position={[currLatitude, currLongitude]}>
+                    <Popup>
+                      <Typography level="body-sm">Your location</Typography>
+                    </Popup>
+                  </Marker>
+                )}
+
+                {projLocations.length > 0 &&
+                  projLocations.map((loc) => (
+                    <Marker
+                      key={loc.postalCode}
+                      icon={redIcon}
+                      position={[
+                        parseFloat(loc.latitude),
+                        parseFloat(loc.longitude),
+                      ]}
+                    >
+                      <Popup>
+                        <Typography level="body-sm">
+                          {loc.address}, {loc.postalCode}
+                        </Typography>
+                      </Popup>
+                    </Marker>
+                  ))}
+              </MapContainer>
+            </>
+          ) : (
+            <Card
+              sx={{
+                height: "400px",
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+                display: "flex",
+              }}
+              variant="soft"
+            />
+          )}
+
+          <Typography level="title-sm">
+            {projLocations.length > 0
+              ? nearestLocation && distance
+                ? `Nearest location: ${nearestLocation.address}, ${
+                    nearestLocation.postalCode
+                  } (${distance.toFixed(2)}m away)`
+                : "Fetching location..."
+              : "No site locations found"}
+          </Typography>
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <Button
+              onClick={handleGetLocation}
+              disabled={isFetchingLocations}
+              fullWidth
+            >
+              {isFetchingLocations ? <CircularProgress /> : "Update Location"}
+            </Button>
+            <Button
+              onClick={handleCheckLocation}
+              disabled={isFetchingLocations}
+              fullWidth
+            >
+              Continue
+            </Button>
+          </Box>
+        </ModalDialog>
+      </Modal>
+
+      <Modal
+        open={isPictureModalOpen}
+        onClose={() => setIsPictureModalOpen(false)}
+      >
+        <ModalDialog sx={{ width: "400px" }}>
+          {!capturedImage ? (
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              videoConstraints={{
+                width: 360,
+                height: 360,
+                facingMode: "user",
+              }}
+            />
+          ) : (
+            <img src={capturedImage} alt="smile!" />
+          )}
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+            }}
+          >
+            <Button fullWidth onClick={handleCaptureImageOrRetake}>
+              {capturedImage ? "Retake" : "Capture"}
+            </Button>
+            <Button fullWidth onClick={handleClockIn} disabled={!capturedImage}>
+              Submit
+            </Button>
+          </Box>
+        </ModalDialog>
+      </Modal>
+
+      <Modal
+        open={isClockOutModalOpen}
+        onClose={() => setIsClockOutModalOpen(false)}
+      >
+        <ModalDialog>
+          <Typography level="title-sm">Clock Out</Typography>
+          <Typography level="body-sm">
+            Are you sure you want to clock out? <br />
+            This action cannot be undone.
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button fullWidth onClick={handleClockOut}>
+              Confirm
+            </Button>
+            <Button fullWidth onClick={() => setIsClockOutModalOpen(false)}>
+              Cancel
+            </Button>
+          </Box>
+        </ModalDialog>
+      </Modal>
     </>
   );
 }
 
-const getCurrAttendance = (attendanceData: any[]) => {
-  const now = new Date();
+const getCurrAttendance = (attendanceData: getAttendanceResponse[]) => {
+  const now = dayjs();
 
-  // TODO: This should be set on per project basis
-  // const startTimeRange = 15 * 60 * 1000; // 15 minutes
-  const endTimeRange = 15 * 60 * 1000; // 15 minutes
+  const currAttendance = attendanceData.find((attendance) => {
+    if (attendance.clockOutTime) {
+      return false;
+    }
 
-  const currAttendance = attendanceData.find((attendance: any) => {
     const { correctEnd } = correctTimes(
-      attendance.shiftDate,
-      attendance.Shift.startTime,
-      attendance.Shift.endTime
+      dayjs(attendance.shiftDate),
+      dayjs(attendance.Shift.startTime),
+      dayjs(attendance.Shift.endTime)
     );
 
     // true if current time is before endTimeRange after the end time of the shift
-    const cutoff = new Date(correctEnd).getTime() + endTimeRange;
-    return now.getTime() <= cutoff;
+    const cutoff = correctEnd.valueOf() + TIME_RANGE * 60 * 1000;
+    return now.valueOf() <= cutoff;
   });
 
   return currAttendance;
 };
 
 function correctTimes(
-  dateStr: string,
-  startTimeStr: string,
-  endTimeStr: string
-): { correctStart: string; correctEnd: string } {
-  // Parse the main date
-  const mainDate = new Date(dateStr);
-
-  // Parse the start and end times
-  const startTime = new Date(startTimeStr);
-  const endTime = new Date(endTimeStr);
-
+  mainDate: Dayjs,
+  startTime: Dayjs,
+  endTime: Dayjs
+): { correctStart: Dayjs; correctEnd: Dayjs } {
   // Replace the date part of the start and end times with the main date
-  const correctedStartTime = new Date(
-    Date.UTC(
-      mainDate.getUTCFullYear(),
-      mainDate.getUTCMonth(),
-      mainDate.getUTCDate(),
-      startTime.getUTCHours(),
-      startTime.getUTCMinutes(),
-      startTime.getUTCSeconds(),
-      startTime.getUTCMilliseconds()
-    )
-  );
+  const correctStart = mainDate
+    .hour(startTime.hour())
+    .minute(startTime.minute())
+    .second(startTime.second())
+    .millisecond(startTime.millisecond());
 
-  const correctedEndTime = new Date(
-    Date.UTC(
-      mainDate.getUTCFullYear(),
-      mainDate.getUTCMonth(),
-      mainDate.getUTCDate(),
-      endTime.getUTCHours(),
-      endTime.getUTCMinutes(),
-      endTime.getUTCSeconds(),
-      endTime.getUTCMilliseconds()
-    )
-  );
-
-  // Convert to ISO string and ensure the format ends with 'Z' to indicate UTC
-  const correctStart = correctedStartTime
-    .toISOString()
-    .replace(/\.\d{3}Z$/, "Z");
-  const correctEnd = correctedEndTime.toISOString().replace(/\.\d{3}Z$/, "Z");
+  const correctEnd = mainDate
+    .hour(endTime.hour())
+    .minute(endTime.minute())
+    .second(endTime.second())
+    .millisecond(endTime.millisecond());
 
   return { correctStart, correctEnd };
 }
