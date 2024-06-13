@@ -206,3 +206,29 @@ export type Roster = {
   endTime: Dayjs;
   consultantCuid: string;
 };
+
+export type getAttendanceResponse = {
+  cuid: string;
+  candidateCuid: string;
+  shiftCuid: string;
+  shiftType: string;
+  clockInTime: string;
+  clockOutTime: string;
+  status: string;
+  leave: string;
+  shiftDate: string;
+  Shift: {
+    cuid: string;
+    projectCuid: string;
+    startTime: string;
+    endTime: string;
+    halfDayStartTime: string | null;
+    halfDayEndTime: string | null;
+    breakDuration: number;
+    status: string;
+    Project: {
+      name: string;
+      locations: CommonLocation[];
+    };
+  };
+};
