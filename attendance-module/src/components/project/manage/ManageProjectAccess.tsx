@@ -45,7 +45,7 @@ const ManageProjectAccess = () => {
   )?.role;
 
   const filteredConsultants = consultants.filter(
-    (consultant) => !collaborators.some((row) => row.cuid === consultant.cuid),
+    (consultant) => !collaborators.some((row) => row.cuid === consultant.cuid)
   );
 
   useEffect(() => {
@@ -86,7 +86,7 @@ const ManageProjectAccess = () => {
     const consultant = collaborators.find((collab) => collab.cuid === cuid);
     if (consultant) {
       const candidatesOfConsultant = candidates.filter(
-        (candidate) => candidate.consultantCuid === cuid,
+        (candidate) => candidate.consultantCuid === cuid
       );
       setConsultantToRemove(consultant);
       setCandidatesToReassign(candidatesOfConsultant);
@@ -94,7 +94,7 @@ const ManageProjectAccess = () => {
         candidatesOfConsultant.map((candidate) => ({
           consultantCuid: null,
           candidateCuid: candidate.cuid,
-        })),
+        }))
       );
       setRowSelections(
         candidatesOfConsultant.map((candidate) => ({
@@ -128,7 +128,7 @@ const ManageProjectAccess = () => {
           });
 
           return consultant;
-        }),
+        })
       );
       updateProject();
     } catch (error) {
@@ -143,7 +143,7 @@ const ManageProjectAccess = () => {
       if (!projectCuid) throw new Error("Project ID is missing");
 
       const reassignments = rowSelections.filter(
-        (rowSelection) => rowSelection.consultantCuid !== null,
+        (rowSelection) => rowSelection.consultantCuid !== null
       );
 
       await axios.post(`/api/admin/project/${projectCuid}/manage/remove`, {
@@ -159,7 +159,7 @@ const ManageProjectAccess = () => {
   };
 
   const availableCollaborators = collaborators.filter(
-    (consultant) => consultant.cuid !== consultantToRemove?.cuid,
+    (consultant) => consultant.cuid !== consultantToRemove?.cuid
   );
   const allCandidatesReassigned = rowSelections.every(
     (selection) => selection.consultantCuid !== null
@@ -186,7 +186,6 @@ const ManageProjectAccess = () => {
         sx={{
           display: "flex",
           mx: "auto",
-          py: { xs: 0 },
         }}
       >
         <Card>
