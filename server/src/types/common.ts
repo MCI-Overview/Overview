@@ -117,6 +117,8 @@ export type CommonProject = {
   createdAt: Dayjs;
   noticePeriodDuration: number;
   noticePeriodUnit: string;
+  timeWindow: number;
+  distanceRadius: number;
   status: string;
   client: {
     name: string;
@@ -139,6 +141,8 @@ export type GetProjectDataResponse = {
   createdAt: string;
   noticePeriodDuration: number;
   noticePeriodUnit: string;
+  timeWindow: number;
+  distanceRadius: number;
   status: string;
   client: {
     name: string;
