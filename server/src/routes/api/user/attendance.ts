@@ -1,7 +1,8 @@
 import { Request, Response, Router } from "express";
-import { prisma } from "../../../client";
+import { prisma, s3 } from "../../../client";
 import { User } from "@/types/common";
 import { AttendanceStatus } from "@prisma/client";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 
 const attendanceApiRouter: Router = Router();
 
@@ -21,6 +22,8 @@ attendanceApiRouter.get("/attendance", async (req: Request, res: Response) => {
               select: {
                 name: true,
                 locations: true,
+                timeWindow: true,
+                distanceRadius: true,
               },
             },
           },
@@ -50,7 +53,8 @@ attendanceApiRouter.patch(
     const user = req.user as User;
     const candidateCuid = user.cuid;
 
-    const { attendanceCuid, clockInTime, clockOutTime, imageData } = req.body;
+    const { attendanceCuid, clockInTime, clockOutTime, imageData, startTime } =
+      req.body;
 
     if (!attendanceCuid) {
       return res.status(400).send("attendanceCuid is required");
@@ -68,14 +72,17 @@ attendanceApiRouter.patch(
       return res.status(400).send("imageData is required when clocking in");
     }
 
+    if (clockInTime && !startTime) {
+      return res.status(400).send("startTime is required when clocking in");
+    }
+
     let body;
-    if (clockInTime) {
-      body = {
-        clockInTime,
-        status: AttendanceStatus.PRESENT,
-      };
-    } else {
+    if (!clockInTime) {
       body = { clockOutTime };
+    } else if (startTime < clockInTime) {
+      body = { clockInTime, status: AttendanceStatus.ON_TIME };
+    } else {
+      body = { clockInTime, status: AttendanceStatus.LATE };
     }
 
     try {
@@ -89,6 +96,25 @@ attendanceApiRouter.patch(
     } catch (error) {
       console.log(error);
       return res.status(500).send("Internal server error");
+    }
+
+    // Upload image to S3
+    if (imageData) {
+      const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
+      const buffer = Buffer.from(base64Data, "base64");
+
+      try {
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: process.env.S3_BUCKET_NAME!,
+            Key: `${candidateCuid}-${attendanceCuid}-clockIn.jpg`,
+            Body: buffer,
+          })
+        );
+      } catch (error) {
+        console.log(error);
+        return res.status(500).send("Internal server error");
+      }
     }
 
     return res.send("Attendance created successfully");
