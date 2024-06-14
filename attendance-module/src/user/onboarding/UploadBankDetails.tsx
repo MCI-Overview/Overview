@@ -8,7 +8,7 @@ import {
 } from "@mui/joy";
 import axios from "axios";
 import { ChangeEventHandler, useState } from "react";
-import LoadingRequestButton from "../components/LoadingRequestButton";
+import LoadingRequestButton from "../../components/LoadingRequestButton";
 
 export default function UploadBankDetails({
   handleNext,

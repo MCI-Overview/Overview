@@ -16,8 +16,8 @@ import {
   Grid,
   Checkbox,
 } from "@mui/joy";
-import { useUserContext } from "../providers/userContextProvider";
-import { CandidateUser } from "../types/common";
+import { useUserContext } from "../../providers/userContextProvider";
+import { CandidateUser } from "../../types/common";
 import axios from "axios";
 import {
   AccountBalanceRounded,
@@ -29,7 +29,7 @@ import {
 } from "@mui/icons-material";
 import UploadNRIC from "./UploadNRIC";
 import UploadBankDetails from "./UploadBankDetails";
-import LoadingRequestButton from "../components/LoadingRequestButton";
+import LoadingRequestButton from "../../components/LoadingRequestButton";
 import UserOnboarded from "./UserOnboarded";
 import UploadEmergencyContactDetails from "./UpdateEmergencyContactDetails";
 

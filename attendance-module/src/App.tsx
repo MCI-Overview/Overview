@@ -18,7 +18,7 @@ import axios from "axios";
 import { RemoveTrailingSlash } from "./utils/remove-trailing-slash";
 import Project from "./admin/Project";
 import { Toaster } from "react-hot-toast";
-import UserNew from "./user/UserNew";
+import UserNew from "./user/onboarding/UserNew";
 import UserHome from "./user/UserHome";
 import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
 import { CircularProgress, CssBaseline, Box } from "@mui/joy";

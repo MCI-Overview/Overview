@@ -1,7 +1,7 @@
 import { Typography, Input, Button, FormControl, FormLabel } from "@mui/joy";
 import axios from "axios";
 import { ChangeEventHandler, useState } from "react";
-import LoadingRequestButton from "../components/LoadingRequestButton";
+import LoadingRequestButton from "../../components/LoadingRequestButton";
 
 export default function UploadEmergencyContactDetails({
   handleNext,
