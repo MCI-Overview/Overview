@@ -14,6 +14,7 @@ export type CommonCandidate = {
   address?: CommonAddress;
   bankDetails?: BankDetails;
   emergencyContact?: EmergencyContact;
+  hasOnboarded: boolean;
 };
 
 export type CommonConsultant = {
@@ -86,10 +87,7 @@ export type ConsultantUser = {
   };
 };
 
-export type CandidateUser = {
-  cuid: string;
-  name: string;
-  nric: string;
+export type CandidateUser = CommonCandidate & {
   userType: "User";
 };
 
@@ -174,6 +172,7 @@ export type GetCandidateResponse = {
   address?: CommonAddress;
   bankDetails?: BankDetails;
   emergencyContact?: EmergencyContact;
+  hasOnboarded: boolean;
 }[];
 
 export type GetRosterResponse = {
@@ -206,15 +205,4 @@ export type Roster = {
   startTime: Dayjs;
   endTime: Dayjs;
   consultantCuid: string;
-};
-
-export type Assign = {
-  consultantCuid: string | null;
-  candidateCuid: string;
-};
-
-export type Manage = {
-  role: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
-  consultantCuid: string;
-  projectCuid: string;
 };
