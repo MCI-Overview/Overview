@@ -1,4 +1,4 @@
-import { s3, prisma, upload } from "@/client";
+import { s3, prisma, upload } from "../../../client";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { User } from "@prisma/client";
 import { Router } from "express";
