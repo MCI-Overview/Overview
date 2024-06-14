@@ -23,10 +23,6 @@ import {
   CircularProgress,
 } from "@mui/joy";
 
-// TODO: these should be set on a per project basis
-const TIME_RANGE = 15; // 15 minutes
-const DISTANCE_RADIUS = 50; // 50m
-
 export default function ClockIn() {
   const isDarkMode = localStorage.getItem("joy-mode") === "dark";
 
@@ -62,61 +58,55 @@ export default function ClockIn() {
 
         setProjLocations(att.Shift.Project.locations);
 
+        let incorrectStart: Dayjs, incorrectEnd: Dayjs;
         switch (att.shiftType) {
           case "FULL_DAY":
-            setStartTime(dayjs(att.Shift.startTime));
-            setEndTime(dayjs(att.Shift.endTime));
+            incorrectStart = dayjs(att.Shift.startTime);
+            incorrectEnd = dayjs(att.Shift.endTime);
             break;
           case "FIRST_HALF":
-            setStartTime(dayjs(att.Shift.startTime));
-            setEndTime(dayjs(att.Shift.halfDayEndTime));
+            incorrectStart = dayjs(att.Shift.startTime);
+            incorrectEnd = dayjs(att.Shift.halfDayEndTime);
             break;
           case "SECOND_HALF":
-            setStartTime(dayjs(att.Shift.halfDayStartTime));
-            setEndTime(dayjs(att.Shift.endTime));
+            incorrectStart = dayjs(att.Shift.halfDayStartTime);
+            incorrectEnd = dayjs(att.Shift.endTime);
             break;
           default:
             throw Error("Invalid shift type");
         }
+
+        const { correctStart, correctEnd } = correctTimes(
+          dayjs(att.shiftDate),
+          incorrectStart,
+          incorrectEnd
+        );
+
+        setStartTime(correctStart);
+        setEndTime(correctEnd);
       })
       .catch((error) => console.error(error));
   }, []);
 
   const isWithinStartTimeRange = () => {
-    if (!currAttendance || !startTime || !endTime) {
+    if (!currAttendance || !startTime) {
       return false;
     }
 
-    const { correctStart } = correctTimes(
-      dayjs(currAttendance.shiftDate),
-      startTime,
-      endTime
+    return (
+      dayjs().diff(startTime, "minute") >=
+      -currAttendance.Shift.Project.timeWindow
     );
-
-    return isWithinTimeRange(correctStart);
   };
 
   const isWithinEndTimeRange = () => {
-    if (!currAttendance || !startTime || !endTime) {
+    if (!currAttendance || !endTime) {
       return false;
     }
 
-    const { correctEnd } = correctTimes(
-      dayjs(currAttendance.shiftDate),
-      startTime,
-      endTime
+    return (
+      dayjs().diff(endTime, "minute") < currAttendance.Shift.Project.timeWindow
     );
-
-    return isWithinTimeRange(correctEnd);
-  };
-
-  const isWithinTimeRange = (correctTime: Dayjs) => {
-    const now = dayjs();
-    const diff = now.diff(correctTime, "minute");
-
-    console.log(now, correctTime, diff);
-
-    return Math.abs(diff) <= TIME_RANGE;
   };
 
   useEffect(() => {
@@ -212,6 +202,11 @@ export default function ClockIn() {
   };
 
   const handleCheckLocation = () => {
+    if (!currAttendance) {
+      toast.error("No upcoming shift.");
+      return;
+    }
+
     if (!projLocations || projLocations.length === 0) {
       toast.error("No site locations found.");
       return;
@@ -227,8 +222,9 @@ export default function ClockIn() {
       return;
     }
 
-    if (distance > DISTANCE_RADIUS) {
-      toast.error(`More than ${DISTANCE_RADIUS} meters from nearest location.`);
+    const radius = currAttendance.Shift.Project.distanceRadius;
+    if (distance > radius) {
+      toast.error(`More than ${radius} meters from nearest location.`);
       return;
     }
 
@@ -264,6 +260,7 @@ export default function ClockIn() {
       candidateCuid: currAttendance.candidateCuid,
       clockInTime: dayjs(),
       imageData: capturedImage,
+      startTime: startTime,
     };
 
     // update attendance in database
@@ -296,6 +293,7 @@ export default function ClockIn() {
 
     if (!isWithinEndTimeRange()) {
       toast.error("Not within clock-out time range.");
+      setTimeout(() => window.location.reload(), 5000);
       return;
     }
 
@@ -386,7 +384,7 @@ export default function ClockIn() {
                   {dayjs(currAttendance.shiftDate).format("dddd, MMMM DD YYYY")}
                 </Typography>
                 <Typography level="title-md">
-                  {`Time range: ${TIME_RANGE} minutes`}
+                  {`Time range: ${currAttendance.Shift.Project.timeWindow} minutes`}
                 </Typography>
               </Box>
 
@@ -584,12 +582,14 @@ export default function ClockIn() {
 }
 
 const getCurrAttendance = (attendanceData: getAttendanceResponse[]) => {
-  const now = dayjs();
-
   const currAttendance = attendanceData.find((attendance) => {
     if (attendance.clockOutTime) {
       return false;
     }
+
+    if (attendance.leave === "FULLDAY") return false;
+
+    if (attendance.status === "MEDICAL") return false;
 
     const { correctEnd } = correctTimes(
       dayjs(attendance.shiftDate),
@@ -597,9 +597,13 @@ const getCurrAttendance = (attendanceData: getAttendanceResponse[]) => {
       dayjs(attendance.Shift.endTime)
     );
 
-    // true if current time is before endTimeRange after the end time of the shift
-    const cutoff = correctEnd.valueOf() + TIME_RANGE * 60 * 1000;
-    return now.valueOf() <= cutoff;
+    console.log("correctEnd", correctEnd.format());
+
+    const cutoff = correctEnd.add(
+      attendance.Shift.Project.timeWindow,
+      "minute"
+    );
+    return dayjs().diff(cutoff) <= 0;
   });
 
   return currAttendance;
@@ -617,11 +621,15 @@ function correctTimes(
     .second(startTime.second())
     .millisecond(startTime.millisecond());
 
-  const correctEnd = mainDate
+  let correctEnd = mainDate
     .hour(endTime.hour())
     .minute(endTime.minute())
     .second(endTime.second())
     .millisecond(endTime.millisecond());
+
+  if (correctEnd.isBefore(correctStart)) {
+    correctEnd = correctEnd.add(1, "day");
+  }
 
   return { correctStart, correctEnd };
 }

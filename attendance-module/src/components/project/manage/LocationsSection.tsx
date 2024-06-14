@@ -25,7 +25,7 @@ const LocationsSection = () => {
 
   const hasEditProjectsPermission =
     project?.consultants.find(
-      (consultant) => consultant.role === "CLIENT_HOLDER",
+      (consultant) => consultant.role === "CLIENT_HOLDER"
     )?.cuid === user?.cuid ||
     (user && checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
@@ -49,10 +49,7 @@ const LocationsSection = () => {
         spacing={4}
         sx={{
           display: "flex",
-          maxWidth: "800px",
           mx: "auto",
-          px: { xs: 2, md: 6 },
-          py: { xs: 2, md: 3 },
         }}
       >
         <Card>
