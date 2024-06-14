@@ -617,7 +617,12 @@ function correctTimes(
     .second(startTime.second())
     .millisecond(startTime.millisecond());
 
-  const correctEnd = mainDate
+  // If the end time is before the start time, it means the shift ends on the next day
+  const correctEnd = endTime.isBefore(startTime)
+    ? mainDate.add(1, "day")
+    : mainDate;
+
+  correctEnd
     .hour(endTime.hour())
     .minute(endTime.minute())
     .second(endTime.second())
