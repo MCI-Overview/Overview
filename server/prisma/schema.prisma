@@ -27,6 +27,7 @@ model Request {
   candidateCuid String
   projectCuid   String
   data          Json
+  createdAt     DateTime      @default(now())
   type          RequestType
   status        RequestStatus @default(PENDING)
   Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
@@ -36,12 +37,12 @@ model Attendance {
   cuid          String            @id @default(cuid())
   candidateCuid String
   shiftCuid     String
-  shiftType     ShiftType         @default(FULL_DAY)
   clockInTime   DateTime?
   clockOutTime  DateTime?
   status        AttendanceStatus?
   leave         LeaveStatus?
   shiftDate     DateTime
+  shiftType     ShiftType         @default(FULL_DAY)
   Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
   Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
 
@@ -107,6 +108,8 @@ model Project {
   noticePeriodDuration Int
   noticePeriodUnit     NoticePeriodUnit
   status               ProjectStatus    @default(ACTIVE)
+  distanceRadius       Int              @default(50)
+  timeWindow           Int              @default(15)
   Assign               Assign[]
   Manage               Manage[]
   Client               Client           @relation(fields: [clientUEN], references: [uen])
@@ -152,7 +155,8 @@ enum RequestType {
 }
 
 enum AttendanceStatus {
-  PRESENT
+  ON_TIME
+  LATE
   NO_SHOW
   MEDICAL
 }
