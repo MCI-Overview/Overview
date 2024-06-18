@@ -532,9 +532,7 @@ export default function ClockIn() {
         onClose={() => setIsPictureModalOpen(false)}
       >
         <ModalDialog sx={{ width: "400px" }}>
-          <div
-            style={{ position: "relative", width: "360px", height: "360px" }}
-          >
+          <div style={{ position: "relative", width: "100%" }}>
             <Webcam
               audio={false}
               ref={webcamRef}
