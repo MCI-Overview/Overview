@@ -58,3 +58,50 @@ export type Project = {
   Client: Client;
   Shift: CommonShift[];
 };
+
+export type CustomAttendance = {
+  cuid: string;
+  candidateCuid: string;
+  shiftId: string;
+  shiftDate: Date;
+  clockInTime: Date;
+  clockOutTime: Date;
+  leave: "FULL_DAY" | "HALD_DAY";
+  status: "PRESENT" | "NO_SHOW" | "MEDICAL" | null;
+  shiftType: "FULL" | "FIRST_HALF" | "SECOND_HALF";
+  Shift: {
+    startTime: Date;
+    endTime: Date;
+    halfDayStartTime: Date;
+    halfDayEndTime: Date;
+    breakDuration: number;
+    status: string;
+    Project: {
+      cuid: string;
+      name: string;
+      clientUEN: string;
+      employmentBy: string;
+      locations: [
+        {
+          address: string;
+          latitude: string;
+          longitude: string;
+          postalCode: string;
+        }
+      ],
+    }
+  };
+}
+
+export type AttendanceRecords = {
+  Attendance: CustomAttendance[];
+  prispa: {
+    isFirstPage: boolean;
+    isLastPage: boolean;
+    currentPage: number;
+    previousPage: number | null;
+    nextPage: number | null;
+    pageCount: number;
+    totalCount: number;
+  }
+}

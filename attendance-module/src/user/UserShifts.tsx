@@ -1,26 +1,31 @@
-import { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tab, TabBar } from "../components/TabBar";
-import ClockIn from "./user-home-components/ClockIn";
-
 import { Typography, Box } from "@mui/joy";
 import {
     UserBreadcrumb,
     BreadcrumbPart,
 } from "../components/project/ui/UserBreadcrumb";
-
-const tabs: Tab[] = [
-    {
-        label: "Upcoming",
-        content: <ClockIn />,
-    },
-];
+import ViewShifts from "../components/user/shifts/ViewShifts";
+import ViewAttendance from "../components/user/shifts/ViewAttendance";
 
 const UserShifts: FC = () => {
+
     const location = useLocation();
     const navigate = useNavigate();
-
     const [tabValue, setTabValue] = useState<number>(0);
+
+    const tabs: Tab[] = [
+        {
+            label: "Upcoming Shifts",
+            content: <ViewShifts />,
+        },
+        {
+            label: "Attendance History",
+            content: <ViewAttendance />,
+        },
+
+    ];
 
     const breadcrumbs: BreadcrumbPart[] = [
         {
@@ -32,10 +37,10 @@ const UserShifts: FC = () => {
     useEffect(() => {
         const hash = location.hash.replace("#", "");
         switch (hash) {
-            case "upcoming":
+            case "history":
                 setTabValue(1);
                 break;
-            case "history":
+            case "shift":
                 setTabValue(2);
                 break;
             default:
@@ -52,14 +57,14 @@ const UserShifts: FC = () => {
         setTabValue(newValue);
         switch (newValue) {
             case 0:
-                navigate("/user/home");
+                navigate("/user/shifts");
                 break;
             case 1:
-                navigate("/user/home#clock");
+                navigate("/user/shifts#history");
                 break;
-            case 2:
-                navigate("/user/home#history");
-                break;
+            // case 2:
+            //     navigate("/user/home#history");
+            //     break;
             // case 3:
             //     navigate("/user/home#billing");
             //     break;
@@ -81,7 +86,7 @@ const UserShifts: FC = () => {
                     <Box sx={{ px: { xs: 2, md: 6 } }}>
                         <UserBreadcrumb breadcrumbs={breadcrumbs} />
                         <Typography level="h2" component="h1" sx={{ mt: 1, mb: 2 }}>
-                            Overview
+                            Shifts
                         </Typography>
                     </Box>
                     <TabBar

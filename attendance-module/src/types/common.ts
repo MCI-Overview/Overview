@@ -104,6 +104,19 @@ export type CommonShiftGroup = {
   shifts: CommonShift[];
 };
 
+export type CommonAttendance = {
+  cuid: string;
+  candidateCuid: string;
+  shiftId: string;
+  shiftDate: Date;
+  clockInTime: Date;
+  clockOutTime: Date;
+  leave: "FULL_DAY" | "HALD_DAY";
+  status: "PRESENT" | "NO_SHOW" | "MEDICAL";
+  shiftType: "FULL" | "FIRST_HALF" | "SECOND_HALF";
+  Shift: CommonShift;
+}
+
 export type CommonProject = {
   cuid: string;
   name: string;
