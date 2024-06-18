@@ -103,6 +103,8 @@ model Project {
   locations            Json[]           @default([])
   shiftGroups          Json[]           @default([])
   createdAt            DateTime         @default(now())
+  timeWindow           Int              @default(15)
+  distanceRadius       Int              @default(50)
   endDate              DateTime
   startDate            DateTime
   noticePeriodDuration Int

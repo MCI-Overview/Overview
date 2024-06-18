@@ -104,6 +104,19 @@ export type CommonShiftGroup = {
   shifts: CommonShift[];
 };
 
+export type CommonAttendance = {
+  cuid: string;
+  candidateCuid: string;
+  shiftId: string;
+  shiftDate: Date;
+  clockInTime: Date;
+  clockOutTime: Date;
+  leave: "FULL_DAY" | "HALD_DAY";
+  status: "PRESENT" | "NO_SHOW" | "MEDICAL";
+  shiftType: "FULL" | "FIRST_HALF" | "SECOND_HALF";
+  Shift: CommonShift;
+}
+
 export type CommonProject = {
   cuid: string;
   name: string;
@@ -115,6 +128,8 @@ export type CommonProject = {
   createdAt: Dayjs;
   noticePeriodDuration: number;
   noticePeriodUnit: string;
+  timeWindow: number;
+  distanceRadius: number;
   status: string;
   client: {
     name: string;
@@ -137,6 +152,8 @@ export type GetProjectDataResponse = {
   createdAt: string;
   noticePeriodDuration: number;
   noticePeriodUnit: string;
+  timeWindow: number;
+  distanceRadius: number;
   status: string;
   client: {
     name: string;
@@ -205,4 +222,32 @@ export type Roster = {
   startTime: Dayjs;
   endTime: Dayjs;
   consultantCuid: string;
+};
+
+export type getAttendanceResponse = {
+  cuid: string;
+  candidateCuid: string;
+  shiftCuid: string;
+  shiftType: string;
+  clockInTime: string;
+  clockOutTime: string;
+  status: string;
+  leave: string;
+  shiftDate: string;
+  Shift: {
+    cuid: string;
+    projectCuid: string;
+    startTime: string;
+    endTime: string;
+    halfDayStartTime: string | null;
+    halfDayEndTime: string | null;
+    breakDuration: number;
+    status: string;
+    Project: {
+      name: string;
+      locations: CommonLocation[];
+      timeWindow: number;
+      distanceRadius: number;
+    };
+  };
 };

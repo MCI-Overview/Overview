@@ -48,7 +48,7 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
     {
       name: "Shifts",
       icon: <DashboardRounded />,
-      onClick: () => navigate("/user/shift"),
+      onClick: () => navigate("/user/shifts"),
     },
     {
       name: "Leave",
