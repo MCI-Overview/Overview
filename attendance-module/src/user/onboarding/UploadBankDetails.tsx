@@ -113,7 +113,7 @@ export default function UploadBankDetails({
           <Typography level="title-md" textAlign="center" alignContent="center">
             Upload Bank Statement
           </Typography>
-          <Input type="file" onChange={handleBankStatementFileChange} />
+          <input type="file" accept="image/*" onChange={handleBankStatementFileChange} />
         </Stack>
         {bankStatementPreview && (
           <img

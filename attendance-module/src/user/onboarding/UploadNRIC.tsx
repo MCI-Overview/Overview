@@ -1,4 +1,4 @@
-import { Typography, Input, Button, Stack } from "@mui/joy";
+import { Typography, Button, Stack } from "@mui/joy";
 import axios from "axios";
 import { ChangeEventHandler, useState } from "react";
 import LoadingRequestButton from "../../components/LoadingRequestButton";
@@ -77,7 +77,11 @@ export default function UploadNRIC({
           <Typography level="title-md" textAlign="center">
             NRIC (Front)
           </Typography>
-          <Input type="file" onChange={handleNRICFrontFileChange} />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleNRICFrontFileChange}
+          />
           {nricFrontPreview && (
             <img
               src={nricFrontPreview}
@@ -90,7 +94,11 @@ export default function UploadNRIC({
           <Typography level="title-md" textAlign="center">
             NRIC (Back)
           </Typography>
-          <Input type="file" onChange={handleNRICBackFileChange} />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleNRICBackFileChange}
+          />
           {nricBackPreview && (
             <img
               src={nricBackPreview}
