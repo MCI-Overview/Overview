@@ -20,6 +20,7 @@ import Project from "./admin/Project";
 import { Toaster } from "react-hot-toast";
 import UserNew from "./user/UserNew";
 import UserHome from "./user/UserHome";
+import UserShifts from "./user/UserShifts";
 import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
 import { CircularProgress, CssBaseline, Box } from "@mui/joy";
 import { UserContextProvider } from "./providers/userContextProvider";
@@ -108,6 +109,7 @@ function App() {
                         path="/user/profile"
                         element={<CandidateProfile />}
                       />
+                      <Route path="/user/shifts" element={<UserShifts />} />
                     </Route>
 
                     {/* Admin routes */}
