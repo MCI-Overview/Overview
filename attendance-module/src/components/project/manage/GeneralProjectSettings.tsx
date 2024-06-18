@@ -9,7 +9,10 @@ import LocationsSection from "./LocationsSection";
 
 import {
   Box,
+  Button,
   Card,
+  CardActions,
+  CardOverflow,
   Divider,
   FormControl,
   FormHelperText,
@@ -22,6 +25,8 @@ import {
 import { InfoOutlined } from "@mui/icons-material";
 import dayjs from "dayjs";
 
+const THRESHOLD = dayjs("2000-01-01");
+
 const GeneralProjectSettings = () => {
   const { user } = useUserContext();
   const { project, updateProject } = useProjectContext();
@@ -32,8 +37,20 @@ const GeneralProjectSettings = () => {
   const [endDate, setEndDate] = useState<string | undefined>(
     project?.endDate.format("YYYY-MM-DD")
   );
+  const [timeWindow, setTimeWindow] = useState<number | undefined>(
+    project?.timeWindow
+  );
+  const [distanceRadius, setDistanceRadius] = useState<number | undefined>(
+    project?.distanceRadius
+  );
+
   const [startDateError, setStartDateError] = useState<string>("");
   const [endDateError, setEndDateError] = useState<string>("");
+  const [timeWindowError, setTimeWindowError] = useState<string>("");
+  const [distanceRadiusError, setDistanceRadiusError] = useState<string>("");
+
+  const [isUpdateButtonDisabled, setIsUpdateButtonDisabled] =
+    useState<boolean>(true);
 
   const hasEditPermission =
     project?.consultants.find(
@@ -43,45 +60,146 @@ const GeneralProjectSettings = () => {
       ? checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS)
       : false);
 
-  useEffect(() => {
-    if (!project) return;
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.value) {
+      setStartDateError("Invalid start date");
+      return;
+    } else {
+      setStartDate(e.target.value);
+    }
 
-    setStartDateError("");
-    setEndDateError("");
+    const newStartDate = dayjs(e.target.value);
 
-    if (!startDate) return setStartDateError("Invalid start date");
-    if (!endDate) return setEndDateError("Invalid end date");
-
-    const newStartDate = dayjs(startDate);
-    const newEndDate = dayjs(endDate);
-
-    if (newStartDate.isAfter(newEndDate)) {
+    if (newStartDate.isAfter(dayjs(endDate))) {
       setStartDateError("Start date must be before end date");
       setEndDateError("End date must be after start date");
       return;
     }
-    const threshold = dayjs("2000-01-01");
 
-    if (newStartDate.isBefore(threshold)) {
-      return setStartDateError("Start date must be after 2000-01-01");
-    }
-
-    if (newEndDate.isBefore(threshold)) {
-      return setEndDateError("End date must be after 2000-01-01");
-    }
-
-    if (
-      newStartDate.isSame(dayjs(project.startDate)) &&
-      newEndDate.isSame(dayjs(project.endDate))
-    ) {
+    if (newStartDate.isBefore(THRESHOLD)) {
+      setStartDateError("Start date must be after 01/01/2000");
       return;
     }
 
-    if (
-      newStartDate.format("YYYY-MM-DD") ===
-        project.startDate.format("YYYY-MM-DD") &&
-      newEndDate.format("YYYY-MM-DD") === project.endDate.format("YYYY-MM-DD")
-    ) {
+    setStartDateError("");
+  };
+
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.value) {
+      setEndDateError("Invalid end date");
+      return;
+    } else {
+      setEndDate(e.target.value);
+    }
+
+    const newEndDate = dayjs(e.target.value);
+
+    if (newEndDate.isBefore(dayjs(startDate))) {
+      setStartDateError("Start date must be before end date");
+      setEndDateError("End date must be after start date");
+      return;
+    }
+
+    if (newEndDate.isBefore(THRESHOLD)) {
+      setEndDateError("End date must be after 01/01/2000");
+      return;
+    }
+
+    setEndDateError("");
+  };
+
+  const handleTimeWindowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = parseInt(e.target.value);
+
+    if (Number.isNaN(time)) {
+      setTimeWindow(undefined);
+      setTimeWindowError("Invalid time window");
+      return;
+    } else {
+      setTimeWindow(time);
+    }
+
+    if (time < 15 || time > 45) {
+      setTimeWindowError("Time window must be between 15 and 45 minutes");
+      return;
+    }
+
+    setTimeWindowError("");
+  };
+
+  const handleDistanceRadiusChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const distance = parseInt(e.target.value);
+
+    if (Number.isNaN(distance)) {
+      setDistanceRadius(undefined);
+      setDistanceRadiusError("Invalid distance range");
+      return;
+    } else {
+      setDistanceRadius(distance);
+    }
+
+    if (distance < 50 || distance > 200) {
+      setDistanceRadiusError(
+        "Distance range must be between 50 and 200 meters"
+      );
+      return;
+    }
+
+    setDistanceRadiusError("");
+  };
+
+  useEffect(() => {
+    if (!project) return;
+
+    if (!hasEditPermission) {
+      setIsUpdateButtonDisabled(true);
+      return;
+    }
+
+    const areAllFieldsFilled =
+      Boolean(startDate) &&
+      Boolean(endDate) &&
+      Boolean(timeWindow) &&
+      Boolean(distanceRadius);
+
+    const areAnyFieldsChanged =
+      startDate !== project.startDate.format("YYYY-MM-DD") ||
+      endDate !== project.endDate.format("YYYY-MM-DD") ||
+      timeWindow !== project.timeWindow ||
+      distanceRadius !== project.distanceRadius;
+
+    setIsUpdateButtonDisabled(!areAllFieldsFilled || !areAnyFieldsChanged);
+  }, [
+    startDate,
+    endDate,
+    timeWindow,
+    distanceRadius,
+    hasEditPermission,
+    project,
+  ]);
+
+  const handleUpdateProject = () => {
+    if (!project) return;
+
+    if (startDateError) {
+      toast.error(startDateError);
+      return;
+    }
+
+    if (endDateError) {
+      toast.error(endDateError);
+      return;
+    }
+
+    if (timeWindowError) {
+      toast.error(timeWindowError);
+      return;
+    }
+
+    if (distanceRadiusError) {
+      toast.error(distanceRadiusError);
       return;
     }
 
@@ -91,23 +209,18 @@ const GeneralProjectSettings = () => {
           projectCuid: project.cuid,
           startDate: startDate,
           endDate: endDate,
+          timeWindow: timeWindow,
+          distanceRadius: distanceRadius,
         })
         .then(() => {
           updateProject();
-          toast.success("Project dates updated successfully");
+          toast.success("Project updated successfully");
         });
     } catch (error) {
       console.log(error);
-      toast.error("Failed to update project dates");
+      toast.error("Failed to update project");
     }
-  }, [
-    startDate,
-    endDate,
-    project,
-    startDateError,
-    endDateError,
-    updateProject,
-  ]);
+  };
 
   if (!project) return null;
 
@@ -129,36 +242,38 @@ const GeneralProjectSettings = () => {
           <Grid
             container
             spacing={{ xs: 2, md: 3 }}
-            columns={{ xs: 4, sm: 8, md: 12 }}
+            columns={{ xs: 6, sm: 12 }}
             sx={{ flexGrow: 2 }}
           >
-            <Grid xs={4} md={6}>
+            <Grid xs={6}>
               <FormLabel>Client name</FormLabel>
               <Input value={project.client.name} disabled />
             </Grid>
-            <Grid xs={4} md={6}>
+            <Grid xs={6}>
               <FormLabel>Client UEN</FormLabel>
               <Input value={project.client.uen} disabled />
             </Grid>
-            <Grid xs={4} md={6}>
+
+            <Grid xs={6}>
               <FormLabel>Created on</FormLabel>
               <Input
                 value={project.createdAt.format("DD/MM/YYYY HH:mm ")}
                 disabled
               />
             </Grid>
-            <Grid xs={4} md={6}>
+            <Grid xs={6}>
               <FormLabel>Employment by</FormLabel>
               <Input value={project.employmentBy} disabled />
             </Grid>
-            <Grid xs={4} md={6}>
+
+            <Grid xs={6}>
               <FormLabel>Start date</FormLabel>
               <FormControl sx={{ flexGrow: 1 }} error={startDateError !== ""}>
                 <Input
                   type="date"
                   value={startDate}
                   disabled={!hasEditPermission}
-                  onChange={(e) => console.log(setStartDate(e.target.value))}
+                  onChange={handleStartDateChange}
                 />
                 <FormHelperText>
                   {startDateError && (
@@ -170,14 +285,14 @@ const GeneralProjectSettings = () => {
                 </FormHelperText>
               </FormControl>
             </Grid>
-            <Grid xs={4} md={6}>
+            <Grid xs={6}>
               <FormLabel>End date</FormLabel>
               <FormControl sx={{ flexGrow: 1 }} error={endDateError !== ""}>
                 <Input
                   type="date"
                   value={endDate}
                   disabled={!hasEditPermission}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={handleEndDateChange}
                 />
                 <FormHelperText>
                   {endDateError && (
@@ -189,8 +304,65 @@ const GeneralProjectSettings = () => {
                 </FormHelperText>
               </FormControl>
             </Grid>
+
+            <Grid xs={6}>
+              <FormLabel>Time window (minutes)</FormLabel>
+              <FormControl sx={{ flexGrow: 1 }} error={timeWindowError !== ""}>
+                <Input
+                  type="number"
+                  value={timeWindow}
+                  disabled={!hasEditPermission}
+                  onChange={handleTimeWindowChange}
+                />
+                <FormHelperText>
+                  {timeWindowError && (
+                    <>
+                      <InfoOutlined />
+                      {timeWindowError}
+                    </>
+                  )}
+                </FormHelperText>
+              </FormControl>
+            </Grid>
+            <Grid xs={6}>
+              <FormLabel>Distance range (meters)</FormLabel>
+              <FormControl
+                sx={{ flexGrow: 1 }}
+                error={distanceRadiusError !== ""}
+              >
+                <Input
+                  type="number"
+                  defaultValue={distanceRadius}
+                  disabled={!hasEditPermission}
+                  onChange={handleDistanceRadiusChange}
+                />
+                <FormHelperText>
+                  {distanceRadiusError && (
+                    <>
+                      <InfoOutlined />
+                      {distanceRadiusError}
+                    </>
+                  )}
+                </FormHelperText>
+              </FormControl>
+            </Grid>
           </Grid>
         </Stack>
+
+        {hasEditPermission && (
+          <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
+            <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
+              <Button
+                size="sm"
+                variant="solid"
+                onClick={handleUpdateProject}
+                disabled={isUpdateButtonDisabled}
+              >
+                Update
+              </Button>
+            </CardActions>
+          </CardOverflow>
+        )}
       </Card>
 
       <LocationsSection />
