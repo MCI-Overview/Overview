@@ -43,7 +43,7 @@ attendanceApiRouter.get("/attendance", async (req: Request, res: Response) => {
 
     return res.send(attendanceData);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).send("Internal server error");
   }
 });
@@ -80,7 +80,7 @@ attendanceApiRouter.patch(
     let body;
     if (!clockInTime) {
       body = { clockOutTime };
-    } else if (startTime < clockInTime) {
+    } else if (clockInTime < startTime) {
       body = { clockInTime, status: AttendanceStatus.ON_TIME };
     } else {
       body = { clockInTime, status: AttendanceStatus.LATE };
@@ -95,7 +95,7 @@ attendanceApiRouter.patch(
         data: body,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return res.status(500).send("Internal server error");
     }
 
@@ -113,7 +113,7 @@ attendanceApiRouter.patch(
           })
         );
       } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).send("Internal server error");
       }
     }

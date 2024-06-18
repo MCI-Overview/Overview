@@ -174,11 +174,18 @@ export default function ClockIn() {
     return deg * (Math.PI / 180);
   };
 
+  const blueIcon = new L.Icon({
+    iconUrl: "/Images/marker-icon-2x-blue.png",
+    shadowUrl: "/Images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
+
   const redIcon = new L.Icon({
-    iconUrl:
-      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
-    shadowUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+    iconUrl: "/Images/marker-icon-2x-red.png",
+    shadowUrl: "/Images/marker-shadow.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
@@ -274,9 +281,6 @@ export default function ClockIn() {
         console.error(error);
         toast.error("Failed to record attendance.", { duration: 10000 });
       });
-
-    // TODO: Save image to s3
-    console.log("TODO: save image to s3");
 
     // update local state
     setCurrAttendance({
@@ -446,7 +450,10 @@ export default function ClockIn() {
                 />
 
                 {currLatitude && currLongitude && (
-                  <Marker position={[currLatitude, currLongitude]}>
+                  <Marker
+                    icon={blueIcon}
+                    position={[currLatitude, currLongitude]}
+                  >
                     <Popup>
                       <Typography level="body-sm">Your location</Typography>
                     </Popup>
@@ -525,7 +532,9 @@ export default function ClockIn() {
         onClose={() => setIsPictureModalOpen(false)}
       >
         <ModalDialog sx={{ width: "400px" }}>
-          {!capturedImage ? (
+          <div
+            style={{ position: "relative", width: "360px", height: "360px" }}
+          >
             <Webcam
               audio={false}
               ref={webcamRef}
@@ -535,10 +544,23 @@ export default function ClockIn() {
                 height: 360,
                 facingMode: "user",
               }}
+              style={{ width: "100%", height: "100%" }}
             />
-          ) : (
-            <img src={capturedImage} alt="smile!" />
-          )}
+            {capturedImage && (
+              <img
+                src={capturedImage}
+                alt="smile!"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            )}
+          </div>
 
           <Box
             sx={{
@@ -596,8 +618,6 @@ const getCurrAttendance = (attendanceData: getAttendanceResponse[]) => {
       dayjs(attendance.Shift.startTime),
       dayjs(attendance.Shift.endTime)
     );
-
-    console.log("correctEnd", correctEnd.format());
 
     const cutoff = correctEnd.add(
       attendance.Shift.Project.timeWindow,
