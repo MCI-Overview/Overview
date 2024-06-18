@@ -175,8 +175,8 @@ export default function ClockIn() {
   };
 
   const blueIcon = new L.Icon({
-    iconUrl: "../public/images/marker-icon-2x-blue.png",
-    shadowUrl: "../public/images/marker-shadow.png",
+    iconUrl: "/Images/marker-icon-2x-blue.png",
+    shadowUrl: "/Images/marker-shadow.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
@@ -184,8 +184,8 @@ export default function ClockIn() {
   });
 
   const redIcon = new L.Icon({
-    iconUrl: "../public/images/marker-icon-2x-red.png",
-    shadowUrl: "../public/images/marker-shadow.png",
+    iconUrl: "/Images/marker-icon-2x-red.png",
+    shadowUrl: "/Images/marker-shadow.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
@@ -532,7 +532,9 @@ export default function ClockIn() {
         onClose={() => setIsPictureModalOpen(false)}
       >
         <ModalDialog sx={{ width: "400px" }}>
-          {!capturedImage ? (
+          <div
+            style={{ position: "relative", width: "360px", height: "360px" }}
+          >
             <Webcam
               audio={false}
               ref={webcamRef}
@@ -542,10 +544,23 @@ export default function ClockIn() {
                 height: 360,
                 facingMode: "user",
               }}
+              style={{ width: "100%", height: "100%" }}
             />
-          ) : (
-            <img src={capturedImage} alt="smile!" />
-          )}
+            {capturedImage && (
+              <img
+                src={capturedImage}
+                alt="smile!"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            )}
+          </div>
 
           <Box
             sx={{
