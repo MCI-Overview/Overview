@@ -1,18 +1,14 @@
 import { ColorPaletteProp } from "@mui/joy/styles";
 import Chip from "@mui/joy/Chip";
-import Link from "@mui/joy/Link";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
 import Typography from "@mui/joy/Typography";
 import dayjs from "dayjs";
 
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import BlockIcon from "@mui/icons-material/Block";
 import { CustomAttendance } from "../../../types";
-import { FC, useState } from "react";
-
-type Order = "asc" | "desc";
+import { FC } from "react";
 
 type Props = {
   data: CustomAttendance[];
@@ -20,7 +16,6 @@ type Props = {
 
 const AttendanceHistory: FC<Props> = ({ data }) => {
   const attendanceData = data;
-  const [order, setOrder] = useState<Order>("desc");
 
   return (
     <>
@@ -52,25 +47,7 @@ const AttendanceHistory: FC<Props> = ({ data }) => {
         >
           <thead>
             <tr>
-              <th style={{ width: 120, padding: "12px 6px" }}>
-                <Link
-                  underline="none"
-                  color="primary"
-                  component="button"
-                  onClick={() => setOrder(order === "asc" ? "desc" : "asc")}
-                  fontWeight="lg"
-                  endDecorator={<ArrowDropDownIcon />}
-                  sx={{
-                    "& svg": {
-                      transition: "0.2s",
-                      transform:
-                        order === "desc" ? "rotate(0deg)" : "rotate(180deg)",
-                    },
-                  }}
-                >
-                  Date
-                </Link>
-              </th>
+              <th style={{ width: 120, padding: "12px 6px" }}>Date</th>
               <th style={{ width: 140, padding: "12px 6px" }}>Project</th>
               <th style={{ width: 140, padding: "12px 6px" }}>Status</th>
               <th style={{ width: 100, padding: "12px 6px" }}>Type</th>
