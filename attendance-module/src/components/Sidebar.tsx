@@ -27,7 +27,6 @@ import {
   BrightnessAutoRounded,
   SettingsRounded,
   LogoutRounded,
-  Accessibility,
   ReceiptLong,
   Person,
 } from "@mui/icons-material";
@@ -51,14 +50,9 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
       onClick: () => navigate("/user/shifts"),
     },
     {
-      name: "Leave",
-      icon: <Accessibility />,
-      onClick: () => navigate("/user/leave"),
-    },
-    {
-      name: "Claims",
+      name: "Requests",
       icon: <ReceiptLong />,
-      onClick: () => navigate("/user/claims"),
+      onClick: () => navigate("/user/requests"),
     },
     {
       name: "Profile",
