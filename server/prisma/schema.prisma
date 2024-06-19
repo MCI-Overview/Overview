@@ -27,9 +27,9 @@ model Request {
   candidateCuid String
   projectCuid   String
   data          Json
-  createdAt     DateTime      @default(now())
   type          RequestType
   status        RequestStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
   Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
 }
 
@@ -103,8 +103,6 @@ model Project {
   locations            Json[]           @default([])
   shiftGroups          Json[]           @default([])
   createdAt            DateTime         @default(now())
-  timeWindow           Int              @default(15)
-  distanceRadius       Int              @default(50)
   endDate              DateTime
   startDate            DateTime
   noticePeriodDuration Int
@@ -152,6 +150,7 @@ enum RequestType {
   CLAIM
   PAID_LEAVE
   UNPAID_LEAVE
+  MEDICAL_LEAVE
   RESIGNATION
   CANCEL
 }
