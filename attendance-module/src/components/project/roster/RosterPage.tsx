@@ -24,14 +24,14 @@ function getDateRange(date: Dayjs, weekOffset: number, days: number) {
 function enumerateDaysBetweenDates(startDate: Dayjs, endDate: Dayjs) {
   return Array.from(
     { length: dayjs(endDate).diff(startDate, "days") + 1 },
-    (_, i) => dayjs(startDate).add(i, "days"),
+    (_, i) => dayjs(startDate).add(i, "days")
   );
 }
 export default function RosterPage() {
   const [weekOffset, setWeekOffset] = useState(0);
   const { project } = useProjectContext();
   const [rosterData, setRosterData] = useState<MappedRosterResponse | null>(
-    null,
+    null
   );
 
   const dateRange = getDateRange(project?.startDate || dayjs(), weekOffset, 13);
@@ -39,7 +39,7 @@ export default function RosterPage() {
   function updateRosterData(
     projectCuid: string,
     startDate: Dayjs,
-    endDate: Dayjs,
+    endDate: Dayjs
   ) {
     setRosterData(null);
     axios
@@ -65,7 +65,7 @@ export default function RosterPage() {
                 endTime: dayjs(shift.shiftEndTime),
               })),
             };
-          }),
+          })
         );
       });
   }
@@ -125,7 +125,7 @@ export default function RosterPage() {
               </Grid>
               {enumerateDaysBetweenDates(
                 dateRange.startDate,
-                dateRange.endDate,
+                dateRange.endDate
               ).map((date, index) => (
                 <Grid xs key={index}>
                   <Typography textAlign="center">
@@ -194,7 +194,7 @@ export default function RosterPage() {
                       updateRosterData(
                         project.cuid,
                         dateRange.startDate,
-                        dateRange.endDate,
+                        dateRange.endDate
                       )
                     }
                   />
@@ -216,10 +216,9 @@ export default function RosterPage() {
         <Box height="8vh">
           <Stack direction="row" spacing={1} flexWrap={"wrap"}>
             {project.shifts.map((shift) => (
-              <Stack spacing={0.5}>
+              <Stack spacing={0.5} key={`${shift.cuid} FULL_DAY`}>
                 <DraggableChip
                   type="FULL_DAY"
-                  key={`${shift.cuid} FULL_DAY`}
                   cuid={shift.cuid}
                   startTime={shift.startTime}
                   endTime={shift.endTime}

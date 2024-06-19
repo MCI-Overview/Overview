@@ -36,12 +36,12 @@ export default function CandidateDisplay({
 }) {
   const disabledTo = getLatestDate(
     projectStartDate,
-    firstDay.endOf("day").subtract(1, "day"),
+    firstDay.endOf("day").subtract(1, "day")
   );
 
   const disabledFrom = getEarliestDate(
     projectEndDate,
-    lastDay.startOf("day").add(1, "day"),
+    lastDay.startOf("day").add(1, "day")
   );
 
   return (
@@ -60,13 +60,12 @@ export default function CandidateDisplay({
           (_, index) => {
             const date = startDate.add(index, "days");
             return (
-              <Grid xs={1}>
+              <Grid xs={1} key={`${cuid} ${index}`}>
                 <DayBin
-                  key={`${cuid} ${index}`}
                   date={date}
                   candidateCuid={cuid}
                   currentRoster={currentRoster.filter((roster) =>
-                    date.isSame(roster.startTime, "day"),
+                    date.isSame(roster.startTime, "day")
                   )}
                   disabled={
                     date.isBefore(disabledTo) ||
@@ -77,7 +76,7 @@ export default function CandidateDisplay({
                 />
               </Grid>
             );
-          },
+          }
         )}
       </Grid>
     </Grid>
