@@ -73,7 +73,7 @@ const ViewShifts = () => {
 
   useEffect(() => {
     fetchUpcomingShifts(page.currentPage);
-  }, []);
+  }, [page.currentPage]);
 
   const handleNextPage = () => {
     if (!page.isLastPage && page.nextPage !== null) {
