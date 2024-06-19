@@ -9,6 +9,7 @@ import {
   CommonShiftGroup,
 } from "@/types/common";
 import {
+  defaultDate,
   processCandidateData,
   checkLocationsValidity,
   checkDatesValidity,
@@ -972,7 +973,13 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
       .send("specify both/neither halfDayEndTime and halfDayStartTime.");
   }
 
-  if (breakDuration && parseInt(breakDuration) < 0) {
+  if (!breakDuration) return res.status(400).send("breakDuration is required.");
+
+  if (isNaN(parseInt(breakDuration))) {
+    return res.status(400).send("breakDuration must be a number.");
+  }
+
+  if (parseInt(breakDuration) < 0) {
     return res.status(400).send("breakDuration cannot be negative.");
   }
 
@@ -1014,7 +1021,6 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
       },
       include: {
         Manage: true,
-        Shift: true,
       },
     });
   } catch (error) {
@@ -1043,23 +1049,39 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
   }
 
   const createData = {
-    startTime: dayjs(startTime, "HH:mm").toDate(),
-    endTime: dayjs(endTime, "HH:mm").toDate(),
+    startTime: defaultDate(dayjs(startTime, "HH:mm")).toDate(),
+    endTime: defaultDate(dayjs(endTime, "HH:mm")).toDate(),
     ...(halfDayEndTime && {
-      halfDayEndTime: dayjs(halfDayEndTime, "HH:mm").toDate(),
+      halfDayEndTime: defaultDate(dayjs(halfDayEndTime, "HH:mm")).toDate(),
     }),
     ...(halfDayStartTime && {
-      halfDayStartTime: dayjs(halfDayStartTime, "HH:mm").toDate(),
+      halfDayStartTime: defaultDate(dayjs(halfDayStartTime, "HH:mm")).toDate(),
     }),
     breakDuration: parseInt(breakDuration),
     projectCuid,
   };
 
   try {
-    await prisma.shift.create({
-      data: createData,
+    await prisma.shift.upsert({
+      where: {
+        projectCuid_startTime_endTime: {
+          projectCuid,
+          startTime: createData.startTime,
+          endTime: createData.endTime,
+        },
+        status: ShiftStatus.ARCHIVED,
+      },
+      update: {
+        status: ShiftStatus.ACTIVE,
+      },
+      create: createData,
     });
   } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2002") {
+      return res.status(400).send("Shift already exists.");
+    }
+
     console.log(error);
     return res.status(500).send("Internal server error.");
   }

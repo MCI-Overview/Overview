@@ -1,17 +1,20 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { Box, Grid, IconButton, Stack, Typography } from "@mui/joy";
-import { DraggableChip } from "./DraggableChip";
-import axios from "axios";
-import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { capitalizeWords } from "../../../utils/capitalize";
 import dayjs, { Dayjs } from "dayjs";
-import CandidateDisplay from "./CandidateDisplay";
+
 import { GetRosterResponse, MappedRosterResponse } from "../../../types/common";
-import CardDisplay from "./CardDisplay";
 import CreateShiftModal from "../shift/CreateShiftModal";
+import CandidateDisplay from "./CandidateDisplay";
+import CardDisplay from "./CardDisplay";
+import DeleteBin from "./DeleteBin";
+import DraggableChip from "./DraggableChip";
+
+import { Box, Grid, IconButton, Stack, Typography } from "@mui/joy";
+import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 
 function getDateRange(date: Dayjs, weekOffset: number, days: number) {
   const startOfWeek = date.startOf("isoWeek").add(weekOffset * 2, "weeks");
@@ -244,6 +247,7 @@ export default function RosterPage() {
               </Stack>
             ))}
             <CreateShiftModal />
+            <DeleteBin />
           </Stack>
         </Box>
         <Box height="35vh">

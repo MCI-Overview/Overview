@@ -9,6 +9,7 @@ import {
 } from "../../../utils/permissions";
 import { prisma } from "../../../client";
 import { Router } from "express";
+import dayjs from "dayjs";
 
 const projectShiftAPIRouter: Router = Router();
 
@@ -30,6 +31,7 @@ projectShiftAPIRouter.delete("/shift", async (req, res) => {
             Manage: true,
           },
         },
+        Attendance: true,
       },
     });
   } catch (error) {
@@ -54,10 +56,37 @@ projectShiftAPIRouter.delete("/shift", async (req, res) => {
       .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
   }
 
-  // TODO: prevent/soft/hard delete based on attendance
+  // Prevent/soft/hard delete based on attendance
   // scheduled future attendances => prevent delete
   // past attendances => soft delete
   // no attendances => hard delete
+
+  if (shiftData.Attendance.length === 0) {
+    await prisma.shift.delete({
+      where: {
+        cuid: shiftCuid,
+      },
+    });
+
+    return res.send("Shift deleted successfully.");
+  }
+
+  // include attendences which end after current time
+  const shiftEndTime = dayjs(shiftData.endTime);
+  const futureAttendances = shiftData.Attendance.filter((attendance) => {
+    const endTime = dayjs(attendance.shiftDate)
+      .hour(shiftEndTime.hour())
+      .minute(shiftEndTime.minute())
+      .second(shiftEndTime.second())
+      .millisecond(shiftEndTime.millisecond());
+
+    return endTime.isAfter(dayjs());
+  });
+
+  if (futureAttendances.length > 0) {
+    return res.status(400).send("Cannot delete ongoing shifts.");
+  }
+
   await prisma.shift.update({
     where: {
       cuid: shiftCuid,
