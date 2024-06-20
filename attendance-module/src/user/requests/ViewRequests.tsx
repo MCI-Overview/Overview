@@ -5,14 +5,20 @@ import axios from "axios";
 
 import CurrentRequests from "./CurrentRequests";
 import CurrentRequestsM from "./CurrentRequestsM";
+import NewRequest from "./NewRequestModal";
 
+// TODO: Add filtering per request status and request type
 const ViewRequests = () => {
   const [data, setData] = useState<CustomRequest[] | null>(null);
 
-  useEffect(() => {
+  function getCurrentRequests() {
     axios.get("/api/user/requests/current").then((response) => {
       setData(response.data);
     });
+  }
+
+  useEffect(() => {
+    getCurrentRequests();
   }, []);
 
   return (
@@ -32,8 +38,15 @@ const ViewRequests = () => {
             gap: 1,
           }}
         >
-          <CurrentRequests data={data} />
-          <CurrentRequestsM data={data} />
+          <CurrentRequests
+            data={data}
+            getCurrentRequests={getCurrentRequests}
+          />
+          <CurrentRequestsM
+            data={data}
+            getCurrentRequests={getCurrentRequests}
+          />
+          <NewRequest />
         </Box>
       </Box>
     </CssVarsProvider>

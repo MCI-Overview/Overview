@@ -1,14 +1,67 @@
-import { Chip, Table, Sheet, Typography, ColorPaletteProp } from "@mui/joy";
+import {
+  Chip,
+  Table,
+  Sheet,
+  Typography,
+  ColorPaletteProp,
+  Dropdown,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  Box,
+} from "@mui/joy";
 import {
   PendingRounded as PendingIcon,
   BlockRounded as BlockIcon,
   AutorenewRounded as AutorenewIcon,
   CheckRounded as CheckIcon,
+  MoreHorizRounded as MoreHorizIcon,
 } from "@mui/icons-material";
 import { CustomRequest } from "../../types";
 import dayjs from "dayjs";
+import axios from "axios";
 
-const CurrentRequests = ({ data }: { data: CustomRequest[] | null }) => {
+// TODO: Add viewing and editing of requests
+function RowMenu({
+  requestCuid,
+  getCurrentRequests,
+}: {
+  requestCuid: string;
+  getCurrentRequests: () => void;
+}) {
+  function handleCancel() {
+    axios
+      .post("/api/user/request/cancel", { requestCuid })
+      .then(() => getCurrentRequests());
+  }
+  return (
+    <>
+      <Dropdown>
+        <MenuButton
+          slots={{ root: IconButton }}
+          slotProps={{
+            root: { variant: "plain", color: "neutral", size: "sm" },
+          }}
+        >
+          <MoreHorizIcon />
+        </MenuButton>
+        <Menu size="sm" sx={{ minWidth: 140 }}>
+          {/* <MenuItem>View / Edit</MenuItem> */}
+          <MenuItem onClick={handleCancel}>Cancel</MenuItem>
+        </Menu>
+      </Dropdown>
+    </>
+  );
+}
+
+const CurrentRequests = ({
+  data,
+  getCurrentRequests,
+}: {
+  data: CustomRequest[] | null;
+  getCurrentRequests: () => void;
+}) => {
   return (
     <>
       <Sheet
@@ -43,6 +96,7 @@ const CurrentRequests = ({ data }: { data: CustomRequest[] | null }) => {
               <th style={{ width: 140, padding: "12px 6px" }}>Project</th>
               <th style={{ width: 140, padding: "12px 6px" }}>Status</th>
               <th style={{ width: 100, padding: "12px 6px" }}>Type</th>
+              <th style={{ width: 40, padding: "12px 6px" }}> </th>
             </tr>
           </thead>
           <tbody>
@@ -85,6 +139,14 @@ const CurrentRequests = ({ data }: { data: CustomRequest[] | null }) => {
                   </td>
                   <td>
                     <Typography level="body-xs">{row.type}</Typography>
+                  </td>
+                  <td>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <RowMenu
+                        requestCuid={row.cuid}
+                        getCurrentRequests={getCurrentRequests}
+                      />
+                    </Box>
                   </td>
                 </tr>
               ))}

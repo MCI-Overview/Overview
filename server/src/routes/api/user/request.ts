@@ -198,7 +198,7 @@ requestAPIRouter.post(
   },
 );
 
-requestAPIRouter.post("/cancel", async (req, res) => {
+requestAPIRouter.post("/request/cancel", async (req, res) => {
   const { requestCuid } = req.body;
 
   if (!requestCuid) {

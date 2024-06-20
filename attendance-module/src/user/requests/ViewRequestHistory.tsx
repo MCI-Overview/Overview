@@ -27,6 +27,7 @@ type Page = {
   totalCount: number;
 };
 
+// TODO: Add filtering per request status and request type
 const ViewRequestHistory = () => {
   const [data, setData] = useState<CustomRequest[] | null>(null);
   const [page, setPage] = useState<Page>({

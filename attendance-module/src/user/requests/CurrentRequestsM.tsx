@@ -7,17 +7,63 @@ import {
   ListItem,
   ListItemContent,
   ListDivider,
+  Dropdown,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
 } from "@mui/joy";
 import {
   PendingRounded as PendingIcon,
   BlockRounded as BlockIcon,
   AutorenewRounded as AutorenewIcon,
   CheckRounded as CheckIcon,
+  MoreHorizRounded as MoreHorizIcon,
 } from "@mui/icons-material";
 import { CustomRequest } from "../../types";
 import dayjs from "dayjs";
+import axios from "axios";
 
-const CurrentRequestsM = ({ data }: { data: CustomRequest[] | null }) => {
+// TODO: Add viewing and editing of requests
+function RowMenu({
+  requestCuid,
+  getCurrentRequests,
+}: {
+  requestCuid: string;
+  getCurrentRequests: () => void;
+}) {
+  function handleCancel() {
+    axios
+      .post("/api/user/request/cancel", { requestCuid })
+      .then(() => getCurrentRequests());
+  }
+  return (
+    <>
+      <Dropdown>
+        <MenuButton
+          slots={{ root: IconButton }}
+          slotProps={{
+            root: { variant: "plain", color: "neutral", size: "sm" },
+          }}
+        >
+          <MoreHorizIcon />
+        </MenuButton>
+        <Menu size="sm" sx={{ minWidth: 140 }}>
+          {/* <MenuItem>View / Edit</MenuItem> */}
+          <MenuItem onClick={handleCancel}>Cancel</MenuItem>
+        </Menu>
+      </Dropdown>
+    </>
+  );
+}
+
+const CurrentRequestsM = ({
+  data,
+  getCurrentRequests,
+}: {
+  data: CustomRequest[] | null;
+  getCurrentRequests: () => void;
+}) => {
   return (
     <>
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
@@ -83,6 +129,19 @@ const CurrentRequestsM = ({ data }: { data: CustomRequest[] | null }) => {
                 >
                   {listItem.status || "UPCOMING"}
                 </Chip>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    mt: "auto",
+                    mb: "auto",
+                  }}
+                >
+                  <RowMenu
+                    requestCuid={listItem.cuid}
+                    getCurrentRequests={getCurrentRequests}
+                  />
+                </Box>
               </ListItem>
               <ListDivider />
             </List>
