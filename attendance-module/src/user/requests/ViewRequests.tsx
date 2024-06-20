@@ -7,7 +7,7 @@ import CurrentRequests from "./CurrentRequests";
 import CurrentRequestsM from "./CurrentRequestsM";
 
 const ViewRequests = () => {
-  const [data, setData] = useState<CustomRequest[]>([]);
+  const [data, setData] = useState<CustomRequest[] | null>(null);
 
   useEffect(() => {
     axios.get("/api/user/requests/current").then((response) => {

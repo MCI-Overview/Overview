@@ -17,7 +17,11 @@ import {
 import { CustomRequest } from "../../types";
 import dayjs from "dayjs";
 
-const RequestHistoryM = ({ data }: { data: CustomRequest[] }) => {
+interface RequestHistoryMProps {
+  data: CustomRequest[] | null;
+}
+
+const RequestHistoryM = ({ data }: RequestHistoryMProps) => {
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
       {data &&
@@ -86,9 +90,9 @@ const RequestHistoryM = ({ data }: { data: CustomRequest[] }) => {
             <ListDivider />
           </List>
         ))}
-      {(!data || data.length === 0) && (
-        <Typography level="body-md" textAlign="center">
-          No request history available
+      {data && data.length === 0 && (
+        <Typography level="body-md" sx={{ textAlign: "center" }}>
+          No request history found
         </Typography>
       )}
     </Box>

@@ -8,7 +8,7 @@ import {
 import { CustomRequest } from "../../types";
 import dayjs from "dayjs";
 
-const CurrentRequests = ({ data }: { data: CustomRequest[] }) => {
+const CurrentRequests = ({ data }: { data: CustomRequest[] | null }) => {
   return (
     <>
       <Sheet
@@ -88,6 +88,15 @@ const CurrentRequests = ({ data }: { data: CustomRequest[] }) => {
                   </td>
                 </tr>
               ))}
+            {data && data.length === 0 && (
+              <tr>
+                <td colSpan={4}>
+                  <Typography level="body-md" sx={{ textAlign: "center" }}>
+                    No current request found
+                  </Typography>
+                </td>
+              </tr>
+            )}
           </tbody>
         </Table>
       </Sheet>

@@ -17,7 +17,7 @@ import {
 import { CustomRequest } from "../../types";
 import dayjs from "dayjs";
 
-const CurrentRequestsM = ({ data }: { data: CustomRequest[] }) => {
+const CurrentRequestsM = ({ data }: { data: CustomRequest[] | null }) => {
   return (
     <>
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
@@ -87,9 +87,9 @@ const CurrentRequestsM = ({ data }: { data: CustomRequest[] }) => {
               <ListDivider />
             </List>
           ))}
-        {(!data || data.length === 0) && (
-          <Typography level="body-md" textAlign="center">
-            No current requests
+        {data && data.length === 0 && (
+          <Typography level="body-md" sx={{ textAlign: "center" }}>
+            No current requests found
           </Typography>
         )}
       </Box>

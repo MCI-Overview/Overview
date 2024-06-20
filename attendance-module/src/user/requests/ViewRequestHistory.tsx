@@ -28,7 +28,7 @@ type Page = {
 };
 
 const ViewRequestHistory = () => {
-  const [data, setData] = useState<CustomRequest[]>([]);
+  const [data, setData] = useState<CustomRequest[] | null>(null);
   const [page, setPage] = useState<Page>({
     isFirstPage: true,
     isLastPage: true,

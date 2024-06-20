@@ -8,9 +8,11 @@ import {
 import { CustomRequest } from "../../types";
 import dayjs from "dayjs";
 
-const RequestHistory = ({ data }: { data: CustomRequest[] }) => {
-  const requestData = data;
+interface RequestHistoryProps {
+  data: CustomRequest[] | null;
+}
 
+const RequestHistory = ({ data }: RequestHistoryProps) => {
   return (
     <>
       <Sheet
@@ -48,8 +50,8 @@ const RequestHistory = ({ data }: { data: CustomRequest[] }) => {
             </tr>
           </thead>
           <tbody>
-            {requestData &&
-              requestData.map((row: CustomRequest) => (
+            {data &&
+              data.map((row: CustomRequest) => (
                 <tr key={row.cuid}>
                   <td>
                     <Typography level="body-xs">
@@ -90,6 +92,15 @@ const RequestHistory = ({ data }: { data: CustomRequest[] }) => {
                   </td>
                 </tr>
               ))}
+            {data && data.length === 0 && (
+              <tr>
+                <td colSpan={4}>
+                  <Typography level="body-md" sx={{ textAlign: "center" }}>
+                    No request history found
+                  </Typography>
+                </td>
+              </tr>
+            )}
           </tbody>
         </Table>
       </Sheet>
