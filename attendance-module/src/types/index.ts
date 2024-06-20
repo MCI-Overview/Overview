@@ -13,8 +13,6 @@ export type CreateProjectData = {
 };
 
 export type CreateShiftData = {
-  days: string[];
-  headcount: string | null;
   breakDuration: string | null;
   startTime: string | null;
   endTime: string | null;

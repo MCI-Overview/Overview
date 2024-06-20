@@ -1,66 +1,137 @@
-import { Dispatch, SetStateAction } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { Assign } from "../../../types";
+import { CommonConsultant, CommonCandidate } from "../../../types/common";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+import { useUserContext } from "../../../providers/userContextProvider";
+
 import {
-  Modal,
-  ModalClose,
-  Sheet,
-  Typography,
-  Stack,
-  Table,
+  Autocomplete,
+  Button,
+  Card,
   FormLabel,
   Input,
-  Button,
-  Autocomplete,
+  Modal,
+  ModalClose,
+  Stack,
+  Table,
+  Typography,
 } from "@mui/joy";
-import { CommonConsultant, CommonCandidate } from "../../../types/common";
-import { Assign } from "../../../types";
+import toast from "react-hot-toast";
 
 interface RemoveConsultantModalProps {
-  open: boolean;
-  onClose: () => void;
-  consultantToRemove: CommonConsultant | null;
-  candidatesToReassign: CommonCandidate[];
-  rowSelections: Assign[];
-  availableCollaborators: CommonConsultant[];
-  handleApplyToAll: (value: CommonConsultant | null) => void;
-  handleRowSelectionChange: (index: number, value: CommonConsultant | null) => void;
-  emailConfirmation: string;
-  setEmailConfirmation: Dispatch<SetStateAction<string>>;
-  handleConfirmRemove: () => void;
-  allCandidatesReassigned: boolean;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  consultantToRemove: CommonConsultant;
 }
 
 const RemoveConsultantModal = ({
-  open,
-  onClose,
+  isOpen,
+  setIsOpen,
   consultantToRemove,
-  candidatesToReassign,
-  rowSelections,
-  availableCollaborators,
-  handleApplyToAll,
-  handleRowSelectionChange,
-  emailConfirmation,
-  setEmailConfirmation,
-  handleConfirmRemove,
-  allCandidatesReassigned,
 }: RemoveConsultantModalProps) => {
+  const [rowSelections, setRowSelections] = useState<Assign[]>([]);
+  const [affectedCdds, setAffectedCdds] = useState<CommonCandidate[]>([]);
+  const [emailConfirmation, setEmailConfirmation] = useState<string>("");
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState<boolean>(true);
+
+  const { project, updateProject } = useProjectContext();
+  if (!project) return null;
+
+  const { user } = useUserContext();
+  if (!user) return null;
+
+  useEffect(() => {
+    setAffectedCdds(
+      project.candidates.filter(
+        (candidate) => candidate.consultantCuid === consultantToRemove.cuid
+      )
+    );
+
+    setRowSelections(
+      affectedCdds.map((candidate) => ({
+        consultantCuid: null,
+        candidateCuid: candidate.cuid,
+      }))
+    );
+  }, [project.candidates, consultantToRemove]);
+
+  const availableCollaborators = project.consultants.filter(
+    (consultant) => consultant.cuid !== consultantToRemove.cuid
+  );
+
+  const handleApplyToAll = (value: CommonConsultant | null) => {
+    const consultantCuid = value ? value.cuid : null;
+    setRowSelections(
+      affectedCdds.map((candidate) => ({
+        consultantCuid,
+        candidateCuid: candidate.cuid,
+      }))
+    );
+  };
+
+  const handleRowSelectionChange = (
+    index: number,
+    value: CommonConsultant | null
+  ) => {
+    const updatedSelections = [...rowSelections];
+    updatedSelections[index] = {
+      consultantCuid: value?.cuid ?? null,
+      candidateCuid: affectedCdds[index].cuid,
+    };
+    setRowSelections(updatedSelections);
+  };
+
+  const handleConfirmRemove = async () => {
+    if (!emailConfirmation || !consultantToRemove) return;
+
+    try {
+      const reassignments = rowSelections.filter(
+        (rowSelection) => rowSelection.consultantCuid !== null
+      );
+
+      await axios.delete(`/api/admin/project/${project.cuid}/manage`, {
+        data: {
+          consultantCuid: consultantToRemove.cuid,
+          reassignments,
+        },
+      });
+
+      toast.success("Consultant removed successfully.");
+      updateProject();
+      setIsOpen(false);
+      setEmailConfirmation("");
+    } catch (error) {
+      toast.error("Failed to remove consultant.");
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    setIsSubmitDisabled(
+      emailConfirmation !== consultantToRemove.email ||
+        !rowSelections.every((selection) => selection.consultantCuid !== null)
+    );
+  }, [emailConfirmation, consultantToRemove.email, rowSelections]);
+
   return (
     <Modal
       aria-labelledby="modal-title"
       aria-describedby="modal-desc"
-      open={open}
-      onClose={onClose}
-      sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+      open={isOpen}
+      onClose={() => setIsOpen(false)}
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
     >
-      <Sheet
-        variant="outlined"
+      <Card
         sx={{
           maxWidth: 900,
-          borderRadius: "md",
-          p: 3,
-          boxShadow: "lg",
         }}
       >
-        <ModalClose variant="plain" sx={{ m: 1 }} />
+        <ModalClose />
         <Typography
           component="h2"
           id="modal-title"
@@ -71,7 +142,7 @@ const RemoveConsultantModal = ({
           Confirm removal
         </Typography>
         <Stack spacing={2}>
-          {candidatesToReassign.length > 0 ? (
+          {affectedCdds.length > 0 ? (
             <>
               <Typography
                 component="p"
@@ -79,7 +150,7 @@ const RemoveConsultantModal = ({
                 textColor="text.tertiary"
               >
                 Reassign candidates before removing the consultant{" "}
-                {consultantToRemove?.name}.
+                {consultantToRemove.name}.
               </Typography>
               <Table
                 stripe="odd"
@@ -105,7 +176,7 @@ const RemoveConsultantModal = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {candidatesToReassign.map((candidate, index) => (
+                  {affectedCdds.map((candidate, index) => (
                     <tr key={candidate.nric}>
                       <td>{candidate.name}</td>
                       <td>{candidate.nric}</td>
@@ -134,26 +205,26 @@ const RemoveConsultantModal = ({
           ) : (
             <Typography>No candidates to reassign.</Typography>
           )}
+
           <FormLabel>
             Enter email and reassign all candidates (if any) to allow
             submission.
           </FormLabel>
           <Input
-            placeholder={consultantToRemove?.email || ""}
+            placeholder={consultantToRemove.email}
             value={emailConfirmation}
-            onChange={(event) => setEmailConfirmation(event.target.value)}
+            onChange={(e) => setEmailConfirmation(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !isSubmitDisabled) {
+                handleConfirmRemove();
+              }
+            }}
           />
-          <Button
-            disabled={
-              emailConfirmation !== consultantToRemove?.email ||
-              !allCandidatesReassigned
-            }
-            onClick={handleConfirmRemove}
-          >
+          <Button disabled={isSubmitDisabled} onClick={handleConfirmRemove}>
             Confirm
           </Button>
         </Stack>
-      </Sheet>
+      </Card>
     </Modal>
   );
 };

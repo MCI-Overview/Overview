@@ -1,20 +1,22 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { Box, Grid, IconButton, Stack, Typography } from "@mui/joy";
-import { DraggableChip } from "./DraggableChip";
-import axios from "axios";
 import {
   ChevronLeftRounded as ChevronLeftIcon,
   ChevronRightRounded as ChevronRightIcon,
 } from "@mui/icons-material";
 import { capitalizeWords } from "../../../utils/capitalize";
 import dayjs, { Dayjs } from "dayjs";
-import CandidateDisplay from "./CandidateDisplay";
+
 import { GetRosterResponse, MappedRosterResponse } from "../../../types/common";
-import CardDisplay from "./CardDisplay";
 import CreateShiftModal from "../shift/CreateShiftModal";
+import CandidateDisplay from "./CandidateDisplay";
+import CardDisplay from "./CardDisplay";
+import DeleteBin from "./DeleteBin";
+import DraggableChip from "./DraggableChip";
 
 function getDateRange(date: Dayjs, weekOffset: number, days: number) {
   const startOfWeek = date.startOf("isoWeek").add(weekOffset * 2, "weeks");
@@ -27,14 +29,14 @@ function getDateRange(date: Dayjs, weekOffset: number, days: number) {
 function enumerateDaysBetweenDates(startDate: Dayjs, endDate: Dayjs) {
   return Array.from(
     { length: dayjs(endDate).diff(startDate, "days") + 1 },
-    (_, i) => dayjs(startDate).add(i, "days"),
+    (_, i) => dayjs(startDate).add(i, "days")
   );
 }
 export default function RosterPage() {
   const [weekOffset, setWeekOffset] = useState(0);
   const { project } = useProjectContext();
   const [rosterData, setRosterData] = useState<MappedRosterResponse | null>(
-    null,
+    null
   );
 
   const dateRange = getDateRange(project?.startDate || dayjs(), weekOffset, 13);
@@ -42,7 +44,7 @@ export default function RosterPage() {
   function updateRosterData(
     projectCuid: string,
     startDate: Dayjs,
-    endDate: Dayjs,
+    endDate: Dayjs
   ) {
     setRosterData(null);
     axios
@@ -68,7 +70,7 @@ export default function RosterPage() {
                 endTime: dayjs(shift.shiftEndTime),
               })),
             };
-          }),
+          })
         );
       });
   }
@@ -128,7 +130,7 @@ export default function RosterPage() {
               </Grid>
               {enumerateDaysBetweenDates(
                 dateRange.startDate,
-                dateRange.endDate,
+                dateRange.endDate
               ).map((date, index) => (
                 <Grid xs key={index}>
                   <Typography textAlign="center">
@@ -197,7 +199,7 @@ export default function RosterPage() {
                       updateRosterData(
                         project.cuid,
                         dateRange.startDate,
-                        dateRange.endDate,
+                        dateRange.endDate
                       )
                     }
                   />
@@ -219,10 +221,9 @@ export default function RosterPage() {
         <Box height="8vh">
           <Stack direction="row" spacing={1} flexWrap={"wrap"}>
             {project.shifts.map((shift) => (
-              <Stack spacing={0.5}>
+              <Stack spacing={0.5} key={`${shift.cuid} FULL_DAY`}>
                 <DraggableChip
                   type="FULL_DAY"
-                  key={`${shift.cuid} FULL_DAY`}
                   cuid={shift.cuid}
                   startTime={shift.startTime}
                   endTime={shift.endTime}
@@ -248,6 +249,7 @@ export default function RosterPage() {
               </Stack>
             ))}
             <CreateShiftModal />
+            <DeleteBin />
           </Stack>
         </Box>
         <Box height="35vh">

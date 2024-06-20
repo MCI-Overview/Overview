@@ -1,22 +1,25 @@
-import {
-  Modal,
-  ModalDialog,
-  ModalClose,
-  Typography,
-  Stack,
-  Grid,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  FormHelperText,
-  Table,
-  Chip,
-} from "@mui/joy";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import toast from "react-hot-toast";
 import { useRef, useState } from "react";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { CreateShiftData } from "../../../types";
+
+import {
+  Box,
+  Button,
+  Chip,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Grid,
+  Input,
+  Modal,
+  ModalDialog,
+  ModalClose,
+  Stack,
+  Table,
+  Typography,
+} from "@mui/joy";
 
 function getShiftDuration(startTime: string | null, endTime: string | null) {
   if (!startTime || !endTime) return 0;
@@ -42,25 +45,33 @@ export default function CreateShiftModal() {
     endTime: null,
     halfDayStartTime: null,
     halfDayEndTime: null,
-    headcount: null,
     breakDuration: null,
-    days: [],
   });
   const breakDurationInputRef = useRef<HTMLInputElement>(null);
   const shiftDuration = getShiftDuration(
     shiftData.startTime,
-    shiftData.endTime,
+    shiftData.endTime
   );
   const hasHalfDay = shiftDuration > 6;
 
   if (!project) return null;
 
   async function handleCreateShift() {
-    await axios.post(`/api/admin/project/${project?.cuid}/shifts`, {
-      ...shiftData,
-    });
-    setIsOpen(false);
-    updateProject();
+    try {
+      await axios.post(`/api/admin/project/${project?.cuid}/shifts`, {
+        ...shiftData,
+      });
+      setIsOpen(false);
+      updateProject();
+      toast.success("Shift created successfully.");
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response && axiosError.response.status === 400) {
+        toast.error(axiosError.response.data as string);
+      } else {
+        toast.error("Error while creating shift. Please try again later.");
+      }
+    }
   }
 
   return (
@@ -68,7 +79,12 @@ export default function CreateShiftModal() {
       <Modal open={isOpen}>
         <ModalDialog sx={{ minWidth: "34rem" }}>
           <ModalClose onClick={() => setIsOpen(false)} />
-          <Typography level="title-lg">Create shifts</Typography>
+          <Box>
+            <Typography level="title-lg">Create shifts</Typography>
+            <Typography level="body-xs">
+              Note: Multiple shifts cannot have the same start and end time.
+            </Typography>
+          </Box>
           <Stack spacing={1}>
             <Stack
               spacing={1}
@@ -186,7 +202,7 @@ export default function CreateShiftModal() {
                     {hasHalfDay
                       ? getShiftDuration(
                           shiftData.startTime,
-                          shiftData.halfDayEndTime,
+                          shiftData.halfDayEndTime
                         ).toFixed(1) + "h"
                       : "-"}
                   </td>
@@ -194,7 +210,7 @@ export default function CreateShiftModal() {
                     {hasHalfDay
                       ? getShiftDuration(
                           shiftData.halfDayStartTime,
-                          shiftData.endTime,
+                          shiftData.endTime
                         ).toFixed(1) + "h"
                       : "-"}
                   </td>

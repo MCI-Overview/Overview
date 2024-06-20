@@ -8,9 +8,14 @@ import {
   GetCandidateResponse,
 } from "@/types/common";
 import { PermissionList, checkPermission } from "./permissions";
+import { Dayjs } from "dayjs";
 
 export function maskNRIC(nric: string): string {
   return "*****" + nric.slice(5, 9);
+}
+
+export function defaultDate(dateTime: Dayjs): Dayjs {
+  return dateTime.set("date", 1).set("month", 0).set("year", 2000);
 }
 
 type ParameterValidity =
@@ -57,7 +62,7 @@ export function checkLocationsValidity(locations: any): ParameterValidity {
 }
 
 export function checkEmploymentByValidity(
-  employmentBy: string,
+  employmentBy: string
 ): ParameterValidity {
   const VALID_EMPLOYMENT_BY = [
     "MCI Career Services Pte Ltd",
@@ -84,7 +89,7 @@ export function checkEmploymentByValidity(
 
 export function checkDatesValidity(
   startDateString: string,
-  endDateString: string,
+  endDateString: string
 ) {
   let startDate: Date | null = null;
   let endDate: Date | null = null;
@@ -127,7 +132,7 @@ export function checkNoticePeriodValidity(
   noticePeriodDurationString: string,
   noticePeriodUnit: string,
   projectStartDateString: string,
-  projectEndDateString: string,
+  projectEndDateString: string
 ) {
   let noticePeriodDuration;
   try {
@@ -166,7 +171,7 @@ export function checkNoticePeriodValidity(
 
   const projectDateValidity = checkDatesValidity(
     projectStartDateString,
-    projectEndDateString,
+    projectEndDateString
   );
 
   if (!projectDateValidity.isValid) {
@@ -180,17 +185,17 @@ export function checkNoticePeriodValidity(
   switch (noticePeriodUnit) {
     case "DAY":
       startDatePlusNoticePeriod.setDate(
-        startDate.getDate() + noticePeriodDuration,
+        startDate.getDate() + noticePeriodDuration
       );
       break;
     case "WEEK":
       startDatePlusNoticePeriod.setDate(
-        startDate.getDate() + noticePeriodDuration * 7,
+        startDate.getDate() + noticePeriodDuration * 7
       );
       break;
     case "MONTH":
       startDatePlusNoticePeriod.setMonth(
-        startDate.getMonth() + noticePeriodDuration,
+        startDate.getMonth() + noticePeriodDuration
       );
       break;
   }
@@ -209,7 +214,7 @@ export function checkNoticePeriodValidity(
 
 export function checkTimesValidity(
   startTime: string,
-  endTime: string,
+  endTime: string
 ): ParameterValidity {
   if (!startTime || !endTime) {
     return {
@@ -272,12 +277,12 @@ export async function processCandidateData(
     Consultant: { cuid: string };
     Candidate: Candidate;
   })[],
-  permissionData?: JsonObject,
+  permissionData?: JsonObject
 ): Promise<GetCandidateResponse> {
   const hasReadCandidateDetailsPermission = await checkPermission(
     userCuid,
     PermissionList.CAN_READ_CANDIDATE_DETAILS,
-    permissionData,
+    permissionData
   );
 
   if (!hasReadCandidateDetailsPermission) {
