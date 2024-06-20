@@ -1,12 +1,14 @@
-import { Button, CircularProgress } from "@mui/joy";
+import { Button, CircularProgress, ColorPaletteProp } from "@mui/joy";
 import { useState } from "react";
 export default function LoadingRequestButton({
   promise,
   disabled,
+  color,
   submitLabel,
   loadingLabel,
 }: {
   promise: () => Promise<void>;
+  color?: ColorPaletteProp;
   disabled?: boolean;
   submitLabel?: string;
   loadingLabel?: string;
@@ -31,7 +33,11 @@ export default function LoadingRequestButton({
   }
 
   return (
-    <Button onClick={handleRequest} disabled={disabled}>
+    <Button
+      onClick={handleRequest}
+      disabled={disabled}
+      color={color || "primary"}
+    >
       {submitLabel || "Submit"}
     </Button>
   );

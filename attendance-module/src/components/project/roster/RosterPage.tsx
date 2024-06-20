@@ -3,6 +3,11 @@ import { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useProjectContext } from "../../../providers/projectContextProvider";
+import { Box, Grid, IconButton, Stack, Typography } from "@mui/joy";
+import {
+  ChevronLeftRounded as ChevronLeftIcon,
+  ChevronRightRounded as ChevronRightIcon,
+} from "@mui/icons-material";
 import { capitalizeWords } from "../../../utils/capitalize";
 import dayjs, { Dayjs } from "dayjs";
 
@@ -12,9 +17,6 @@ import CandidateDisplay from "./CandidateDisplay";
 import CardDisplay from "./CardDisplay";
 import DeleteBin from "./DeleteBin";
 import DraggableChip from "./DraggableChip";
-
-import { Box, Grid, IconButton, Stack, Typography } from "@mui/joy";
-import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 
 function getDateRange(date: Dayjs, weekOffset: number, days: number) {
   const startOfWeek = date.startOf("isoWeek").add(weekOffset * 2, "weeks");
@@ -111,14 +113,14 @@ export default function RosterPage() {
                 onClick={() => setWeekOffset(weekOffset - 1)}
                 disabled={weekOffset === 0}
               >
-                <ChevronLeft />
+                <ChevronLeftIcon />
               </IconButton>
               <Typography level="h4">
                 {dateRange.startDate.format("DD MMM YY")} -{" "}
                 {dateRange.endDate.format("DD MMM YY")}
               </Typography>
               <IconButton onClick={() => setWeekOffset(weekOffset + 1)}>
-                <ChevronRight />
+                <ChevronRightIcon />
               </IconButton>
             </Stack>
 

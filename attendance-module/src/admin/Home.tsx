@@ -9,7 +9,10 @@ import {
   Link,
   TabPanel,
 } from "@mui/joy";
-import { HomeRounded, ChevronRightRounded } from "@mui/icons-material";
+import {
+  HomeRounded as HomeIcon,
+  ChevronRightRounded as ChevronRightIcon,
+} from "@mui/icons-material";
 
 const AdminHome = () => {
   return (
@@ -27,7 +30,7 @@ const AdminHome = () => {
             <Breadcrumbs
               size="sm"
               aria-label="breadcrumbs"
-              separator={<ChevronRightRounded />}
+              separator={<ChevronRightIcon />}
               sx={{ pl: 0 }}
             >
               <Link
@@ -36,7 +39,7 @@ const AdminHome = () => {
                 href="#some-link"
                 aria-label="Home"
               >
-                <HomeRounded />
+                <HomeIcon />
               </Link>
               <Typography color="primary" fontWeight={500} fontSize={12}>
                 Home

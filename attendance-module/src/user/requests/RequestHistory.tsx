@@ -1,19 +1,18 @@
-import { ColorPaletteProp, Chip, Table, Sheet, Typography } from "@mui/joy";
-import dayjs from "dayjs";
-
+import { Chip, Table, Sheet, Typography, ColorPaletteProp } from "@mui/joy";
 import {
-  CheckRounded as CheckIcon,
+  PendingRounded as PendingIcon,
   BlockRounded as BlockIcon,
   AutorenewRounded as AutorenewIcon,
+  CheckRounded as CheckIcon,
 } from "@mui/icons-material";
+import { CustomRequest } from "../../types";
+import dayjs from "dayjs";
 
-import { CustomAttendance } from "../../../types";
-
-interface UpcomingShiftsProps {
-  data: CustomAttendance[] | null;
+interface RequestHistoryProps {
+  data: CustomRequest[] | null;
 }
 
-const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
+const RequestHistory = ({ data }: RequestHistoryProps) => {
   return (
     <>
       <Sheet
@@ -48,22 +47,20 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
               <th style={{ width: 140, padding: "12px 6px" }}>Project</th>
               <th style={{ width: 140, padding: "12px 6px" }}>Status</th>
               <th style={{ width: 100, padding: "12px 6px" }}>Type</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Start</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>End</th>
             </tr>
           </thead>
           <tbody>
             {data &&
-              data.map((row: CustomAttendance) => (
+              data.map((row: CustomRequest) => (
                 <tr key={row.cuid}>
                   <td>
                     <Typography level="body-xs">
-                      {dayjs(row.shiftDate).format("DD MMM YYYY")}
+                      {dayjs(row.createdAt).format("DD MMM YYYY")}
                     </Typography>
                   </td>
                   <td>
                     <Typography level="body-xs">
-                      {row.Shift.Project.name}
+                      {row.Assign.Project.name}
                     </Typography>
                   </td>
                   <td>
@@ -72,18 +69,18 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
                       size="sm"
                       startDecorator={
                         {
-                          PRESENT: <CheckIcon />,
-                          NO_SHOW: <AutorenewIcon />,
-                          MEDICAL: <BlockIcon />,
-                          UPCOMING: <CheckIcon />,
+                          APPROVED: <CheckIcon />,
+                          CANCELLED: <AutorenewIcon />,
+                          REJECTED: <BlockIcon />,
+                          PENDING: <PendingIcon />,
                         }[row.status || "UPCOMING"]
                       }
                       color={
                         {
-                          PRESENT: "success",
-                          NO_SHOW: "neutral",
-                          MEDICAL: "danger",
-                          UPCOMING: "success",
+                          APPROVED: "success",
+                          CANCELLED: "neutral",
+                          REJECTED: "danger",
+                          PENDING: "warning",
                         }[row.status || "UPCOMING"] as ColorPaletteProp
                       }
                     >
@@ -91,25 +88,15 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
                     </Chip>
                   </td>
                   <td>
-                    <Typography level="body-xs">{row.shiftType}</Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.Shift?.startTime).format("hh:mm a") || "N/A"}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.Shift?.endTime).format("hh:mm a") || "N/A"}
-                    </Typography>
+                    <Typography level="body-xs">{row.type}</Typography>
                   </td>
                 </tr>
               ))}
             {data && data.length === 0 && (
               <tr>
-                <td colSpan={6}>
+                <td colSpan={4}>
                   <Typography level="body-md" sx={{ textAlign: "center" }}>
-                    No upcoming shifts found
+                    No request history found
                   </Typography>
                 </td>
               </tr>
@@ -121,4 +108,4 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
   );
 };
 
-export default UpcomingShifts;
+export default RequestHistory;

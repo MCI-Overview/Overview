@@ -1,7 +1,10 @@
 import { ReactNode } from "react";
 
 import { Breadcrumbs, Typography, Link } from "@mui/joy";
-import { HomeRounded, ChevronRightRounded } from "@mui/icons-material";
+import {
+  HomeRounded as HomeIcon,
+  ChevronRightRounded as ChevronRightIcon,
+} from "@mui/icons-material";
 
 export type BreadcrumbPart = {
   label: ReactNode;
@@ -32,7 +35,7 @@ export function UserBreadcrumb({
     <Breadcrumbs
       size="sm"
       aria-label="breadcrumbs"
-      separator={<ChevronRightRounded />}
+      separator={<ChevronRightIcon />}
       sx={{ pl: 0 }}
     >
       <Link
@@ -41,7 +44,7 @@ export function UserBreadcrumb({
         href="#/user/home"
         aria-label="Home"
       >
-        <HomeRounded />
+        <HomeIcon />
       </Link>
       {breadcrumbs.map((breadcrumb, index) => (
         <CustomLink key={index} breadcrumbPart={breadcrumb} />

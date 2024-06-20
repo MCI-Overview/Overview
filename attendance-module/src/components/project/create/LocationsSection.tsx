@@ -16,7 +16,10 @@ import {
 import { CommonLocation } from "../../../types/common";
 import { useState } from "react";
 import axios from "axios";
-import { Delete, InfoOutlined } from "@mui/icons-material";
+import {
+  DeleteRounded as DeleteIcon,
+  InfoOutlined as InfoOutlinedIcon,
+} from "@mui/icons-material";
 import { capitalizeWords } from "../../../utils/capitalize";
 
 export default function ProjectLocationsSection({
@@ -119,7 +122,7 @@ export default function ProjectLocationsSection({
           <FormHelperText>
             {errorMessage && (
               <>
-                <InfoOutlined />
+                <InfoOutlinedIcon />
                 {errorMessage}
               </>
             )}
@@ -156,7 +159,7 @@ export default function ProjectLocationsSection({
                       );
                     }}
                   >
-                    <Delete />
+                    <DeleteIcon />
                   </IconButton>
                 </Stack>
               </ListItem>

@@ -59,7 +59,7 @@ const CandidateDetails = () => {
       return;
     } else if (user.userType === "User") {
       axios
-        .get(`/api/user/${user.cuid}`)
+        .get(`/api/user`)
         .then((response) => {
           setCandidate(response.data);
           if (response.data.address) {

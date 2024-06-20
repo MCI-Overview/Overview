@@ -22,7 +22,7 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
-import { InfoOutlined } from "@mui/icons-material";
+import { InfoOutlined as InfoOutlinedIcon } from "@mui/icons-material";
 import dayjs from "dayjs";
 
 const THRESHOLD = dayjs("2000-01-01");
@@ -32,16 +32,16 @@ const GeneralProjectSettings = () => {
   const { project, updateProject } = useProjectContext();
 
   const [startDate, setStartDate] = useState<string | undefined>(
-    project?.startDate.format("YYYY-MM-DD")
+    project?.startDate.format("YYYY-MM-DD"),
   );
   const [endDate, setEndDate] = useState<string | undefined>(
-    project?.endDate.format("YYYY-MM-DD")
+    project?.endDate.format("YYYY-MM-DD"),
   );
   const [timeWindow, setTimeWindow] = useState<number | undefined>(
-    project?.timeWindow
+    project?.timeWindow,
   );
   const [distanceRadius, setDistanceRadius] = useState<number | undefined>(
-    project?.distanceRadius
+    project?.distanceRadius,
   );
 
   const [startDateError, setStartDateError] = useState<string>("");
@@ -54,7 +54,7 @@ const GeneralProjectSettings = () => {
 
   const hasEditPermission =
     project?.consultants.find(
-      (consultant) => consultant.role === "CLIENT_HOLDER"
+      (consultant) => consultant.role === "CLIENT_HOLDER",
     )?.cuid === user?.cuid ||
     (user
       ? checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS)
@@ -128,7 +128,7 @@ const GeneralProjectSettings = () => {
   };
 
   const handleDistanceRadiusChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const distance = parseInt(e.target.value);
 
@@ -142,7 +142,7 @@ const GeneralProjectSettings = () => {
 
     if (distance < 50 || distance > 200) {
       setDistanceRadiusError(
-        "Distance range must be between 50 and 200 meters"
+        "Distance range must be between 50 and 200 meters",
       );
       return;
     }
@@ -278,7 +278,7 @@ const GeneralProjectSettings = () => {
                 <FormHelperText>
                   {startDateError && (
                     <>
-                      <InfoOutlined />
+                      <InfoOutlinedIcon />
                       {startDateError}
                     </>
                   )}
@@ -297,7 +297,7 @@ const GeneralProjectSettings = () => {
                 <FormHelperText>
                   {endDateError && (
                     <>
-                      <InfoOutlined />
+                      <InfoOutlinedIcon />
                       {endDateError}
                     </>
                   )}
@@ -317,7 +317,7 @@ const GeneralProjectSettings = () => {
                 <FormHelperText>
                   {timeWindowError && (
                     <>
-                      <InfoOutlined />
+                      <InfoOutlinedIcon />
                       {timeWindowError}
                     </>
                   )}
@@ -339,7 +339,7 @@ const GeneralProjectSettings = () => {
                 <FormHelperText>
                   {distanceRadiusError && (
                     <>
-                      <InfoOutlined />
+                      <InfoOutlinedIcon />
                       {distanceRadiusError}
                     </>
                   )}

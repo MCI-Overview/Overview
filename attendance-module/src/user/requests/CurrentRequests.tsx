@@ -1,19 +1,67 @@
-import { ColorPaletteProp, Chip, Table, Sheet, Typography } from "@mui/joy";
-import dayjs from "dayjs";
-
 import {
-  CheckRounded as CheckIcon,
+  Chip,
+  Table,
+  Sheet,
+  Typography,
+  ColorPaletteProp,
+  Dropdown,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  Box,
+} from "@mui/joy";
+import {
+  PendingRounded as PendingIcon,
   BlockRounded as BlockIcon,
   AutorenewRounded as AutorenewIcon,
+  CheckRounded as CheckIcon,
+  MoreHorizRounded as MoreHorizIcon,
 } from "@mui/icons-material";
+import { CustomRequest } from "../../types";
+import dayjs from "dayjs";
+import axios from "axios";
 
-import { CustomAttendance } from "../../../types";
-
-interface UpcomingShiftsProps {
-  data: CustomAttendance[] | null;
+// TODO: Add viewing and editing of requests
+function RowMenu({
+  requestCuid,
+  getCurrentRequests,
+}: {
+  requestCuid: string;
+  getCurrentRequests: () => void;
+}) {
+  function handleCancel() {
+    axios
+      .post("/api/user/request/cancel", { requestCuid })
+      .then(() => getCurrentRequests());
+  }
+  return (
+    <>
+      <Dropdown>
+        <MenuButton
+          slots={{ root: IconButton }}
+          slotProps={{
+            root: { variant: "plain", color: "neutral", size: "sm" },
+          }}
+        >
+          <MoreHorizIcon />
+        </MenuButton>
+        <Menu size="sm" sx={{ minWidth: 140 }}>
+          {/* <MenuItem>View / Edit</MenuItem> */}
+          <MenuItem onClick={handleCancel}>Cancel</MenuItem>
+        </Menu>
+      </Dropdown>
+    </>
+  );
 }
 
-const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
+const CurrentRequests = ({
+  data,
+  getCurrentRequests,
+}: {
+  data: CustomRequest[] | null;
+  getCurrentRequests: () => void;
+}) => {
   return (
     <>
       <Sheet
@@ -48,22 +96,21 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
               <th style={{ width: 140, padding: "12px 6px" }}>Project</th>
               <th style={{ width: 140, padding: "12px 6px" }}>Status</th>
               <th style={{ width: 100, padding: "12px 6px" }}>Type</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Start</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>End</th>
+              <th style={{ width: 40, padding: "12px 6px" }}> </th>
             </tr>
           </thead>
           <tbody>
             {data &&
-              data.map((row: CustomAttendance) => (
+              data.map((row: CustomRequest) => (
                 <tr key={row.cuid}>
                   <td>
                     <Typography level="body-xs">
-                      {dayjs(row.shiftDate).format("DD MMM YYYY")}
+                      {dayjs(row.createdAt).format("DD MMM YYYY")}
                     </Typography>
                   </td>
                   <td>
                     <Typography level="body-xs">
-                      {row.Shift.Project.name}
+                      {row.Assign.Project.name}
                     </Typography>
                   </td>
                   <td>
@@ -72,18 +119,18 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
                       size="sm"
                       startDecorator={
                         {
-                          PRESENT: <CheckIcon />,
-                          NO_SHOW: <AutorenewIcon />,
-                          MEDICAL: <BlockIcon />,
-                          UPCOMING: <CheckIcon />,
+                          APPROVED: <CheckIcon />,
+                          CANCELLED: <AutorenewIcon />,
+                          REJECTED: <BlockIcon />,
+                          PENDING: <PendingIcon />,
                         }[row.status || "UPCOMING"]
                       }
                       color={
                         {
-                          PRESENT: "success",
-                          NO_SHOW: "neutral",
-                          MEDICAL: "danger",
-                          UPCOMING: "success",
+                          APPROVED: "success",
+                          CANCELLED: "neutral",
+                          REJECTED: "danger",
+                          PENDING: "warning",
                         }[row.status || "UPCOMING"] as ColorPaletteProp
                       }
                     >
@@ -91,25 +138,23 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
                     </Chip>
                   </td>
                   <td>
-                    <Typography level="body-xs">{row.shiftType}</Typography>
+                    <Typography level="body-xs">{row.type}</Typography>
                   </td>
                   <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.Shift?.startTime).format("hh:mm a") || "N/A"}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.Shift?.endTime).format("hh:mm a") || "N/A"}
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <RowMenu
+                        requestCuid={row.cuid}
+                        getCurrentRequests={getCurrentRequests}
+                      />
+                    </Box>
                   </td>
                 </tr>
               ))}
             {data && data.length === 0 && (
               <tr>
-                <td colSpan={6}>
+                <td colSpan={4}>
                   <Typography level="body-md" sx={{ textAlign: "center" }}>
-                    No upcoming shifts found
+                    No current request found
                   </Typography>
                 </td>
               </tr>
@@ -121,4 +166,4 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
   );
 };
 
-export default UpcomingShifts;
+export default CurrentRequests;

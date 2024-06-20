@@ -12,27 +12,32 @@ import {
   Grid,
   Typography,
 } from "@mui/joy";
-import { Build, MenuBook, Notifications, Group } from "@mui/icons-material";
+import {
+  BuildRounded as BuildIcon,
+  MenuBookRounded as MenuBookIcon,
+  NotificationsRounded as NotificationsIcon,
+  GroupRounded as GroupIcon,
+} from "@mui/icons-material";
 
 const sections = [
   {
     title: "General",
-    icon: <MenuBook />,
+    icon: <MenuBookIcon />,
     children: <GeneralProjectSettings />,
   },
   {
     title: "Access",
-    icon: <Group />,
+    icon: <GroupIcon />,
     children: <ManageProjectAccess />,
   },
   {
     title: "Notifications",
-    icon: <Notifications />,
+    icon: <NotificationsIcon />,
     children: <div>Notifications</div>,
   },
   {
     title: "Advanced",
-    icon: <Build />,
+    icon: <BuildIcon />,
     children: <div>Advanced</div>,
   },
 ];

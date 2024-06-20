@@ -36,28 +36,38 @@ const RemoveConsultantModal = ({
   const [isSubmitDisabled, setIsSubmitDisabled] = useState<boolean>(true);
 
   const { project, updateProject } = useProjectContext();
-  if (!project) return null;
 
   const { user } = useUserContext();
-  if (!user) return null;
 
   useEffect(() => {
+    if (!project || !consultantToRemove) return;
+
     setAffectedCdds(
       project.candidates.filter(
-        (candidate) => candidate.consultantCuid === consultantToRemove.cuid
-      )
+        (candidate) => candidate.consultantCuid === consultantToRemove.cuid,
+      ),
     );
 
     setRowSelections(
       affectedCdds.map((candidate) => ({
         consultantCuid: null,
         candidateCuid: candidate.cuid,
-      }))
+      })),
     );
-  }, [project.candidates, consultantToRemove]);
+  }, [project, consultantToRemove, affectedCdds]);
+
+  useEffect(() => {
+    setIsSubmitDisabled(
+      emailConfirmation !== consultantToRemove.email ||
+        !rowSelections.every((selection) => selection.consultantCuid !== null),
+    );
+  }, [emailConfirmation, consultantToRemove.email, rowSelections]);
+
+  if (!project) return null;
+  if (!user) return null;
 
   const availableCollaborators = project.consultants.filter(
-    (consultant) => consultant.cuid !== consultantToRemove.cuid
+    (consultant) => consultant.cuid !== consultantToRemove.cuid,
   );
 
   const handleApplyToAll = (value: CommonConsultant | null) => {
@@ -66,13 +76,13 @@ const RemoveConsultantModal = ({
       affectedCdds.map((candidate) => ({
         consultantCuid,
         candidateCuid: candidate.cuid,
-      }))
+      })),
     );
   };
 
   const handleRowSelectionChange = (
     index: number,
-    value: CommonConsultant | null
+    value: CommonConsultant | null,
   ) => {
     const updatedSelections = [...rowSelections];
     updatedSelections[index] = {
@@ -87,7 +97,7 @@ const RemoveConsultantModal = ({
 
     try {
       const reassignments = rowSelections.filter(
-        (rowSelection) => rowSelection.consultantCuid !== null
+        (rowSelection) => rowSelection.consultantCuid !== null,
       );
 
       await axios.delete(`/api/admin/project/${project.cuid}/manage`, {
@@ -106,13 +116,6 @@ const RemoveConsultantModal = ({
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    setIsSubmitDisabled(
-      emailConfirmation !== consultantToRemove.email ||
-        !rowSelections.every((selection) => selection.consultantCuid !== null)
-    );
-  }, [emailConfirmation, consultantToRemove.email, rowSelections]);
 
   return (
     <Modal
@@ -188,7 +191,7 @@ const RemoveConsultantModal = ({
                             availableCollaborators.find(
                               (consultant) =>
                                 consultant.cuid ===
-                                rowSelections[index]?.consultantCuid
+                                rowSelections[index]?.consultantCuid,
                             ) || null
                           }
                           getOptionLabel={(option) => option.email}
