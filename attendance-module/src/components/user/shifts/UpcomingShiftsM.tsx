@@ -1,31 +1,27 @@
-import { FC } from "react";
-import { ColorPaletteProp } from "@mui/joy/styles";
-import Box from "@mui/joy/Box";
-import Chip from "@mui/joy/Chip";
-import Typography from "@mui/joy/Typography";
-import List from "@mui/joy/List";
-import ListItem from "@mui/joy/ListItem";
-import ListItemContent from "@mui/joy/ListItemContent";
-import ListDivider from "@mui/joy/ListDivider";
+import {
+  ColorPaletteProp,
+  Box,
+  Chip,
+  Typography,
+  List,
+  ListItem,
+  ListItemContent,
+  ListDivider,
+} from "@mui/joy";
+import {
+  CheckRounded as CheckIcon,
+  BlockRounded as BlockIcon,
+  AutorenewRounded as AutorenewRounded,
+} from "@mui/icons-material";
+import { CustomAttendance } from "../../../types";
 import dayjs from "dayjs";
 
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import BlockIcon from "@mui/icons-material/Block";
-import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
-import { CustomAttendance } from "../../../types";
-
-type Props = {
-  data: CustomAttendance[];
-};
-
-const UpcomingShiftsM: FC<Props> = ({ data }) => {
-  const attendanceData = data;
-
+const UpcomingShiftsM = ({ data }: { data: CustomAttendance[] }) => {
   return (
     <>
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
-        {attendanceData &&
-          attendanceData.map((listItem: CustomAttendance) => (
+        {data &&
+          data.map((listItem: CustomAttendance) => (
             <List
               key={listItem.cuid}
               size="sm"
@@ -75,10 +71,10 @@ const UpcomingShiftsM: FC<Props> = ({ data }) => {
                   size="sm"
                   startDecorator={
                     {
-                      PRESENT: <CheckRoundedIcon />,
-                      NO_SHOW: <AutorenewRoundedIcon />,
+                      PRESENT: <CheckIcon />,
+                      NO_SHOW: <AutorenewRounded />,
                       MEDICAL: <BlockIcon />,
-                      UPCOMING: <CheckRoundedIcon />,
+                      UPCOMING: <CheckIcon />,
                     }[listItem.status || "UPCOMING"]
                   }
                   color={

@@ -9,10 +9,10 @@ import {
   ListDivider,
 } from "@mui/joy";
 import {
-  PendingRounded,
-  BlockRounded,
-  AutorenewRounded,
-  CheckRounded,
+  PendingRounded as PendingIcon,
+  BlockRounded as BlockIcon,
+  AutorenewRounded as AutorenewIcon,
+  CheckRounded as CheckIcon,
 } from "@mui/icons-material";
 import { CustomRequest } from "../../types";
 import dayjs from "dayjs";
@@ -65,10 +65,10 @@ const RequestHistoryM = ({ data }: { data: CustomRequest[] }) => {
                 size="sm"
                 startDecorator={
                   {
-                    APPROVED: <CheckRounded />,
-                    CANCELLED: <AutorenewRounded />,
-                    REJECTED: <BlockRounded />,
-                    PENDING: <PendingRounded />,
+                    APPROVED: <CheckIcon />,
+                    CANCELLED: <AutorenewIcon />,
+                    REJECTED: <BlockIcon />,
+                    PENDING: <PendingIcon />,
                   }[listItem.status || "UPCOMING"]
                 }
                 color={

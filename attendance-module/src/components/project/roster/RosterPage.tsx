@@ -5,7 +5,10 @@ import { useProjectContext } from "../../../providers/projectContextProvider";
 import { Box, Grid, IconButton, Stack, Typography } from "@mui/joy";
 import { DraggableChip } from "./DraggableChip";
 import axios from "axios";
-import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import {
+  ChevronLeftRounded as ChevronLeftIcon,
+  ChevronRightRounded as ChevronRightIcon,
+} from "@mui/icons-material";
 import { capitalizeWords } from "../../../utils/capitalize";
 import dayjs, { Dayjs } from "dayjs";
 import CandidateDisplay from "./CandidateDisplay";
@@ -108,14 +111,14 @@ export default function RosterPage() {
                 onClick={() => setWeekOffset(weekOffset - 1)}
                 disabled={weekOffset === 0}
               >
-                <ChevronLeft />
+                <ChevronLeftIcon />
               </IconButton>
               <Typography level="h4">
                 {dateRange.startDate.format("DD MMM YY")} -{" "}
                 {dateRange.endDate.format("DD MMM YY")}
               </Typography>
               <IconButton onClick={() => setWeekOffset(weekOffset + 1)}>
-                <ChevronRight />
+                <ChevronRightIcon />
               </IconButton>
             </Stack>
 

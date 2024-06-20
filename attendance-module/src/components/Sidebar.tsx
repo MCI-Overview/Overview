@@ -19,16 +19,16 @@ import {
 } from "@mui/joy";
 
 import {
-  Group,
-  AccountTree,
-  HomeRounded,
-  DashboardRounded,
-  SupportRounded,
-  BrightnessAutoRounded,
-  SettingsRounded,
-  LogoutRounded,
-  ReceiptLong,
-  Person,
+  HomeRounded as HomeIcon,
+  GroupRounded as GroupIcon,
+  PersonRounded as PersonIcon,
+  LogoutRounded as LogoutIcon,
+  SupportRounded as SupportIcon,
+  SettingsRounded as SettingsIcon,
+  DashboardRounded as DashboardIcon,
+  ReceiptLongRounded as ReceiptLongIcon,
+  AccountTreeRounded as AccountTreeIcon,
+  BrightnessAutoRounded as BrightnessAutoIcon,
 } from "@mui/icons-material";
 
 interface SideBarListProps {
@@ -41,22 +41,22 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
   const userSideBarFields = [
     {
       name: "Home",
-      icon: <HomeRounded />,
+      icon: <HomeIcon />,
       onClick: () => navigate("/user/home"),
     },
     {
       name: "Shifts",
-      icon: <DashboardRounded />,
+      icon: <DashboardIcon />,
       onClick: () => navigate("/user/shifts"),
     },
     {
       name: "Requests",
-      icon: <ReceiptLong />,
+      icon: <ReceiptLongIcon />,
       onClick: () => navigate("/user/requests"),
     },
     {
       name: "Profile",
-      icon: <Person />,
+      icon: <PersonIcon />,
       onClick: () => navigate("/user/profile"),
     },
   ];
@@ -64,22 +64,22 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
   const adminSideBarFields = [
     {
       name: "Home",
-      icon: <HomeRounded />,
+      icon: <HomeIcon />,
       onClick: () => navigate("/admin/home"),
     },
     {
       name: "Dashboard",
-      icon: <DashboardRounded />,
+      icon: <DashboardIcon />,
       onClick: () => navigate("/admin/dashboard"),
     },
     {
       name: "Projects",
-      icon: <AccountTree />,
+      icon: <AccountTreeIcon />,
       onClick: () => navigate("/admin/projects"),
     },
     {
       name: "Candidates",
-      icon: <Group />,
+      icon: <GroupIcon />,
       onClick: () => navigate("/admin/candidates"),
     },
   ];
@@ -166,7 +166,7 @@ export default function Sidebar() {
       />
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
         <IconButton variant="soft" color="primary" size="sm">
-          <BrightnessAutoRounded />
+          <BrightnessAutoIcon />
         </IconButton>
         <Typography level="title-lg">Overview</Typography>
         <ColorSchemeToggle sx={{ ml: "auto" }} />
@@ -197,13 +197,13 @@ export default function Sidebar() {
         >
           <ListItem>
             <ListItemButton>
-              <SupportRounded />
+              <SupportIcon />
               Support
             </ListItemButton>
           </ListItem>
           <ListItem>
             <ListItemButton>
-              <SettingsRounded />
+              <SettingsIcon />
               Settings
             </ListItemButton>
           </ListItem>
@@ -224,7 +224,7 @@ export default function Sidebar() {
           color="neutral"
           onClick={() => axios.post("/logout").then(() => updateUser())}
         >
-          <LogoutRounded />
+          <LogoutIcon />
         </IconButton>
       </Box>
     </Sheet>

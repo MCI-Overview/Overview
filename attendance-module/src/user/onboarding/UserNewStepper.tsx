@@ -20,12 +20,12 @@ import { useUserContext } from "../../providers/userContextProvider";
 import { CandidateUser } from "../../types/common";
 import axios from "axios";
 import {
-  AccountBalanceRounded,
-  ContactEmergencyRounded,
-  BadgeRounded,
-  WavingHandRounded,
-  ContactsRounded,
-  CheckCircleRounded,
+  AccountBalanceRounded as AccountBalanceIcon,
+  ContactEmergencyRounded as ContactEmergencyIcon,
+  BadgeRounded as BadgeIcon,
+  WavingHandRounded as WavingHandIcon,
+  ContactsRounded as ContactsIcon,
+  CheckCircleRounded as CheckCircleIcon,
 } from "@mui/icons-material";
 import UploadNRIC from "./UploadNRIC";
 import UploadBankDetails from "./UploadBankDetails";
@@ -153,7 +153,7 @@ export default function UserNewStepper() {
   const steps = [
     {
       label: "Welcome!",
-      icon: <WavingHandRounded />,
+      icon: <WavingHandIcon />,
       content: (
         <>
           <Typography level="body-sm">
@@ -166,7 +166,7 @@ export default function UserNewStepper() {
     },
     {
       label: "Your Details",
-      icon: <ContactsRounded />,
+      icon: <ContactsIcon />,
       content: (
         <>
           <Typography level="title-lg">Personal particulars</Typography>
@@ -305,7 +305,7 @@ export default function UserNewStepper() {
     },
     {
       label: "Update Emergency Contact",
-      icon: <ContactEmergencyRounded />,
+      icon: <ContactEmergencyIcon />,
       content: (
         <UploadEmergencyContactDetails
           handleBack={handleBack}
@@ -315,19 +315,19 @@ export default function UserNewStepper() {
     },
     {
       label: "Upload NRIC!",
-      icon: <BadgeRounded />,
+      icon: <BadgeIcon />,
       content: <UploadNRIC handleBack={handleBack} handleNext={handleNext} />,
     },
     {
       label: "Upload bank!",
-      icon: <AccountBalanceRounded />,
+      icon: <AccountBalanceIcon />,
       content: (
         <UploadBankDetails handleBack={handleBack} handleNext={handleNext} />
       ),
     },
     {
       label: "Thank You!",
-      icon: <CheckCircleRounded />,
+      icon: <CheckCircleIcon />,
       content: <UserOnboarded />,
     },
   ];

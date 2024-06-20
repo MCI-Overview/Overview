@@ -1,14 +1,13 @@
 import { FC } from "react";
-import { ColorPaletteProp } from "@mui/joy/styles";
-import Chip from "@mui/joy/Chip";
-import Table from "@mui/joy/Table";
-import Sheet from "@mui/joy/Sheet";
-import Typography from "@mui/joy/Typography";
+import { ColorPaletteProp, Chip, Table, Sheet, Typography } from "@mui/joy";
 import dayjs from "dayjs";
 
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import BlockIcon from "@mui/icons-material/Block";
-import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
+import {
+  CheckRounded as CheckIcon,
+  BlockRounded as BlockIcon,
+  AutorenewRounded as AutorenewIcon,
+} from "@mui/icons-material";
+
 import { CustomAttendance } from "../../../types";
 
 type Props = {
@@ -76,10 +75,10 @@ const UpcomingShifts: FC<Props> = ({ data }) => {
                       size="sm"
                       startDecorator={
                         {
-                          PRESENT: <CheckRoundedIcon />,
-                          NO_SHOW: <AutorenewRoundedIcon />,
+                          PRESENT: <CheckIcon />,
+                          NO_SHOW: <AutorenewIcon />,
                           MEDICAL: <BlockIcon />,
-                          UPCOMING: <CheckRoundedIcon />,
+                          UPCOMING: <CheckIcon />,
                         }[row.status || "UPCOMING"]
                       }
                       color={

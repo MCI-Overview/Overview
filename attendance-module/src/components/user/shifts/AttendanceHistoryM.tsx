@@ -1,29 +1,25 @@
-import { FC } from "react";
-import { ColorPaletteProp } from "@mui/joy/styles";
-import Box from "@mui/joy/Box";
-import Chip from "@mui/joy/Chip";
-import Typography from "@mui/joy/Typography";
-import List from "@mui/joy/List";
-import ListItem from "@mui/joy/ListItem";
-import ListItemContent from "@mui/joy/ListItemContent";
-import ListDivider from "@mui/joy/ListDivider";
+import {
+  Box,
+  Chip,
+  Typography,
+  List,
+  ListItem,
+  ListItemContent,
+  ListDivider,
+  ColorPaletteProp,
+} from "@mui/joy";
+import {
+  CheckRounded as CheckIcon,
+  BlockRounded as BlockIcon,
+} from "@mui/icons-material";
 import dayjs from "dayjs";
-
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import BlockIcon from "@mui/icons-material/Block";
 import { CustomAttendance } from "../../../types";
 
-type Props = {
-  data: CustomAttendance[];
-};
-
-const AttendanceHistoryM: FC<Props> = ({ data }) => {
-  const attendanceData = data;
-
+const AttendanceHistoryM = ({ data }: { data: CustomAttendance[] }) => {
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
-      {attendanceData &&
-        attendanceData.map((listItem: CustomAttendance) => (
+      {data &&
+        data.map((listItem: CustomAttendance) => (
           <List
             key={listItem.cuid}
             size="sm"
@@ -73,7 +69,7 @@ const AttendanceHistoryM: FC<Props> = ({ data }) => {
                 size="sm"
                 startDecorator={
                   {
-                    PRESENT: <CheckRoundedIcon />,
+                    PRESENT: <CheckIcon />,
                     NO_SHOW: <BlockIcon />,
                     MEDICAL: <BlockIcon />,
                   }[listItem.status || "NO_SHOW"]

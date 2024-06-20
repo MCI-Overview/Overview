@@ -1,14 +1,11 @@
-import { ColorPaletteProp } from "@mui/joy/styles";
-import Chip from "@mui/joy/Chip";
-import Table from "@mui/joy/Table";
-import Sheet from "@mui/joy/Sheet";
-import Typography from "@mui/joy/Typography";
-import dayjs from "dayjs";
-
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import BlockIcon from "@mui/icons-material/Block";
+import { Chip, Table, Sheet, Typography, ColorPaletteProp } from "@mui/joy";
+import {
+  CheckRounded as CheckIcon,
+  BlockRounded as BlockIcon,
+} from "@mui/icons-material";
 import { CustomAttendance } from "../../../types";
 import { FC } from "react";
+import dayjs from "dayjs";
 
 type Props = {
   data: CustomAttendance[];
@@ -75,7 +72,7 @@ const AttendanceHistory: FC<Props> = ({ data }) => {
                       size="sm"
                       startDecorator={
                         {
-                          PRESENT: <CheckRoundedIcon />,
+                          PRESENT: <CheckIcon />,
                           NO_SHOW: <BlockIcon />,
                           MEDICAL: <BlockIcon />,
                         }[row.status || "NO_SHOW"]

@@ -6,8 +6,8 @@ import {
   iconButtonClasses,
 } from "@mui/joy";
 import {
-  KeyboardArrowLeftRounded,
-  KeyboardArrowRightRounded,
+  KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
+  KeyboardArrowRightRounded as KeyboardArrowRightIcon,
 } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { CustomRequest } from "../../types";
@@ -108,7 +108,7 @@ const ViewRequestHistory = () => {
                 size="sm"
                 variant="outlined"
                 color="neutral"
-                startDecorator={<KeyboardArrowLeftRounded />}
+                startDecorator={<KeyboardArrowLeftIcon />}
                 onClick={handlePreviousPage}
                 disabled={page.isFirstPage}
               >
@@ -125,7 +125,7 @@ const ViewRequestHistory = () => {
                 size="sm"
                 variant="outlined"
                 color="neutral"
-                endDecorator={<KeyboardArrowRightRounded />}
+                endDecorator={<KeyboardArrowRightIcon />}
                 onClick={handleNextPage}
                 disabled={page.isLastPage}
               >
