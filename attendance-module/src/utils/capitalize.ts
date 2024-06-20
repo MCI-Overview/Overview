@@ -31,3 +31,7 @@ export function generateCapitalizations(arr: string[]) {
 
   return result;
 }
+
+export function readableEnum(enumValue: string) {
+  return capitalizeWords(enumValue.replace(/_/g, " "));
+}
