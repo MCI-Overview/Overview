@@ -59,6 +59,25 @@ export type Project = {
   Shift: CommonShift[];
 };
 
+export type CustomRequest = {
+  candidateCuid: string;
+  createdAt: string;
+  cuid: string;
+  projectCuid: string;
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  type:
+    | "CLAIM"
+    | "PAID_LEAVE"
+    | "UNPAID_LEAVE"
+    | "MEDICAL_LEAVE"
+    | "RESIGNATION";
+  Assign: {
+    Project: {
+      name: string;
+    };
+  };
+};
+
 export type CustomAttendance = {
   cuid: string;
   candidateCuid: string;
@@ -87,11 +106,11 @@ export type CustomAttendance = {
           latitude: string;
           longitude: string;
           postalCode: string;
-        }
-      ],
-    }
+        },
+      ];
+    };
   };
-}
+};
 
 export type AttendanceRecords = {
   Attendance: CustomAttendance[];
@@ -103,5 +122,5 @@ export type AttendanceRecords = {
     nextPage: number | null;
     pageCount: number;
     totalCount: number;
-  }
-}
+  };
+};

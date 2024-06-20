@@ -7,15 +7,41 @@ import { randomUUID } from "crypto";
 
 const requestAPIRouter = Router();
 
-requestAPIRouter.get("/requests", async (req, res) => {
+requestAPIRouter.get("/requests/current", async (req, res) => {
   const user = req.user as User;
 
   try {
     const requests = await prisma.request.findMany({
       where: {
         candidateCuid: user.cuid,
-        type: {
-          not: "CANCEL",
+        AND: {
+          type: {
+            not: "CANCEL",
+          },
+          OR: [
+            {
+              status: "PENDING",
+            },
+            {
+              status: {
+                not: "PENDING",
+              },
+              createdAt: {
+                gte: dayjs().subtract(7, "day").toDate(),
+              },
+            },
+          ],
+        },
+      },
+      include: {
+        Assign: {
+          select: {
+            Project: {
+              select: {
+                name: true,
+              },
+            },
+          },
         },
       },
       orderBy: {
@@ -23,6 +49,69 @@ requestAPIRouter.get("/requests", async (req, res) => {
       },
     });
     return res.send(requests);
+  } catch (error) {
+    console.error("Error while fetching requests:", error);
+    return res.status(500).send("Internal server error");
+  }
+});
+
+requestAPIRouter.get("/requests/history/:page", async (req, res) => {
+  const user = req.user as User;
+  const page = parseInt(req.params.page, 10);
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const fetchedData = await prisma.request.findMany({
+      where: {
+        candidateCuid: user.cuid,
+        AND: {
+          type: {
+            not: "CANCEL",
+          },
+          status: {
+            not: "PENDING",
+          },
+          createdAt: {
+            lt: dayjs().subtract(7, "day").toDate(),
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    const totalCount = await prisma.request.count({
+      where: {
+        candidateCuid: user.cuid,
+        AND: {
+          type: {
+            not: "CANCEL",
+          },
+          status: {
+            not: "PENDING",
+          },
+          createdAt: {
+            lt: dayjs().subtract(7, "day").toDate(),
+          },
+        },
+      },
+    });
+
+    const paginationData = {
+      isFirstPage: page === 1,
+      isLastPage: page * limit >= totalCount,
+      currentPage: page,
+      previousPage: page > 1 ? page - 1 : null,
+      nextPage: page * limit < totalCount ? page + 1 : null,
+      pageCount: Math.ceil(totalCount / limit),
+      totalCount: totalCount,
+    };
+
+    return res.json([fetchedData, paginationData]);
   } catch (error) {
     console.error("Error while fetching requests:", error);
     return res.status(500).send("Internal server error");
