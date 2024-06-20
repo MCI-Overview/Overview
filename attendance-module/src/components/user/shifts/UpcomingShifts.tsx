@@ -1,4 +1,3 @@
-import { FC } from "react";
 import { ColorPaletteProp, Chip, Table, Sheet, Typography } from "@mui/joy";
 import dayjs from "dayjs";
 
@@ -10,13 +9,11 @@ import {
 
 import { CustomAttendance } from "../../../types";
 
-type Props = {
-  data: CustomAttendance[];
-};
+interface UpcomingShiftsProps {
+  data: CustomAttendance[] | null;
+}
 
-const UpcomingShifts: FC<Props> = ({ data }) => {
-  const attendanceData = data;
-
+const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
   return (
     <>
       <Sheet
@@ -56,8 +53,8 @@ const UpcomingShifts: FC<Props> = ({ data }) => {
             </tr>
           </thead>
           <tbody>
-            {attendanceData &&
-              attendanceData.map((row: CustomAttendance) => (
+            {data &&
+              data.map((row: CustomAttendance) => (
                 <tr key={row.cuid}>
                   <td>
                     <Typography level="body-xs">
@@ -108,6 +105,15 @@ const UpcomingShifts: FC<Props> = ({ data }) => {
                   </td>
                 </tr>
               ))}
+            {data && data.length === 0 && (
+              <tr>
+                <td colSpan={6}>
+                  <Typography level="body-md" sx={{ textAlign: "center" }}>
+                    No upcoming shifts found
+                  </Typography>
+                </td>
+              </tr>
+            )}
           </tbody>
         </Table>
       </Sheet>

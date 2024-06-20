@@ -4,16 +4,13 @@ import {
   BlockRounded as BlockIcon,
 } from "@mui/icons-material";
 import { CustomAttendance } from "../../../types";
-import { FC } from "react";
 import dayjs from "dayjs";
 
-type Props = {
-  data: CustomAttendance[];
-};
+interface AttendanceHistoryProps {
+  data: CustomAttendance[] | null;
+}
 
-const AttendanceHistory: FC<Props> = ({ data }) => {
-  const attendanceData = data;
-
+const AttendanceHistory = ({ data }: AttendanceHistoryProps) => {
   return (
     <>
       <Sheet
@@ -53,8 +50,8 @@ const AttendanceHistory: FC<Props> = ({ data }) => {
             </tr>
           </thead>
           <tbody>
-            {attendanceData &&
-              attendanceData.map((row: CustomAttendance) => (
+            {data &&
+              data.map((row: CustomAttendance) => (
                 <tr key={row.cuid}>
                   <td>
                     <Typography level="body-xs">
@@ -103,6 +100,15 @@ const AttendanceHistory: FC<Props> = ({ data }) => {
                   </td>
                 </tr>
               ))}
+            {data && data.length === 0 && (
+              <tr>
+                <td colSpan={6}>
+                  <Typography level="body-md" sx={{ textAlign: "center" }}>
+                    No attendance history found
+                  </Typography>
+                </td>
+              </tr>
+            )}
           </tbody>
         </Table>
       </Sheet>

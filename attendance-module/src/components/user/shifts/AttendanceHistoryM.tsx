@@ -15,7 +15,11 @@ import {
 import dayjs from "dayjs";
 import { CustomAttendance } from "../../../types";
 
-const AttendanceHistoryM = ({ data }: { data: CustomAttendance[] }) => {
+interface AttendanceHistoryMProps {
+  data: CustomAttendance[] | null;
+}
+
+const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
       {data &&
@@ -88,6 +92,11 @@ const AttendanceHistoryM = ({ data }: { data: CustomAttendance[] }) => {
             <ListDivider />
           </List>
         ))}
+      {data && data.length === 0 && (
+        <Typography level="body-md" sx={{ textAlign: "center" }}>
+          No attendance history found
+        </Typography>
+      )}
     </Box>
   );
 };

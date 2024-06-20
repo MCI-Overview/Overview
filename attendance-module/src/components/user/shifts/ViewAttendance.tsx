@@ -32,7 +32,7 @@ type Page = {
 };
 
 const ViewAttendance = () => {
-  const [data, setData] = useState<CustomAttendance[]>([]);
+  const [data, setData] = useState<CustomAttendance[] | null>(null);
   const [page, setPage] = useState<Page>({
     isFirstPage: true,
     isLastPage: true,

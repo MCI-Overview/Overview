@@ -16,7 +16,11 @@ import {
 import { CustomAttendance } from "../../../types";
 import dayjs from "dayjs";
 
-const UpcomingShiftsM = ({ data }: { data: CustomAttendance[] }) => {
+interface UpcomingShiftsMProps {
+  data: CustomAttendance[] | null;
+}
+
+const UpcomingShiftsM = ({ data }: UpcomingShiftsMProps) => {
   return (
     <>
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
@@ -92,6 +96,11 @@ const UpcomingShiftsM = ({ data }: { data: CustomAttendance[] }) => {
               <ListDivider />
             </List>
           ))}
+        {data && data.length === 0 && (
+          <Typography level="body-md" sx={{ textAlign: "center" }}>
+            No upcoming shifts found
+          </Typography>
+        )}
       </Box>
     </>
   );
