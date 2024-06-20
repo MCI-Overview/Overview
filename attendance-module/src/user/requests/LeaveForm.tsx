@@ -116,10 +116,11 @@ export default function RequestLeaveForm({
                     a.shiftDate.isBefore(b.shiftDate) ? -1 : 1,
                   ) || []
               }
-              getOptionLabel={(option) => `
-                ${option.shiftDate.format(
+              getOptionLabel={(option) =>
+                `${option.shiftDate.format(
                   "DD MMM YYYY",
-                )} - ${option.shiftStartTime.format("HHmm")}`}
+                )} - ${option.shiftStartTime.format("HHmm")}`
+              }
               onChange={(_e, value) => {
                 setShiftType(value?.shiftType || "FULL");
                 setRosterCuid(value?.rosterCuid || "");
