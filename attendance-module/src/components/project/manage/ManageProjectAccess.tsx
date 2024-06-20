@@ -28,13 +28,6 @@ const ManageProjectAccess = () => {
 
   const { user } = useUserContext();
   const { project, updateProject } = useProjectContext();
-  if (!user) return null;
-  if (!project) return null;
-
-  const currentUser = project.consultants.find(
-    (collaborator) => collaborator.cuid === user.cuid
-  );
-  if (!currentUser) return null;
 
   useEffect(() => {
     const fetchConsultants = async () => {
@@ -49,6 +42,14 @@ const ManageProjectAccess = () => {
     fetchConsultants();
   }, []);
 
+  if (!user) return null;
+  if (!project) return null;
+
+  const currentUser = project.consultants.find(
+    (collaborator) => collaborator.cuid === user.cuid,
+  );
+  if (!currentUser) return null;
+
   const handleRemoveConsultant = (consultant: CommonConsultant) => {
     setConsultantToRemove(consultant);
     setIsRemoveModalOpen(true);
@@ -56,7 +57,7 @@ const ManageProjectAccess = () => {
 
   const handleRoleChange = async (
     newRole: "CLIENT_HOLDER" | "CANDIDATE_HOLDER" | null,
-    consultant: CommonConsultant
+    consultant: CommonConsultant,
   ) => {
     if (!newRole) return;
 
