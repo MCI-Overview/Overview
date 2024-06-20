@@ -105,3 +105,15 @@ export type AttendanceRecords = {
     totalCount: number;
   }
 }
+
+export type CustomAdminAttendance = {
+  attendanceCuid: string,
+  date: Date,
+  nric: string,
+  name: string,
+  shiftStart: Date,
+  shiftEnd: Date,
+  rawStart: Date | null,
+  rawEnd: Date | null,
+  status: "ON_TIME" | "LATE" | "NO_SHOW" | "MEDICAL" | null
+}

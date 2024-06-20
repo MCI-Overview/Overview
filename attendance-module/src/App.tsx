@@ -31,6 +31,7 @@ import isBetween from "dayjs/plugin/isBetween";
 import isoWeek from "dayjs/plugin/isoWeek";
 import CandidateProfile from "./user/Profile";
 import LoadUser from "./components/LoadUser";
+import UserProjects from "./user/UserProjects";
 
 dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
@@ -105,11 +106,9 @@ function App() {
                       <Route path="/" element={<LoginUser />} />
                       <Route path="/user/new" element={<UserNew />} />
                       <Route path="/user/home" element={<UserHome />} />
-                      <Route
-                        path="/user/profile"
-                        element={<CandidateProfile />}
-                      />
+                      <Route path="/user/profile" element={<CandidateProfile />} />
                       <Route path="/user/shifts" element={<UserShifts />} />
+                      <Route path="/user/projects" element={<UserProjects />} />
                     </Route>
 
                     {/* Admin routes */}

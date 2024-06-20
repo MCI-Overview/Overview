@@ -38,8 +38,6 @@ const MyProjects: FC = () => {
           display: "flex",
           maxWidth: "800px",
           mx: "auto",
-          px: { xs: 2, md: 6 },
-          py: { xs: 2, md: 3 },
         }}
       >
         <Card>

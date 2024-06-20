@@ -61,6 +61,45 @@ userAPIRouter.get("/bankStatement", async (req, res) => {
   }
 });
 
+userAPIRouter.get("/projects", async (req, res) => {
+  const { cuid } = req.user as User;
+
+  try {
+    const projects = await prisma.project.findMany({
+      where: {
+        Assign: {
+          some: {
+            candidateCuid: cuid,
+            startDate: {
+              lte: new Date(),
+            },
+            endDate: {
+              gte: new Date(),
+            },
+          },
+        },
+        status: "ACTIVE",
+      },
+      include: {
+        Client: true
+      }
+    });
+
+    return res.send(
+      projects.map((project) => ({
+        name: project.name,
+        cuid: project.cuid,
+        startDate: project.startDate,
+        endDate: project.endDate,
+        Client: project.Client
+      })),
+    );
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal server error");
+  }
+});
+
 userAPIRouter.get("/:candidateCuid", async (req, res) => {
   const { candidateCuid } = req.params;
 
