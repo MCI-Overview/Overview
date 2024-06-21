@@ -14,7 +14,7 @@ import {
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
   SearchRounded as SearchIcon,
 } from "@mui/icons-material";
-import { CustomAttendance } from "../../../types";
+import { CustomAttendance } from "../../types";
 import dayjs from "dayjs";
 import axios from "axios";
 

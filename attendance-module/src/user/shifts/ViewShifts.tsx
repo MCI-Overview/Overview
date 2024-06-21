@@ -2,7 +2,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import axios from "axios";
 import UpcomingShifts from "./UpcomingShifts";
 import UpcomingShiftsM from "./UpcomingShiftsM";
-import { CustomAttendance } from "../../../types";
+import { CustomAttendance } from "../../types";
 import {
   Button,
   FormControl,

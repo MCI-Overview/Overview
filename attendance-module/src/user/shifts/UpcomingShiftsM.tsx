@@ -13,7 +13,7 @@ import {
   BlockRounded as BlockIcon,
   AutorenewRounded as AutorenewRounded,
 } from "@mui/icons-material";
-import { CustomAttendance } from "../../../types";
+import { CustomAttendance } from "../../types";
 import dayjs from "dayjs";
 
 interface UpcomingShiftsMProps {

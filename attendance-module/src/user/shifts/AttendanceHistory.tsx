@@ -3,7 +3,7 @@ import {
   CheckRounded as CheckIcon,
   BlockRounded as BlockIcon,
 } from "@mui/icons-material";
-import { CustomAttendance } from "../../../types";
+import { CustomAttendance } from "../../types";
 import dayjs from "dayjs";
 
 interface AttendanceHistoryProps {

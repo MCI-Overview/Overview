@@ -7,7 +7,7 @@ import {
   AutorenewRounded as AutorenewIcon,
 } from "@mui/icons-material";
 
-import { CustomAttendance } from "../../../types";
+import { CustomAttendance } from "../../types";
 
 interface UpcomingShiftsProps {
   data: CustomAttendance[] | null;

@@ -13,7 +13,7 @@ import {
   BlockRounded as BlockIcon,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
-import { CustomAttendance } from "../../../types";
+import { CustomAttendance } from "../../types";
 
 interface AttendanceHistoryMProps {
   data: CustomAttendance[] | null;
