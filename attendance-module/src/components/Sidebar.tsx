@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { closeSidebar } from "../utils/toggle-sidebar";
 import { useUserContext } from "../providers/userContextProvider";
 import ColorSchemeToggle from "./ColorSchemeToggle";
+import { AccountTree } from "@mui/icons-material";
 
 import {
   GlobalStyles,
