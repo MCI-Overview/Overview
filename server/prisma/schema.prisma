@@ -152,7 +152,6 @@ enum RequestType {
   UNPAID_LEAVE
   MEDICAL_LEAVE
   RESIGNATION
-  CANCEL
 }
 
 enum AttendanceStatus {
