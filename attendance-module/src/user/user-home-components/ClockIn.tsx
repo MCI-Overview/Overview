@@ -374,6 +374,7 @@ export default function ClockIn() {
       {!currAttendance && (
         <Box
           sx={{
+            pt: "15px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
