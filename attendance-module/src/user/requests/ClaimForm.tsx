@@ -205,10 +205,9 @@ export default function ClaimForm({
         />
       </FormControl>
       <FormControl>
-        <FormLabel>Upload Receipt</FormLabel>
         <FileUpload
           onChange={handleReceiptFileChange}
-          label="Upload Claim Receipt Image"
+          label="Upload Claim Receipt"
         />
       </FormControl>
       {receiptPreview && (
