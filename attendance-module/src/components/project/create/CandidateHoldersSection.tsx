@@ -39,12 +39,6 @@ export default function ProjectCandidateHoldersSection({
     }
   }, []);
 
-  useEffect(() => {
-    setConsultantList((consultantList) =>
-      consultantList.filter((c) => !candidateHolders.includes(c))
-    );
-  }, [candidateHolders]);
-
   function handleAddConsultant() {
     if (!selectedConsultant) {
       return;
@@ -68,7 +62,9 @@ export default function ProjectCandidateHoldersSection({
             sx={{ flexGrow: 1 }}
             placeholder="Select a consultant"
             value={selectedConsultant}
-            options={consultantList.filter((c) => c.cuid !== user?.cuid)}
+            options={consultantList
+              .filter((c) => c.cuid !== user?.cuid)
+              .filter((c) => !candidateHolders.includes(c))}
             getOptionKey={(option) => option.cuid}
             getOptionLabel={(option) => `${option.name} - ${option.email}`}
             onChange={(_e, value) => {
