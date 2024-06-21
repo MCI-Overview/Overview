@@ -11,7 +11,8 @@ import {
   ListItem,
   Grid,
   IconButton,
-  Stack,
+  CardContent,
+  Card,
 } from "@mui/joy";
 import { CommonLocation } from "../../../types/common";
 import { useState } from "react";
@@ -84,11 +85,12 @@ export default function ProjectLocationsSection({
     <>
       <Grid container sx={{ flexGrow: 1 }} xs={12}>
         <Grid
-          xs={7}
+          xs={12}
+          sm={7}
           display="flex"
           alignItems="center"
           justifyContent="center"
-          sx={{ pr: 1 }}
+          sx={{ pr: { sm: 2 } }}
         >
           <FormControl sx={{ flexGrow: 1 }} error={errorMessage !== ""}>
             <Input
@@ -115,7 +117,16 @@ export default function ProjectLocationsSection({
             />
           </FormControl>
         </Grid>
-        <Grid xs={5} display="flex" justifyContent="center" alignItems="center">
+        <Grid
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          xs={12}
+          sm={5}
+          sx={{
+            pt: { xs: 2, sm: 0 },
+          }}
+        >
           <Button sx={{ width: "100%" }} onClick={handleAddLocation}>
             Add location
           </Button>
@@ -140,30 +151,52 @@ export default function ProjectLocationsSection({
               } added`}
         </AccordionSummary>
         <AccordionDetails>
-          <List component="ol" marker="decimal">
+          <List component="ol">
             {locations.map((location) => (
               <ListItem>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
+                <Card
+                  variant="outlined"
+                  orientation="horizontal"
+                  sx={{
+                    width: "100%",
+                    "&:hover": {
+                      boxShadow: "md",
+                      borderColor: "neutral.outlinedHoverBorder",
+                    },
+                  }}
                 >
-                  <Typography>
-                    {location.postalCode} - {capitalizeWords(location.address)}
-                  </Typography>
-                  <IconButton
-                    onClick={() => {
-                      setLocations(
-                        locations.filter(
-                          (currentLocation) =>
-                            currentLocation.postalCode !== location.postalCode
-                        )
-                      );
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Stack>
+                  <CardContent>
+                    <Grid container alignItems="center">
+                      <Grid xs>
+                        <Typography level="body-lg" id="card-description">
+                          {capitalizeWords(location.address)}
+                        </Typography>
+                        <Typography
+                          level="body-sm"
+                          aria-describedby="card-description"
+                          mb={1}
+                        >
+                          {location.postalCode}
+                        </Typography>
+                      </Grid>
+                      <Grid>
+                        <IconButton
+                          onClick={() => {
+                            setLocations(
+                              locations.filter(
+                                (currentLocation) =>
+                                  currentLocation.postalCode !==
+                                  location.postalCode
+                              )
+                            );
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
               </ListItem>
             ))}
           </List>
