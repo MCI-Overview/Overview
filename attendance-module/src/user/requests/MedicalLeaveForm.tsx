@@ -1,9 +1,17 @@
-import { Typography, FormControl, FormLabel, Grid, Input } from "@mui/joy";
+import axios from "axios";
+import dayjs from "dayjs";
+import toast from "react-hot-toast";
 import { useState } from "react";
 import LoadingRequestButton from "../../components/LoadingRequestButton";
-import axios from "axios";
-import toast from "react-hot-toast";
-import dayjs from "dayjs";
+
+import {
+  Typography,
+  FormControl,
+  FormLabel,
+  Grid,
+  Input,
+  Sheet,
+} from "@mui/joy";
 
 export default function MedicalLeaveForm({
   setIsOpen,
@@ -11,7 +19,7 @@ export default function MedicalLeaveForm({
   setIsOpen: (isOpen: boolean) => void;
 }) {
   const [startDate, setStartDate] = useState<string>(
-    dayjs().format("YYYY-MM-DD"),
+    dayjs().format("YYYY-MM-DD")
   );
   const [numberOfDays, setNumberOfDays] = useState("1");
 
@@ -64,7 +72,7 @@ export default function MedicalLeaveForm({
             <Input
               type="date"
               disabled
-              defaultValue={dayjs().format("YYYY-MM-DD")}
+              value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
             />
           </FormControl>
@@ -73,7 +81,6 @@ export default function MedicalLeaveForm({
           <FormControl>
             <FormLabel>Number of days</FormLabel>
             <Input
-              defaultValue={1}
               value={numberOfDays}
               type="number"
               slotProps={{
@@ -110,7 +117,13 @@ export default function MedicalLeaveForm({
         <input type="file" accept="image/*" onChange={handleMcFileChange} />
       </FormControl>
       {mcPreview && (
-        <img src={mcPreview} alt="Image preview" style={{ maxWidth: "100%" }} />
+        <Sheet sx={{ overflowY: "auto", width: "100%" }}>
+          <img
+            src={mcPreview}
+            alt="Image preview"
+            style={{ width: "100%", height: "auto" }}
+          />
+        </Sheet>
       )}
       <LoadingRequestButton
         promise={handleClaimSubmit}
