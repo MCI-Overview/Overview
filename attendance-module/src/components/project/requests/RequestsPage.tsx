@@ -14,8 +14,8 @@ import { CustomRequest } from "../../../types";
 import axios from "axios";
 import dayjs from "dayjs";
 
-import RequestHistory from "./RequestHistory";
-import RequestHistoryM from "./RequestHistoryM";
+import RequestHistory from "./Requests";
+import RequestHistoryM from "./RequestsM";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
 type Page = {
