@@ -14,24 +14,19 @@ requestAPIRouter.get("/requests/current", async (req, res) => {
     const requests = await prisma.request.findMany({
       where: {
         candidateCuid: user.cuid,
-        AND: {
-          type: {
-            not: "CANCEL",
+        OR: [
+          {
+            status: "PENDING",
           },
-          OR: [
-            {
-              status: "PENDING",
+          {
+            status: {
+              not: "PENDING",
             },
-            {
-              status: {
-                not: "PENDING",
-              },
-              createdAt: {
-                gte: dayjs().subtract(7, "day").toDate(),
-              },
+            createdAt: {
+              gte: dayjs().subtract(7, "day").toDate(),
             },
-          ],
-        },
+          },
+        ],
       },
       include: {
         Assign: {
@@ -65,20 +60,26 @@ requestAPIRouter.get("/requests/history/:page", async (req, res) => {
     const fetchedData = await prisma.request.findMany({
       where: {
         candidateCuid: user.cuid,
-        AND: {
-          type: {
-            not: "CANCEL",
-          },
-          status: {
-            not: "PENDING",
-          },
-          createdAt: {
-            lt: dayjs().subtract(7, "day").toDate(),
-          },
+        status: {
+          not: "PENDING",
+        },
+        createdAt: {
+          lt: dayjs().subtract(7, "day").toDate(),
         },
       },
       orderBy: {
         createdAt: "desc",
+      },
+      include: {
+        Assign: {
+          select: {
+            Project: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
       skip: offset,
       take: limit,
@@ -87,16 +88,11 @@ requestAPIRouter.get("/requests/history/:page", async (req, res) => {
     const totalCount = await prisma.request.count({
       where: {
         candidateCuid: user.cuid,
-        AND: {
-          type: {
-            not: "CANCEL",
-          },
-          status: {
-            not: "PENDING",
-          },
-          createdAt: {
-            lt: dayjs().subtract(7, "day").toDate(),
-          },
+        status: {
+          not: "PENDING",
+        },
+        createdAt: {
+          lt: dayjs().subtract(7, "day").toDate(),
         },
       },
     });
@@ -223,6 +219,7 @@ requestAPIRouter.post("/request/cancel", async (req, res) => {
   }
 });
 
+// Add validation for leave type
 requestAPIRouter.post("/request/leave", async (req, res) => {
   const user = req.user as User;
 
@@ -252,7 +249,7 @@ requestAPIRouter.post("/request/leave", async (req, res) => {
         candidateCuid,
         type,
         data: {
-          leaveShiftCuid: rosterCuid,
+          leaveRosterCuid: rosterCuid,
           leaveDuration: duration,
           reason,
         },
@@ -319,6 +316,14 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
   const affectedRoster = await prisma.attendance.findMany({
     where: {
       candidateCuid,
+      OR: [
+        {
+          status: null,
+        },
+        {
+          status: "NO_SHOW",
+        },
+      ],
       shiftDate: {
         gte: dayjs(startDate).toDate(),
         lte: dayjs(startDate).add(numberOfDays, "day").toDate(),
