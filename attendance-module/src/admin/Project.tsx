@@ -16,6 +16,7 @@ import AssignCandidatePage from "../components/project/candidates/Page";
 import { useProjectContext } from "../providers/projectContextProvider";
 import RosterPage from "../components/project/roster/RosterPage";
 import Settings from "./Settings.tsx";
+import RequestsPage from "../components/project/requests/RequestsPage.tsx";
 
 const tabs: Tab[] = [
   {
@@ -29,6 +30,10 @@ const tabs: Tab[] = [
   {
     label: "Candidates",
     content: <AssignCandidatePage />,
+  },
+  {
+    label: "Requests",
+    content: <RequestsPage />,
   },
   {
     label: "Roster",
@@ -91,7 +96,7 @@ const AdminProjects = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null
+    newValue: string | number | null,
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);
@@ -119,7 +124,6 @@ const AdminProjects = () => {
   return (
     <Box sx={{ flex: 1, width: "100%" }}>
       <Box
-        height={"100dvh"}
         sx={{
           position: "sticky",
           top: { sm: -100, md: -110 },
