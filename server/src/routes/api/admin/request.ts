@@ -42,8 +42,127 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
         .send("You are not authorized to approve this request.");
     }
 
-    // TODO: Handle different requests types
-    await prisma.$transaction([
+    const transactionRequests = [];
+
+    if (request.type === "MEDICAL_LEAVE") {
+      transactionRequests.push(
+        prisma.attendance.updateMany({
+          where: {
+            candidateCuid: request.candidateCuid,
+            OR: [
+              {
+                status: null,
+              },
+              {
+                status: "NO_SHOW",
+              },
+            ],
+            shiftDate: {
+              gte: dayjs(
+                (
+                  request.data as {
+                    startDate: string;
+                  }
+                ).startDate,
+              ).toDate(),
+              lte: dayjs(
+                (
+                  request.data as {
+                    startDate: string;
+                  }
+                ).startDate,
+              )
+                .add(
+                  parseInt(
+                    (
+                      request.data as {
+                        numberOfDays: string;
+                      }
+                    ).numberOfDays,
+                    10,
+                  ) - 1,
+                  "day",
+                )
+                .endOf("day")
+                .toDate(),
+            },
+            Shift: {
+              projectCuid: request.projectCuid,
+            },
+          },
+          data: {
+            status: "MEDICAL",
+          },
+        }),
+      );
+    }
+
+    if (request.type === "RESIGNATION") {
+      transactionRequests.push(
+        prisma.assign.update({
+          where: {
+            projectCuid_candidateCuid: {
+              projectCuid: request.projectCuid,
+              candidateCuid: request.candidateCuid,
+            },
+          },
+          data: {
+            endDate: (request.data as { lastDay: string }).lastDay,
+          },
+        }),
+      );
+    }
+
+    if (request.type === "PAID_LEAVE" || request.type === "UNPAID_LEAVE") {
+      const leaveDuration = (request.data as { leaveDuration: string })
+        .leaveDuration;
+
+      if (leaveDuration === "FULL_DAY") {
+        transactionRequests.push(
+          prisma.attendance.update({
+            where: {
+              cuid: (request.data as { leaveRosterCuid: string })
+                .leaveRosterCuid,
+            },
+            data: {
+              leave: "FULLDAY",
+            },
+          }),
+        );
+      }
+
+      if (leaveDuration === "FIRST_HALF") {
+        transactionRequests.push(
+          prisma.attendance.update({
+            where: {
+              cuid: (request.data as { leaveRosterCuid: string })
+                .leaveRosterCuid,
+            },
+            data: {
+              leave: "HALFDAY",
+              shiftType: "SECOND_HALF",
+            },
+          }),
+        );
+      }
+
+      if (leaveDuration === "SECOND_HALF") {
+        transactionRequests.push(
+          prisma.attendance.update({
+            where: {
+              cuid: (request.data as { leaveRosterCuid: string })
+                .leaveRosterCuid,
+            },
+            data: {
+              leave: "HALFDAY",
+              shiftType: "FIRST_HALF",
+            },
+          }),
+        );
+      }
+    }
+
+    transactionRequests.push(
       prisma.request.update({
         where: {
           cuid: requestCuid,
@@ -52,7 +171,9 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
           status: "APPROVED",
         },
       }),
-    ]);
+    );
+
+    await prisma.$transaction(transactionRequests);
 
     return res.send("Request approved.");
   } catch (error) {
