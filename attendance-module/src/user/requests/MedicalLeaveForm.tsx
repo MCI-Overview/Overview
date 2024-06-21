@@ -4,6 +4,7 @@ import LoadingRequestButton from "../../components/LoadingRequestButton";
 import axios from "axios";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
+import FileUpload from "../../components/FileUpload";
 
 export default function MedicalLeaveForm({
   setIsOpen,
@@ -106,8 +107,7 @@ export default function MedicalLeaveForm({
         </Grid>
       </Grid>
       <FormControl>
-        <FormLabel>Upload MC</FormLabel>
-        <input type="file" accept="image/*" onChange={handleMcFileChange} />
+        <FileUpload onChange={handleMcFileChange} label="Upload MC" />
       </FormControl>
       {mcPreview && (
         <img src={mcPreview} alt="Image preview" style={{ maxWidth: "100%" }} />

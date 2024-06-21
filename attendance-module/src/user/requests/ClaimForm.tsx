@@ -13,6 +13,7 @@ import LoadingRequestButton from "../../components/LoadingRequestButton";
 import axios from "axios";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
+import FileUpload from "../../components/FileUpload";
 
 export default function ClaimForm({
   setIsOpen,
@@ -205,10 +206,9 @@ export default function ClaimForm({
       </FormControl>
       <FormControl>
         <FormLabel>Upload Receipt</FormLabel>
-        <input
-          type="file"
-          accept="image/*"
+        <FileUpload
           onChange={handleReceiptFileChange}
+          label="Upload Claim Receipt Image"
         />
       </FormControl>
       {receiptPreview && (
