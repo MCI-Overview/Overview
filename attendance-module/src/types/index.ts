@@ -22,8 +22,12 @@ export type CreateShiftData = {
 
 export type Manage = {
   role: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
-  consultantEmail: string;
+  consultantCuid: string;
   projectCuid: string;
+  Consultant: {
+    // TODO: fix type
+    name: string;
+  };
 };
 
 export type DraggableChipProps = {
@@ -64,11 +68,11 @@ export type CustomRequest = {
   projectCuid: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   type:
-  | "CLAIM"
-  | "PAID_LEAVE"
-  | "UNPAID_LEAVE"
-  | "MEDICAL_LEAVE"
-  | "RESIGNATION";
+    | "CLAIM"
+    | "PAID_LEAVE"
+    | "UNPAID_LEAVE"
+    | "MEDICAL_LEAVE"
+    | "RESIGNATION";
   Assign: {
     Project: {
       name: string;
@@ -104,7 +108,7 @@ export type CustomAttendance = {
           latitude: string;
           longitude: string;
           postalCode: string;
-        },
+        }
       ];
     };
   };
@@ -123,15 +127,14 @@ export type AttendanceRecords = {
   };
 };
 
-
 export type CustomAdminAttendance = {
-  attendanceCuid: string,
-  date: Date,
-  nric: string,
-  name: string,
-  shiftStart: Date,
-  shiftEnd: Date,
-  rawStart: Date | null,
-  rawEnd: Date | null,
-  status: "ON_TIME" | "LATE" | "NO_SHOW" | "MEDICAL" | null
-}
+  attendanceCuid: string;
+  date: Date;
+  nric: string;
+  name: string;
+  shiftStart: Date;
+  shiftEnd: Date;
+  rawStart: Date | null;
+  rawEnd: Date | null;
+  status: "ON_TIME" | "LATE" | "NO_SHOW" | "MEDICAL" | null;
+};

@@ -10,7 +10,7 @@ import {
   Grid,
   IconButton,
   Card,
-  CardContent
+  CardContent,
 } from "@mui/joy";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -40,18 +40,13 @@ export default function ProjectCandidateHoldersSection({
     }
   }, []);
 
-  useEffect(() => {
-    setConsultantList((consultantList) =>
-      consultantList.filter((c) => !candidateHolders.includes(c)),
-    );
-  }, [candidateHolders]);
-
   function handleAddConsultant() {
     if (!selectedConsultant) {
       return;
     }
 
     setCandidateHolders([...candidateHolders, selectedConsultant]);
+    setSelectedConsultant(null);
   }
 
   return (
@@ -68,7 +63,10 @@ export default function ProjectCandidateHoldersSection({
           <Autocomplete
             sx={{ flexGrow: 1 }}
             placeholder="Select a consultant"
-            options={consultantList.filter((c) => c.cuid !== user?.cuid)}
+            value={selectedConsultant}
+            options={consultantList
+              .filter((c) => c.cuid !== user?.cuid)
+              .filter((c) => !candidateHolders.includes(c))}
             getOptionKey={(option) => option.cuid}
             getOptionLabel={(option) => `${option.name} - ${option.email}`}
             onChange={(_e, value) => {
@@ -81,7 +79,14 @@ export default function ProjectCandidateHoldersSection({
             }}
           />
         </Grid>
-        <Grid sm={5} xs={12} sx={{ pt: { xs: 2, sm: 0 } }} display="flex" justifyContent="center" alignItems="center">
+        <Grid
+          sm={5}
+          xs={12}
+          sx={{ pt: { xs: 2, sm: 0 } }}
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+        >
           <Button sx={{ width: "100%" }} onClick={handleAddConsultant}>
             Add collaborators
           </Button>
@@ -94,8 +99,9 @@ export default function ProjectCandidateHoldersSection({
         <AccordionSummary>
           {candidateHolders.length === 0
             ? "No collaborators added"
-            : `${candidateHolders.length} candidate holder${candidateHolders.length > 1 ? "s" : ""
-            } added`}
+            : `${candidateHolders.length} candidate holder${
+                candidateHolders.length > 1 ? "s" : ""
+              } added`}
         </AccordionSummary>
         <AccordionDetails>
           <List component="ol">
@@ -105,8 +111,11 @@ export default function ProjectCandidateHoldersSection({
                   variant="outlined"
                   orientation="horizontal"
                   sx={{
-                    width: '100%',
-                    '&:hover': { boxShadow: 'md', borderColor: 'neutral.outlinedHoverBorder' },
+                    width: "100%",
+                    "&:hover": {
+                      boxShadow: "md",
+                      borderColor: "neutral.outlinedHoverBorder",
+                    },
                   }}
                 >
                   <CardContent>
@@ -115,7 +124,11 @@ export default function ProjectCandidateHoldersSection({
                         <Typography level="body-lg" id="card-description">
                           {holder.name}
                         </Typography>
-                        <Typography level="body-sm" aria-describedby="card-description" mb={1}>
+                        <Typography
+                          level="body-sm"
+                          aria-describedby="card-description"
+                          mb={1}
+                        >
                           {holder.email}
                         </Typography>
                       </Grid>
@@ -124,8 +137,9 @@ export default function ProjectCandidateHoldersSection({
                           onClick={() => {
                             setCandidateHolders(
                               candidateHolders.filter(
-                                (currentHolder) => currentHolder.cuid !== holder.cuid,
-                              ),
+                                (currentHolder) =>
+                                  currentHolder.cuid !== holder.cuid
+                              )
                             );
                           }}
                         >

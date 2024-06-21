@@ -82,7 +82,7 @@ const AdminProjects = () => {
   const breadcrumbs: BreadcrumbPart[] = [
     {
       label: "Projects",
-      link: "/admin/projects",
+      link: "/admin/home",
     },
     {
       label: project?.name,

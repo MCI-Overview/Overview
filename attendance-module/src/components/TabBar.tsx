@@ -1,4 +1,14 @@
-import { Tabs, TabList, tabClasses, Tab, TabPanel } from "@mui/joy";
+import {
+  Tabs,
+  TabList,
+  tabClasses,
+  Tab,
+  TabPanel,
+  Box,
+  Select,
+  Option,
+  Typography,
+} from "@mui/joy";
 
 export type Tab = {
   label: string;
@@ -14,56 +24,76 @@ export function TabBar({
   tabValue: number;
   handleTabChange: (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null,
+    newValue: string | number | null
   ) => void;
 }) {
   return (
-    <Tabs
-      value={tabValue}
-      onChange={handleTabChange}
-      sx={{
-        display: "flex",
-        flexGrow: 1,
-        bgcolor: "transparent",
-      }}
-    >
-      <TabList
-        tabFlex={1}
-        size="sm"
+    <>
+      <Tabs
+        value={tabValue}
+        onChange={handleTabChange}
         sx={{
-          pl: { xs: 0, md: 4 },
-          justifyContent: "left",
-          [`&& .${tabClasses.root}`]: {
-            fontWeight: "600",
-            flex: "initial",
-            color: "text.tertiary",
-            [`&.${tabClasses.selected}`]: {
-              bgcolor: "transparent",
-              color: "text.primary",
-              "&::after": {
-                height: "2px",
-                bgcolor: "primary.500",
-              },
-            },
-          },
+          display: { xs: "none", sm: "flex" },
+          flexGrow: 1,
+          bgcolor: "transparent",
         }}
       >
+        <TabList
+          tabFlex={1}
+          size="sm"
+          sx={{
+            pl: { xs: 0, md: 4 },
+            justifyContent: "left",
+            [`&& .${tabClasses.root}`]: {
+              fontWeight: "600",
+              flex: "initial",
+              color: "text.tertiary",
+              [`&.${tabClasses.selected}`]: {
+                bgcolor: "transparent",
+                color: "text.primary",
+                "&::after": {
+                  height: "2px",
+                  bgcolor: "primary.500",
+                },
+              },
+            },
+          }}
+        >
+          {tabs.map((tab, index) => (
+            <Tab
+              key={index}
+              sx={{ borderRadius: "6px 6px 0 0" }}
+              indicatorInset
+              value={index}
+            >
+              {tab.label}
+            </Tab>
+          ))}
+        </TabList>
         {tabs.map((tab, index) => (
-          <Tab
-            key={index}
-            sx={{ borderRadius: "6px 6px 0 0" }}
-            indicatorInset
-            value={index}
-          >
-            {tab.label}
-          </Tab>
+          <TabPanel key={index} value={index}>
+            {tab.content}
+          </TabPanel>
         ))}
-      </TabList>
-      {tabs.map((tab, index) => (
-        <TabPanel key={index} value={index}>
-          {tab.content}
-        </TabPanel>
-      ))}
-    </Tabs>
+      </Tabs>
+
+      {/* Display select for smaller screens */}
+      <Box sx={{ display: { xs: "block", sm: "none" }, px: 2 }}>
+        <Select
+          value={tabValue}
+          onChange={handleTabChange}
+          sx={{ width: "100%" }}
+          renderValue={(selected) => (
+            <Typography level="title-sm">{selected?.label}</Typography>
+          )}
+        >
+          {tabs.map((tab, index) => (
+            <Option key={index} value={index}>
+              {tab.label}
+            </Option>
+          ))}
+        </Select>
+      </Box>
+    </>
   );
 }

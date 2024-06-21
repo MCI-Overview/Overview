@@ -1,10 +1,12 @@
+import dayjs from "dayjs";
+import { CustomAttendance } from "../../../types";
+import { readableEnum } from "../../../utils/capitalize";
+
 import { Chip, Table, Sheet, Typography, ColorPaletteProp } from "@mui/joy";
 import {
   CheckRounded as CheckIcon,
   BlockRounded as BlockIcon,
 } from "@mui/icons-material";
-import { CustomAttendance } from "../../../types";
-import dayjs from "dayjs";
 
 interface AttendanceHistoryProps {
   data: CustomAttendance[] | null;
@@ -82,11 +84,13 @@ const AttendanceHistory = ({ data }: AttendanceHistoryProps) => {
                         }[row.status || "NO_SHOW"] as ColorPaletteProp
                       }
                     >
-                      {row.status || "NO_SHOW"}
+                      {readableEnum(row.status || "NO_SHOW")}
                     </Chip>
                   </td>
                   <td>
-                    <Typography level="body-xs">{row.shiftType}</Typography>
+                    <Typography level="body-xs">
+                      {readableEnum(row.shiftType)}
+                    </Typography>
                   </td>
                   <td>
                     <Typography level="body-xs">

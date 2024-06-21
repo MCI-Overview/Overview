@@ -1,8 +1,11 @@
+import dayjs from "dayjs";
 import { useState } from "react";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { checkPermission } from "../../../utils/permission";
+import { readableEnum } from "../../../utils/capitalize";
 import { CommonCandidate, PermissionList } from "../../../types/common";
+import { ThTypo, TdTypo } from "../ui/TableTypo";
 
 import {
   Box,
@@ -19,7 +22,7 @@ import {
   ListItemContent,
   Chip,
   ColorPaletteProp,
-  ListDivider
+  ListDivider,
 } from "@mui/joy";
 import {
   DeleteRounded as DeleteIcon,
@@ -27,8 +30,6 @@ import {
   ArrowDownwardRounded as ArrowDownwardIcon,
   SwapVertRounded as SwapVertIcon,
 } from "@mui/icons-material";
-
-import dayjs from "dayjs";
 
 //TODO: Fix type
 export type CddTableDataType = Omit<
@@ -71,7 +72,7 @@ const CandidateTable = ({
 
   const hasEditProjectPermission =
     project.consultants.find((c) => c.role === "CLIENT_HOLDER")?.cuid ===
-    user.cuid || checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS);
+      user.cuid || checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS);
 
   const isHolder = (cddCuid: string) => {
     return (
@@ -129,11 +130,11 @@ const CandidateTable = ({
           className="OrderTableContainer"
           variant="outlined"
           sx={{
-            display: { xs: 'none', sm: 'initial' },
-            width: '100%',
-            borderRadius: 'sm',
+            display: { xs: "none", sm: "initial" },
+            width: "100%",
+            borderRadius: "sm",
             flexShrink: 1,
-            overflow: 'auto',
+            overflow: "auto",
             minHeight: 0,
           }}
         >
@@ -142,65 +143,63 @@ const CandidateTable = ({
             stickyHeader
             hoverRow
             sx={{
-              '--TableCell-headBackground': 'var(--joy-palette-background-level1)',
-              '--Table-headerUnderlineThickness': '1px',
-              '--TableRow-hoverBackground': 'var(--joy-palette-background-level1)',
-              '--TableCell-paddingY': '4px',
-              '--TableCell-paddingX': '8px',
+              "--TableCell-headBackground":
+                "var(--joy-palette-background-level1)",
+              "--Table-headerUnderlineThickness": "1px",
+              "--TableRow-hoverBackground":
+                "var(--joy-palette-background-level1)",
+              "--TableCell-paddingY": "4px",
+              "--TableCell-paddingX": "8px",
+              "& tr > *": { textAlign: "center" },
             }}
           >
             <thead>
               <tr>
-                <th style={{ width: 120, padding: '12px 6px' }}>Nric</th>
-                <th style={{ width: 160, padding: '12px 6px' }}>Name</th>
-                <th style={{ width: 140, padding: '12px 6px' }}>Contact</th>
-                <th style={{ width: 140, padding: '12px 6px' }}>Date of birth</th>
-                <th style={{ width: 80, padding: '12px 6px' }} onClick={() => requestSort("age")}>{renderSortIcon("age")} Age</th>
-                <th style={{ width: 120, padding: '12px 6px' }} onClick={() => requestSort("startDate")}>{renderSortIcon("startDate")} Start date</th>
-                <th style={{ width: 120, padding: '12px 6px' }} onClick={() => requestSort("endDate")}>{renderSortIcon("endDate")} End date</th>
-                <th style={{ width: 100, padding: '12px 6px' }}>Type</th>
-                {showCandidateHolder && <th style={{ width: 160, padding: '12px 6px' }}>Candidate holder</th>}
-                {handleDelete && <th style={{ width: 50, padding: '12px 6px' }}></th>}
+                <ThTypo>Nric</ThTypo>
+                <ThTypo>Name</ThTypo>
+                <ThTypo>Contact</ThTypo>
+                <ThTypo>Date of birth</ThTypo>
+                <ThTypo onClick={() => requestSort("age")}>
+                  {renderSortIcon("age")} Age
+                </ThTypo>
+                <ThTypo onClick={() => requestSort("startDate")}>
+                  {renderSortIcon("startDate")} Start date
+                </ThTypo>
+                <ThTypo onClick={() => requestSort("endDate")}>
+                  {renderSortIcon("endDate")} End date
+                </ThTypo>
+                <ThTypo>Type</ThTypo>
+                {showCandidateHolder && <ThTypo>Consultant</ThTypo>}
+                {handleDelete && <ThTypo>Action</ThTypo>}
               </tr>
             </thead>
+
             <tbody>
               {sortedData.length === 0 ? (
                 <tr>
-                  <td colSpan={handleDelete ? 10 : 9} style={{ textAlign: 'center' }}>No candidates found.</td>
+                  <td
+                    colSpan={handleDelete ? 10 : 9}
+                    style={{ textAlign: "center" }}
+                  >
+                    No candidates found.
+                  </td>
                 </tr>
               ) : (
                 sortedData.map((row) => (
                   <tr key={row.cuid}>
-                    <td>
-                      <Typography level="body-xs">{row.nric}</Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">{row.name}</Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">{row.contact}</Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">{dayjs(row.dateOfBirth).format("DD/MM/YYYY")}</Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">{dayjs().diff(row.dateOfBirth, "years")}</Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">{dayjs(row.startDate).format("DD/MM/YYYY")}</Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">{dayjs(row.endDate).format("DD/MM/YYYY")}</Typography>
-                    </td>
-
-                    <td>
-                      <Typography>
-                        {row.employmentType}
-                      </Typography>
-                    </td>
-
-
-                    {showCandidateHolder && <td><Typography>{row.consultantName}</Typography></td>}
+                    <TdTypo>{row.nric}</TdTypo>
+                    <TdTypo>{row.name}</TdTypo>
+                    <TdTypo>{row.contact}</TdTypo>
+                    <TdTypo>
+                      {dayjs(row.dateOfBirth).format("DD/MM/YYYY")}
+                    </TdTypo>
+                    <TdTypo>{dayjs().diff(row.dateOfBirth, "years")}</TdTypo>
+                    <TdTypo>{dayjs(row.startDate).format("DD/MM/YYYY")}</TdTypo>
+                    <TdTypo>{dayjs(row.endDate).format("DD/MM/YYYY")}</TdTypo>
+                    <TdTypo>{readableEnum(row.employmentType)}</TdTypo>
+                    {showCandidateHolder && (
+                      <TdTypo>{row.consultantName}</TdTypo>
+                    )}
 
                     {handleDelete && (
                       <td>
@@ -219,7 +218,8 @@ const CandidateTable = ({
                                 color="danger"
                                 onClick={() => handleDelete([row.cuid])}
                                 disabled={
-                                  !hasEditProjectPermission && !isHolder(row.cuid)
+                                  !hasEditProjectPermission &&
+                                  !isHolder(row.cuid)
                                 }
                               >
                                 <DeleteIcon />
@@ -230,82 +230,84 @@ const CandidateTable = ({
                       </td>
                     )}
                   </tr>
-                )))}
+                ))
+              )}
             </tbody>
           </Table>
         </Sheet>
 
-        <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
-          {sortedData && sortedData.map((listItem) => (
-            <List
-              key={listItem.cuid}
-              size="sm"
-              sx={{
-                '--ListItem-paddingX': 0,
-              }}
-            >
-              <ListItem
+        {/* List display for smaller screens */}
+        <Box sx={{ display: { xs: "block", sm: "none" } }}>
+          {sortedData &&
+            sortedData.map((listItem) => (
+              <List
+                key={listItem.cuid}
+                size="sm"
                 sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'start',
+                  "--ListItem-paddingX": 0,
                 }}
               >
-                <ListItemContent sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
-                  <div>
-                    <Typography fontWeight={600} gutterBottom>
-                      {listItem.name}
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 0.5,
-                        mb: 1,
-                      }}
-                    >
-                      <Typography level="body-md">{listItem.nric}</Typography>
-                      <Typography level="body-md">&bull;</Typography>
-                      <Typography level="body-md">{dayjs(listItem.dateOfBirth).format('DD/MM/YYYY')}</Typography>
-                    </Box>
-                    <Typography level="body-xs">
-                      Contact
-                    </Typography>
-                    <Typography level="body-md" gutterBottom>
-                      {listItem.contact}
-                    </Typography>
-                    <Typography level="body-xs">
-                      Work period
-                    </Typography>
-                    <Typography level="body-md" gutterBottom>
-                      {dayjs(listItem.startDate).format('DD/MM/YYYY')} - {dayjs(listItem.endDate).format('DD/MM/YYYY')}
-                    </Typography>
-                    <Typography level="body-xs">
-                      Candidate holder
-                    </Typography>
-                    <Typography level="body-md" gutterBottom>
-                      {listItem.consultantName}
-                    </Typography>
-                  </div>
-                </ListItemContent>
-                <Chip
-                  variant="soft"
-                  size="sm"
-                  color={
-                    {
-                      FULL_TIME: 'success',
-                      PART_TIME: 'neutral',
-                      CONTRACT: 'warning'
-                    }[listItem.employmentType] as ColorPaletteProp
-                  }
+                <ListItem
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "start",
+                  }}
                 >
-                  {listItem.employmentType}
-                </Chip>
-              </ListItem>
-              <ListDivider />
-            </List>
-          ))}
+                  <ListItemContent
+                    sx={{ display: "flex", gap: 2, alignItems: "start" }}
+                  >
+                    <div>
+                      <Typography fontWeight={600} gutterBottom>
+                        {listItem.name}
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 0.5,
+                          mb: 1,
+                        }}
+                      >
+                        <Typography level="body-md">{listItem.nric}</Typography>
+                        <Typography level="body-md">&bull;</Typography>
+                        <Typography level="body-md">
+                          {dayjs(listItem.dateOfBirth).format("DD/MM/YYYY")}
+                        </Typography>
+                      </Box>
+                      <Typography level="body-xs">Contact</Typography>
+                      <Typography level="body-md" gutterBottom>
+                        {listItem.contact}
+                      </Typography>
+                      <Typography level="body-xs">Work period</Typography>
+                      <Typography level="body-md" gutterBottom>
+                        {dayjs(listItem.startDate).format("DD/MM/YYYY")} -{" "}
+                        {dayjs(listItem.endDate).format("DD/MM/YYYY")}
+                      </Typography>
+                      <Typography level="body-xs">Candidate holder</Typography>
+                      <Typography level="body-md" gutterBottom>
+                        {listItem.consultantName}
+                      </Typography>
+                    </div>
+                  </ListItemContent>
+                  <Chip
+                    variant="soft"
+                    size="sm"
+                    color={
+                      {
+                        FULL_TIME: "success",
+                        PART_TIME: "neutral",
+                        CONTRACT: "warning",
+                      }[listItem.employmentType] as ColorPaletteProp
+                    }
+                  >
+                    {listItem.employmentType}
+                  </Chip>
+                </ListItem>
+                <ListDivider />
+              </List>
+            ))}
         </Box>
       </CssVarsProvider>
     </>

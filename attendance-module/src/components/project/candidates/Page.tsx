@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 import { useState } from "react";
 import AssignCandidateModal from "./AssignCandidateModal";
 import CandidateTable from "./CandidateTable";
@@ -6,16 +7,8 @@ import { CommonCandidate } from "../../../types/common";
 import DeleteCandidateModal from "./DeleteCandidateModal";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import {
-  Box,
-  Button,
-  Input,
-  Stack,
-  FormControl,
-  FormLabel
-} from "@mui/joy";
-import SearchIcon from '@mui/icons-material/Search';
-import toast from "react-hot-toast";
+import { Box, Button, Input, FormControl, FormLabel, Stack } from "@mui/joy";
+import SearchIcon from "@mui/icons-material/Search";
 
 const CandidatePage = () => {
   const { project, updateProject } = useProjectContext();
@@ -34,7 +27,7 @@ const CandidatePage = () => {
         employmentType: cdd.employmentType,
         consultantCuid: cdd.consultantCuid,
         consultantName: project?.consultants.find(
-          (c) => c.cuid === cdd.consultantCuid,
+          (c) => c.cuid === cdd.consultantCuid
         )!.name,
       };
     }) || [];
@@ -46,7 +39,7 @@ const CandidatePage = () => {
 
   // TODO: Fix type
   const matchSearchValue = (
-    c: Omit<Omit<Omit<CommonCandidate, "dateOfBirth">, "startDate">, "endDate">,
+    c: Omit<Omit<Omit<CommonCandidate, "dateOfBirth">, "startDate">, "endDate">
   ) =>
     c.nric.toLowerCase().includes(searchValue.toLowerCase()) ||
     c.name.toLowerCase().includes(searchValue.toLowerCase());
@@ -81,19 +74,15 @@ const CandidatePage = () => {
         px: { xs: 2, md: 6 },
       }}
     >
-
-
-
       <Box
         className="SearchAndFilters-tabletUp"
         sx={{
-          borderRadius: 'sm',
-          py: 2,
-          display: 'flex',
-          flexWrap: 'wrap',
+          borderRadius: "sm",
+          display: "flex",
+          flexWrap: "wrap",
           gap: 1.5,
-          '& > *': {
-            minWidth: { xs: '120px', md: '160px' },
+          "& > *": {
+            minWidth: { xs: "120px", md: "160px" },
           },
         }}
       >
@@ -110,10 +99,7 @@ const CandidatePage = () => {
         </FormControl>
         <FormControl size="sm">
           <FormLabel>Add candidates</FormLabel>
-          <Button
-            size="sm"
-            onClick={() => setIsUploadOpen(true)}
-          >
+          <Button size="sm" onClick={() => setIsUploadOpen(true)}>
             Import
           </Button>
         </FormControl>

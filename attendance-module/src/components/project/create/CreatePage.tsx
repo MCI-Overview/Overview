@@ -1,23 +1,14 @@
-import { useState } from "react";
 import axios, { AxiosError } from "axios";
+import toast from "react-hot-toast";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CommonConsultant, CommonLocation } from "../../../types/common";
 import { CreateProjectData } from "../../../types";
 import ProjectDetailsSection from "./DetailsSection";
-
-import {
-  Box,
-  Button,
-  Divider,
-  Stack,
-  Typography,
-  Card,
-  CardActions,
-  CardOverflow,
-} from "@mui/joy";
 import ProjectLocationsSection from "./LocationsSection";
 import ProjectCandidateHoldersSection from "./CandidateHoldersSection";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+
+import { Box, Button, Divider, Stack } from "@mui/joy";
 
 // Define the interface for the error response data
 interface ErrorResponseData {
@@ -37,7 +28,7 @@ const CreateProjectPage = () => {
   });
   const [locations, setLocations] = useState<CommonLocation[]>([]);
   const [candidateHolders, setCandidateHolders] = useState<CommonConsultant[]>(
-    [],
+    []
   );
 
   const navigate = useNavigate();
@@ -61,57 +52,49 @@ const CreateProjectPage = () => {
       const axiosError = error as AxiosError<ErrorResponseData>;
       toast.error(
         axiosError.response?.data.message ||
-        "Error while creating project. Please try again later.",
+          "Error while creating project. Please try again later."
       );
     }
   };
 
   return (
-    <>
-      <Stack
-        spacing={4}
-        sx={{
-          display: "flex",
-          maxWidth: "800px",
-          mx: "auto"
-        }}
-      >
-        <Card>
-          <Box sx={{ mb: 1 }}>
-            <Typography level="title-md">Create project</Typography>
-            <Typography level="body-sm">
-              Create a new project and add your candidate holders.
-            </Typography>
-          </Box>
-          <Divider />
-          <Stack
-            spacing={2}
-          >
-            <ProjectDetailsSection
-              projectDetails={projectDetails}
-              setProjectDetails={setProjectDetails}
-            />
-            <Divider />
-            <ProjectLocationsSection
-              locations={locations}
-              setLocations={setLocations}
-            />
-            <Divider />
-            <ProjectCandidateHoldersSection
-              candidateHolders={candidateHolders}
-              setCandidateHolders={setCandidateHolders}
-            />
-          </Stack>
-          <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
-            <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
-              <Button size="sm" variant="solid" onClick={handleSaveProject}>
-                Create
-              </Button>
-            </CardActions>
-          </CardOverflow>
-        </Card>
-      </Stack>
-    </>
+    <Stack
+      spacing={2}
+      sx={{
+        display: "flex",
+        width: "600px",
+        maxHeight: "100%",
+        overflowY: "auto",
+        scrollbarWidth: "thin",
+      }}
+    >
+      <ProjectDetailsSection
+        projectDetails={projectDetails}
+        setProjectDetails={setProjectDetails}
+      />
+
+      <Divider />
+
+      <ProjectLocationsSection
+        locations={locations}
+        setLocations={setLocations}
+      />
+
+      <Divider />
+
+      <ProjectCandidateHoldersSection
+        candidateHolders={candidateHolders}
+        setCandidateHolders={setCandidateHolders}
+      />
+
+      <Divider />
+
+      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Button size="sm" variant="solid" onClick={handleSaveProject}>
+          Create Project
+        </Button>
+      </Box>
+    </Stack>
   );
 };
 

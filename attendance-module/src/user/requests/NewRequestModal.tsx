@@ -1,3 +1,9 @@
+import { useState } from "react";
+import ClaimForm from "./ClaimForm";
+import MedicalLeaveForm from "./MedicalLeaveForm";
+import RequestLeaveForm from "./LeaveForm";
+import ResignationForm from "./ResignationForm";
+
 import {
   Select,
   Option,
@@ -9,11 +15,6 @@ import {
   FormLabel,
   Button,
 } from "@mui/joy";
-import { useState } from "react";
-import ClaimForm from "./ClaimForm";
-import ResignationForm from "./ResignationForm";
-import RequestLeaveForm from "./LeaveForm";
-import MedicalLeaveForm from "./MedicalLeaveForm";
 
 export default function NewRequest() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,7 +22,7 @@ export default function NewRequest() {
 
   return (
     <>
-      <Modal open={isOpen}>
+      <Modal open={isOpen} onClose={() => setIsOpen(false)}>
         <ModalDialog>
           <Typography level="title-lg">New Request</Typography>
           <ModalClose onClick={() => setIsOpen(false)} />
