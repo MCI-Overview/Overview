@@ -69,6 +69,7 @@ export type CustomRequest = {
     | "UNPAID_LEAVE"
     | "MEDICAL_LEAVE"
     | "RESIGNATION";
+  data: object;
   Assign: {
     Candidate?: {
       name: string;
