@@ -110,7 +110,7 @@ const CurrentRequests = ({
                   </td>
                   <td>
                     <Typography level="body-xs">
-                      {row.Assign.Project.name}
+                      {row.Assign.Project && row.Assign.Project.name}
                     </Typography>
                   </td>
                   <td>

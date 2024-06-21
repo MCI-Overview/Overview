@@ -45,8 +45,8 @@ const RequestHistory = ({ data }: RequestHistoryProps) => {
             <tr>
               <th style={{ width: 120, padding: "12px 6px" }}>Date</th>
               <th style={{ width: 140, padding: "12px 6px" }}>Project</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Status</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Type</th>
+              <th style={{ width: 140, padding: "12px 6px" }}>Type</th>
+              <th style={{ width: 100, padding: "12px 6px" }}>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -60,8 +60,11 @@ const RequestHistory = ({ data }: RequestHistoryProps) => {
                   </td>
                   <td>
                     <Typography level="body-xs">
-                      {row.Assign.Project.name}
+                      {row.Assign.Project && row.Assign.Project.name}
                     </Typography>
+                  </td>
+                  <td>
+                    <Typography level="body-xs">{row.type}</Typography>
                   </td>
                   <td>
                     <Chip
@@ -86,9 +89,6 @@ const RequestHistory = ({ data }: RequestHistoryProps) => {
                     >
                       {row.status || "UPCOMING"}
                     </Chip>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">{row.type}</Typography>
                   </td>
                 </tr>
               ))}
