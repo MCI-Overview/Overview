@@ -24,10 +24,9 @@ import {
   PersonRounded as PersonIcon,
   LogoutRounded as LogoutIcon,
   SupportRounded as SupportIcon,
+  MailRounded as MailRoundedIcon,
   SettingsRounded as SettingsIcon,
-  DashboardRounded as DashboardIcon,
-  ReceiptLongRounded as ReceiptLongIcon,
-  AccountTreeRounded as AccountTreeIcon,
+  WorkHistoryRounded as WorkHistoryIcon,
   BrightnessAutoRounded as BrightnessAutoIcon,
 } from "@mui/icons-material";
 
@@ -46,12 +45,12 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
     },
     {
       name: "Shifts",
-      icon: <DashboardIcon />,
+      icon: <WorkHistoryIcon />,
       onClick: () => navigate("/user/shifts"),
     },
     {
       name: "Requests",
-      icon: <ReceiptLongIcon />,
+      icon: <MailRoundedIcon />,
       onClick: () => navigate("/user/requests"),
     },
     {
@@ -66,16 +65,6 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
       name: "Home",
       icon: <HomeIcon />,
       onClick: () => navigate("/admin/home"),
-    },
-    {
-      name: "Dashboard",
-      icon: <DashboardIcon />,
-      onClick: () => navigate("/admin/dashboard"),
-    },
-    {
-      name: "Projects",
-      icon: <AccountTreeIcon />,
-      onClick: () => navigate("/admin/projects"),
     },
     {
       name: "Candidates",

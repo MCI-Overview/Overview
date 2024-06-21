@@ -47,7 +47,7 @@ export default function ProjectLocationsSection({
       axios
         .get(
           `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${postalCode}&returnGeom=Y&getAddrDetails=N`,
-          { withCredentials: false },
+          { withCredentials: false }
         )
         .then((response) => {
           if (response.data.found === 0) {
@@ -72,6 +72,7 @@ export default function ProjectLocationsSection({
           }
 
           setLocations([...locations, location]);
+          setPostalCode(null);
         });
     } catch (error) {
       setErrorMessage("Error while fetching location data. Please try again.");
@@ -93,6 +94,7 @@ export default function ProjectLocationsSection({
             <Input
               type="number"
               placeholder="Enter location postal code"
+              value={postalCode || ""}
               onChange={(e) => {
                 setErrorMessage("");
                 setPostalCode(e.target.value);
@@ -154,8 +156,8 @@ export default function ProjectLocationsSection({
                       setLocations(
                         locations.filter(
                           (currentLocation) =>
-                            currentLocation.postalCode !== location.postalCode,
-                        ),
+                            currentLocation.postalCode !== location.postalCode
+                        )
                       );
                     }}
                   >

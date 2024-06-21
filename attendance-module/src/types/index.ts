@@ -22,7 +22,7 @@ export type CreateShiftData = {
 
 export type Manage = {
   role: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
-  consultantEmail: string;
+  consultantCuid: string;
   projectCuid: string;
 };
 
@@ -104,7 +104,7 @@ export type CustomAttendance = {
           latitude: string;
           longitude: string;
           postalCode: string;
-        },
+        }
       ];
     };
   };

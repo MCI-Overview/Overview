@@ -41,7 +41,7 @@ export default function ProjectCandidateHoldersSection({
 
   useEffect(() => {
     setConsultantList((consultantList) =>
-      consultantList.filter((c) => !candidateHolders.includes(c)),
+      consultantList.filter((c) => !candidateHolders.includes(c))
     );
   }, [candidateHolders]);
 
@@ -51,6 +51,7 @@ export default function ProjectCandidateHoldersSection({
     }
 
     setCandidateHolders([...candidateHolders, selectedConsultant]);
+    setSelectedConsultant(null);
   }
 
   return (
@@ -66,6 +67,7 @@ export default function ProjectCandidateHoldersSection({
           <Autocomplete
             sx={{ flexGrow: 1 }}
             placeholder="Select a consultant"
+            value={selectedConsultant}
             options={consultantList.filter((c) => c.cuid !== user?.cuid)}
             getOptionKey={(option) => option.cuid}
             getOptionLabel={(option) => `${option.name} - ${option.email}`}
@@ -112,8 +114,8 @@ export default function ProjectCandidateHoldersSection({
                     onClick={() => {
                       setCandidateHolders(
                         candidateHolders.filter(
-                          (currentHolder) => currentHolder.cuid !== holder.cuid,
-                        ),
+                          (currentHolder) => currentHolder.cuid !== holder.cuid
+                        )
                       );
                     }}
                   >
