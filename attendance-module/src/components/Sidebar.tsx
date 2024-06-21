@@ -55,6 +55,11 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
       onClick: () => navigate("/user/requests"),
     },
     {
+      name: "Projects",
+      icon: <AccountTree />,
+      onClick: () => navigate("/user/projects"),
+    },
+    {
       name: "Profile",
       icon: <PersonIcon />,
       onClick: () => navigate("/user/profile"),

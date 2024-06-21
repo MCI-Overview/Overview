@@ -37,7 +37,67 @@ userAPIRouter.get("/projects", async (req, res) => {
   const { cuid } = req.user as User;
 
   try {
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME!,
+      Key: `${cuid}-bankStatement`,
+    });
+
+    const response = await s3.send(command);
+    if (response.Body instanceof Readable) {
+      return response.Body.pipe(res);
+    } else {
+      return res.status(500).send("Unexpected response body type");
+    }
+  } catch (error) {
+    console.error("Error while downloading file:", error);
+    return res.status(500).send("Internal server error");
+  }
+});
+
+userAPIRouter.get("/projects", async (req, res) => {
+  const { cuid } = req.user as User;
+
+  try {
     const projects = await prisma.project.findMany({
+      where: {
+        Assign: {
+          some: {
+            candidateCuid: cuid,
+            startDate: {
+              lte: new Date(),
+            },
+            endDate: {
+              gte: new Date(),
+            },
+          },
+        },
+        status: "ACTIVE",
+      },
+      include: {
+        Client: true
+      }
+    });
+
+    return res.send(
+      projects.map((project) => ({
+        name: project.name,
+        cuid: project.cuid,
+        startDate: project.startDate,
+        endDate: project.endDate,
+        Client: project.Client
+      })),
+    );
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal server error");
+  }
+});
+
+userAPIRouter.get("/:candidateCuid", async (req, res) => {
+  const { candidateCuid } = req.params;
+
+  try {
+    const candidateData = await prisma.candidate.findUniqueOrThrow({
       where: {
         Assign: {
           some: {

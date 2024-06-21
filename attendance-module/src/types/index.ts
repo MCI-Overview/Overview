@@ -64,11 +64,11 @@ export type CustomRequest = {
   projectCuid: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   type:
-    | "CLAIM"
-    | "PAID_LEAVE"
-    | "UNPAID_LEAVE"
-    | "MEDICAL_LEAVE"
-    | "RESIGNATION";
+  | "CLAIM"
+  | "PAID_LEAVE"
+  | "UNPAID_LEAVE"
+  | "MEDICAL_LEAVE"
+  | "RESIGNATION";
   Assign: {
     Project: {
       name: string;
@@ -122,3 +122,16 @@ export type AttendanceRecords = {
     totalCount: number;
   };
 };
+
+
+export type CustomAdminAttendance = {
+  attendanceCuid: string,
+  date: Date,
+  nric: string,
+  name: string,
+  shiftStart: Date,
+  shiftEnd: Date,
+  rawStart: Date | null,
+  rawEnd: Date | null,
+  status: "ON_TIME" | "LATE" | "NO_SHOW" | "MEDICAL" | null
+}
