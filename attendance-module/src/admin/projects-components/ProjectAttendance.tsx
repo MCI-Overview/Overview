@@ -33,7 +33,7 @@ function RowMenu() {
                 <MoreHorizRoundedIcon />
             </MenuButton>
             <Menu size="sm" sx={{ minWidth: 140 }}>
-                <MenuItem>Edit?</MenuItem>
+                <MenuItem>Edit</MenuItem>
             </Menu>
         </Dropdown>
     );
@@ -83,63 +83,66 @@ const ProjectAttendance: React.FC<Props> = ({ data }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {attendanceData && attendanceData.map((row: CustomAdminAttendance) => (
-                            <tr key={row.attendanceCuid}>
-                                <td>
-                                    <Typography level="body-xs">{dayjs(row.date).format("DD MMM YYYY")}</Typography>
-                                </td>
-                                <td>
-                                    <Typography level="body-xs">{row.nric}</Typography>
-                                </td>
-                                <td>
-                                    <Typography level="body-xs">{row.name}</Typography>
-                                </td>
-                                <td>
-                                    <Chip
-                                        variant="soft"
-                                        size="sm"
-                                        startDecorator={
-                                            {
-                                                ON_TIME: <CheckRoundedIcon />,
-                                                LATE: <WatchLaterIcon />,
-                                                NO_SHOW: <BlockIcon />,
-                                                MEDICAL: <MedicalServicesIcon />,
-                                            }[row.status || "NO_SHOW"]
-                                        }
-                                        color={
-                                            {
-                                                ON_TIME: 'success',
-                                                LATE: 'warning',
-                                                NO_SHOW: 'danger',
-                                                MEDICAL: 'neutral',
-                                            }[row.status || "NO_SHOW"] as ColorPaletteProp
-                                        }
-                                    >
-                                        {row.status || "NO_SHOW"}
-                                    </Chip>
-                                </td>
-                                <td>
-                                    <Typography level="body-xs">{row.shiftStart ? dayjs(row.shiftStart).format("hh:mm a") : '-'}</Typography>
-                                </td>
-                                <td>
-                                    <Typography level="body-xs">{row.shiftEnd ? dayjs(row.shiftEnd).format("hh:mm a") : '-'}</Typography>
-                                </td>
-                                <td>
-                                    <Typography level="body-xs">{row.rawStart ? dayjs(row.rawStart).format("hh:mm a") : '-'}</Typography>
-                                </td>
-                                <td>
-                                    <Typography level="body-xs">{row.rawEnd ? dayjs(row.rawEnd).format("hh:mm a") : '-'}</Typography>
-                                </td>
-                                <td>
-                                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                        {/* <Link level="body-xs" component="button">
-                                            View
-                                        </Link> */}
-                                        <RowMenu />
-                                    </Box>
-                                </td>
+                        {attendanceData.length === 0 ? (
+                            <tr>
+                                <td colSpan={9} style={{ textAlign: 'center' }}>No candidates found.</td>
                             </tr>
-                        ))}
+                        ) : (
+                            attendanceData.map((row: CustomAdminAttendance) => (
+                                <tr key={row.attendanceCuid}>
+                                    <td>
+                                        <Typography level="body-xs">{dayjs(row.date).format("DD MMM YYYY")}</Typography>
+                                    </td>
+                                    <td>
+                                        <Typography level="body-xs">{row.nric}</Typography>
+                                    </td>
+                                    <td>
+                                        <Typography level="body-xs">{row.name}</Typography>
+                                    </td>
+                                    <td>
+                                        <Chip
+                                            variant="soft"
+                                            size="sm"
+                                            startDecorator={
+                                                {
+                                                    ON_TIME: <CheckRoundedIcon />,
+                                                    LATE: <WatchLaterIcon />,
+                                                    NO_SHOW: <BlockIcon />,
+                                                    MEDICAL: <MedicalServicesIcon />,
+                                                }[row.status || "NO_SHOW"]
+                                            }
+                                            color={
+                                                {
+                                                    ON_TIME: 'success',
+                                                    LATE: 'warning',
+                                                    NO_SHOW: 'danger',
+                                                    MEDICAL: 'neutral',
+                                                }[row.status || "NO_SHOW"] as ColorPaletteProp
+                                            }
+                                        >
+                                            {row.status || "NO_SHOW"}
+                                        </Chip>
+                                    </td>
+                                    <td>
+                                        <Typography level="body-xs">{row.shiftStart ? dayjs(row.shiftStart).format("hh:mm a") : '-'}</Typography>
+                                    </td>
+                                    <td>
+                                        <Typography level="body-xs">{row.shiftEnd ? dayjs(row.shiftEnd).format("hh:mm a") : '-'}</Typography>
+                                    </td>
+                                    <td>
+                                        <Typography level="body-xs">{row.rawStart ? dayjs(row.rawStart).format("hh:mm a") : '-'}</Typography>
+                                    </td>
+                                    <td>
+                                        <Typography level="body-xs">{row.rawEnd ? dayjs(row.rawEnd).format("hh:mm a") : '-'}</Typography>
+                                    </td>
+                                    <td>
+                                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <RowMenu />
+                                        </Box>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </Table>
             </Sheet>
