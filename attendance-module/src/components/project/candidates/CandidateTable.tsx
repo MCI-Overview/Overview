@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { checkPermission } from "../../../utils/permission";
+import { readableEnum } from "../../../utils/capitalize";
 import { CommonCandidate, PermissionList } from "../../../types/common";
 
 import {
@@ -154,7 +155,7 @@ const CandidateTable = ({
                 <td>{dayjs().diff(row.dateOfBirth, "years")}</td>
                 <td>{dayjs(row.startDate).format("DD/MM/YYYY")}</td>
                 <td>{dayjs(row.endDate).format("DD/MM/YYYY")}</td>
-                <td>{row.employmentType}</td>
+                <td>{readableEnum(row.employmentType)}</td>
                 {showCandidateHolder && <td>{row.consultantName}</td>}
                 {handleDelete && (
                   <td>
