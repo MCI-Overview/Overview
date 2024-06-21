@@ -23,6 +23,7 @@ import AdminCandidates from "./admin/Candidates";
 import UserRequests from "./user/UserRequests";
 import CandidateProfile from "./user/Profile";
 import LoadUser from "./components/LoadUser";
+import UserProjects from "./user/UserProjects";
 import LoginAdmin from "./login/login-admin";
 import AdminHome from "./admin/Home";
 import LoginUser from "./login/login-user";
@@ -106,11 +107,9 @@ function App() {
                       <Route path="/user/new" element={<UserNew />} />
                       <Route path="/user/home" element={<UserHome />} />
                       <Route path="/user/requests" element={<UserRequests />} />
-                      <Route
-                        path="/user/profile"
-                        element={<CandidateProfile />}
-                      />
+                      <Route path="/user/profile" element={<CandidateProfile />} />
                       <Route path="/user/shifts" element={<UserShifts />} />
+                      <Route path="/user/projects" element={<UserProjects />} />
                     </Route>
 
                     {/* Admin routes */}

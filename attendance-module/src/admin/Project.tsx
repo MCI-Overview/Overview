@@ -16,6 +16,7 @@ import AssignCandidatePage from "../components/project/candidates/Page";
 import { useProjectContext } from "../providers/projectContextProvider";
 import RosterPage from "../components/project/roster/RosterPage";
 import Settings from "./Settings.tsx";
+import Attendance from "./projects-components/Attendance.tsx";
 
 const tabs: Tab[] = [
   {
@@ -24,7 +25,7 @@ const tabs: Tab[] = [
   },
   {
     label: "Attendance",
-    content: <div>Attendance</div>,
+    content: <Attendance />,
   },
   {
     label: "Candidates",
@@ -119,7 +120,6 @@ const AdminProjects = () => {
   return (
     <Box sx={{ flex: 1, width: "100%" }}>
       <Box
-        height={"100dvh"}
         sx={{
           position: "sticky",
           top: { sm: -100, md: -110 },

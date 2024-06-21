@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { closeSidebar } from "../utils/toggle-sidebar";
 import { useUserContext } from "../providers/userContextProvider";
 import ColorSchemeToggle from "./ColorSchemeToggle";
+import { AccountTree } from "@mui/icons-material";
 
 import {
   GlobalStyles,
@@ -52,6 +53,11 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
       name: "Requests",
       icon: <MailRoundedIcon />,
       onClick: () => navigate("/user/requests"),
+    },
+    {
+      name: "Projects",
+      icon: <AccountTree />,
+      onClick: () => navigate("/user/projects"),
     },
     {
       name: "Profile",

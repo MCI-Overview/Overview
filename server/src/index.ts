@@ -4,6 +4,7 @@ import routes from "./routes";
 import passport from "passport";
 import session from "express-session";
 import PgSession from "connect-pg-simple";
+import "./cron/cron";
 
 dotenv.config();
 
