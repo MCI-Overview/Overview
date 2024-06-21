@@ -8,8 +8,9 @@ import {
   ListItem,
   List,
   Grid,
-  Stack,
   IconButton,
+  Card,
+  CardContent
 } from "@mui/joy";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -57,11 +58,12 @@ export default function ProjectCandidateHoldersSection({
     <>
       <Grid container sx={{ flexGrow: 1 }} xs={12}>
         <Grid
-          xs={7}
+          xs={12}
+          sm={7}
           display="flex"
           alignItems="center"
           justifyContent="center"
-          sx={{ pr: 1 }}
+          sx={{ pr: { sm: 2 } }}
         >
           <Autocomplete
             sx={{ flexGrow: 1 }}
@@ -79,9 +81,9 @@ export default function ProjectCandidateHoldersSection({
             }}
           />
         </Grid>
-        <Grid xs={5} display="flex" justifyContent="center" alignItems="center">
+        <Grid sm={5} xs={12} sx={{ pt: { xs: 2, sm: 0 } }} display="flex" justifyContent="center" alignItems="center">
           <Button sx={{ width: "100%" }} onClick={handleAddConsultant}>
-            Add candidate holder
+            Add collaborators
           </Button>
         </Grid>
       </Grid>
@@ -91,35 +93,48 @@ export default function ProjectCandidateHoldersSection({
       >
         <AccordionSummary>
           {candidateHolders.length === 0
-            ? "No candidate holder added"
-            : `${candidateHolders.length} candidate holder${
-                candidateHolders.length > 1 ? "s" : ""
-              } added`}
+            ? "No collaborators added"
+            : `${candidateHolders.length} candidate holder${candidateHolders.length > 1 ? "s" : ""
+            } added`}
         </AccordionSummary>
         <AccordionDetails>
-          <List component="ol" marker="decimal">
+          <List component="ol">
             {candidateHolders.map((holder) => (
               <ListItem>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
+                <Card
+                  variant="outlined"
+                  orientation="horizontal"
+                  sx={{
+                    width: '100%',
+                    '&:hover': { boxShadow: 'md', borderColor: 'neutral.outlinedHoverBorder' },
+                  }}
                 >
-                  <Typography>
-                    {holder.name} - {holder.email}
-                  </Typography>
-                  <IconButton
-                    onClick={() => {
-                      setCandidateHolders(
-                        candidateHolders.filter(
-                          (currentHolder) => currentHolder.cuid !== holder.cuid,
-                        ),
-                      );
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Stack>
+                  <CardContent>
+                    <Grid container alignItems="center">
+                      <Grid xs>
+                        <Typography level="body-lg" id="card-description">
+                          {holder.name}
+                        </Typography>
+                        <Typography level="body-sm" aria-describedby="card-description" mb={1}>
+                          {holder.email}
+                        </Typography>
+                      </Grid>
+                      <Grid>
+                        <IconButton
+                          onClick={() => {
+                            setCandidateHolders(
+                              candidateHolders.filter(
+                                (currentHolder) => currentHolder.cuid !== holder.cuid,
+                              ),
+                            );
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
               </ListItem>
             ))}
           </List>

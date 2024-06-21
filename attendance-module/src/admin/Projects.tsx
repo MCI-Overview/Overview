@@ -18,10 +18,6 @@ const tabs: Tab[] = [
     label: "Create",
     content: <CreateProjectPage />,
   },
-  {
-    label: "Plan",
-    content: <div>Plan</div>,
-  },
 ];
 
 const AdminProjects = () => {
