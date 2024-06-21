@@ -264,12 +264,12 @@ projectAPIRouter.get(
                 .add(startTime.minute(), "minute"),
               shiftEndTime: startTime.isBefore(endTime)
                 ? startDate
-                    .add(endTime.hour(), "hour")
-                    .add(endTime.minute(), "minute")
+                  .add(endTime.hour(), "hour")
+                  .add(endTime.minute(), "minute")
                 : startDate
-                    .add(endTime.hour(), "hour")
-                    .add(endTime.minute(), "minute")
-                    .add(1, "day"),
+                  .add(endTime.hour(), "hour")
+                  .add(endTime.minute(), "minute")
+                  .add(1, "day"),
               consultantCuid: cr.Shift.Project.Manage.filter(
                 (manage) => manage.role === Role.CLIENT_HOLDER,
               ).map((manage) => manage.consultantCuid)[0],
@@ -405,6 +405,59 @@ projectAPIRouter.post("/project/:projectCuid/roster", async (req, res) => {
     });
   }
 });
+
+projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
+  const { projectCuid } = req.params;
+  const { startDate, endDate } = req.query;
+
+  const start = typeof startDate === 'string' ? startDate : undefined;
+  const end = typeof endDate === 'string' ? endDate : undefined;
+  const now = dayjs();
+  const adjustedEnd = end && dayjs(end).isAfter(now) ? now.startOf('day').toDate() : end ? dayjs(end).startOf('day').toDate() : undefined;
+
+  try {
+    const response = await prisma.attendance.findMany({
+      where: {
+        shiftDate: {
+          gte: start ? dayjs(start).startOf('day').toDate() : undefined,
+          lte: adjustedEnd
+        },
+        Shift: {
+          projectCuid: projectCuid
+        }
+      },
+      include: {
+        Shift: {
+          include: {
+            Project: true
+          }
+        },
+        Candidate: true
+      },
+      orderBy: {
+        shiftDate: "asc"
+      }
+    })
+
+    return res.send(
+      response.map((row) => ({
+        attendanceCuid: row.cuid,
+        date: row.shiftDate,
+        nric: row.Candidate.nric,
+        name: row.Candidate.name,
+        shiftStart: row.Shift.startTime,
+        shiftEnd: row.Shift.endTime,
+        rawStart: row.clockInTime,
+        rawEnd: row.clockOutTime,
+        status: row.status
+      })),
+    );
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error.",
+    });
+  }
+})
 
 projectAPIRouter.delete("/roster/:rosterCuid", async (req, res) => {
   const user = req.user as User;
@@ -1349,7 +1402,8 @@ projectAPIRouter.get("/projects", async (req, res) => {
   }
 });
 
-projectAPIRouter.get("/projects/all", async (req, res) => {
+projectAPIRouter.get("/projects/all", async (_req, res) => {
+  /**
   const user = req.user as User;
 
   const hasReadAllProjectsPermission = await checkPermission(
@@ -1362,9 +1416,19 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
       .status(401)
       .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_READ_ALL_PROJECTS);
   }
+  */
 
   try {
-    const projectsData = await prisma.project.findMany();
+    const projectsData = await prisma.project.findMany({
+      include: {
+        Manage: {
+          include: {
+            Consultant: true,
+          },
+        },
+        Client: true,
+      },
+    });
 
     return res.send(projectsData);
   } catch (error) {

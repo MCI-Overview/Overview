@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 import { useState } from "react";
 import AssignCandidateModal from "./AssignCandidateModal";
 import CandidateTable from "./CandidateTable";
@@ -6,8 +7,8 @@ import { CommonCandidate } from "../../../types/common";
 import DeleteCandidateModal from "./DeleteCandidateModal";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import { Box, Button, Card, CardOverflow, Input, Stack } from "@mui/joy";
-import toast from "react-hot-toast";
+import { Box, Button, Input, FormControl, FormLabel, Stack } from "@mui/joy";
+import SearchIcon from "@mui/icons-material/Search";
 
 const CandidatePage = () => {
   const { project, updateProject } = useProjectContext();
@@ -26,21 +27,19 @@ const CandidatePage = () => {
         employmentType: cdd.employmentType,
         consultantCuid: cdd.consultantCuid,
         consultantName: project?.consultants.find(
-          (c) => c.cuid === cdd.consultantCuid,
+          (c) => c.cuid === cdd.consultantCuid
         )!.name,
       };
     }) || [];
 
   const [searchValue, setSearchValue] = useState("");
-
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [candidatesToDelete, setCandidatesToDelete] = useState<string[]>([]);
 
   // TODO: Fix type
   const matchSearchValue = (
-    c: Omit<Omit<Omit<CommonCandidate, "dateOfBirth">, "startDate">, "endDate">,
+    c: Omit<Omit<Omit<CommonCandidate, "dateOfBirth">, "startDate">, "endDate">
   ) =>
     c.nric.toLowerCase().includes(searchValue.toLowerCase()) ||
     c.name.toLowerCase().includes(searchValue.toLowerCase());
@@ -76,46 +75,49 @@ const CandidatePage = () => {
       }}
     >
       <Box
+        className="SearchAndFilters-tabletUp"
         sx={{
+          borderRadius: "sm",
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 2,
+          flexWrap: "wrap",
+          gap: 1.5,
+          "& > *": {
+            minWidth: { xs: "120px", md: "160px" },
+          },
         }}
       >
-        <Input
-          placeholder="Search by nric/name..."
-          onChange={(e) => setSearchValue(e.target.value)}
-          disabled={candidatesData.length === 0}
-          fullWidth
-        />
-
-        <Button
-          onClick={() => setIsUploadOpen(true)}
-          sx={{ whiteSpace: "nowrap" }}
-        >
-          Assign candidates
-        </Button>
+        <FormControl sx={{ flex: 1 }} size="sm">
+          <FormLabel>Search by nric / name</FormLabel>
+          <Input
+            size="sm"
+            placeholder="Search"
+            startDecorator={<SearchIcon />}
+            onChange={(e) => setSearchValue(e.target.value)}
+            disabled={candidatesData.length === 0}
+            fullWidth
+          />
+        </FormControl>
+        <FormControl size="sm">
+          <FormLabel>Add candidates</FormLabel>
+          <Button size="sm" onClick={() => setIsUploadOpen(true)}>
+            Import
+          </Button>
+        </FormControl>
       </Box>
 
-      <Card>
-        <CardOverflow sx={{ px: "0px" }}>
-          <CandidateTable
-            tableProps={{ stripe: "odd", size: "sm" }}
-            tableData={candidatesData
-              .filter((c) => matchSearchValue(c))
-              .map((c) => ({
-                ...c,
-                startDate: c.startDate.toISOString(),
-                endDate: c.endDate.toISOString(),
-                dateOfBirth: c.dateOfBirth.toISOString(),
-              }))}
-            // handleEdit={handleEdit}
-            handleDelete={handleConfirmDeletion}
-            showCandidateHolder={true}
-          />
-        </CardOverflow>
-      </Card>
+      <CandidateTable
+        tableData={candidatesData
+          .filter((c) => matchSearchValue(c))
+          .map((c) => ({
+            ...c,
+            startDate: c.startDate.toISOString(),
+            endDate: c.endDate.toISOString(),
+            dateOfBirth: c.dateOfBirth.toISOString(),
+          }))}
+        // handleEdit={handleEdit}
+        handleDelete={handleConfirmDeletion}
+        showCandidateHolder={true}
+      />
 
       <AssignCandidateModal
         isUploadOpen={isUploadOpen}

@@ -1,3 +1,7 @@
+import { CustomRequest } from "../../types";
+import { readableEnum } from "../../utils/capitalize";
+import dayjs from "dayjs";
+
 import { Chip, Table, Sheet, Typography, ColorPaletteProp } from "@mui/joy";
 import {
   PendingRounded as PendingIcon,
@@ -5,8 +9,6 @@ import {
   AutorenewRounded as AutorenewIcon,
   CheckRounded as CheckIcon,
 } from "@mui/icons-material";
-import { CustomRequest } from "../../types";
-import dayjs from "dayjs";
 
 interface RequestHistoryProps {
   data: CustomRequest[] | null;
@@ -87,8 +89,13 @@ const RequestHistory = ({ data }: RequestHistoryProps) => {
                         }[row.status || "UPCOMING"] as ColorPaletteProp
                       }
                     >
-                      {row.status || "UPCOMING"}
+                      {readableEnum(row.status || "UPCOMING")}
                     </Chip>
+                  </td>
+                  <td>
+                    <Typography level="body-xs">
+                      {readableEnum(row.type)}
+                    </Typography>
                   </td>
                 </tr>
               ))}

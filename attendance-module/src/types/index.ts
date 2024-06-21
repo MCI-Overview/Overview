@@ -22,8 +22,12 @@ export type CreateShiftData = {
 
 export type Manage = {
   role: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
-  consultantEmail: string;
+  consultantCuid: string;
   projectCuid: string;
+  Consultant: {
+    // TODO: fix type
+    name: string;
+  };
 };
 
 export type DraggableChipProps = {
@@ -108,7 +112,7 @@ export type CustomAttendance = {
           latitude: string;
           longitude: string;
           postalCode: string;
-        },
+        }
       ];
     };
   };
@@ -125,4 +129,16 @@ export type AttendanceRecords = {
     pageCount: number;
     totalCount: number;
   };
+};
+
+export type CustomAdminAttendance = {
+  attendanceCuid: string;
+  date: Date;
+  nric: string;
+  name: string;
+  shiftStart: Date;
+  shiftEnd: Date;
+  rawStart: Date | null;
+  rawEnd: Date | null;
+  status: "ON_TIME" | "LATE" | "NO_SHOW" | "MEDICAL" | null;
 };

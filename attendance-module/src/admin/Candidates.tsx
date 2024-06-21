@@ -64,27 +64,28 @@ const AdminCandidates = () => {
   };
 
   return (
-    <Box sx={{ flex: 1, width: "100%" }}>
-      <Box
-        sx={{
-          position: "sticky",
-          top: { sm: -100, md: -110 },
-          bgcolor: "background.body",
-          zIndex: 12,
-        }}
-      >
-        <Box sx={{ px: { xs: 2, md: 6 } }}>
-          <AdminBreadcrumb breadcrumbs={breadcrumbs} />
-          <Typography level="h2" component="h1" sx={{ mt: 1, mb: 2 }}>
-            Candidates
-          </Typography>
-        </Box>
-        <TabBar
-          tabValue={tabValue}
-          handleTabChange={handleTabChange}
-          tabs={tabs}
-        />
+    <Box
+      sx={{
+        flex: 1,
+        width: "100%",
+        position: "sticky",
+        top: { sm: -100, md: -110 },
+        bgcolor: "background.body",
+        zIndex: 12,
+      }}
+    >
+      <Box sx={{ px: { xs: 2, md: 6 } }}>
+        <AdminBreadcrumb breadcrumbs={breadcrumbs} />
+        <Typography level="h2" component="h1" sx={{ mt: 1, mb: 2 }}>
+          Candidates
+        </Typography>
       </Box>
+
+      <TabBar
+        tabValue={tabValue}
+        handleTabChange={handleTabChange}
+        tabs={tabs}
+      />
     </Box>
   );
 };

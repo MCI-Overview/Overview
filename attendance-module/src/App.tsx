@@ -23,15 +23,15 @@ import AdminCandidates from "./admin/Candidates";
 import UserRequests from "./user/UserRequests";
 import CandidateProfile from "./user/Profile";
 import LoadUser from "./components/LoadUser";
+import UserProjects from "./user/UserProjects";
 import LoginAdmin from "./login/login-admin";
-import AdminProjects from "./admin/Projects";
+import AdminHome from "./admin/Home";
 import LoginUser from "./login/login-user";
 import Sidebar from "./components/Sidebar";
 import UserShifts from "./user/UserShifts";
 import Header from "./components/Header";
 import UserHome from "./user/UserHome";
 import Project from "./admin/Project";
-import AdminHome from "./admin/Home";
 
 dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
@@ -107,11 +107,9 @@ function App() {
                       <Route path="/user/new" element={<UserNew />} />
                       <Route path="/user/home" element={<UserHome />} />
                       <Route path="/user/requests" element={<UserRequests />} />
-                      <Route
-                        path="/user/profile"
-                        element={<CandidateProfile />}
-                      />
+                      <Route path="/user/profile" element={<CandidateProfile />} />
                       <Route path="/user/shifts" element={<UserShifts />} />
+                      <Route path="/user/projects" element={<UserProjects />} />
                     </Route>
 
                     {/* Admin routes */}
@@ -122,10 +120,6 @@ function App() {
                       <Route
                         path="/admin/project/:projectCuid?"
                         element={<Project />}
-                      />
-                      <Route
-                        path="/admin/projects"
-                        element={<AdminProjects />}
                       />
                       <Route
                         path="/admin/candidates"

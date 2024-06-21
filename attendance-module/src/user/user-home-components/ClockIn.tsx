@@ -9,6 +9,8 @@ import Clock from "./Clock";
 import { CommonLocation, getAttendanceResponse } from "../../types/common";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 dayjs.extend(utc);
 
 import {
@@ -21,6 +23,8 @@ import {
   Modal,
   ModalDialog,
   CircularProgress,
+  CardOverflow,
+  CardActions
 } from "@mui/joy";
 
 export default function ClockIn() {
@@ -128,9 +132,9 @@ export default function ClockIn() {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(deg2rad(lat1)) *
-          Math.cos(deg2rad(lat2)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
+        Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const d = R * c; // Distance in meters
       return d;
@@ -337,93 +341,124 @@ export default function ClockIn() {
         spacing={4}
         sx={{
           display: "flex",
-          width: "400px",
-          maxWidth: "1000px",
+          maxWidth: "600px",
           mx: "auto",
-          px: { xs: 2, md: 6 },
-          alignItems: "center",
         }}
       >
-        <Card sx={{ width: "100%" }}>
-          <Clock />
+        <Card>
+          <Box sx={{ mb: 1 }}>
+            <Typography level="title-md">Clock</Typography>
+            <Typography level="body-sm">
+              Singapore Standard Time SGT (UTC+08:00)
+            </Typography>
+          </Box>
           <Divider />
-
-          {!currAttendance && (
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Typography level="title-sm">No upcoming shifts</Typography>
-            </Box>
-          )}
-
-          {currAttendance && (
-            <>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {currAttendance.clockInTime ? (
-                  <Typography level="title-lg" color="success">
-                    Clocked-In To:
-                  </Typography>
-                ) : (
-                  <Typography level="title-lg">Upcoming Shift:</Typography>
-                )}
-                <Typography level="title-md">
-                  {currAttendance.Shift.Project.name}
-                </Typography>
-                <Typography level="title-md">
-                  {startTime?.format("h:mm A")} - {endTime?.format("h:mm A")}
-                </Typography>
-                <Typography level="title-md">
-                  {dayjs(currAttendance.shiftDate).format("dddd, MMMM DD YYYY")}
-                </Typography>
-                <Typography level="title-md">
-                  {`Time range: ${currAttendance.Shift.Project.timeWindow} minutes`}
-                </Typography>
+          <Stack spacing={2} sx={{ my: 1 }}>
+            <Clock />
+          </Stack>
+          <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
+            <CardActions sx={{ alignSelf: "flex-start", pt: 2, flexDirection: "column", alignItems: "flex-start" }}>
+              <Typography level="body-sm">Before clocking in or out, ensure that</Typography>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <LocationOnIcon />
+                <Typography level="body-sm" sx={{ ml: 1 }}>Location access is enabled</Typography>
               </Box>
-
-              <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
-                <Button
-                  fullWidth
-                  onClick={() => {
-                    if (!isWithinStartTimeRange()) {
-                      toast.error("Not within clock-in time range.");
-                      return;
-                    }
-
-                    if (!currLatitude || !currLongitude) {
-                      handleGetLocation();
-                    }
-                    setIsLocationModalOpen(true);
-                  }}
-                  disabled={
-                    !currAttendance || Boolean(currAttendance.clockInTime)
-                  }
-                >
-                  Clock-In
-                </Button>
-                <Button
-                  fullWidth
-                  onClick={handleAttemptClockOut}
-                  disabled={!currAttendance.clockInTime}
-                >
-                  Clock-Out
-                </Button>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <CameraAltIcon />
+                <Typography level="body-sm" sx={{ ml: 1 }}>Camera access is enabled</Typography>
               </Box>
-            </>
-          )}
+            </CardActions>
+          </CardOverflow>
         </Card>
-      </Stack>
+      </Stack >
+      {!currAttendance && (
+        <Box
+          sx={{
+            pt: "15px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Typography level="title-sm">No upcoming shifts</Typography>
+        </Box>
+      )}
+
+      {currAttendance && (
+        <Stack
+          spacing={4}
+          sx={{
+            pt: "15px",
+            display: "flex",
+            maxWidth: "600px",
+            mx: "auto",
+          }}
+        >
+          <Card>
+            <Box sx={{ mb: 1 }}>
+              {currAttendance.clockInTime ? (
+                <Typography level="title-md">Current shift</Typography>
+              ) : (
+                <Typography level="title-md">Upcoming shift</Typography>
+              )}
+              <Typography level="body-sm">
+                {currAttendance.Shift.Project.name}
+              </Typography>
+
+            </Box>
+            <Divider />
+            <Stack spacing={2} sx={{ my: 1 }}>
+              <>
+                <Box>
+                  <Typography level="body-sm">Shift time</Typography>
+                  <Typography level="body-md">
+                    {startTime?.format("h:mm A")} - {endTime?.format("h:mm A")}
+                  </Typography>
+                  <Typography level="body-sm">Shift date</Typography>
+                  <Typography level="body-md">
+                    {dayjs(currAttendance.shiftDate).format("dddd, MMMM DD YYYY")}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+                  <Button
+                    fullWidth
+                    onClick={() => {
+                      if (!isWithinStartTimeRange()) {
+                        toast.error("Not within clock-in time range.");
+                        return;
+                      }
+
+                      if (!currLatitude || !currLongitude) {
+                        handleGetLocation();
+                      }
+                      setIsLocationModalOpen(true);
+                    }}
+                    disabled={
+                      !currAttendance || Boolean(currAttendance.clockInTime)
+                    }
+                  >
+                    Clock-In
+                  </Button>
+                  <Button
+                    fullWidth
+                    onClick={handleAttemptClockOut}
+                    disabled={!currAttendance.clockInTime}
+                  >
+                    Clock-Out
+                  </Button>
+                </Box>
+              </>
+            </Stack>
+            <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
+              <CardActions sx={{ alignSelf: "flex-start", pt: 2, flexDirection: "column", alignItems: "flex-start" }}>
+                <Typography level="body-sm">Clock in / out within {currAttendance.Shift.Project.timeWindow} mins of shift time.</Typography>
+              </CardActions>
+            </CardOverflow>
+          </Card>
+        </Stack >
+      )}
 
       <Modal
         open={isLocationModalOpen}
@@ -495,9 +530,8 @@ export default function ClockIn() {
           <Typography level="title-sm">
             {projLocations.length > 0
               ? nearestLocation && distance
-                ? `Nearest location: ${nearestLocation.address}, ${
-                    nearestLocation.postalCode
-                  } (${distance.toFixed(2)}m away)`
+                ? `Nearest location: ${nearestLocation.address}, ${nearestLocation.postalCode
+                } (${distance.toFixed(2)}m away)`
                 : "Fetching location..."
               : "No site locations found"}
           </Typography>
@@ -532,7 +566,7 @@ export default function ClockIn() {
         onClose={() => setIsPictureModalOpen(false)}
       >
         <ModalDialog sx={{ width: "400px" }}>
-          <div style={{ position: "relative", width: "100%" }}>
+          <div style={{ position: "relative", width: "100%", height: "360px" }}>
             <Webcam
               audio={false}
               ref={webcamRef}

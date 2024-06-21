@@ -101,7 +101,9 @@ export default function ProjectDetailsSection({
         </Select>
       </FormControl>
       <Grid container xs={12}>
-        <Grid xs={6} sx={{ pr: 1 }}>
+        <Grid xs={12} sm={6} sx={{
+          pr: { sm: 1 },
+        }}>
           <FormControl required sx={{ flexGrow: 1 }}>
             <FormLabel>Client company UEN</FormLabel>
             <Autocomplete
@@ -115,7 +117,10 @@ export default function ProjectDetailsSection({
             />
           </FormControl>
         </Grid>
-        <Grid xs={6} sx={{ pl: 1 }}>
+        <Grid xs={12} sm={6} sx={{
+          pl: { sm: 1 },
+          pt: { xs: 2, sm: 0 }
+        }}>
           <FormControl required sx={{ flexGrow: 1 }} disabled={clientExists}>
             <FormLabel>Client company name</FormLabel>
             <Input
@@ -133,7 +138,9 @@ export default function ProjectDetailsSection({
         </Grid>
       </Grid>
       <Grid container xs={12}>
-        <Grid xs={6} sx={{ pr: 1 }}>
+        <Grid xs={12} sm={6} sx={{
+          pr: { sm: 1 },
+        }}>
           <FormControl required sx={{ flexGrow: 1 }}>
             <FormLabel>Project start date</FormLabel>
             <Input
@@ -147,7 +154,10 @@ export default function ProjectDetailsSection({
             />
           </FormControl>
         </Grid>
-        <Grid xs={6} sx={{ pl: 1 }}>
+        <Grid xs={12} sm={6} sx={{
+          pl: { sm: 1 },
+          pt: { xs: 2, sm: 0 }
+        }}>
           <FormControl required sx={{ flexGrow: 1 }}>
             <FormLabel>Project end date</FormLabel>
             <Input
@@ -163,7 +173,9 @@ export default function ProjectDetailsSection({
         </Grid>
       </Grid>
       <Grid container xs={12}>
-        <Grid xs={6} sx={{ pr: 1 }}>
+        <Grid xs={12} sm={6} sx={{
+          pr: { sm: 1 },
+        }}>
           <FormControl required sx={{ flexGrow: 1 }}>
             <FormLabel>Notice period duration</FormLabel>
             <Input
@@ -189,7 +201,10 @@ export default function ProjectDetailsSection({
             />
           </FormControl>
         </Grid>
-        <Grid xs={6} sx={{ pl: 1 }}>
+        <Grid xs={12} sm={6} sx={{
+          pl: { sm: 1 },
+          pt: { xs: 2, sm: 0 }
+        }}>
           <FormControl required sx={{ flexGrow: 1 }}>
             <FormLabel>Notice period unit</FormLabel>
             <Select

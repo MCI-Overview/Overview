@@ -150,8 +150,8 @@ enum RequestType {
   CLAIM
   PAID_LEAVE
   UNPAID_LEAVE
-  MEDICAL_LEAVE
   RESIGNATION
+  MEDICAL_LEAVE
 }
 
 enum AttendanceStatus {

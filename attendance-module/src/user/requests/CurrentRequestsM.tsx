@@ -1,3 +1,8 @@
+import axios from "axios";
+import dayjs from "dayjs";
+import { CustomRequest } from "../../types";
+import { readableEnum } from "../../utils/capitalize";
+
 import {
   Box,
   Chip,
@@ -20,9 +25,6 @@ import {
   CheckRounded as CheckIcon,
   MoreHorizRounded as MoreHorizIcon,
 } from "@mui/icons-material";
-import { CustomRequest } from "../../types";
-import dayjs from "dayjs";
-import axios from "axios";
 
 // TODO: Add viewing and editing of requests
 function RowMenu({
@@ -104,7 +106,9 @@ const CurrentRequestsM = ({
                           listItem.Assign.Project.name}
                       </Typography>
                       <Typography level="body-xs">&bull;</Typography>
-                      <Typography level="body-xs">{listItem.type}</Typography>
+                      <Typography level="body-xs">
+                        {readableEnum(listItem.type)}
+                      </Typography>
                     </Box>
                   </div>
                 </ListItemContent>
@@ -128,7 +132,7 @@ const CurrentRequestsM = ({
                     }[listItem.status || "UPCOMING"] as ColorPaletteProp
                   }
                 >
-                  {listItem.status || "UPCOMING"}
+                  {readableEnum(listItem.status || "UPCOMING")}
                 </Chip>
                 <Box
                   sx={{

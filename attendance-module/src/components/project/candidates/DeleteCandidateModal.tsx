@@ -28,7 +28,7 @@ const DeleteCandidateModal = ({
   return (
     <Modal open={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)}>
       <ModalDialog sx={{ maxWidth: "525px" }}>
-        <Typography level="title-md">
+        <Typography level="body-md">
           Are you sure you want to delete the following candidates? This action
           cannot be undone.
         </Typography>
@@ -37,7 +37,7 @@ const DeleteCandidateModal = ({
             if (candidatesToDelete.includes(c.cuid)) {
               return (
                 <ListItem key={c.cuid}>
-                  <Typography level="title-md">
+                  <Typography level="body-sm">
                     {c.nric} - {c.name}
                   </Typography>
                 </ListItem>
@@ -47,14 +47,18 @@ const DeleteCandidateModal = ({
         </List>
         <Stack direction="row" spacing={1}>
           <Button
+            variant="outlined"
+            onClick={() => setIsDeleteModalOpen(false)}
+            fullWidth
+          >
+            Cancel
+          </Button>
+          <Button
             onClick={() => handleDeleteCandidates()}
             color="danger"
             fullWidth
           >
             Confirm
-          </Button>
-          <Button onClick={() => setIsDeleteModalOpen(false)} fullWidth>
-            Cancel
           </Button>
         </Stack>
       </ModalDialog>

@@ -11,7 +11,8 @@ import {
   ListItem,
   Grid,
   IconButton,
-  Stack,
+  CardContent,
+  Card,
 } from "@mui/joy";
 import { CommonLocation } from "../../../types/common";
 import { useState } from "react";
@@ -47,7 +48,7 @@ export default function ProjectLocationsSection({
       axios
         .get(
           `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${postalCode}&returnGeom=Y&getAddrDetails=N`,
-          { withCredentials: false },
+          { withCredentials: false }
         )
         .then((response) => {
           if (response.data.found === 0) {
@@ -72,6 +73,7 @@ export default function ProjectLocationsSection({
           }
 
           setLocations([...locations, location]);
+          setPostalCode(null);
         });
     } catch (error) {
       setErrorMessage("Error while fetching location data. Please try again.");
@@ -83,16 +85,18 @@ export default function ProjectLocationsSection({
     <>
       <Grid container sx={{ flexGrow: 1 }} xs={12}>
         <Grid
-          xs={7}
+          xs={12}
+          sm={7}
           display="flex"
           alignItems="center"
           justifyContent="center"
-          sx={{ pr: 1 }}
+          sx={{ pr: { sm: 2 } }}
         >
           <FormControl sx={{ flexGrow: 1 }} error={errorMessage !== ""}>
             <Input
               type="number"
               placeholder="Enter location postal code"
+              value={postalCode || ""}
               onChange={(e) => {
                 setErrorMessage("");
                 setPostalCode(e.target.value);
@@ -113,7 +117,16 @@ export default function ProjectLocationsSection({
             />
           </FormControl>
         </Grid>
-        <Grid xs={5} display="flex" justifyContent="center" alignItems="center">
+        <Grid
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          xs={12}
+          sm={5}
+          sx={{
+            pt: { xs: 2, sm: 0 },
+          }}
+        >
           <Button sx={{ width: "100%" }} onClick={handleAddLocation}>
             Add location
           </Button>
@@ -138,30 +151,52 @@ export default function ProjectLocationsSection({
               } added`}
         </AccordionSummary>
         <AccordionDetails>
-          <List component="ol" marker="decimal">
+          <List component="ol">
             {locations.map((location) => (
               <ListItem>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
+                <Card
+                  variant="outlined"
+                  orientation="horizontal"
+                  sx={{
+                    width: "100%",
+                    "&:hover": {
+                      boxShadow: "md",
+                      borderColor: "neutral.outlinedHoverBorder",
+                    },
+                  }}
                 >
-                  <Typography>
-                    {location.postalCode} - {capitalizeWords(location.address)}
-                  </Typography>
-                  <IconButton
-                    onClick={() => {
-                      setLocations(
-                        locations.filter(
-                          (currentLocation) =>
-                            currentLocation.postalCode !== location.postalCode,
-                        ),
-                      );
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Stack>
+                  <CardContent>
+                    <Grid container alignItems="center">
+                      <Grid xs>
+                        <Typography level="body-lg" id="card-description">
+                          {capitalizeWords(location.address)}
+                        </Typography>
+                        <Typography
+                          level="body-sm"
+                          aria-describedby="card-description"
+                          mb={1}
+                        >
+                          {location.postalCode}
+                        </Typography>
+                      </Grid>
+                      <Grid>
+                        <IconButton
+                          onClick={() => {
+                            setLocations(
+                              locations.filter(
+                                (currentLocation) =>
+                                  currentLocation.postalCode !==
+                                  location.postalCode
+                              )
+                            );
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
               </ListItem>
             ))}
           </List>

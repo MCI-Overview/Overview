@@ -52,6 +52,9 @@ userAPIRouter.get("/projects", async (req, res) => {
         },
         status: "ACTIVE",
       },
+      include: {
+        Client: true
+      }
     });
 
     return res.send(
@@ -62,6 +65,7 @@ userAPIRouter.get("/projects", async (req, res) => {
         endDate: project.endDate,
         noticePeriodDuration: project.noticePeriodDuration,
         noticePeriodUnit: project.noticePeriodUnit,
+        Client: project.Client
       })),
     );
   } catch (error) {

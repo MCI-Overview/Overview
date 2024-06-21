@@ -1,13 +1,13 @@
-import { ColorPaletteProp, Chip, Table, Sheet, Typography } from "@mui/joy";
 import dayjs from "dayjs";
+import { CustomAttendance } from "../../types";
+import { readableEnum } from "../../utils/capitalize";
 
+import { ColorPaletteProp, Chip, Table, Sheet, Typography } from "@mui/joy";
 import {
   CheckRounded as CheckIcon,
   BlockRounded as BlockIcon,
   AutorenewRounded as AutorenewIcon,
 } from "@mui/icons-material";
-
-import { CustomAttendance } from "../../types";
 
 interface UpcomingShiftsProps {
   data: CustomAttendance[] | null;
@@ -87,11 +87,13 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
                         }[row.status || "UPCOMING"] as ColorPaletteProp
                       }
                     >
-                      {row.status || "UPCOMING"}
+                      {readableEnum(row.status || "UPCOMING")}
                     </Chip>
                   </td>
                   <td>
-                    <Typography level="body-xs">{row.shiftType}</Typography>
+                    <Typography level="body-xs">
+                      {readableEnum(row.shiftType)}
+                    </Typography>
                   </td>
                   <td>
                     <Typography level="body-xs">
