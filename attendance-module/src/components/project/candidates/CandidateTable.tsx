@@ -13,7 +13,13 @@ import {
   IconButton,
   Sheet,
   CssBaseline,
-  CssVarsProvider
+  CssVarsProvider,
+  List,
+  ListItem,
+  ListItemContent,
+  Chip,
+  ColorPaletteProp,
+  ListDivider
 } from "@mui/joy";
 import {
   DeleteRounded as DeleteIcon,
@@ -21,6 +27,7 @@ import {
   ArrowDownwardRounded as ArrowDownwardIcon,
   SwapVertRounded as SwapVertIcon,
 } from "@mui/icons-material";
+
 import dayjs from "dayjs";
 
 //TODO: Fix type
@@ -227,6 +234,79 @@ const CandidateTable = ({
             </tbody>
           </Table>
         </Sheet>
+
+        <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
+          {sortedData && sortedData.map((listItem) => (
+            <List
+              key={listItem.cuid}
+              size="sm"
+              sx={{
+                '--ListItem-paddingX': 0,
+              }}
+            >
+              <ListItem
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'start',
+                }}
+              >
+                <ListItemContent sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
+                  <div>
+                    <Typography fontWeight={600} gutterBottom>
+                      {listItem.name}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 0.5,
+                        mb: 1,
+                      }}
+                    >
+                      <Typography level="body-md">{listItem.nric}</Typography>
+                      <Typography level="body-md">&bull;</Typography>
+                      <Typography level="body-md">{dayjs(listItem.dateOfBirth).format('DD/MM/YYYY')}</Typography>
+                    </Box>
+                    <Typography level="body-xs">
+                      Contact
+                    </Typography>
+                    <Typography level="body-md" gutterBottom>
+                      {listItem.contact}
+                    </Typography>
+                    <Typography level="body-xs">
+                      Work period
+                    </Typography>
+                    <Typography level="body-md" gutterBottom>
+                      {dayjs(listItem.startDate).format('DD/MM/YYYY')} - {dayjs(listItem.endDate).format('DD/MM/YYYY')}
+                    </Typography>
+                    <Typography level="body-xs">
+                      Candidate holder
+                    </Typography>
+                    <Typography level="body-md" gutterBottom>
+                      {listItem.consultantName}
+                    </Typography>
+                  </div>
+                </ListItemContent>
+                <Chip
+                  variant="soft"
+                  size="sm"
+                  color={
+                    {
+                      FULL_TIME: 'success',
+                      PART_TIME: 'neutral',
+                      CONTRACT: 'warning'
+                    }[listItem.employmentType] as ColorPaletteProp
+                  }
+                >
+                  {listItem.employmentType}
+                </Chip>
+              </ListItem>
+              <ListDivider />
+            </List>
+          ))}
+        </Box>
       </CssVarsProvider>
     </>
   );
