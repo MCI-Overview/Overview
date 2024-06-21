@@ -59,7 +59,7 @@ const AllProjects: FC = () => {
         projects.filter((project) => dayjs().isBefore(dayjs(project.startDate)))
       );
     });
-  }, []);
+  }, [user]);
 
   if (!user) return null;
 
@@ -74,9 +74,9 @@ const AllProjects: FC = () => {
     }
   };
 
-  const getClientHolders = (project: any) => {
-    return project.Manage.filter((m: any) => m.role === "CLIENT_HOLDER").map(
-      (m: any) => m.Consultant.name
+  const getClientHolders = (project: Project) => {
+    return project.Manage.filter((m) => m.role === "CLIENT_HOLDER").map(
+      (m) => m.Consultant.name
     );
   };
 

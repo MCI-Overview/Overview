@@ -37,30 +37,30 @@ const Attendance = () => {
     setSearchTerm(event.target.value.toLowerCase());
   };
 
-  const handleStatusChange = (_event: any, value: string | null) => {
+  const handleStatusChange = (value: string | null) => {
     setStatusFilter(value === "" ? null : value);
   };
 
   useEffect(() => {
-    fetchUpcomingShifts(startDate, endDate);
-  }, [startDate, endDate]);
+    const fetchUpcomingShifts = async (startDate: string, endDate: string) => {
+      try {
+        const formattedStartDate = dayjs(startDate).format(
+          "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
+        );
+        const formattedEndDate = dayjs(endDate).format(
+          "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
+        );
+        const url = `/api/admin/project/${projectCuid}/history?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
+        const response = await axios.get(url);
+        const fetchedData = response.data;
+        setData(fetchedData);
+      } catch (error) {
+        console.error("Error fetching upcoming shifts: ", error);
+      }
+    };
 
-  const fetchUpcomingShifts = async (startDate: string, endDate: string) => {
-    try {
-      const formattedStartDate = dayjs(startDate).format(
-        "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
-      );
-      const formattedEndDate = dayjs(endDate).format(
-        "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
-      );
-      const url = `/api/admin/project/${projectCuid}/history?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
-      const response = await axios.get(url);
-      const fetchedData = response.data;
-      setData(fetchedData);
-    } catch (error) {
-      console.error("Error fetching upcoming shifts: ", error);
-    }
-  };
+    fetchUpcomingShifts(startDate, endDate);
+  }, [startDate, endDate, projectCuid]);
 
   const filteredData = data.filter((item) => {
     const matchesSearch =
@@ -131,7 +131,9 @@ const Attendance = () => {
             <Select
               size="sm"
               placeholder="Filter by status"
-              onChange={handleStatusChange}
+              onChange={(_e, value) =>
+                handleStatusChange(value as string | null)
+              }
               slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
             >
               <Option value="">All</Option>
