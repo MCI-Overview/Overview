@@ -1,9 +1,11 @@
+import dayjs from "dayjs";
 import { useState } from "react";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { checkPermission } from "../../../utils/permission";
 import { readableEnum } from "../../../utils/capitalize";
 import { CommonCandidate, PermissionList } from "../../../types/common";
+import { ThTypo, TdTypo } from "../ui/TableTypo";
 
 import {
   Box,
@@ -28,8 +30,6 @@ import {
   ArrowDownwardRounded as ArrowDownwardIcon,
   SwapVertRounded as SwapVertIcon,
 } from "@mui/icons-material";
-
-import dayjs from "dayjs";
 
 //TODO: Fix type
 export type CddTableDataType = Omit<
@@ -150,45 +150,30 @@ const CandidateTable = ({
                 "var(--joy-palette-background-level1)",
               "--TableCell-paddingY": "4px",
               "--TableCell-paddingX": "8px",
+              "& tr > *": { textAlign: "center" },
             }}
           >
             <thead>
               <tr>
-                <th style={{ width: 100, padding: "12px 6px" }}>Nric</th>
-                <th style={{ width: 160, padding: "12px 6px" }}>Name</th>
-                <th style={{ width: 100, padding: "12px 6px" }}>Contact</th>
-                <th style={{ width: 140, padding: "12px 6px" }}>
-                  Date of birth
-                </th>
-                <th
-                  style={{ width: 80, padding: "12px 6px" }}
-                  onClick={() => requestSort("age")}
-                >
+                <ThTypo>Nric</ThTypo>
+                <ThTypo>Name</ThTypo>
+                <ThTypo>Contact</ThTypo>
+                <ThTypo>Date of birth</ThTypo>
+                <ThTypo onClick={() => requestSort("age")}>
                   {renderSortIcon("age")} Age
-                </th>
-                <th
-                  style={{ width: 100, padding: "12px 6px" }}
-                  onClick={() => requestSort("startDate")}
-                >
+                </ThTypo>
+                <ThTypo onClick={() => requestSort("startDate")}>
                   {renderSortIcon("startDate")} Start date
-                </th>
-                <th
-                  style={{ width: 120, padding: "12px 6px" }}
-                  onClick={() => requestSort("endDate")}
-                >
+                </ThTypo>
+                <ThTypo onClick={() => requestSort("endDate")}>
                   {renderSortIcon("endDate")} End date
-                </th>
-                <th style={{ width: 100, padding: "12px 6px" }}>Type</th>
-                {showCandidateHolder && (
-                  <th style={{ width: 160, padding: "12px 6px" }}>
-                    Candidate holder
-                  </th>
-                )}
-                {handleDelete && (
-                  <th style={{ width: 50, padding: "12px 6px" }}></th>
-                )}
+                </ThTypo>
+                <ThTypo>Type</ThTypo>
+                {showCandidateHolder && <ThTypo>Consultant</ThTypo>}
+                {handleDelete && <ThTypo>Action</ThTypo>}
               </tr>
             </thead>
+
             <tbody>
               {sortedData.length === 0 ? (
                 <tr>
@@ -202,46 +187,18 @@ const CandidateTable = ({
               ) : (
                 sortedData.map((row) => (
                   <tr key={row.cuid}>
-                    <td>
-                      <Typography level="body-xs">{row.nric}</Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">{row.name}</Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">{row.contact}</Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">
-                        {dayjs(row.dateOfBirth).format("DD/MM/YYYY")}
-                      </Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">
-                        {dayjs().diff(row.dateOfBirth, "years")}
-                      </Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">
-                        {dayjs(row.startDate).format("DD/MM/YYYY")}
-                      </Typography>
-                    </td>
-                    <td>
-                      <Typography level="body-xs">
-                        {dayjs(row.endDate).format("DD/MM/YYYY")}
-                      </Typography>
-                    </td>
-
-                    <td>
-                      <Typography>
-                        {readableEnum(row.employmentType)}
-                      </Typography>
-                    </td>
-
+                    <TdTypo>{row.nric}</TdTypo>
+                    <TdTypo>{row.name}</TdTypo>
+                    <TdTypo>{row.contact}</TdTypo>
+                    <TdTypo>
+                      {dayjs(row.dateOfBirth).format("DD/MM/YYYY")}
+                    </TdTypo>
+                    <TdTypo>{dayjs().diff(row.dateOfBirth, "years")}</TdTypo>
+                    <TdTypo>{dayjs(row.startDate).format("DD/MM/YYYY")}</TdTypo>
+                    <TdTypo>{dayjs(row.endDate).format("DD/MM/YYYY")}</TdTypo>
+                    <TdTypo>{readableEnum(row.employmentType)}</TdTypo>
                     {showCandidateHolder && (
-                      <td>
-                        <Typography>{row.consultantName}</Typography>
-                      </td>
+                      <TdTypo>{row.consultantName}</TdTypo>
                     )}
 
                     {handleDelete && (
@@ -279,6 +236,7 @@ const CandidateTable = ({
           </Table>
         </Sheet>
 
+        {/* List display for smaller screens */}
         <Box sx={{ display: { xs: "block", sm: "none" } }}>
           {sortedData &&
             sortedData.map((listItem) => (
