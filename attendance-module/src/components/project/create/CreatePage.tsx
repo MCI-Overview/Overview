@@ -61,7 +61,7 @@ const CreateProjectPage = () => {
       const axiosError = error as AxiosError<ErrorResponseData>;
       toast.error(
         axiosError.response?.data.message ||
-          "Error while creating project. Please try again later.",
+        "Error while creating project. Please try again later.",
       );
     }
   };
@@ -73,9 +73,7 @@ const CreateProjectPage = () => {
         sx={{
           display: "flex",
           maxWidth: "800px",
-          mx: "auto",
-          px: { xs: 2, md: 6 },
-          py: { xs: 2, md: 3 },
+          mx: "auto"
         }}
       >
         <Card>
@@ -88,9 +86,6 @@ const CreateProjectPage = () => {
           <Divider />
           <Stack
             spacing={2}
-            sx={{
-              py: { xs: 2, md: 3 },
-            }}
           >
             <ProjectDetailsSection
               projectDetails={projectDetails}

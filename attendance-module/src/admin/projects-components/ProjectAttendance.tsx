@@ -41,8 +41,6 @@ function RowMenu() {
 
 const ProjectAttendance: React.FC<Props> = ({ data }) => {
     const attendanceData = data;
-    console.log(data);
-
     return (
         <React.Fragment>
             <Sheet

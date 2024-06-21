@@ -33,7 +33,6 @@ async function updateAttendanceStatus() {
         Shift: true,
       },
     });
-    console.log(attendances);
     const updatePromises = attendances.map((attendance) =>
       prisma.attendance.update({
         where: { cuid: attendance.cuid },
