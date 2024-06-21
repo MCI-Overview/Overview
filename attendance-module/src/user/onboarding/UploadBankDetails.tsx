@@ -9,6 +9,7 @@ import {
 import axios from "axios";
 import { ChangeEventHandler, useState } from "react";
 import LoadingRequestButton from "../../components/LoadingRequestButton";
+import { FileUpload } from "@mui/icons-material";
 
 export default function UploadBankDetails({
   handleNext,
@@ -109,12 +110,10 @@ export default function UploadBankDetails({
       </FormControl>
 
       <Stack spacing={2}>
-        <Stack direction="row" justifyContent="space-between">
-          <Typography level="title-md" textAlign="center" alignContent="center">
-            Upload Bank Statement
-          </Typography>
-          <input type="file" accept="image/*" onChange={handleBankStatementFileChange} />
-        </Stack>
+        <FileUpload
+          onChange={handleBankStatementFileChange}
+          label="Upload Bank Statement Image"
+        />
         {bankStatementPreview && (
           <img
             src={bankStatementPreview}

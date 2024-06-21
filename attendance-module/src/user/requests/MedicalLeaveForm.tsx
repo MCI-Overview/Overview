@@ -12,6 +12,7 @@ import {
   Input,
   Sheet,
 } from "@mui/joy";
+import FileUpload from "../../components/FileUpload";
 
 export default function MedicalLeaveForm({
   setIsOpen,
@@ -19,7 +20,7 @@ export default function MedicalLeaveForm({
   setIsOpen: (isOpen: boolean) => void;
 }) {
   const [startDate, setStartDate] = useState<string>(
-    dayjs().format("YYYY-MM-DD")
+    dayjs().format("YYYY-MM-DD"),
   );
   const [numberOfDays, setNumberOfDays] = useState("1");
 
@@ -113,8 +114,7 @@ export default function MedicalLeaveForm({
         </Grid>
       </Grid>
       <FormControl>
-        <FormLabel>Upload MC</FormLabel>
-        <input type="file" accept="image/*" onChange={handleMcFileChange} />
+        <FileUpload onChange={handleMcFileChange} label="Upload MC" />
       </FormControl>
       {mcPreview && (
         <Sheet sx={{ overflowY: "auto", width: "100%" }}>

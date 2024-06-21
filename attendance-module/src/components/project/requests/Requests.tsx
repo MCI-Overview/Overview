@@ -1,69 +1,41 @@
-import axios from "axios";
-import dayjs from "dayjs";
-import { CustomRequest } from "../../types";
-import { readableEnum } from "../../utils/capitalize";
-
 import {
   Chip,
   Table,
   Sheet,
   Typography,
   ColorPaletteProp,
-  Dropdown,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItem,
-  Box,
+  Stack,
 } from "@mui/joy";
 import {
   PendingRounded as PendingIcon,
   BlockRounded as BlockIcon,
-  AutorenewRounded as AutorenewIcon,
+  ClearRounded as ClearIcon,
   CheckRounded as CheckIcon,
-  MoreHorizRounded as MoreHorizIcon,
 } from "@mui/icons-material";
+import { CustomRequest } from "../../../types";
+import dayjs from "dayjs";
+import axios from "axios";
+import ViewDetailsModal from "../../common/request/ViewDetailsModal";
+import LoadingRequestIconButton from "../../LoadingRequestIconButton";
 
-// TODO: Add viewing and editing of requests
-function RowMenu({
-  requestCuid,
-  getCurrentRequests,
-}: {
-  requestCuid: string;
-  getCurrentRequests: () => void;
-}) {
-  function handleCancel() {
-    axios
-      .post("/api/user/request/cancel", { requestCuid })
-      .then(() => getCurrentRequests());
-  }
-  return (
-    <>
-      <Dropdown>
-        <MenuButton
-          slots={{ root: IconButton }}
-          slotProps={{
-            root: { variant: "plain", color: "neutral", size: "sm" },
-          }}
-        >
-          <MoreHorizIcon />
-        </MenuButton>
-        <Menu size="sm" sx={{ minWidth: 140 }}>
-          {/* <MenuItem>View / Edit</MenuItem> */}
-          <MenuItem onClick={handleCancel}>Cancel</MenuItem>
-        </Menu>
-      </Dropdown>
-    </>
-  );
-}
-
-const CurrentRequests = ({
-  data,
-  getCurrentRequests,
-}: {
+interface RequestHistoryProps {
   data: CustomRequest[] | null;
   getCurrentRequests: () => void;
-}) => {
+}
+
+const RequestHistory = ({ data, getCurrentRequests }: RequestHistoryProps) => {
+  async function approveRequest(requestCuid: string) {
+    axios
+      .post(`/api/admin/request/${requestCuid}/approve`)
+      .then(() => getCurrentRequests());
+  }
+
+  async function rejectRequest(requestCuid: string) {
+    axios
+      .post(`/api/admin/request/${requestCuid}/reject`)
+      .then(() => getCurrentRequests());
+  }
+
   return (
     <>
       <Sheet
@@ -94,11 +66,11 @@ const CurrentRequests = ({
         >
           <thead>
             <tr>
-              <th style={{ width: 120, padding: "12px 6px" }}>Date</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Project</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Status</th>
+              <th style={{ width: 100, padding: "12px 6px" }}>Date</th>
+              <th style={{ width: 140, padding: "12px 6px" }}>Name</th>
               <th style={{ width: 100, padding: "12px 6px" }}>Type</th>
-              <th style={{ width: 40, padding: "12px 6px" }}> </th>
+              <th style={{ width: 100, padding: "12px 6px" }}>Status</th>
+              <th style={{ width: 100, padding: "12px 6px" }} />
             </tr>
           </thead>
           <tbody>
@@ -112,8 +84,11 @@ const CurrentRequests = ({
                   </td>
                   <td>
                     <Typography level="body-xs">
-                      {row.Assign.Project && row.Assign.Project.name}
+                      {row.Assign.Candidate && row.Assign.Candidate.name}
                     </Typography>
+                  </td>
+                  <td>
+                    <Typography level="body-xs">{row.type}</Typography>
                   </td>
                   <td>
                     <Chip
@@ -122,7 +97,7 @@ const CurrentRequests = ({
                       startDecorator={
                         {
                           APPROVED: <CheckIcon />,
-                          CANCELLED: <AutorenewIcon />,
+                          CANCELLED: <ClearIcon />,
                           REJECTED: <BlockIcon />,
                           PENDING: <PendingIcon />,
                         }[row.status || "UPCOMING"]
@@ -136,21 +111,27 @@ const CurrentRequests = ({
                         }[row.status || "UPCOMING"] as ColorPaletteProp
                       }
                     >
-                      {readableEnum(row.status || "UPCOMING")}
+                      {row.status || "UPCOMING"}
                     </Chip>
                   </td>
                   <td>
-                    <Typography level="body-xs">
-                      {readableEnum(row.type)}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <RowMenu
-                        requestCuid={row.cuid}
-                        getCurrentRequests={getCurrentRequests}
-                      />
-                    </Box>
+                    <Stack direction="row" gap={1}>
+                      <ViewDetailsModal data={row} />
+                      {row.status === "PENDING" && (
+                        <>
+                          <LoadingRequestIconButton
+                            promise={() => approveRequest(row.cuid)}
+                            icon={<CheckIcon />}
+                            color="success"
+                          />
+                          <LoadingRequestIconButton
+                            promise={() => rejectRequest(row.cuid)}
+                            icon={<BlockIcon />}
+                            color="danger"
+                          />
+                        </>
+                      )}
+                    </Stack>
                   </td>
                 </tr>
               ))}
@@ -158,7 +139,7 @@ const CurrentRequests = ({
               <tr>
                 <td colSpan={4}>
                   <Typography level="body-md" sx={{ textAlign: "center" }}>
-                    No current request found
+                    No request history found
                   </Typography>
                 </td>
               </tr>
@@ -170,4 +151,4 @@ const CurrentRequests = ({
   );
 };
 
-export default CurrentRequests;
+export default RequestHistory;

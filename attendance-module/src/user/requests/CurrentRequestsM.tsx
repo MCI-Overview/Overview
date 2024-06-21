@@ -102,7 +102,8 @@ const CurrentRequestsM = ({
                       }}
                     >
                       <Typography level="body-xs">
-                        {listItem.Assign.Project.name}
+                        {listItem.Assign.Project &&
+                          listItem.Assign.Project.name}
                       </Typography>
                       <Typography level="body-xs">&bull;</Typography>
                       <Typography level="body-xs">

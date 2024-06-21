@@ -15,6 +15,7 @@ import {
   Autocomplete,
   Sheet,
 } from "@mui/joy";
+import FileUpload from "../../components/FileUpload";
 
 export default function ClaimForm({
   setIsOpen,
@@ -185,10 +186,11 @@ export default function ClaimForm({
                     a.shiftDate.isBefore(b.shiftDate) ? -1 : 1
                   ) || []
               }
-              getOptionLabel={(option) => `
-                ${option.shiftDate.format(
-                  "DD MMM YYYY"
-                )} - ${option.shiftStartTime.format("HHmm")}`}
+              getOptionLabel={(option) =>
+                `${option.shiftDate.format(
+                  "DD MMM YYYY",
+                )} - ${option.shiftStartTime.format("HHmm")}`
+              }
               onChange={(_e, value) => {
                 setRosterCuid(value?.rosterCuid || "");
               }}
@@ -205,11 +207,9 @@ export default function ClaimForm({
         />
       </FormControl>
       <FormControl>
-        <FormLabel>Upload Receipt</FormLabel>
-        <input
-          type="file"
-          accept="image/*"
+        <FileUpload
           onChange={handleReceiptFileChange}
+          label="Upload Claim Receipt"
         />
       </FormControl>
       {receiptPreview && (

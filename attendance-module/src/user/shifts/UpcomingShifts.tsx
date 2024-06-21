@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
-import { CustomAttendance } from "../../../types";
-import { readableEnum } from "../../../utils/capitalize";
+import { CustomAttendance } from "../../types";
+import { readableEnum } from "../../utils/capitalize";
 
 import { ColorPaletteProp, Chip, Table, Sheet, Typography } from "@mui/joy";
 import {

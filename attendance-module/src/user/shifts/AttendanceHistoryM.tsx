@@ -2,30 +2,28 @@ import {
   Box,
   Chip,
   Typography,
-  ColorPaletteProp,
   List,
   ListItem,
   ListItemContent,
   ListDivider,
+  ColorPaletteProp,
 } from "@mui/joy";
 import {
-  PendingRounded as PendingIcon,
-  BlockRounded as BlockIcon,
-  AutorenewRounded as AutorenewIcon,
   CheckRounded as CheckIcon,
+  BlockRounded as BlockIcon,
 } from "@mui/icons-material";
-import { CustomRequest } from "../../types";
 import dayjs from "dayjs";
+import { CustomAttendance } from "../../types";
 
-interface RequestHistoryMProps {
-  data: CustomRequest[] | null;
+interface AttendanceHistoryMProps {
+  data: CustomAttendance[] | null;
 }
 
-const RequestHistoryM = ({ data }: RequestHistoryMProps) => {
+const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
       {data &&
-        data.map((listItem: CustomRequest) => (
+        data.map((listItem: CustomAttendance) => (
           <List
             key={listItem.cuid}
             size="sm"
@@ -45,7 +43,11 @@ const RequestHistoryM = ({ data }: RequestHistoryMProps) => {
               >
                 <div>
                   <Typography fontWeight={600} gutterBottom>
-                    {dayjs(listItem.createdAt).format("DD MMM YYYY")}
+                    {dayjs(listItem.shiftDate).format("DD MMM YYYY")}
+                  </Typography>
+                  <Typography level="body-xs" gutterBottom>
+                    {dayjs(listItem.Shift.startTime).format("hh:mm a")} to{" "}
+                    {dayjs(listItem.Shift.endTime).format("hh:mm a")}
                   </Typography>
                   <Box
                     sx={{
@@ -57,10 +59,12 @@ const RequestHistoryM = ({ data }: RequestHistoryMProps) => {
                     }}
                   >
                     <Typography level="body-xs">
-                      {listItem.Assign.Project && listItem.Assign.Project.name}
+                      {listItem.Shift.Project.name}
                     </Typography>
                     <Typography level="body-xs">&bull;</Typography>
-                    <Typography level="body-xs">{listItem.type}</Typography>
+                    <Typography level="body-xs">
+                      {listItem.shiftType}
+                    </Typography>
                   </Box>
                 </div>
               </ListItemContent>
@@ -69,19 +73,17 @@ const RequestHistoryM = ({ data }: RequestHistoryMProps) => {
                 size="sm"
                 startDecorator={
                   {
-                    APPROVED: <CheckIcon />,
-                    CANCELLED: <AutorenewIcon />,
-                    REJECTED: <BlockIcon />,
-                    PENDING: <PendingIcon />,
-                  }[listItem.status || "UPCOMING"]
+                    PRESENT: <CheckIcon />,
+                    NO_SHOW: <BlockIcon />,
+                    MEDICAL: <BlockIcon />,
+                  }[listItem.status || "NO_SHOW"]
                 }
                 color={
                   {
-                    APPROVED: "success",
-                    CANCELLED: "neutral",
-                    REJECTED: "danger",
-                    PENDING: "warning",
-                  }[listItem.status || "UPCOMING"] as ColorPaletteProp
+                    PRESENT: "success",
+                    NO_SHOW: "danger",
+                    MEDICAL: "neutral",
+                  }[listItem.status || "NO_SHOW"] as ColorPaletteProp
                 }
               >
                 {listItem.status || "NO_SHOW"}
@@ -92,11 +94,11 @@ const RequestHistoryM = ({ data }: RequestHistoryMProps) => {
         ))}
       {data && data.length === 0 && (
         <Typography level="body-md" sx={{ textAlign: "center" }}>
-          No request history found
+          No attendance history found
         </Typography>
       )}
     </Box>
   );
 };
 
-export default RequestHistoryM;
+export default AttendanceHistoryM;

@@ -73,8 +73,12 @@ export type CustomRequest = {
     | "UNPAID_LEAVE"
     | "MEDICAL_LEAVE"
     | "RESIGNATION";
+  data: object;
   Assign: {
-    Project: {
+    Candidate?: {
+      name: string;
+    };
+    Project?: {
       name: string;
     };
   };

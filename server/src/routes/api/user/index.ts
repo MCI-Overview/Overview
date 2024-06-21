@@ -81,6 +81,16 @@ userAPIRouter.get("/claimableShifts", async (req, res) => {
     const roster = await prisma.attendance.findMany({
       where: {
         candidateCuid: cuid,
+        NOT: {
+          OR: [
+            {
+              status: null,
+            },
+            {
+              status: "NO_SHOW",
+            },
+          ],
+        },
         shiftDate: {
           gte: dayjs().startOf("day").subtract(1, "month").toDate(),
           lte: dayjs().toDate(),
@@ -122,6 +132,7 @@ userAPIRouter.get("/upcomingShifts", async (req, res) => {
     const shifts = await prisma.attendance.findMany({
       where: {
         candidateCuid: cuid,
+        leave: null,
         shiftDate: {
           gte: dayjs().startOf("day").toDate(),
           lte: dayjs().endOf("day").add(1, "month").toDate(),
