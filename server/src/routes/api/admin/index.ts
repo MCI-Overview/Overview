@@ -2,6 +2,7 @@ import { Router } from "express";
 import shiftAPIRoutes from "./shift";
 import clientAPIRoutes from "./client";
 import projectAPIRoutes from "./project";
+import requestAPIRoutes from "./request";
 import candidateAPIRoutes from "./candidate";
 import consultantAPIRoutes from "./consultant";
 import { User } from "@/types/common";
@@ -15,6 +16,7 @@ adminAPIRouter.use("/", clientAPIRoutes);
 adminAPIRouter.use("/", projectAPIRoutes);
 adminAPIRouter.use("/", candidateAPIRoutes);
 adminAPIRouter.use("/", consultantAPIRoutes);
+adminAPIRouter.use("/", requestAPIRoutes);
 
 adminAPIRouter.get("/", async (req, res) => {
   const { cuid } = req.user as User;
