@@ -19,7 +19,8 @@ function getPrefix(type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF") {
       return "PM:";
   }
 }
-export function DraggableChip({
+
+export default function DraggableChip({
   type,
   cuid,
   startTime,
@@ -42,7 +43,7 @@ export function DraggableChip({
       }}
     >
       {`${getPrefix(type)} ${startTime.format("HHmm")} - ${endTime.format(
-        "HHmm",
+        "HHmm"
       )}`}
     </Chip>
   );

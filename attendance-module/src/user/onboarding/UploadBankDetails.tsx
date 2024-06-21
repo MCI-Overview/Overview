@@ -8,7 +8,7 @@ import {
 } from "@mui/joy";
 import axios from "axios";
 import { ChangeEventHandler, useState } from "react";
-import LoadingRequestButton from "../components/LoadingRequestButton";
+import LoadingRequestButton from "../../components/LoadingRequestButton";
 
 export default function UploadBankDetails({
   handleNext,
@@ -113,7 +113,7 @@ export default function UploadBankDetails({
           <Typography level="title-md" textAlign="center" alignContent="center">
             Upload Bank Statement
           </Typography>
-          <Input type="file" onChange={handleBankStatementFileChange} />
+          <input type="file" accept="image/*" onChange={handleBankStatementFileChange} />
         </Stack>
         {bankStatementPreview && (
           <img

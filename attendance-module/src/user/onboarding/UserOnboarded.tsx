@@ -1,5 +1,5 @@
 import { Typography, Button } from "@mui/joy";
-import { useUserContext } from "../providers/userContextProvider";
+import { useUserContext } from "../../providers/userContextProvider";
 
 export default function UserOnboarded() {
   const { updateUser } = useUserContext();

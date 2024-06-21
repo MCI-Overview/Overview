@@ -13,10 +13,10 @@ import {
   IconButton,
 } from "@mui/joy";
 import {
-  Delete,
-  ArrowUpward,
-  ArrowDownward,
-  SwapVert,
+  DeleteRounded as DeleteIcon,
+  ArrowUpwardRounded as ArrowUpwardIcon,
+  ArrowDownwardRounded as ArrowDownwardIcon,
+  SwapVertRounded as SwapVertIcon,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 
@@ -106,12 +106,12 @@ const CandidateTable = ({
 
   const renderSortIcon = (key: SortableKeys) => {
     if (sortConfig.key !== key) {
-      return <SwapVert fontSize="medium" color="disabled" />;
+      return <SwapVertIcon fontSize="medium" color="disabled" />;
     }
     if (sortConfig.direction === "ascending") {
-      return <ArrowUpward fontSize="large" />;
+      return <ArrowUpwardIcon fontSize="large" />;
     }
-    return <ArrowDownward fontSize="small" />;
+    return <ArrowDownwardIcon fontSize="small" />;
   };
 
   return (
@@ -176,7 +176,7 @@ const CandidateTable = ({
                               !hasEditProjectPermission && !isHolder(row.cuid)
                             }
                           >
-                            <Delete />
+                            <DeleteIcon />
                           </IconButton>
                         </Tooltip>
                       )}

@@ -14,7 +14,7 @@ import {
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { CommonConsultant } from "../../../types/common";
-import { Delete } from "@mui/icons-material";
+import { DeleteRounded as DeleteIcon } from "@mui/icons-material";
 import { useUserContext } from "../../../providers/userContextProvider";
 
 export default function ProjectCandidateHoldersSection({
@@ -41,7 +41,7 @@ export default function ProjectCandidateHoldersSection({
 
   useEffect(() => {
     setConsultantList((consultantList) =>
-      consultantList.filter((c) => !candidateHolders.includes(c))
+      consultantList.filter((c) => !candidateHolders.includes(c)),
     );
   }, [candidateHolders]);
 
@@ -112,12 +112,12 @@ export default function ProjectCandidateHoldersSection({
                     onClick={() => {
                       setCandidateHolders(
                         candidateHolders.filter(
-                          (currentHolder) => currentHolder.cuid !== holder.cuid
-                        )
+                          (currentHolder) => currentHolder.cuid !== holder.cuid,
+                        ),
                       );
                     }}
                   >
-                    <Delete />
+                    <DeleteIcon />
                   </IconButton>
                 </Stack>
               </ListItem>

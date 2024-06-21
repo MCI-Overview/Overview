@@ -9,6 +9,7 @@ import {
   CommonShiftGroup,
 } from "@/types/common";
 import {
+  defaultDate,
   processCandidateData,
   checkLocationsValidity,
   checkDatesValidity,
@@ -1025,7 +1026,13 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
       .send("specify both/neither halfDayEndTime and halfDayStartTime.");
   }
 
-  if (breakDuration && parseInt(breakDuration) < 0) {
+  if (!breakDuration) return res.status(400).send("breakDuration is required.");
+
+  if (isNaN(parseInt(breakDuration))) {
+    return res.status(400).send("breakDuration must be a number.");
+  }
+
+  if (parseInt(breakDuration) < 0) {
     return res.status(400).send("breakDuration cannot be negative.");
   }
 
@@ -1067,7 +1074,6 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
       },
       include: {
         Manage: true,
-        Shift: true,
       },
     });
   } catch (error) {
@@ -1096,23 +1102,39 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
   }
 
   const createData = {
-    startTime: dayjs(startTime, "HH:mm").toDate(),
-    endTime: dayjs(endTime, "HH:mm").toDate(),
+    startTime: defaultDate(dayjs(startTime, "HH:mm")).toDate(),
+    endTime: defaultDate(dayjs(endTime, "HH:mm")).toDate(),
     ...(halfDayEndTime && {
-      halfDayEndTime: dayjs(halfDayEndTime, "HH:mm").toDate(),
+      halfDayEndTime: defaultDate(dayjs(halfDayEndTime, "HH:mm")).toDate(),
     }),
     ...(halfDayStartTime && {
-      halfDayStartTime: dayjs(halfDayStartTime, "HH:mm").toDate(),
+      halfDayStartTime: defaultDate(dayjs(halfDayStartTime, "HH:mm")).toDate(),
     }),
     breakDuration: parseInt(breakDuration),
     projectCuid,
   };
 
   try {
-    await prisma.shift.create({
-      data: createData,
+    await prisma.shift.upsert({
+      where: {
+        projectCuid_startTime_endTime: {
+          projectCuid,
+          startTime: createData.startTime,
+          endTime: createData.endTime,
+        },
+        status: ShiftStatus.ARCHIVED,
+      },
+      update: {
+        status: ShiftStatus.ACTIVE,
+      },
+      create: createData,
     });
   } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2002") {
+      return res.status(400).send("Shift already exists.");
+    }
+
     console.log(error);
     return res.status(500).send("Internal server error.");
   }
@@ -1325,61 +1347,289 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
   }
 });
 
-const checkProjectRole = async (
-  req: Request,
-
-  projectCuid: string
-): Promise<boolean> => {
+projectAPIRouter.post("/project/:projectCuid/manage", async (req, res) => {
   const user = req.user as User;
-  const response = await prisma.manage.findFirst({
-    where: {
-      projectCuid,
-      consultantCuid: user.cuid,
-    },
-  });
-
-  return response?.role === "CLIENT_HOLDER";
-};
-
-const validateProjectAndConsultant = async (
-  projectCuid: string,
-  consultantCuid: string
-): Promise<{ projectExists: boolean; consultantExists: boolean }> => {
-  const [project, consultant] = await Promise.all([
-    prisma.project.findUnique({ where: { cuid: projectCuid } }),
-    prisma.consultant.findUnique({ where: { cuid: consultantCuid } }),
-  ]);
-
-  return {
-    projectExists: !!project,
-    consultantExists: !!consultant,
-  };
-};
-
-const handleValidationError = (res: Response, message: string) =>
-  res.status(400).send({ error: message });
-
-projectAPIRouter.post("/project/:projectCuid/manage/add", async (req, res) => {
   const { projectCuid } = req.params;
-  const { consultantCuid } = req.body;
+  const { consultantCuid, role } = req.body;
 
-  if (!(await checkProjectRole(req, projectCuid))) {
-    return res.status(403).send({ error: "User has no access." });
+  if (!projectCuid) {
+    return res.status(400).send("projectCuid is required.");
+  }
+
+  if (!consultantCuid) {
+    return res.status(400).send("consultantCuid is required.");
+  }
+
+  if (!role) {
+    return res.status(400).send("role is required.");
+  }
+
+  if (!["CLIENT_HOLDER", "CANDIDATE_HOLDER"].includes(role)) {
+    return res.status(400).send("Invalid role.");
+  }
+
+  let projectData;
+  try {
+    projectData = await prisma.project.findUniqueOrThrow({
+      where: {
+        cuid: projectCuid,
+      },
+      include: {
+        Manage: true,
+      },
+    });
+  } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2025") {
+      return res.status(404).send("Project does not exist.");
+    }
+
+    console.error(error);
+    return res.status(500).send({ error: "Internal server error." });
+  }
+
+  const hasPermission =
+    projectData.Manage.some(
+      (m) => m.consultantCuid === user.cuid && m.role === "CLIENT_HOLDER"
+    ) ||
+    (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+  if (!hasPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
   }
 
   try {
-    const { projectExists, consultantExists } =
-      await validateProjectAndConsultant(projectCuid, consultantCuid);
+    await prisma.manage.create({
+      data: {
+        projectCuid,
+        consultantCuid,
+        role,
+      },
+    });
 
-    if (!projectExists) {
-      return handleValidationError(res, "Project does not exist.");
+    return res.send(`Consultant successfully added.`);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ error: "Internal server error." });
+  }
+});
+
+projectAPIRouter.patch("/project/:projectCuid/manage", async (req, res) => {
+  const user = req.user as User;
+  const { projectCuid } = req.params;
+  const { consultantCuid, role } = req.body;
+
+  if (!projectCuid) {
+    return res.status(400).send("projectCuid is required.");
+  }
+
+  if (!consultantCuid) {
+    return res.status(400).send("oldConsultantCuid is required.");
+  }
+
+  if (!role) {
+    return res.status(400).send("role is required.");
+  }
+
+  if (!["CLIENT_HOLDER", "CANDIDATE_HOLDER"].includes(role)) {
+    return res.status(400).send("Invalid role.");
+  }
+
+  let projectData;
+  try {
+    projectData = await prisma.project.findUniqueOrThrow({
+      where: {
+        cuid: projectCuid,
+      },
+      include: {
+        Manage: true,
+      },
+    });
+  } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2025") {
+      return res.status(404).send("Project does not exist.");
     }
 
-    if (!consultantExists) {
-      return handleValidationError(res, "Consultant does not exist.");
+    console.error(error);
+    return res.status(500).send({ error: "Internal server error." });
+  }
+
+  const hasPermission =
+    projectData.Manage.some(
+      (m) => m.consultantCuid === user.cuid && m.role === "CLIENT_HOLDER"
+    ) ||
+    (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+  if (!hasPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+  }
+
+  const currentManage = projectData.Manage.find(
+    (m) => m.consultantCuid === consultantCuid
+  );
+
+  // verify that the consultant is a collaborator
+  if (!currentManage) {
+    return res.status(400).send("Consultant is not a collaborator.");
+  }
+
+  // Do nothing if the role is unchanged
+  if (currentManage.role === role) {
+    return res.status(400).send("Role is the same as the current role.");
+  }
+
+  // prevent removing the last client holder
+  if (
+    currentManage.role === "CLIENT_HOLDER" &&
+    projectData.Manage.filter((m) => m.role === "CLIENT_HOLDER").length === 1
+  ) {
+    return res
+      .status(400)
+      .send("Cannot remove the last client holder in the project.");
+  }
+
+  try {
+    await prisma.manage.update({
+      where: {
+        consultantCuid_projectCuid: {
+          consultantCuid,
+          projectCuid,
+        },
+      },
+      data: {
+        role,
+      },
+    });
+
+    return res.send(`Manage successfully updated.`);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ error: "Internal server error." });
+  }
+});
+
+projectAPIRouter.delete("/project/:projectCuid/manage", async (req, res) => {
+  const user = req.user as User;
+  const { projectCuid } = req.params;
+  const { consultantCuid, reassignments } = req.body;
+
+  if (!projectCuid) {
+    return res.status(400).send("projectCuid is required.");
+  }
+
+  if (!consultantCuid) {
+    return res.status(400).send("consultantCuid is required.");
+  }
+
+  if (!reassignments) {
+    return res.status(400).send("reassign is required.");
+  }
+
+  if (!Array.isArray(reassignments)) {
+    return res.status(400).send("reassign must be an array.");
+  }
+
+  let projectData;
+  try {
+    projectData = await prisma.project.findUniqueOrThrow({
+      where: {
+        cuid: projectCuid,
+      },
+      include: {
+        Manage: true,
+        Assign: true,
+      },
+    });
+  } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2025") {
+      return res.status(404).send("Project does not exist.");
     }
 
-    const existingCollaboration = await prisma.manage.findUnique({
+    console.error(error);
+    return res.status(500).send({ error: "Internal server error." });
+  }
+
+  const hasPermission =
+    projectData.Manage.some(
+      (m) => m.consultantCuid === user.cuid && m.role === "CLIENT_HOLDER"
+    ) ||
+    (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+  if (!hasPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+  }
+
+  const clientHolders = projectData.Manage.filter(
+    (m) => m.role === "CLIENT_HOLDER"
+  );
+
+  // prevent removing the last client holder
+  if (
+    clientHolders.length === 1 &&
+    clientHolders[0].consultantCuid === consultantCuid
+  ) {
+    return res
+      .status(400)
+      .send("Cannot remove the last client holder in the project.");
+  }
+
+  for (const item of reassignments) {
+    const { consultantCuid: newConsultantCuid, candidateCuid } = item;
+
+    const assignEntry = projectData.Assign.find(
+      (assign) =>
+        assign.candidateCuid === candidateCuid &&
+        assign.consultantCuid === consultantCuid
+    );
+
+    if (!assignEntry) {
+      return res.status(404).send({
+        error: `Candidate ${candidateCuid} not assigned by consultant ${consultantCuid}.`,
+      });
+    }
+
+    try {
+      await prisma.assign.update({
+        where: {
+          projectCuid_candidateCuid: {
+            projectCuid,
+            candidateCuid,
+          },
+        },
+        data: {
+          consultantCuid: newConsultantCuid,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: "Internal server error." });
+    }
+  }
+
+  const remainingAssignments = await prisma.assign.findMany({
+    where: {
+      consultantCuid,
+      projectCuid,
+    },
+  });
+
+  if (remainingAssignments.length > 0) {
+    return res.status(400).send({
+      error:
+        "Consultant cannot be removed as they are still assigned to candidates in this project.",
+    });
+  }
+
+  try {
+    await prisma.manage.delete({
       where: {
         consultantCuid_projectCuid: {
           consultantCuid,
@@ -1388,112 +1638,13 @@ projectAPIRouter.post("/project/:projectCuid/manage/add", async (req, res) => {
       },
     });
 
-    if (existingCollaboration) {
-      return handleValidationError(
-        res,
-        "Consultant is already a collaborator."
-      );
-    }
-
-    const manageData = await prisma.manage.create({
-      data: {
-        consultantCuid,
-        projectCuid,
-        role: "CANDIDATE_HOLDER",
-      },
+    return res.status(200).send({
+      message: "Successfully removed collaborator and updated Assign table.",
     });
-
-    return res.status(200).send(manageData);
   } catch (error) {
     console.error(error);
     return res.status(500).send({ error: "Internal server error." });
   }
 });
-
-projectAPIRouter.post(
-  "/project/:projectCuid/manage/remove",
-  async (req, res) => {
-    const { projectCuid } = req.params;
-    const { consultantCuid, reassign } = req.body;
-
-    if (!(await checkProjectRole(req, projectCuid))) {
-      return res.status(403).send({ error: "User has no access." });
-    }
-
-    try {
-      const manageEntry = await prisma.manage.findFirst({
-        where: {
-          projectCuid,
-          consultantCuid,
-        },
-      });
-
-      if (!manageEntry) {
-        return res.status(404).send({ error: "Manage entry not found." });
-      }
-
-      if (Array.isArray(reassign)) {
-        for (const item of reassign) {
-          const { consultantCuid: newConsultantCuid, candidateCuid } = item;
-
-          const assignEntry = await prisma.assign.findFirst({
-            where: {
-              projectCuid,
-              candidateCuid,
-            },
-          });
-
-          if (!assignEntry) {
-            return res.status(404).send({
-              error: `Assign entry not found for candidateCuid: ${candidateCuid}`,
-            });
-          }
-
-          await prisma.assign.update({
-            where: {
-              projectCuid_candidateCuid: {
-                projectCuid,
-                candidateCuid,
-              },
-            },
-            data: {
-              consultantCuid: newConsultantCuid,
-            },
-          });
-        }
-      }
-
-      const remainingAssignments = await prisma.assign.findMany({
-        where: {
-          consultantCuid,
-          projectCuid,
-        },
-      });
-
-      if (remainingAssignments.length > 0) {
-        return res.status(400).send({
-          error:
-            "Consultant cannot be removed as they are still assigned to candidates in this project.",
-        });
-      }
-
-      await prisma.manage.delete({
-        where: {
-          consultantCuid_projectCuid: {
-            consultantCuid,
-            projectCuid,
-          },
-        },
-      });
-
-      return res.status(200).send({
-        message: "Successfully removed collaborator and updated Assign table.",
-      });
-    } catch (error) {
-      console.error("Error while removing collaborator:", error);
-      return res.status(500).send({ error: "Internal server error." });
-    }
-  }
-);
 
 export default projectAPIRouter;

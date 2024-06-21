@@ -1,5 +1,5 @@
 import { CircularProgress, IconButton, Stack, Tooltip } from "@mui/joy";
-import { CancelOutlined } from "@mui/icons-material";
+import { CancelRounded as CancelIcon } from "@mui/icons-material";
 import axios from "axios";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { Dayjs } from "dayjs";
@@ -51,7 +51,7 @@ function ShiftTooltipDisplay({
                 .then(() => updateRosterData())
             }
           >
-            <CancelOutlined />
+            <CancelIcon />
           </IconButton>
         </Stack>
       ))}

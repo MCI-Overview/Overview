@@ -5,33 +5,34 @@ import {
   useLocation,
   Navigate,
 } from "react-router-dom";
-import LoginAdmin from "./login/login-admin";
-import LoginUser from "./login/login-user";
-import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
-import { CssVarsProvider } from "@mui/joy/styles";
+import { CircularProgress, CssBaseline, Box, CssVarsProvider } from "@mui/joy";
 import { useEffect, useState } from "react";
-import AdminProjects from "./admin/Projects";
-import AdminHome from "./admin/Home";
-import AdminCandidates from "./admin/Candidates";
-import axios from "axios";
-import { RemoveTrailingSlash } from "./utils/remove-trailing-slash";
-import Project from "./admin/Project";
 import { Toaster } from "react-hot-toast";
-import UserNew from "./user/UserNew";
-import UserHome from "./user/UserHome";
-import UserShifts from "./user/UserShifts";
-import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
-import { CircularProgress, CssBaseline, Box } from "@mui/joy";
-import { UserContextProvider } from "./providers/userContextProvider";
-import { ProjectContextProvider } from "./providers/projectContextProvider";
-import axiosRetry from "axios-retry";
+import axios from "axios";
 import dayjs from "dayjs";
-import isBetween from "dayjs/plugin/isBetween";
+import axiosRetry from "axios-retry";
 import isoWeek from "dayjs/plugin/isoWeek";
+import isBetween from "dayjs/plugin/isBetween";
+
+import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
+import { ProjectContextProvider } from "./providers/projectContextProvider";
+import { UserContextProvider } from "./providers/userContextProvider";
+import { RemoveTrailingSlash } from "./utils/remove-trailing-slash";
+import UserNew from "./user/onboarding/UserNew";
+import AdminCandidates from "./admin/Candidates";
+import UserRequests from "./user/UserRequests";
 import CandidateProfile from "./user/Profile";
 import LoadUser from "./components/LoadUser";
 import UserProjects from "./user/UserProjects";
+import LoginAdmin from "./login/login-admin";
+import AdminProjects from "./admin/Projects";
+import LoginUser from "./login/login-user";
+import Sidebar from "./components/Sidebar";
+import UserShifts from "./user/UserShifts";
+import Header from "./components/Header";
+import UserHome from "./user/UserHome";
+import Project from "./admin/Project";
+import AdminHome from "./admin/Home";
 
 dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
@@ -106,6 +107,7 @@ function App() {
                       <Route path="/" element={<LoginUser />} />
                       <Route path="/user/new" element={<UserNew />} />
                       <Route path="/user/home" element={<UserHome />} />
+                      <Route path="/user/requests" element={<UserRequests />} />
                       <Route path="/user/profile" element={<CandidateProfile />} />
                       <Route path="/user/shifts" element={<UserShifts />} />
                       <Route path="/user/projects" element={<UserProjects />} />

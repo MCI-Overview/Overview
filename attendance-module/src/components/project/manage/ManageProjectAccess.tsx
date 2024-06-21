@@ -2,185 +2,81 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { CommonCandidate, CommonConsultant } from "../../../types/common";
-import { Assign } from "../../../types";
-import RemoveConsultantModal from "./RemoveConsultantModal";
-import InviteCollaborators from "./InviteCollaborators";
+import { CommonConsultant } from "../../../types/common";
+
 import CollaboratorsTable from "./CollaboratorsTable";
+import InviteCollaborators from "./InviteCollaborators";
+import RemoveConsultantModal from "./RemoveConsultantModal";
 
 import {
   Box,
-  Divider,
-  Stack,
-  Typography,
   Card,
   CardOverflow,
   CardActions,
+  Divider,
+  Stack,
+  Typography,
 } from "@mui/joy";
+import toast from "react-hot-toast";
 
 const ManageProjectAccess = () => {
-  const [consultants, setConsultants] = useState<CommonConsultant[]>([]);
-  const [selectedCollaborators, setSelectedCollaborators] = useState<
-    CommonConsultant[]
-  >([]);
-  const [rowSelections, setRowSelections] = useState<Assign[]>([]);
-  const [emailConfirmation, setEmailConfirmation] = useState<string>("");
-  const [invitationError, setInvitationError] = useState<string | null>(null);
-  const [openRemoveModal, setOpenRemoveModal] = useState(false);
-  const [candidatesToReassign, setCandidatesToReassign] = useState<
-    CommonCandidate[]
-  >([]);
+  const [allConsultants, setAllConsultants] = useState<CommonConsultant[]>([]);
+
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [consultantToRemove, setConsultantToRemove] =
     useState<CommonConsultant | null>(null);
 
-  const { project, updateProject } = useProjectContext();
-  const collaborators = project?.consultants ?? [];
-  const candidates = project?.candidates ?? [];
   const { user } = useUserContext();
-  const currentUserCuid = user?.cuid;
-
-  // Determine the current user's role based on their cuid
-  const currentUserRole = collaborators.find(
-    (collaborator) => collaborator.cuid === currentUserCuid
-  )?.role;
-
-  const filteredConsultants = consultants.filter(
-    (consultant) => !collaborators.some((row) => row.cuid === consultant.cuid)
-  );
+  const { project, updateProject } = useProjectContext();
 
   useEffect(() => {
     const fetchConsultants = async () => {
       try {
         const { data } = await axios.get("/api/admin/consultants");
-        setConsultants(data);
+        setAllConsultants(data);
       } catch (error) {
-        console.error("Failed to fetch consultants", error);
+        console.error(error);
+        toast.error("Failed to fetch consultants. Please try again later.");
       }
     };
     fetchConsultants();
   }, []);
 
-  const handleApplyToAll = (value: CommonConsultant | null) => {
-    const consultantCuid = value ? value.cuid : null;
-    setRowSelections(
-      candidatesToReassign.map((candidate) => ({
-        consultantCuid,
-        candidateCuid: candidate.cuid,
-      }))
-    );
+  if (!user) return null;
+  if (!project) return null;
+
+  const currentUser = project.consultants.find(
+    (collaborator) => collaborator.cuid === user.cuid,
+  );
+  if (!currentUser) return null;
+
+  const handleRemoveConsultant = (consultant: CommonConsultant) => {
+    setConsultantToRemove(consultant);
+    setIsRemoveModalOpen(true);
   };
 
-  const handleRowSelectionChange = (
-    index: number,
-    value: CommonConsultant | null
+  const handleRoleChange = async (
+    newRole: "CLIENT_HOLDER" | "CANDIDATE_HOLDER" | null,
+    consultant: CommonConsultant,
   ) => {
-    const updatedSelections = [...rowSelections];
-    updatedSelections[index] = {
-      consultantCuid: value?.cuid ?? null,
-      candidateCuid: candidatesToReassign[index].cuid,
-    };
-    setRowSelections(updatedSelections);
-  };
+    if (!newRole) return;
 
-  const handleRemoveClick = (cuid: string) => {
-    const consultant = collaborators.find((collab) => collab.cuid === cuid);
-    if (consultant) {
-      const candidatesOfConsultant = candidates.filter(
-        (candidate) => candidate.consultantCuid === cuid
-      );
-      setConsultantToRemove(consultant);
-      setCandidatesToReassign(candidatesOfConsultant);
-      setRowSelections(
-        candidatesOfConsultant.map((candidate) => ({
-          consultantCuid: null,
-          candidateCuid: candidate.cuid,
-        }))
-      );
-      setRowSelections(
-        candidatesOfConsultant.map((candidate) => ({
-          consultantCuid: null,
-          candidateCuid: candidate.cuid,
-        }))
-      );
-      setOpenRemoveModal(true);
-    }
-  };
-
-  const handleCloseRemoveModal = () => {
-    setOpenRemoveModal(false);
-    setRowSelections([]);
-    setEmailConfirmation("");
-    setCandidatesToReassign([]);
-    setConsultantToRemove(null);
-  };
-
-  const handleConfirmInvite = async () => {
     try {
-      const projectCuid = project?.cuid;
-      if (!projectCuid) throw new Error("Project ID is missing");
-      await Promise.all(
-        selectedCollaborators.map(async (collab) => {
-          const consultant = consultants.find((c) => c.email === collab.email);
-          if (!consultant) throw new Error("Consultant not found");
-
-          await axios.post(`/api/admin/project/${projectCuid}/manage/add`, {
-            consultantCuid: consultant.cuid,
-          });
-
-          return consultant;
-        })
-      );
-      updateProject();
-    } catch (error) {
-      setInvitationError("Failed to invite collaborator.");
-    }
-  };
-
-  const handleConfirmRemove = async () => {
-    if (emailConfirmation === "" || !consultantToRemove) return;
-    try {
-      const projectCuid = project?.cuid;
-      if (!projectCuid) throw new Error("Project ID is missing");
-
-      const reassignments = rowSelections.filter(
-        (rowSelection) => rowSelection.consultantCuid !== null
-      );
-
-      await axios.post(`/api/admin/project/${projectCuid}/manage/remove`, {
-        consultantCuid: consultantToRemove.cuid,
-        reassign: reassignments,
+      await axios.patch(`/api/admin/project/${project.cuid}/manage`, {
+        consultantCuid: consultant.cuid,
+        role: newRole,
       });
 
+      toast.success("Role updated successfully.");
       updateProject();
-      handleCloseRemoveModal();
     } catch (error) {
-      console.error("Failed to remove consultant", error);
+      console.error(error);
+      toast.error("Unable to update role.");
     }
   };
-
-  const availableCollaborators = collaborators.filter(
-    (consultant) => consultant.cuid !== consultantToRemove?.cuid
-  );
-  const allCandidatesReassigned = rowSelections.every(
-    (selection) => selection.consultantCuid !== null
-  );
 
   return (
     <>
-      <RemoveConsultantModal
-        open={openRemoveModal}
-        onClose={handleCloseRemoveModal}
-        consultantToRemove={consultantToRemove}
-        candidatesToReassign={candidatesToReassign}
-        rowSelections={rowSelections}
-        availableCollaborators={availableCollaborators}
-        handleApplyToAll={handleApplyToAll}
-        handleRowSelectionChange={handleRowSelectionChange}
-        emailConfirmation={emailConfirmation}
-        setEmailConfirmation={setEmailConfirmation}
-        handleConfirmRemove={handleConfirmRemove}
-        allCandidatesReassigned={allCandidatesReassigned}
-      />
       <Stack
         spacing={4}
         sx={{
@@ -197,22 +93,17 @@ const ManageProjectAccess = () => {
           </Box>
           <Divider />
           <Stack spacing={2} sx={{ my: 1 }}>
-            {currentUserRole === "CLIENT_HOLDER" && (
+            {currentUser.role === "CLIENT_HOLDER" && (
               <>
-                <InviteCollaborators
-                  filteredConsultants={filteredConsultants}
-                  selectedCollaborators={selectedCollaborators}
-                  setSelectedCollaborators={setSelectedCollaborators}
-                  handleConfirmInvite={handleConfirmInvite}
-                  invitationError={invitationError}
-                />
+                <InviteCollaborators allConsultants={allConsultants} />
                 <Divider />
               </>
             )}
             <CollaboratorsTable
-              collaborators={collaborators}
-              currentUserRole={currentUserRole}
-              handleRemoveClick={handleRemoveClick}
+              consultants={project.consultants}
+              currentUser={currentUser}
+              handleRemoveConsultant={handleRemoveConsultant}
+              handleRoleChange={handleRoleChange}
             />
           </Stack>
           <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
@@ -224,6 +115,14 @@ const ManageProjectAccess = () => {
           </CardOverflow>
         </Card>
       </Stack>
+
+      {consultantToRemove && (
+        <RemoveConsultantModal
+          isOpen={isRemoveModalOpen}
+          setIsOpen={setIsRemoveModalOpen}
+          consultantToRemove={consultantToRemove}
+        />
+      )}
     </>
   );
 };
