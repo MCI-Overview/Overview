@@ -5,6 +5,7 @@ import { CustomRequest } from "../../../types";
 import ViewClaim from "./ViewClaim";
 import ViewMedicalLeave from "./ViewMedicalLeave";
 import ViewLeave from "./ViewLeave";
+import ViewResignation from "./ViewResignation";
 
 export default function ViewDetailsModal({
   data,
@@ -47,6 +48,7 @@ export default function ViewDetailsModal({
           {(data.type === "PAID_LEAVE" || data.type === "UNPAID_LEAVE") && (
             <ViewLeave request={data} rosterRequestURL={rosterRequestURL} />
           )}
+          {data.type === "RESIGNATION" && <ViewResignation request={data} />}
         </ModalDialog>
       </Modal>
       {variant === "DESKTOP" && (

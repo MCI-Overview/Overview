@@ -3,6 +3,7 @@ import { CustomRequest } from "../../../types";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { readableEnum } from "../../../utils/capitalize";
 
 export default function ViewClaim({
   request,
@@ -56,7 +57,8 @@ export default function ViewClaim({
   return (
     <Stack gap={1}>
       <Typography level="title-md">
-        {request.Assign.Candidate?.name}'s {requestData.claimType} Claim
+        {request.Assign.Candidate?.name}'s {readableEnum(requestData.claimType)}{" "}
+        Claim
       </Typography>
       <Typography level="body-md">
         Date/Time:

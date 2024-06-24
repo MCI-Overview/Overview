@@ -3,6 +3,7 @@ import { CustomRequest } from "../../../types";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { readableEnum } from "../../../utils/capitalize";
 
 export default function ViewClaim({
   request,
@@ -34,7 +35,7 @@ export default function ViewClaim({
   return (
     <Stack>
       <Typography level="title-md">
-        {request.Assign.Candidate?.name}'s {request.type}
+        {request.Assign.Candidate?.name}'s {readableEnum(request.type)}
       </Typography>
       <Typography level="body-md">
         Date/Time:{" "}
@@ -42,7 +43,7 @@ export default function ViewClaim({
           ${dayjs(affectedRoster.Shift.startTime).format("HHmm")}`}
       </Typography>
       <Typography level="body-md">
-        Leave duration: {requestData.leaveDuration}
+        Leave duration: {readableEnum(requestData.leaveDuration)}
       </Typography>
       <Typography level="body-md">Reason: {requestData.reason}</Typography>
     </Stack>
