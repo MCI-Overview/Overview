@@ -3,8 +3,17 @@ import { CustomRequest } from "../../../types";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { readableEnum } from "../../../utils/capitalize";
 
-export default function ViewClaim({ request }: { request: CustomRequest }) {
+export default function ViewClaim({
+  request,
+  rosterRequestURL,
+  imageRequestURL,
+}: {
+  request: CustomRequest;
+  rosterRequestURL: string;
+  imageRequestURL: string;
+}) {
   const [affectedRoster, setAffectedRoster] = useState<{
     shiftDate: string;
     Shift: {
@@ -22,15 +31,15 @@ export default function ViewClaim({ request }: { request: CustomRequest }) {
   };
 
   useEffect(() => {
-    axios.get(`/api/admin/request/${request.cuid}/roster`).then((response) => {
+    axios.get(rosterRequestURL).then((response) => {
       setAffectedRoster(response.data);
     });
-  }, [request.cuid]);
+  }, [rosterRequestURL]);
 
   useEffect(() => {
     if (showReceipt && !receiptPreview) {
       axios
-        .get(`/api/admin/request/${request.cuid}/image`, {
+        .get(imageRequestURL, {
           responseType: "blob",
         })
         .then((response) => {
@@ -41,14 +50,15 @@ export default function ViewClaim({ request }: { request: CustomRequest }) {
           };
         });
     }
-  }, [request.cuid, showReceipt, receiptPreview]);
+  }, [showReceipt, receiptPreview, imageRequestURL]);
 
   if (!affectedRoster) return null;
 
   return (
     <Stack gap={1}>
       <Typography level="title-md">
-        {request.Assign.Candidate?.name}'s {requestData.claimType} Claim
+        {request.Assign.Candidate?.name}'s {readableEnum(requestData.claimType)}{" "}
+        Claim
       </Typography>
       <Typography level="body-md">
         Date/Time:

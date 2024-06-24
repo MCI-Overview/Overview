@@ -12,12 +12,15 @@ import LoadingRequestButton from "../../components/LoadingRequestButton";
 import axios from "axios";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
+import { useRequestContext } from "../../providers/requestContextProvider";
 
 export default function RequestLeaveForm({
   setIsOpen,
 }: {
   setIsOpen: (isOpen: boolean) => void;
 }) {
+  const { updateRequest } = useRequestContext();
+
   const [type, setType] = useState("UNPAID_LEAVE");
   const [duration, setDuration] = useState("FULL");
   const [reason, setReason] = useState("");
@@ -59,6 +62,7 @@ export default function RequestLeaveForm({
 
       if (response.status === 200) {
         setIsOpen(false);
+        updateRequest();
         toast.success("Leave request submitted successfully");
       }
     } catch (error) {

@@ -13,12 +13,15 @@ import {
   Sheet,
 } from "@mui/joy";
 import FileUpload from "../../components/FileUpload";
+import { useRequestContext } from "../../providers/requestContextProvider";
 
 export default function MedicalLeaveForm({
   setIsOpen,
 }: {
   setIsOpen: (isOpen: boolean) => void;
 }) {
+  const { updateRequest } = useRequestContext();
+
   const [startDate, setStartDate] = useState<string>(
     dayjs().format("YYYY-MM-DD"),
   );
@@ -56,6 +59,7 @@ export default function MedicalLeaveForm({
 
       if (response.status === 200) {
         setIsOpen(false);
+        updateRequest();
         toast.success("Leave request submitted successfully");
       }
     } catch (error) {

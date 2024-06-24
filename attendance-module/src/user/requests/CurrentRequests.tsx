@@ -9,61 +9,28 @@ import {
   Sheet,
   Typography,
   ColorPaletteProp,
-  Dropdown,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItem,
   Box,
+  Stack,
+  Tooltip,
 } from "@mui/joy";
 import {
   PendingRounded as PendingIcon,
   BlockRounded as BlockIcon,
   AutorenewRounded as AutorenewIcon,
   CheckRounded as CheckIcon,
-  MoreHorizRounded as MoreHorizIcon,
 } from "@mui/icons-material";
+import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
+import LoadingRequestIconButton from "../../components/LoadingRequestIconButton";
+import { useRequestContext } from "../../providers/requestContextProvider";
 
-// TODO: Add viewing and editing of requests
-function RowMenu({
-  requestCuid,
-  getCurrentRequests,
-}: {
-  requestCuid: string;
-  getCurrentRequests: () => void;
-}) {
-  function handleCancel() {
-    axios
-      .post("/api/user/request/cancel", { requestCuid })
-      .then(() => getCurrentRequests());
+// TODO: Add editing of requests
+const CurrentRequests = () => {
+  const { requests: data, updateRequest } = useRequestContext();
+
+  async function cancelRequest(requestCuid: string) {
+    axios.post("/api/user/request/cancel", { requestCuid }).then(updateRequest);
   }
-  return (
-    <>
-      <Dropdown>
-        <MenuButton
-          slots={{ root: IconButton }}
-          slotProps={{
-            root: { variant: "plain", color: "neutral", size: "sm" },
-          }}
-        >
-          <MoreHorizIcon />
-        </MenuButton>
-        <Menu size="sm" sx={{ minWidth: 140 }}>
-          {/* <MenuItem>View / Edit</MenuItem> */}
-          <MenuItem onClick={handleCancel}>Cancel</MenuItem>
-        </Menu>
-      </Dropdown>
-    </>
-  );
-}
 
-const CurrentRequests = ({
-  data,
-  getCurrentRequests,
-}: {
-  data: CustomRequest[] | null;
-  getCurrentRequests: () => void;
-}) => {
   return (
     <>
       <Sheet
@@ -94,11 +61,16 @@ const CurrentRequests = ({
         >
           <thead>
             <tr>
-              <th style={{ width: 120, padding: "12px 6px" }}>Date</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Project</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Status</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Type</th>
-              <th style={{ width: 40, padding: "12px 6px" }}> </th>
+              <th style={{ padding: "12px 6px" }}>Date</th>
+              <th style={{ padding: "12px 6px" }}>Project</th>
+              <th style={{ padding: "12px 6px" }}>Type</th>
+              <th style={{ padding: "12px 6px" }}>Status</th>
+              <th
+                style={{
+                  padding: "12px 6px",
+                  whiteSpace: "nowrap",
+                }}
+              />
             </tr>
           </thead>
           <tbody>
@@ -113,6 +85,11 @@ const CurrentRequests = ({
                   <td>
                     <Typography level="body-xs">
                       {row.Assign.Project && row.Assign.Project.name}
+                    </Typography>
+                  </td>
+                  <td>
+                    <Typography level="body-xs">
+                      {readableEnum(row.type)}
                     </Typography>
                   </td>
                   <td>
@@ -140,23 +117,34 @@ const CurrentRequests = ({
                     </Chip>
                   </td>
                   <td>
-                    <Typography level="body-xs">
-                      {readableEnum(row.type)}
-                    </Typography>
-                  </td>
-                  <td>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <RowMenu
-                        requestCuid={row.cuid}
-                        getCurrentRequests={getCurrentRequests}
-                      />
+                      <td>
+                        <Stack direction="row" gap={1}>
+                          <ViewDetailsModal
+                            data={row}
+                            type="USER"
+                            variant="DESKTOP"
+                          />
+                          {row.status === "PENDING" && (
+                            <>
+                              <Tooltip title="Cancel">
+                                <LoadingRequestIconButton
+                                  promise={() => cancelRequest(row.cuid)}
+                                  icon={<BlockIcon />}
+                                  color="danger"
+                                />
+                              </Tooltip>
+                            </>
+                          )}
+                        </Stack>
+                      </td>
                     </Box>
                   </td>
                 </tr>
               ))}
             {data && data.length === 0 && (
               <tr>
-                <td colSpan={4}>
+                <td colSpan={5}>
                   <Typography level="body-md" sx={{ textAlign: "center" }}>
                     No current request found
                   </Typography>

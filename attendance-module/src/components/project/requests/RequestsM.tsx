@@ -16,14 +16,13 @@ import {
 } from "@mui/icons-material";
 import { CustomRequest } from "../../../types";
 import dayjs from "dayjs";
-
-interface RequestHistoryMProps {
-  data: CustomRequest[] | null;
-}
+import { useRequestContext } from "../../../providers/requestContextProvider";
+import { readableEnum } from "../../../utils/capitalize";
 
 // TODO: Add button to view details and approve/reject requests on mobile
 
-const RequestHistoryM = ({ data }: RequestHistoryMProps) => {
+const RequestHistoryM = () => {
+  const { requests: data } = useRequestContext();
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
       {data &&
@@ -63,7 +62,9 @@ const RequestHistoryM = ({ data }: RequestHistoryMProps) => {
                       {dayjs(listItem.createdAt).format("DD MMM YYYY")}
                     </Typography>
                     <Typography level="body-xs">&bull;</Typography>
-                    <Typography level="body-xs">{listItem.type}</Typography>
+                    <Typography level="body-xs">
+                      {readableEnum(listItem.type)}
+                    </Typography>
                   </Box>
                 </div>
               </ListItemContent>
@@ -87,7 +88,7 @@ const RequestHistoryM = ({ data }: RequestHistoryMProps) => {
                   }[listItem.status || "UPCOMING"] as ColorPaletteProp
                 }
               >
-                {listItem.status || "NO_SHOW"}
+                {readableEnum(listItem.status || "NO_SHOW")}
               </Chip>
             </ListItem>
             <ListDivider />

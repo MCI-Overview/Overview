@@ -2,19 +2,26 @@ import { CustomRequest } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
 import dayjs from "dayjs";
 
-import { Chip, Table, Sheet, Typography, ColorPaletteProp } from "@mui/joy";
+import {
+  Chip,
+  Table,
+  Sheet,
+  Typography,
+  ColorPaletteProp,
+  Box,
+  Stack,
+} from "@mui/joy";
 import {
   PendingRounded as PendingIcon,
   BlockRounded as BlockIcon,
   AutorenewRounded as AutorenewIcon,
   CheckRounded as CheckIcon,
 } from "@mui/icons-material";
+import { useRequestContext } from "../../providers/requestContextProvider";
+import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
 
-interface RequestHistoryProps {
-  data: CustomRequest[] | null;
-}
-
-const RequestHistory = ({ data }: RequestHistoryProps) => {
+const RequestHistory = () => {
+  const { requests: data } = useRequestContext();
   return (
     <>
       <Sheet
@@ -45,10 +52,16 @@ const RequestHistory = ({ data }: RequestHistoryProps) => {
         >
           <thead>
             <tr>
-              <th style={{ width: 120, padding: "12px 6px" }}>Date</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Project</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Type</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Status</th>
+              <th style={{ padding: "12px 6px" }}>Date</th>
+              <th style={{ padding: "12px 6px" }}>Project</th>
+              <th style={{ padding: "12px 6px" }}>Type</th>
+              <th style={{ padding: "12px 6px" }}>Status</th>
+              <th
+                style={{
+                  padding: "12px 6px",
+                  whiteSpace: "nowrap",
+                }}
+              />
             </tr>
           </thead>
           <tbody>
@@ -66,7 +79,9 @@ const RequestHistory = ({ data }: RequestHistoryProps) => {
                     </Typography>
                   </td>
                   <td>
-                    <Typography level="body-xs">{row.type}</Typography>
+                    <Typography level="body-xs">
+                      {readableEnum(row.type)}
+                    </Typography>
                   </td>
                   <td>
                     <Chip
@@ -93,15 +108,23 @@ const RequestHistory = ({ data }: RequestHistoryProps) => {
                     </Chip>
                   </td>
                   <td>
-                    <Typography level="body-xs">
-                      {readableEnum(row.type)}
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <td>
+                        <Stack direction="row" gap={1}>
+                          <ViewDetailsModal
+                            data={row}
+                            type="USER"
+                            variant="DESKTOP"
+                          />
+                        </Stack>
+                      </td>
+                    </Box>
                   </td>
                 </tr>
               ))}
             {data && data.length === 0 && (
               <tr>
-                <td colSpan={4}>
+                <td colSpan={5}>
                   <Typography level="body-md" sx={{ textAlign: "center" }}>
                     No request history found
                   </Typography>

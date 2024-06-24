@@ -1,9 +1,10 @@
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { prisma, s3, upload } from "../../../client";
 import { RequestType, User } from "@prisma/client";
 import { Router } from "express";
 import dayjs from "dayjs";
 import { randomUUID } from "crypto";
+import { Readable } from "stream";
 
 const requestAPIRouter = Router();
 
@@ -31,6 +32,11 @@ requestAPIRouter.get("/requests/current", async (req, res) => {
       include: {
         Assign: {
           select: {
+            Candidate: {
+              select: {
+                name: true,
+              },
+            },
             Project: {
               select: {
                 name: true,
@@ -373,6 +379,166 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
     return res.send("MC request submitted successfully");
   } catch (error) {
     console.error("Error while submitting MC request:", error);
+    return res.status(500).send("Internal server error");
+  }
+});
+
+requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
+  const user = req.user as User;
+  const { requestCuid } = req.params;
+
+  const request = await prisma.request.findUniqueOrThrow({
+    where: {
+      cuid: requestCuid,
+      candidateCuid: user.cuid,
+    },
+    select: {
+      data: true,
+      type: true,
+    },
+  });
+
+  if (request.type === "CLAIM") {
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME!,
+      Key: `receipt/${requestCuid}`,
+    });
+
+    const response = await s3.send(command);
+    if (response.Body instanceof Readable) {
+      return response.Body.pipe(res);
+    } else {
+      return res.status(500).send("Unexpected response body type");
+    }
+  }
+
+  if (request.type === "MEDICAL_LEAVE") {
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME!,
+      Key: `mc/${
+        (
+          request.data as {
+            imageUUID: string;
+          }
+        ).imageUUID
+      }`,
+    });
+
+    const response = await s3.send(command);
+    if (response.Body instanceof Readable) {
+      return response.Body.pipe(res);
+    } else {
+      return res.status(500).send("Unexpected response body type");
+    }
+  }
+
+  return res.status(400).send("No image found for this request.");
+});
+
+requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
+  const user = req.user as User;
+  const { requestCuid } = req.params;
+
+  try {
+    const request = await prisma.request.findUniqueOrThrow({
+      where: {
+        cuid: requestCuid,
+        candidateCuid: user.cuid,
+      },
+      select: {
+        candidateCuid: true,
+        projectCuid: true,
+        data: true,
+        type: true,
+      },
+    });
+
+    if (request.type === "RESIGNATION") {
+      return res.status(404).send("No roster details found for this request.");
+    }
+
+    if (request.type === "MEDICAL_LEAVE") {
+      const affectedRosterData = await prisma.attendance.findMany({
+        where: {
+          candidateCuid: request.candidateCuid,
+          OR: [
+            {
+              status: null,
+            },
+            {
+              status: "NO_SHOW",
+            },
+          ],
+          shiftDate: {
+            gte: dayjs(
+              (
+                request.data as {
+                  startDate: string;
+                }
+              ).startDate,
+            ).toDate(),
+            lte: dayjs(
+              (
+                request.data as {
+                  startDate: string;
+                }
+              ).startDate,
+            )
+              .add(
+                parseInt(
+                  (
+                    request.data as {
+                      numberOfDays: string;
+                    }
+                  ).numberOfDays,
+                  10,
+                ) - 1,
+                "day",
+              )
+              .endOf("day")
+              .toDate(),
+          },
+          Shift: {
+            projectCuid: request.projectCuid,
+          },
+        },
+        include: {
+          Shift: true,
+        },
+      });
+
+      return res.json(affectedRosterData);
+    }
+
+    if (request.type === "CLAIM") {
+      const claimRosterData = await prisma.attendance.findUniqueOrThrow({
+        where: {
+          cuid: (request.data as { claimRosterCuid: string }).claimRosterCuid,
+        },
+        include: {
+          Shift: true,
+        },
+      });
+
+      return res.json(claimRosterData);
+    }
+
+    if (request.type === "UNPAID_LEAVE" || request.type === "PAID_LEAVE") {
+      const leaveRosterData = await prisma.attendance.findUniqueOrThrow({
+        where: {
+          cuid: (request.data as { leaveRosterCuid: string }).leaveRosterCuid,
+        },
+        include: {
+          Shift: true,
+        },
+      });
+
+      return res.json(leaveRosterData);
+    }
+
+    return res.status(400).send("No roster details found for this request.");
+  } catch (error) {
+    console.error("Error while fetching roster details:", error);
     return res.status(500).send("Internal server error");
   }
 });

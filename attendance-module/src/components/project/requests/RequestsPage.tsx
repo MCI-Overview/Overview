@@ -9,79 +9,45 @@ import {
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
 } from "@mui/icons-material";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { CustomRequest } from "../../../types";
 import axios from "axios";
-import dayjs from "dayjs";
 
 import RequestHistory from "./Requests";
 import RequestHistoryM from "./RequestsM";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-
-type Page = {
-  isFirstPage: boolean;
-  isLastPage: boolean;
-  currentPage: number;
-  previousPage: number | null;
-  nextPage: number | null;
-  pageCount: number;
-  totalCount: number;
-};
+import { RequestContextProvider } from "../../../providers/requestContextProvider";
 
 // TODO: Add filtering per request status and request type
 const RequestsPage = () => {
-  const [data, setData] = useState<CustomRequest[] | null>(null);
-  const [page, setPage] = useState<Page>({
-    isFirstPage: true,
-    isLastPage: true,
-    currentPage: 1,
-    previousPage: null,
-    nextPage: null,
-    pageCount: 1,
-    totalCount: 0,
-  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [maxPage, setMaxPage] = useState(1);
   const { project } = useProjectContext();
 
-  const fetchUpcomingShifts = useCallback(
-    async (page: number, date?: string) => {
-      try {
-        let url = `/api/admin/project/${project?.cuid}/requests/${page}`;
-        if (date) {
-          const formattedDate = dayjs(date).format(
-            "YYYY-MM-DDTHH:mm:ss.SSS[Z]",
-          );
-          url += `?date=${formattedDate}`;
-        }
-        const response = await axios.get(url);
-        const [fetchedData, paginationData] = response.data;
-        setData(fetchedData);
-        setPage(paginationData);
-      } catch (error) {
-        console.error("Error fetching upcoming shifts: ", error);
-      }
-    },
-    [project],
-  );
+  const isFirstPage = currentPage === 1;
+  const isLastPage = currentPage === maxPage;
 
-  useEffect(() => {
-    fetchUpcomingShifts(page.currentPage);
-  }, [page.currentPage, fetchUpcomingShifts]);
+  const fetchUpcomingShifts = useCallback(async () => {
+    try {
+      const url = `/api/admin/project/${project?.cuid}/requests/${currentPage}`;
+
+      const response = await axios.get(url);
+      const [fetchedData, paginationData] = response.data;
+      setMaxPage(paginationData.pageCount);
+      return fetchedData as CustomRequest[];
+    } catch (error) {
+      console.error("Error fetching upcoming shifts: ", error);
+      return [];
+    }
+  }, [currentPage, project?.cuid]);
 
   const handleNextPage = () => {
-    if (!page.isLastPage && page.nextPage !== null) {
-      fetchUpcomingShifts(page.nextPage);
-    }
+    setCurrentPage((prev) => prev + 1);
   };
 
   const handlePreviousPage = () => {
-    if (!page.isFirstPage && page.previousPage !== null) {
-      fetchUpcomingShifts(page.previousPage);
-    }
+    setCurrentPage((prev) => prev - 1);
   };
-
-  useEffect(() => {
-    fetchUpcomingShifts(page.currentPage);
-  }, [fetchUpcomingShifts, page.currentPage]);
 
   return (
     <CssVarsProvider disableTransitionOnChange>
@@ -100,13 +66,12 @@ const RequestsPage = () => {
             gap: 1,
           }}
         >
-          <RequestHistory
-            data={data}
-            getCurrentRequests={() => fetchUpcomingShifts(page.currentPage)}
-          />
-          <RequestHistoryM data={data} />
+          <RequestContextProvider updateFunction={() => fetchUpcomingShifts()}>
+            <RequestHistory />
+            <RequestHistoryM />
+          </RequestContextProvider>
 
-          {page.pageCount > 1 && (
+          {maxPage > 1 && (
             <Box
               className="Pagination-laptopUp"
               sx={{
@@ -125,14 +90,14 @@ const RequestsPage = () => {
                 color="neutral"
                 startDecorator={<KeyboardArrowLeftIcon />}
                 onClick={handlePreviousPage}
-                disabled={page.isFirstPage}
+                disabled={isFirstPage}
               >
                 Previous
               </Button>
 
               <Box sx={{ flex: 1 }} />
               <Button size="sm" variant="outlined" color="neutral">
-                {page.currentPage} / {page.pageCount}
+                {currentPage} / {maxPage}
               </Button>
               <Box sx={{ flex: 1 }} />
 
@@ -142,7 +107,7 @@ const RequestsPage = () => {
                 color="neutral"
                 endDecorator={<KeyboardArrowRightIcon />}
                 onClick={handleNextPage}
-                disabled={page.isLastPage}
+                disabled={isLastPage}
               >
                 Next
               </Button>
