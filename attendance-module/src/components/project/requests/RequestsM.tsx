@@ -17,6 +17,7 @@ import {
 import { CustomRequest } from "../../../types";
 import dayjs from "dayjs";
 import { useRequestContext } from "../../../providers/requestContextProvider";
+import { readableEnum } from "../../../utils/capitalize";
 
 // TODO: Add button to view details and approve/reject requests on mobile
 
@@ -61,7 +62,9 @@ const RequestHistoryM = () => {
                       {dayjs(listItem.createdAt).format("DD MMM YYYY")}
                     </Typography>
                     <Typography level="body-xs">&bull;</Typography>
-                    <Typography level="body-xs">{listItem.type}</Typography>
+                    <Typography level="body-xs">
+                      {readableEnum(listItem.type)}
+                    </Typography>
                   </Box>
                 </div>
               </ListItemContent>
@@ -85,7 +88,7 @@ const RequestHistoryM = () => {
                   }[listItem.status || "UPCOMING"] as ColorPaletteProp
                 }
               >
-                {listItem.status || "NO_SHOW"}
+                {readableEnum(listItem.status || "NO_SHOW")}
               </Chip>
             </ListItem>
             <ListDivider />
