@@ -9,8 +9,9 @@ import { CircularProgress, CssBaseline, Box, CssVarsProvider } from "@mui/joy";
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import axios from "axios";
-import dayjs from "dayjs";
 import axiosRetry from "axios-retry";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
 import isBetween from "dayjs/plugin/isBetween";
 
@@ -35,6 +36,7 @@ import Project from "./admin/Project";
 
 dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
+dayjs.extend(utc);
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -107,7 +109,10 @@ function App() {
                       <Route path="/user/new" element={<UserNew />} />
                       <Route path="/user/home" element={<UserHome />} />
                       <Route path="/user/requests" element={<UserRequests />} />
-                      <Route path="/user/profile" element={<CandidateProfile />} />
+                      <Route
+                        path="/user/profile"
+                        element={<CandidateProfile />}
+                      />
                       <Route path="/user/shifts" element={<UserShifts />} />
                       <Route path="/user/projects" element={<UserProjects />} />
                     </Route>
