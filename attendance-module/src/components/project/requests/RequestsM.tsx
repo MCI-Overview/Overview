@@ -16,14 +16,12 @@ import {
 } from "@mui/icons-material";
 import { CustomRequest } from "../../../types";
 import dayjs from "dayjs";
-
-interface RequestHistoryMProps {
-  data: CustomRequest[] | null;
-}
+import { useRequestContext } from "../../../providers/requestContextProvider";
 
 // TODO: Add button to view details and approve/reject requests on mobile
 
-const RequestHistoryM = ({ data }: RequestHistoryMProps) => {
+const RequestHistoryM = () => {
+  const { requests: data } = useRequestContext();
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
       {data &&

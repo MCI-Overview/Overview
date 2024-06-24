@@ -12,11 +12,11 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { CustomRequest } from "../../../types";
 import axios from "axios";
-import dayjs from "dayjs";
 
 import RequestHistory from "./Requests";
 import RequestHistoryM from "./RequestsM";
 import { useProjectContext } from "../../../providers/projectContextProvider";
+import { RequestContextProvider } from "../../../providers/requestContextProvider";
 
 type Page = {
   isFirstPage: boolean;
@@ -30,7 +30,6 @@ type Page = {
 
 // TODO: Add filtering per request status and request type
 const RequestsPage = () => {
-  const [data, setData] = useState<CustomRequest[] | null>(null);
   const [page, setPage] = useState<Page>({
     isFirstPage: true,
     isLastPage: true,
@@ -43,21 +42,18 @@ const RequestsPage = () => {
   const { project } = useProjectContext();
 
   const fetchUpcomingShifts = useCallback(
-    async (page: number, date?: string) => {
+    async (page: number) => {
       try {
-        let url = `/api/admin/project/${project?.cuid}/requests/${page}`;
-        if (date) {
-          const formattedDate = dayjs(date).format(
-            "YYYY-MM-DDTHH:mm:ss.SSS[Z]",
-          );
-          url += `?date=${formattedDate}`;
-        }
+        const url = `/api/admin/project/${project?.cuid}/requests/${page}`;
+
         const response = await axios.get(url);
         const [fetchedData, paginationData] = response.data;
-        setData(fetchedData);
         setPage(paginationData);
+
+        return fetchedData as CustomRequest[];
       } catch (error) {
         console.error("Error fetching upcoming shifts: ", error);
+        return [];
       }
     },
     [project],
@@ -69,19 +65,21 @@ const RequestsPage = () => {
 
   const handleNextPage = () => {
     if (!page.isLastPage && page.nextPage !== null) {
-      fetchUpcomingShifts(page.nextPage);
+      setPage((prev) => ({
+        ...prev,
+        currentPage: prev.nextPage || prev.currentPage,
+      }));
     }
   };
 
   const handlePreviousPage = () => {
     if (!page.isFirstPage && page.previousPage !== null) {
-      fetchUpcomingShifts(page.previousPage);
+      setPage((prev) => ({
+        ...prev,
+        currentPage: prev.previousPage || prev.currentPage,
+      }));
     }
   };
-
-  useEffect(() => {
-    fetchUpcomingShifts(page.currentPage);
-  }, [fetchUpcomingShifts, page.currentPage]);
 
   return (
     <CssVarsProvider disableTransitionOnChange>
@@ -100,11 +98,12 @@ const RequestsPage = () => {
             gap: 1,
           }}
         >
-          <RequestHistory
-            data={data}
-            getCurrentRequests={() => fetchUpcomingShifts(page.currentPage)}
-          />
-          <RequestHistoryM data={data} />
+          <RequestContextProvider
+            updateFunction={() => fetchUpcomingShifts(page.currentPage)}
+          >
+            <RequestHistory />
+            <RequestHistoryM />
+          </RequestContextProvider>
 
           {page.pageCount > 1 && (
             <Box

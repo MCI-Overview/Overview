@@ -17,23 +17,22 @@ import dayjs from "dayjs";
 import axios from "axios";
 import ViewDetailsModal from "../../common/request/ViewDetailsModal";
 import LoadingRequestIconButton from "../../LoadingRequestIconButton";
+import { useRequestContext } from "../../../providers/requestContextProvider";
+import { readableEnum } from "../../../utils/capitalize";
 
-interface RequestHistoryProps {
-  data: CustomRequest[] | null;
-  getCurrentRequests: () => void;
-}
+const RequestHistory = () => {
+  const { requests: data, updateRequest } = useRequestContext();
 
-const RequestHistory = ({ data, getCurrentRequests }: RequestHistoryProps) => {
   async function approveRequest(requestCuid: string) {
     axios
       .post(`/api/admin/request/${requestCuid}/approve`)
-      .then(() => getCurrentRequests());
+      .then(() => updateRequest());
   }
 
   async function rejectRequest(requestCuid: string) {
     axios
       .post(`/api/admin/request/${requestCuid}/reject`)
-      .then(() => getCurrentRequests());
+      .then(() => updateRequest());
   }
 
   return (
@@ -66,11 +65,11 @@ const RequestHistory = ({ data, getCurrentRequests }: RequestHistoryProps) => {
         >
           <thead>
             <tr>
-              <th style={{ width: 100, padding: "12px 6px" }}>Date</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Name</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Type</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Status</th>
-              <th style={{ width: 100, padding: "12px 6px" }} />
+              <th style={{ padding: "12px 6px" }}>Date</th>
+              <th style={{ padding: "12px 6px" }}>Name</th>
+              <th style={{ padding: "12px 6px" }}>Type</th>
+              <th style={{ padding: "12px 6px" }}>Status</th>
+              <th style={{ padding: "12px 6px" }} />
             </tr>
           </thead>
           <tbody>
@@ -88,7 +87,9 @@ const RequestHistory = ({ data, getCurrentRequests }: RequestHistoryProps) => {
                     </Typography>
                   </td>
                   <td>
-                    <Typography level="body-xs">{row.type}</Typography>
+                    <Typography level="body-xs">
+                      {readableEnum(row.type)}
+                    </Typography>
                   </td>
                   <td>
                     <Chip
@@ -111,12 +112,16 @@ const RequestHistory = ({ data, getCurrentRequests }: RequestHistoryProps) => {
                         }[row.status || "UPCOMING"] as ColorPaletteProp
                       }
                     >
-                      {row.status || "UPCOMING"}
+                      {readableEnum(row.status || "UPCOMING")}
                     </Chip>
                   </td>
                   <td>
                     <Stack direction="row" gap={1}>
-                      <ViewDetailsModal data={row} type="ADMIN" />
+                      <ViewDetailsModal
+                        data={row}
+                        type="ADMIN"
+                        variant="DESKTOP"
+                      />
                       {row.status === "PENDING" && (
                         <>
                           <LoadingRequestIconButton
