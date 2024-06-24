@@ -26,20 +26,20 @@ export function RequestContextProvider({
   const [requests, setRequests] = useState<CustomRequest[] | null>(null);
 
   const updateRequest = useCallback(() => {
-    updateFunction().then((data) => setRequests(data));
+    updateFunction().then((data) => {
+      setRequests(data);
+    });
   }, [updateFunction]);
 
   useEffect(() => {
-    if (!requests) {
-      updateRequest();
-    }
-  }, [requests, updateRequest]);
+    updateRequest();
+  }, [updateRequest]);
 
   return (
     <RequestContext.Provider
       value={{
-        requests: requests,
-        updateRequest: updateRequest,
+        requests,
+        updateRequest,
       }}
     >
       {children}

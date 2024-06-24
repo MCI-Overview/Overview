@@ -9,7 +9,7 @@ import {
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
 } from "@mui/icons-material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CustomRequest } from "../../types";
 import axios from "axios";
 
@@ -17,34 +17,20 @@ import RequestHistory from "./RequestHistory";
 import RequestHistoryM from "./RequestHistoryM";
 import { RequestContextProvider } from "../../providers/requestContextProvider";
 
-type Page = {
-  isFirstPage: boolean;
-  isLastPage: boolean;
-  currentPage: number;
-  previousPage: number | null;
-  nextPage: number | null;
-  pageCount: number;
-  totalCount: number;
-};
-
 // TODO: Add filtering per request status and request type
 const ViewRequestHistory = () => {
-  const [page, setPage] = useState<Page>({
-    isFirstPage: true,
-    isLastPage: true,
-    currentPage: 1,
-    previousPage: null,
-    nextPage: null,
-    pageCount: 1,
-    totalCount: 0,
-  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [maxPage, setMaxPage] = useState(1);
+
+  const isFirstPage = currentPage === 1;
+  const isLastPage = currentPage === maxPage;
 
   const fetchUpcomingShifts = async (page: number) => {
     try {
       const url = `/api/user/requests/history/${page}`;
       const response = await axios.get(url);
       const [fetchedData, paginationData] = response.data;
-      setPage(paginationData);
+      setMaxPage(paginationData.pageCount);
 
       return fetchedData as CustomRequest[];
     } catch (error) {
@@ -53,26 +39,12 @@ const ViewRequestHistory = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUpcomingShifts(page.currentPage);
-  }, [page.currentPage]);
-
   const handleNextPage = () => {
-    if (!page.isLastPage && page.nextPage !== null) {
-      setPage((prev) => ({
-        ...prev,
-        currentPage: prev.nextPage || prev.currentPage,
-      }));
-    }
+    setCurrentPage((prev) => prev + 1);
   };
 
   const handlePreviousPage = () => {
-    if (!page.isFirstPage && page.previousPage !== null) {
-      setPage((prev) => ({
-        ...prev,
-        currentPage: prev.previousPage || prev.currentPage,
-      }));
-    }
+    setCurrentPage((prev) => prev - 1);
   };
 
   return (
@@ -93,13 +65,13 @@ const ViewRequestHistory = () => {
           }}
         >
           <RequestContextProvider
-            updateFunction={() => fetchUpcomingShifts(page.currentPage)}
+            updateFunction={() => fetchUpcomingShifts(currentPage)}
           >
             <RequestHistory />
             <RequestHistoryM />
           </RequestContextProvider>
 
-          {page.pageCount > 1 && (
+          {maxPage > 1 && (
             <Box
               className="Pagination-laptopUp"
               sx={{
@@ -118,14 +90,14 @@ const ViewRequestHistory = () => {
                 color="neutral"
                 startDecorator={<KeyboardArrowLeftIcon />}
                 onClick={handlePreviousPage}
-                disabled={page.isFirstPage}
+                disabled={isFirstPage}
               >
                 Previous
               </Button>
 
               <Box sx={{ flex: 1 }} />
               <Button size="sm" variant="outlined" color="neutral">
-                {page.currentPage} / {page.pageCount}
+                {currentPage} / {maxPage}
               </Button>
               <Box sx={{ flex: 1 }} />
 
@@ -135,7 +107,7 @@ const ViewRequestHistory = () => {
                 color="neutral"
                 endDecorator={<KeyboardArrowRightIcon />}
                 onClick={handleNextPage}
-                disabled={page.isLastPage}
+                disabled={isLastPage}
               >
                 Next
               </Button>

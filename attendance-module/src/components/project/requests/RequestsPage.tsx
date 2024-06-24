@@ -9,7 +9,7 @@ import {
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
 } from "@mui/icons-material";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { CustomRequest } from "../../../types";
 import axios from "axios";
 
@@ -18,67 +18,35 @@ import RequestHistoryM from "./RequestsM";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { RequestContextProvider } from "../../../providers/requestContextProvider";
 
-type Page = {
-  isFirstPage: boolean;
-  isLastPage: boolean;
-  currentPage: number;
-  previousPage: number | null;
-  nextPage: number | null;
-  pageCount: number;
-  totalCount: number;
-};
-
 // TODO: Add filtering per request status and request type
 const RequestsPage = () => {
-  const [page, setPage] = useState<Page>({
-    isFirstPage: true,
-    isLastPage: true,
-    currentPage: 1,
-    previousPage: null,
-    nextPage: null,
-    pageCount: 1,
-    totalCount: 0,
-  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [maxPage, setMaxPage] = useState(1);
   const { project } = useProjectContext();
 
-  const fetchUpcomingShifts = useCallback(
-    async (page: number) => {
-      try {
-        const url = `/api/admin/project/${project?.cuid}/requests/${page}`;
+  const isFirstPage = currentPage === 1;
+  const isLastPage = currentPage === maxPage;
 
-        const response = await axios.get(url);
-        const [fetchedData, paginationData] = response.data;
-        setPage(paginationData);
+  const fetchUpcomingShifts = useCallback(async () => {
+    try {
+      const url = `/api/admin/project/${project?.cuid}/requests/${currentPage}`;
 
-        return fetchedData as CustomRequest[];
-      } catch (error) {
-        console.error("Error fetching upcoming shifts: ", error);
-        return [];
-      }
-    },
-    [project],
-  );
-
-  useEffect(() => {
-    fetchUpcomingShifts(page.currentPage);
-  }, [page.currentPage, fetchUpcomingShifts]);
+      const response = await axios.get(url);
+      const [fetchedData, paginationData] = response.data;
+      setMaxPage(paginationData.pageCount);
+      return fetchedData as CustomRequest[];
+    } catch (error) {
+      console.error("Error fetching upcoming shifts: ", error);
+      return [];
+    }
+  }, [currentPage, project?.cuid]);
 
   const handleNextPage = () => {
-    if (!page.isLastPage && page.nextPage !== null) {
-      setPage((prev) => ({
-        ...prev,
-        currentPage: prev.nextPage || prev.currentPage,
-      }));
-    }
+    setCurrentPage((prev) => prev + 1);
   };
 
   const handlePreviousPage = () => {
-    if (!page.isFirstPage && page.previousPage !== null) {
-      setPage((prev) => ({
-        ...prev,
-        currentPage: prev.previousPage || prev.currentPage,
-      }));
-    }
+    setCurrentPage((prev) => prev - 1);
   };
 
   return (
@@ -98,14 +66,12 @@ const RequestsPage = () => {
             gap: 1,
           }}
         >
-          <RequestContextProvider
-            updateFunction={() => fetchUpcomingShifts(page.currentPage)}
-          >
+          <RequestContextProvider updateFunction={() => fetchUpcomingShifts()}>
             <RequestHistory />
             <RequestHistoryM />
           </RequestContextProvider>
 
-          {page.pageCount > 1 && (
+          {maxPage > 1 && (
             <Box
               className="Pagination-laptopUp"
               sx={{
@@ -124,14 +90,14 @@ const RequestsPage = () => {
                 color="neutral"
                 startDecorator={<KeyboardArrowLeftIcon />}
                 onClick={handlePreviousPage}
-                disabled={page.isFirstPage}
+                disabled={isFirstPage}
               >
                 Previous
               </Button>
 
               <Box sx={{ flex: 1 }} />
               <Button size="sm" variant="outlined" color="neutral">
-                {page.currentPage} / {page.pageCount}
+                {currentPage} / {maxPage}
               </Button>
               <Box sx={{ flex: 1 }} />
 
@@ -141,7 +107,7 @@ const RequestsPage = () => {
                 color="neutral"
                 endDecorator={<KeyboardArrowRightIcon />}
                 onClick={handleNextPage}
-                disabled={page.isLastPage}
+                disabled={isLastPage}
               >
                 Next
               </Button>
