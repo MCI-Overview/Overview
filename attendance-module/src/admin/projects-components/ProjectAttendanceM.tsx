@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { CustomAdminAttendance } from "../../types";
+import { readableEnum } from "../../utils/capitalize";
 
 import {
   Box,
@@ -19,7 +20,7 @@ import {
   BlockRounded as BlockIcon,
   CheckRounded as CheckIcon,
   QueryBuilderRounded as QueryBuilderIcon,
-  MedicalServicesRounded as MedicalServicesIcon,
+  MedicalServicesOutlined as MedicalServicesIcon,
   MoreHorizRounded as MoreHorizIcon,
 } from "@mui/icons-material";
 import { ColorPaletteProp } from "@mui/joy/styles";
@@ -49,7 +50,14 @@ const ProjectAttendanceM: React.FC<Props> = ({ data }) => {
 
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
-      {attendanceData &&
+      {attendanceData.length == 0 ? (
+        <Typography
+          level="body-xs"
+          sx={{ display: "flex", justifyContent: "center", py: 2 }}
+        >
+          No candidates found.
+        </Typography>
+      ) : (
         attendanceData.map((listItem: CustomAdminAttendance) => (
           <List
             key={listItem.attendanceCuid}
@@ -68,7 +76,7 @@ const ProjectAttendanceM: React.FC<Props> = ({ data }) => {
               <ListItemContent
                 sx={{ display: "flex", gap: 2, alignItems: "start" }}
               >
-                <div>
+                <Box>
                   <Typography fontWeight={600} gutterBottom>
                     {dayjs(listItem.date).format("DD MMM YYYY")}
                   </Typography>
@@ -110,7 +118,7 @@ const ProjectAttendanceM: React.FC<Props> = ({ data }) => {
                   >
                     <RowMenu />
                   </Box>
-                </div>
+                </Box>
               </ListItemContent>
               <Chip
                 variant="soft"
@@ -132,12 +140,13 @@ const ProjectAttendanceM: React.FC<Props> = ({ data }) => {
                   }[listItem.status || "NO_SHOW"] as ColorPaletteProp
                 }
               >
-                {listItem.status || "NO_SHOW"}
+                {readableEnum(listItem.status || "NO_SHOW")}
               </Chip>
             </ListItem>
             <ListDivider />
           </List>
-        ))}
+        ))
+      )}
     </Box>
   );
 };

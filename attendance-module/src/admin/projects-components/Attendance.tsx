@@ -3,10 +3,19 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { CustomAdminAttendance } from "../../types";
 import { useProjectContext } from "../../providers/projectContextProvider";
+
 import ProjectAttendance from "./ProjectAttendance";
 import ProjectAttendanceM from "./ProjectAttendanceM";
 
-import { Box, FormControl, FormLabel, Input, Option, Select } from "@mui/joy";
+import {
+  Box,
+  FormControl,
+  FormLabel,
+  Grid,
+  Input,
+  Option,
+  Select,
+} from "@mui/joy";
 import SearchIcon from "@mui/icons-material/Search";
 import CssBaseline from "@mui/joy/CssBaseline";
 import { CssVarsProvider } from "@mui/joy/styles";
@@ -76,7 +85,7 @@ const Attendance = () => {
       <Box
         sx={{
           display: "flex",
-          px: { xs: 2, md: 6 },
+          px: { md: 4 },
           pb: { xs: 2, sm: 2, md: 3 },
           flex: 1,
           flexDirection: "column",
@@ -84,66 +93,74 @@ const Attendance = () => {
           gap: 1,
         }}
       >
-        <Box
+        <Grid
           className="SearchAndFilters-tabletUp"
           sx={{
             borderRadius: "sm",
             display: "flex",
             flexWrap: "wrap",
-            gap: 1.5,
-            "& > *": {
-              minWidth: { xs: "120px", md: "160px" },
-            },
           }}
+          container
+          spacing={{ xs: 1, md: 2 }}
+          columns={{ xs: 6, sm: 12 }}
         >
-          <FormControl sx={{ flex: 1 }} size="sm">
-            <FormLabel>Search candidate</FormLabel>
-            <Input
-              size="sm"
-              placeholder="Search"
-              startDecorator={<SearchIcon />}
-              onChange={handleSearchChange}
-            />
-          </FormControl>
+          <Grid xs={4} sm={6}>
+            <FormControl sx={{ flex: 1 }} size="sm">
+              <FormLabel>Search candidate</FormLabel>
+              <Input
+                size="sm"
+                placeholder="Search"
+                startDecorator={<SearchIcon />}
+                onChange={handleSearchChange}
+                disabled={data.length === 0}
+              />
+            </FormControl>
+          </Grid>
 
-          <FormControl size="sm">
-            <FormLabel>Search from</FormLabel>
-            <Input
-              type="date"
-              size="sm"
-              value={startDate}
-              onChange={handleStartDateChange}
-            />
-          </FormControl>
+          <Grid xs={2} sm={2}>
+            <FormControl size="sm">
+              <FormLabel>Status</FormLabel>
+              <Select
+                size="sm"
+                placeholder="Filter by status"
+                onChange={(_e, value) =>
+                  handleStatusChange(value as string | null)
+                }
+                slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
+              >
+                <Option value="">All</Option>
+                <Option value="ON_TIME">On Time</Option>
+                <Option value="LATE">Late</Option>
+                <Option value="NO_SHOW">No Show</Option>
+                <Option value="MEDICAL">Medical</Option>
+              </Select>
+            </FormControl>
+          </Grid>
 
-          <FormControl size="sm">
-            <FormLabel>To</FormLabel>
-            <Input
-              type="date"
-              size="sm"
-              value={endDate}
-              onChange={handleEndDateChange}
-            />
-          </FormControl>
+          <Grid xs={3} sm={2}>
+            <FormControl size="sm">
+              <FormLabel>Search from</FormLabel>
+              <Input
+                type="date"
+                size="sm"
+                value={startDate}
+                onChange={handleStartDateChange}
+              />
+            </FormControl>
+          </Grid>
 
-          <FormControl size="sm">
-            <FormLabel>Status</FormLabel>
-            <Select
-              size="sm"
-              placeholder="Filter by status"
-              onChange={(_e, value) =>
-                handleStatusChange(value as string | null)
-              }
-              slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
-            >
-              <Option value="">All</Option>
-              <Option value="ON_TIME">On Time</Option>
-              <Option value="LATE">Late</Option>
-              <Option value="NO_SHOW">No Show</Option>
-              <Option value="MEDICAL">Medical</Option>
-            </Select>
-          </FormControl>
-        </Box>
+          <Grid xs={3} sm={2}>
+            <FormControl size="sm">
+              <FormLabel>To</FormLabel>
+              <Input
+                type="date"
+                size="sm"
+                value={endDate}
+                onChange={handleEndDateChange}
+              />
+            </FormControl>
+          </Grid>
+        </Grid>
 
         <ProjectAttendance data={filteredData} />
 

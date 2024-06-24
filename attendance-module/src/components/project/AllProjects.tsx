@@ -2,6 +2,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { FC, useState, useEffect } from "react";
 import { Project } from "../../types/index";
+import { useUserContext } from "../../providers/userContextProvider";
 import ProjectDisplay from "./ui/Project";
 
 import {
@@ -14,7 +15,6 @@ import {
   Typography,
 } from "@mui/joy";
 import { ArrowDropDown as ArrowDropDownIcon } from "@mui/icons-material";
-import { useUserContext } from "../../providers/userContextProvider";
 
 // sort by createdAt (most recent first)
 const projectComparator = (a: Project, b: Project) => {
@@ -36,8 +36,6 @@ const AllProjects: FC = () => {
 
     axios.get("/api/admin/projects/all").then((response) => {
       const allProjects = response.data as Project[];
-
-      console.log(allProjects);
 
       const projects = allProjects.filter((project) => {
         return !project.Manage.find((m) => m.consultantCuid === user.cuid);

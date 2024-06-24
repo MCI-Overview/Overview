@@ -1,4 +1,11 @@
+import axios from "axios";
+import dayjs from "dayjs";
 import { ChangeEvent, useEffect, useState } from "react";
+import { CustomAttendance } from "../../types";
+
+import AttendanceHistory from "./AttendanceHistory";
+import AttendanceHistoryM from "./AttendanceHistoryM";
+
 import {
   CssVarsProvider,
   CssBaseline,
@@ -14,12 +21,6 @@ import {
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
   SearchRounded as SearchIcon,
 } from "@mui/icons-material";
-import { CustomAttendance } from "../../types";
-import dayjs from "dayjs";
-import axios from "axios";
-
-import AttendanceHistory from "./AttendanceHistory";
-import AttendanceHistoryM from "./AttendanceHistoryM";
 
 type Page = {
   isFirstPage: boolean;
@@ -32,7 +33,7 @@ type Page = {
 };
 
 const ViewAttendance = () => {
-  const [data, setData] = useState<CustomAttendance[] | null>(null);
+  const [data, setData] = useState<CustomAttendance[]>([]);
   const [page, setPage] = useState<Page>({
     isFirstPage: true,
     isLastPage: true,
@@ -72,7 +73,7 @@ const ViewAttendance = () => {
       }
       const response = await axios.get(url);
       const [fetchedData, paginationData] = response.data;
-      setData(fetchedData);
+      setData(fetchedData || []);
       setPage(paginationData);
     } catch (error) {
       console.error("Error fetching upcoming shifts: ", error);
@@ -98,46 +99,45 @@ const ViewAttendance = () => {
   return (
     <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />
-      <Box sx={{ display: "flex" }}>
+      <Box
+        sx={{
+          display: "flex",
+          px: { md: 4 },
+          pb: { xs: 2, sm: 2, md: 3 },
+          flex: 1,
+          flexDirection: "column",
+          minWidth: 0,
+          gap: 1,
+        }}
+      >
         <Box
-          component="main"
-          className="MainContent"
+          className="SearchAndFilters-tabletUp"
           sx={{
-            px: { xs: 2, md: 6 },
-            pb: { xs: 2, sm: 2, md: 3 },
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            minWidth: 0,
-            gap: 1,
+            borderRadius: "sm",
+            flexWrap: "wrap",
+            gap: 1.5,
+            "& > *": {
+              minWidth: { xs: "120px", md: "160px" },
+            },
           }}
         >
-          <Box
-            className="SearchAndFilters-tabletUp"
-            sx={{
-              borderRadius: "sm",
-              py: 2,
-              flexWrap: "wrap",
-              gap: 1.5,
-              "& > *": {
-                minWidth: { xs: "120px", md: "160px" },
-              },
-            }}
-          >
-            <FormControl sx={{ flex: 1 }} size="sm">
-              <FormLabel>Search for shift</FormLabel>
-              <Input
-                type="date"
-                size="sm"
-                placeholder="Search"
-                startDecorator={<SearchIcon />}
-                onChange={handleDateChange}
-              />
-            </FormControl>
-          </Box>
-          <AttendanceHistory data={data} />
-          <AttendanceHistoryM data={data} />
+          <FormControl sx={{ flex: 1 }} size="sm">
+            <FormLabel>Search for shift</FormLabel>
+            <Input
+              type="date"
+              size="sm"
+              placeholder="Search"
+              startDecorator={<SearchIcon />}
+              onChange={handleDateChange}
+              disabled={data.length === 0}
+            />
+          </FormControl>
+        </Box>
 
+        <AttendanceHistory data={data} />
+        <AttendanceHistoryM data={data} />
+
+        {page.pageCount > 1 && (
           <Box
             className="Pagination-laptopUp"
             sx={{
@@ -178,7 +178,7 @@ const ViewAttendance = () => {
               Next
             </Button>
           </Box>
-        </Box>
+        )}
       </Box>
     </CssVarsProvider>
   );

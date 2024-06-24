@@ -1,3 +1,11 @@
+import axios from "axios";
+import { useState } from "react";
+import { CustomRequest } from "../../types";
+import { RequestContextProvider } from "../../providers/requestContextProvider";
+
+import RequestHistory from "./RequestHistory";
+import RequestHistoryM from "./RequestHistoryM";
+
 import {
   Box,
   CssBaseline,
@@ -9,13 +17,6 @@ import {
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
 } from "@mui/icons-material";
-import { useState } from "react";
-import { CustomRequest } from "../../types";
-import axios from "axios";
-
-import RequestHistory from "./RequestHistory";
-import RequestHistoryM from "./RequestHistoryM";
-import { RequestContextProvider } from "../../providers/requestContextProvider";
 
 // TODO: Add filtering per request status and request type
 const ViewRequestHistory = () => {
@@ -55,7 +56,7 @@ const ViewRequestHistory = () => {
           component="main"
           className="MainContent"
           sx={{
-            px: { xs: 2, md: 6 },
+            px: { md: 4 },
             pb: { xs: 2, sm: 2, md: 3 },
             flex: 1,
             display: "flex",

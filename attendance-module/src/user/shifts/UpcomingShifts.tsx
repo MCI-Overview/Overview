@@ -1,16 +1,18 @@
 import dayjs from "dayjs";
 import { CustomAttendance } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
+import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
 
 import { ColorPaletteProp, Chip, Table, Sheet, Typography } from "@mui/joy";
 import {
-  CheckRounded as CheckIcon,
   BlockRounded as BlockIcon,
-  AutorenewRounded as AutorenewIcon,
+  CheckRounded as CheckIcon,
+  QueryBuilderRounded as QueryBuilderIcon,
+  MedicalServicesOutlined as MedicalServicesIcon,
 } from "@mui/icons-material";
 
 interface UpcomingShiftsProps {
-  data: CustomAttendance[] | null;
+  data: CustomAttendance[];
 }
 
 const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
@@ -40,49 +42,52 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
               "var(--joy-palette-background-level1)",
             "--TableCell-paddingY": "4px",
             "--TableCell-paddingX": "8px",
+            "& tr > *": { textAlign: "center" },
           }}
         >
           <thead>
             <tr>
-              <th style={{ width: 120, padding: "12px 6px" }}>Date</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Project</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Status</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Type</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Start</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>End</th>
+              <ThTypo>Date</ThTypo>
+              <ThTypo>Project</ThTypo>
+              <ThTypo>Status</ThTypo>
+              <ThTypo>Type</ThTypo>
+              <ThTypo>Start</ThTypo>
+              <ThTypo>End</ThTypo>
             </tr>
           </thead>
           <tbody>
-            {data &&
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan={6}>
+                  <Typography level="body-xs" sx={{ textAlign: "center" }}>
+                    No upcoming shifts found
+                  </Typography>
+                </td>
+              </tr>
+            ) : (
               data.map((row: CustomAttendance) => (
                 <tr key={row.cuid}>
-                  <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.shiftDate).format("DD MMM YYYY")}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {row.Shift.Project.name}
-                    </Typography>
-                  </td>
+                  <TdTypo>{dayjs(row.shiftDate).format("DD MMM YYYY")}</TdTypo>
+                  <TdTypo>{row.Shift.Project.name}</TdTypo>
                   <td>
                     <Chip
                       variant="soft"
                       size="sm"
                       startDecorator={
                         {
-                          PRESENT: <CheckIcon />,
-                          NO_SHOW: <AutorenewIcon />,
-                          MEDICAL: <BlockIcon />,
-                          UPCOMING: <CheckIcon />,
+                          ON_TIME: <CheckIcon />,
+                          LATE: <QueryBuilderIcon />,
+                          NO_SHOW: <BlockIcon />,
+                          MEDICAL: <MedicalServicesIcon />,
+                          UPCOMING: null,
                         }[row.status || "UPCOMING"]
                       }
                       color={
                         {
-                          PRESENT: "success",
-                          NO_SHOW: "neutral",
-                          MEDICAL: "danger",
+                          ON_TIME: "success",
+                          LATE: "warning",
+                          NO_SHOW: "danger",
+                          MEDICAL: "neutral",
                           UPCOMING: "success",
                         }[row.status || "UPCOMING"] as ColorPaletteProp
                       }
@@ -90,31 +95,13 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
                       {readableEnum(row.status || "UPCOMING")}
                     </Chip>
                   </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {readableEnum(row.shiftType)}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.Shift?.startTime).format("hh:mm a") || "N/A"}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.Shift?.endTime).format("hh:mm a") || "N/A"}
-                    </Typography>
-                  </td>
+                  <TdTypo>{readableEnum(row.shiftType)}</TdTypo>
+                  <TdTypo>
+                    {dayjs(row.Shift.startTime).format("hh:mm a")}
+                  </TdTypo>
+                  <TdTypo>{dayjs(row.Shift.endTime).format("hh:mm a")}</TdTypo>
                 </tr>
-              ))}
-            {data && data.length === 0 && (
-              <tr>
-                <td colSpan={6}>
-                  <Typography level="body-md" sx={{ textAlign: "center" }}>
-                    No upcoming shifts found
-                  </Typography>
-                </td>
-              </tr>
+              ))
             )}
           </tbody>
         </Table>

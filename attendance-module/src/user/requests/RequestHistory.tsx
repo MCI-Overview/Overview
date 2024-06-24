@@ -1,6 +1,10 @@
+import dayjs from "dayjs";
 import { CustomRequest } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
-import dayjs from "dayjs";
+import { useRequestContext } from "../../providers/requestContextProvider";
+import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
+
+import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
 
 import {
   Chip,
@@ -17,11 +21,11 @@ import {
   AutorenewRounded as AutorenewIcon,
   CheckRounded as CheckIcon,
 } from "@mui/icons-material";
-import { useRequestContext } from "../../providers/requestContextProvider";
-import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
 
 const RequestHistory = () => {
-  const { requests: data } = useRequestContext();
+  const { requests } = useRequestContext();
+  if (!requests) return null;
+
   return (
     <>
       <Sheet
@@ -48,41 +52,35 @@ const RequestHistory = () => {
               "var(--joy-palette-background-level1)",
             "--TableCell-paddingY": "4px",
             "--TableCell-paddingX": "8px",
+            "& tr > *": { textAlign: "center" },
           }}
         >
           <thead>
             <tr>
-              <th style={{ padding: "12px 6px" }}>Date</th>
-              <th style={{ padding: "12px 6px" }}>Project</th>
-              <th style={{ padding: "12px 6px" }}>Type</th>
-              <th style={{ padding: "12px 6px" }}>Status</th>
-              <th
-                style={{
-                  padding: "12px 6px",
-                  whiteSpace: "nowrap",
-                }}
-              />
+              <ThTypo>Date</ThTypo>
+              <ThTypo>Project</ThTypo>
+              <ThTypo>Type</ThTypo>
+              <ThTypo>Status</ThTypo>
+              <ThTypo> </ThTypo>
             </tr>
           </thead>
           <tbody>
-            {data &&
-              data.map((row: CustomRequest) => (
+            {requests.length === 0 ? (
+              <tr>
+                <td colSpan={5}>
+                  <Typography level="body-md" sx={{ textAlign: "center" }}>
+                    No request history found
+                  </Typography>
+                </td>
+              </tr>
+            ) : (
+              requests.map((row: CustomRequest) => (
                 <tr key={row.cuid}>
-                  <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.createdAt).format("DD MMM YYYY")}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {row.Assign.Project && row.Assign.Project.name}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {readableEnum(row.type)}
-                    </Typography>
-                  </td>
+                  <TdTypo>{dayjs(row.createdAt).format("DD MMM YYYY")}</TdTypo>
+                  <TdTypo>
+                    {row.Assign.Project && row.Assign.Project.name}
+                  </TdTypo>
+                  <TdTypo>{readableEnum(row.type)}</TdTypo>
                   <td>
                     <Chip
                       variant="soft"
@@ -121,15 +119,7 @@ const RequestHistory = () => {
                     </Box>
                   </td>
                 </tr>
-              ))}
-            {data && data.length === 0 && (
-              <tr>
-                <td colSpan={5}>
-                  <Typography level="body-md" sx={{ textAlign: "center" }}>
-                    No request history found
-                  </Typography>
-                </td>
-              </tr>
+              ))
             )}
           </tbody>
         </Table>

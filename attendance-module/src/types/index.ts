@@ -92,7 +92,7 @@ export type CustomAttendance = {
   clockInTime: Date;
   clockOutTime: Date;
   leave: "FULL_DAY" | "HALD_DAY";
-  status: "PRESENT" | "NO_SHOW" | "MEDICAL" | null;
+  status: "ON_TIME" | "LATE" | "NO_SHOW" | "MEDICAL" | null;
   shiftType: "FULL" | "FIRST_HALF" | "SECOND_HALF";
   Shift: {
     startTime: Date;

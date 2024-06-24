@@ -1,8 +1,11 @@
-import { ChangeEvent, useEffect, useState } from "react";
 import axios from "axios";
+import dayjs from "dayjs";
+import { ChangeEvent, useEffect, useState } from "react";
+import { CustomAttendance } from "../../types";
+
 import UpcomingShifts from "./UpcomingShifts";
 import UpcomingShiftsM from "./UpcomingShiftsM";
-import { CustomAttendance } from "../../types";
+
 import {
   Button,
   FormControl,
@@ -18,7 +21,6 @@ import {
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
   SearchRounded as SearchIcon,
 } from "@mui/icons-material";
-import dayjs from "dayjs";
 
 type Page = {
   isFirstPage: boolean;
@@ -31,7 +33,7 @@ type Page = {
 };
 
 const ViewShifts = () => {
-  const [data, setData] = useState<CustomAttendance[] | null>(null);
+  const [data, setData] = useState<CustomAttendance[]>([]);
   const [page, setPage] = useState<Page>({
     isFirstPage: true,
     isLastPage: true,
@@ -71,7 +73,7 @@ const ViewShifts = () => {
       }
       const response = await axios.get(url);
       const [fetchedData, paginationData] = response.data;
-      setData(fetchedData);
+      setData(fetchedData || []);
       setPage(paginationData);
     } catch (error) {
       console.error("Error fetching upcoming shifts: ", error);
@@ -102,7 +104,7 @@ const ViewShifts = () => {
           component="main"
           className="MainContent"
           sx={{
-            px: { xs: 2, md: 6 },
+            px: { md: 4 },
             pb: { xs: 2, sm: 2, md: 3 },
             flex: 1,
             display: "flex",
@@ -115,12 +117,8 @@ const ViewShifts = () => {
             className="SearchAndFilters-tabletUp"
             sx={{
               borderRadius: "sm",
-              py: 2,
               flexWrap: "wrap",
               gap: 1.5,
-              "& > *": {
-                minWidth: { xs: "120px", md: "160px" },
-              },
             }}
           >
             <FormControl sx={{ flex: 1 }} size="sm">
@@ -131,52 +129,55 @@ const ViewShifts = () => {
                 placeholder="Search"
                 startDecorator={<SearchIcon />}
                 onChange={handleDateChange}
+                disabled={data.length === 0}
               />
             </FormControl>
           </Box>
+
           <UpcomingShifts data={data} />
           <UpcomingShiftsM data={data} />
 
-          <Box
-            className="Pagination-laptopUp"
-            sx={{
-              pt: 2,
-              gap: 1,
-              [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
-              display: {
-                xs: "flex",
-                md: "flex",
-              },
-            }}
-          >
-            <Button
-              size="sm"
-              variant="outlined"
-              color="neutral"
-              startDecorator={<KeyboardArrowLeftIcon />}
-              onClick={handlePreviousPage}
-              disabled={page.isFirstPage}
+          {page.pageCount > 1 && (
+            <Box
+              className="Pagination-laptopUp"
+              sx={{
+                gap: 1,
+                [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
+                display: {
+                  xs: "flex",
+                  md: "flex",
+                },
+              }}
             >
-              Previous
-            </Button>
+              <Button
+                size="sm"
+                variant="outlined"
+                color="neutral"
+                startDecorator={<KeyboardArrowLeftIcon />}
+                onClick={handlePreviousPage}
+                disabled={page.isFirstPage}
+              >
+                Previous
+              </Button>
 
-            <Box sx={{ flex: 1 }} />
-            <Button size="sm" variant="outlined" color="neutral">
-              {page.currentPage} / {page.pageCount}
-            </Button>
-            <Box sx={{ flex: 1 }} />
+              <Box sx={{ flex: 1 }} />
+              <Button size="sm" variant="outlined" color="neutral">
+                {page.currentPage} / {page.pageCount}
+              </Button>
+              <Box sx={{ flex: 1 }} />
 
-            <Button
-              size="sm"
-              variant="outlined"
-              color="neutral"
-              endDecorator={<KeyboardArrowRightIcon />}
-              onClick={handleNextPage}
-              disabled={page.isLastPage}
-            >
-              Next
-            </Button>
-          </Box>
+              <Button
+                size="sm"
+                variant="outlined"
+                color="neutral"
+                endDecorator={<KeyboardArrowRightIcon />}
+                onClick={handleNextPage}
+                disabled={page.isLastPage}
+              >
+                Next
+              </Button>
+            </Box>
+          )}
         </Box>
       </Box>
     </CssVarsProvider>

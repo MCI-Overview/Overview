@@ -69,9 +69,8 @@ const CandidatePage = () => {
       spacing={1}
       sx={{
         display: "flex",
-        // maxWidth: "1000px",
         mx: "auto",
-        px: { xs: 2, md: 6 },
+        px: { md: 4 },
       }}
     >
       <Box
@@ -81,9 +80,6 @@ const CandidatePage = () => {
           display: "flex",
           flexWrap: "wrap",
           gap: 1.5,
-          "& > *": {
-            minWidth: { xs: "120px", md: "160px" },
-          },
         }}
       >
         <FormControl sx={{ flex: 1 }} size="sm">
@@ -97,6 +93,7 @@ const CandidatePage = () => {
             fullWidth
           />
         </FormControl>
+
         <FormControl size="sm">
           <FormLabel>Add candidates</FormLabel>
           <Button size="sm" onClick={() => setIsUploadOpen(true)}>
@@ -114,7 +111,6 @@ const CandidatePage = () => {
             endDate: c.endDate.toISOString(),
             dateOfBirth: c.dateOfBirth.toISOString(),
           }))}
-        // handleEdit={handleEdit}
         handleDelete={handleConfirmDeletion}
         showCandidateHolder={true}
       />

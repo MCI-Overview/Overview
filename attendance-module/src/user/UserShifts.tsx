@@ -16,11 +16,11 @@ const UserShifts: FC = () => {
 
   const tabs: Tab[] = [
     {
-      label: "Upcoming Shifts",
+      label: "Upcoming",
       content: <ViewShifts />,
     },
     {
-      label: "Attendance History",
+      label: "History",
       content: <ViewAttendance />,
     },
   ];
@@ -49,7 +49,7 @@ const UserShifts: FC = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null,
+    newValue: string | number | null
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);
@@ -60,12 +60,6 @@ const UserShifts: FC = () => {
       case 1:
         navigate("/user/shifts#history");
         break;
-      // case 2:
-      //     navigate("/user/home#history");
-      //     break;
-      // case 3:
-      //     navigate("/user/home#billing");
-      //     break;
       default:
         break;
     }
