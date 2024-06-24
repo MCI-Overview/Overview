@@ -5,6 +5,7 @@ import {
   Typography,
   ColorPaletteProp,
   Stack,
+  Tooltip,
 } from "@mui/joy";
 import {
   PendingRounded as PendingIcon,
@@ -124,16 +125,20 @@ const RequestHistory = () => {
                       />
                       {row.status === "PENDING" && (
                         <>
-                          <LoadingRequestIconButton
-                            promise={() => approveRequest(row.cuid)}
-                            icon={<CheckIcon />}
-                            color="success"
-                          />
-                          <LoadingRequestIconButton
-                            promise={() => rejectRequest(row.cuid)}
-                            icon={<BlockIcon />}
-                            color="danger"
-                          />
+                          <Tooltip title="Approve">
+                            <LoadingRequestIconButton
+                              promise={() => approveRequest(row.cuid)}
+                              icon={<CheckIcon />}
+                              color="success"
+                            />
+                          </Tooltip>
+                          <Tooltip title="Reject">
+                            <LoadingRequestIconButton
+                              promise={() => rejectRequest(row.cuid)}
+                              icon={<BlockIcon />}
+                              color="danger"
+                            />
+                          </Tooltip>
                         </>
                       )}
                     </Stack>

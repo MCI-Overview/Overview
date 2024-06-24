@@ -11,6 +11,7 @@ import {
   ColorPaletteProp,
   Box,
   Stack,
+  Tooltip,
 } from "@mui/joy";
 import {
   PendingRounded as PendingIcon,
@@ -126,11 +127,13 @@ const CurrentRequests = () => {
                           />
                           {row.status === "PENDING" && (
                             <>
-                              <LoadingRequestIconButton
-                                promise={() => cancelRequest(row.cuid)}
-                                icon={<BlockIcon />}
-                                color="danger"
-                              />
+                              <Tooltip title="Cancel">
+                                <LoadingRequestIconButton
+                                  promise={() => cancelRequest(row.cuid)}
+                                  icon={<BlockIcon />}
+                                  color="danger"
+                                />
+                              </Tooltip>
                             </>
                           )}
                         </Stack>

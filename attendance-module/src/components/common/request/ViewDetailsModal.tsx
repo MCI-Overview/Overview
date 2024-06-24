@@ -1,4 +1,11 @@
-import { IconButton, MenuItem, Modal, ModalClose, ModalDialog } from "@mui/joy";
+import {
+  IconButton,
+  MenuItem,
+  Modal,
+  ModalClose,
+  ModalDialog,
+  Tooltip,
+} from "@mui/joy";
 import { VisibilityRounded as VisibilityIcon } from "@mui/icons-material";
 import { useState } from "react";
 import { CustomRequest } from "../../../types";
@@ -52,13 +59,15 @@ export default function ViewDetailsModal({
         </ModalDialog>
       </Modal>
       {variant === "DESKTOP" && (
-        <IconButton
-          variant="soft"
-          color="primary"
-          onClick={() => setIsOpen(true)}
-        >
-          <VisibilityIcon />
-        </IconButton>
+        <Tooltip title="View details">
+          <IconButton
+            variant="soft"
+            color="primary"
+            onClick={() => setIsOpen(true)}
+          >
+            <VisibilityIcon />
+          </IconButton>
+        </Tooltip>
       )}
       {variant === "MOBILE" && (
         <MenuItem onClick={() => setIsOpen(true)}>View</MenuItem>
