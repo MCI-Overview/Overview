@@ -116,7 +116,7 @@ const RequestHistory = ({ data, getCurrentRequests }: RequestHistoryProps) => {
                   </td>
                   <td>
                     <Stack direction="row" gap={1}>
-                      <ViewDetailsModal data={row} />
+                      <ViewDetailsModal data={row} type="ADMIN" />
                       {row.status === "PENDING" && (
                         <>
                           <LoadingRequestIconButton

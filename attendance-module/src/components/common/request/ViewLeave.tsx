@@ -4,7 +4,13 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 
-export default function ViewClaim({ request }: { request: CustomRequest }) {
+export default function ViewClaim({
+  request,
+  rosterRequestURL,
+}: {
+  request: CustomRequest;
+  rosterRequestURL: string;
+}) {
   const [affectedRoster, setAffectedRoster] = useState<{
     shiftDate: string;
     Shift: {
@@ -18,10 +24,10 @@ export default function ViewClaim({ request }: { request: CustomRequest }) {
   };
 
   useEffect(() => {
-    axios.get(`/api/admin/request/${request.cuid}/roster`).then((response) => {
+    axios.get(rosterRequestURL).then((response) => {
       setAffectedRoster(response.data);
     });
-  }, [request.cuid]);
+  }, [rosterRequestURL]);
 
   if (!affectedRoster) return null;
 

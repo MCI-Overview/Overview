@@ -1,25 +1,19 @@
 import { Box, CssBaseline, CssVarsProvider } from "@mui/joy";
-import { useEffect, useState } from "react";
 import { CustomRequest } from "../../types";
 import axios from "axios";
 
 import CurrentRequests from "./CurrentRequests";
 import CurrentRequestsM from "./CurrentRequestsM";
 import NewRequest from "./NewRequestModal";
+import { RequestContextProvider } from "../../providers/requestContextProvider";
 
 // TODO: Add filtering per request status and request type
 const ViewRequests = () => {
-  const [data, setData] = useState<CustomRequest[] | null>(null);
-
-  function getCurrentRequests() {
-    axios.get("/api/user/requests/current").then((response) => {
-      setData(response.data);
-    });
+  async function getCurrentRequests() {
+    return axios
+      .get("/api/user/requests/current")
+      .then((response) => response.data as CustomRequest[]);
   }
-
-  useEffect(() => {
-    getCurrentRequests();
-  }, []);
 
   return (
     <CssVarsProvider disableTransitionOnChange>
@@ -38,15 +32,11 @@ const ViewRequests = () => {
             gap: 1,
           }}
         >
-          <CurrentRequests
-            data={data}
-            getCurrentRequests={getCurrentRequests}
-          />
-          <CurrentRequestsM
-            data={data}
-            getCurrentRequests={getCurrentRequests}
-          />
-          <NewRequest />
+          <RequestContextProvider updateFunction={getCurrentRequests}>
+            <CurrentRequests />
+            <CurrentRequestsM />
+            <NewRequest />
+          </RequestContextProvider>
         </Box>
       </Box>
     </CssVarsProvider>

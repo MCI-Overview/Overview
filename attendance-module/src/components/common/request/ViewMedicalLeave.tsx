@@ -5,8 +5,12 @@ import { useEffect, useState } from "react";
 
 export default function ViewMedicalLeave({
   request,
+  rosterRequestURL,
+  imageRequestURL,
 }: {
   request: CustomRequest;
+  rosterRequestURL: string;
+  imageRequestURL: string;
 }) {
   const [affectedRosters, setAffectedRosters] = useState([]);
   const [showMc, setShowMc] = useState(false);
@@ -18,15 +22,15 @@ export default function ViewMedicalLeave({
   };
 
   useEffect(() => {
-    axios.get(`/api/admin/request/${request.cuid}/roster`).then((response) => {
+    axios.get(rosterRequestURL).then((response) => {
       setAffectedRosters(response.data);
     });
-  }, [request.cuid]);
+  }, [rosterRequestURL]);
 
   useEffect(() => {
     if (showMc && !mcPreview) {
       axios
-        .get(`/api/admin/request/${request.cuid}/image`, {
+        .get(imageRequestURL, {
           responseType: "blob",
         })
         .then((response) => {
@@ -37,7 +41,7 @@ export default function ViewMedicalLeave({
           };
         });
     }
-  }, [request.cuid, showMc, mcPreview]);
+  }, [imageRequestURL, showMc, mcPreview]);
 
   return (
     <Stack gap={1}>

@@ -16,12 +16,12 @@ import {
 } from "@mui/icons-material";
 import { CustomRequest } from "../../types";
 import dayjs from "dayjs";
+import { useRequestContext } from "../../providers/requestContextProvider";
 
-interface RequestHistoryMProps {
-  data: CustomRequest[] | null;
-}
+//TODO: Add viewing on mobile
+const RequestHistoryM = () => {
+  const { requests: data } = useRequestContext();
 
-const RequestHistoryM = ({ data }: RequestHistoryMProps) => {
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
       {data &&

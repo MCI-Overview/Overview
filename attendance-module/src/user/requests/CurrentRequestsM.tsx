@@ -25,19 +25,15 @@ import {
   CheckRounded as CheckIcon,
   MoreHorizRounded as MoreHorizIcon,
 } from "@mui/icons-material";
+import { useRequestContext } from "../../providers/requestContextProvider";
 
 // TODO: Add viewing and editing of requests
-function RowMenu({
-  requestCuid,
-  getCurrentRequests,
-}: {
-  requestCuid: string;
-  getCurrentRequests: () => void;
-}) {
+function RowMenu({ requestCuid }: { requestCuid: string }) {
+  const { updateRequest } = useRequestContext();
   function handleCancel() {
     axios
       .post("/api/user/request/cancel", { requestCuid })
-      .then(() => getCurrentRequests());
+      .then(() => updateRequest());
   }
   return (
     <>
@@ -59,13 +55,9 @@ function RowMenu({
   );
 }
 
-const CurrentRequestsM = ({
-  data,
-  getCurrentRequests,
-}: {
-  data: CustomRequest[] | null;
-  getCurrentRequests: () => void;
-}) => {
+const CurrentRequestsM = () => {
+  const { requests: data } = useRequestContext();
+
   return (
     <>
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
@@ -142,10 +134,7 @@ const CurrentRequestsM = ({
                     mb: "auto",
                   }}
                 >
-                  <RowMenu
-                    requestCuid={listItem.cuid}
-                    getCurrentRequests={getCurrentRequests}
-                  />
+                  <RowMenu requestCuid={listItem.cuid} />
                 </Box>
               </ListItem>
               <ListDivider />

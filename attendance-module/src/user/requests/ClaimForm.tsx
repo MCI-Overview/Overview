@@ -16,12 +16,15 @@ import {
   Sheet,
 } from "@mui/joy";
 import FileUpload from "../../components/FileUpload";
+import { useRequestContext } from "../../providers/requestContextProvider";
 
 export default function ClaimForm({
   setIsOpen,
 }: {
   setIsOpen: (isOpen: boolean) => void;
 }) {
+  const { updateRequest } = useRequestContext();
+
   const [type, setType] = useState("MEDICAL");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState(0);
@@ -56,7 +59,7 @@ export default function ClaimForm({
   }, []);
 
   const handleReceiptFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const selectedFile = event.target.files && event.target.files[0];
     if (selectedFile) {
@@ -89,6 +92,7 @@ export default function ClaimForm({
 
       if (response.status === 200) {
         setIsOpen(false);
+        updateRequest();
         toast.success("Claim submitted successfully");
       }
     } catch (error) {
@@ -178,12 +182,12 @@ export default function ClaimForm({
                       shiftStartTime: dayjs(
                         shift.shiftType === "SECOND_HALF"
                           ? shift.Shift.halfDayStartTime
-                          : shift.Shift.startTime
+                          : shift.Shift.startTime,
                       ),
                     };
                   })
                   .sort((a, b) =>
-                    a.shiftDate.isBefore(b.shiftDate) ? -1 : 1
+                    a.shiftDate.isBefore(b.shiftDate) ? -1 : 1,
                   ) || []
               }
               getOptionLabel={(option) =>
