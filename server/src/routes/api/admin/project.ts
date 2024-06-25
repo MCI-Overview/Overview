@@ -457,7 +457,88 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
       message: "Internal server error.",
     });
   }
-})
+});
+
+projectAPIRouter.get('/project/:projectCuid/overview', async (req, res) => {
+  const { projectCuid } = req.params;
+  const { weekStart } = req.query;
+
+  const start = typeof weekStart === 'string' ? weekStart : undefined;
+  const formattedWeekStart = dayjs(start).startOf('week').toDate();
+  const formattedWeekEnd = dayjs(start).endOf('week').toDate();
+
+  try {
+    const response = await prisma.attendance.groupBy({
+      by: ['status', 'shiftDate', 'leave'],
+      where: {
+        Shift: {
+          projectCuid: projectCuid,
+        },
+        shiftDate: {
+          gte: formattedWeekStart,
+          lte: formattedWeekEnd,
+        },
+      },
+      _count: {
+        status: true,
+      },
+    });
+
+    // Initialize an object to hold the data arrays for each status
+    const totals: Record<string, number[]> = {
+      LATE: Array(7).fill(0),
+      MEDICAL: Array(7).fill(0),
+      NO_SHOW: Array(7).fill(0),
+      ON_TIME: Array(7).fill(0),
+      LEAVE: Array(7).fill(0),
+    };
+
+    response.forEach(item => {
+      if (item.shiftDate && item.status) {
+        const dayOfWeek = dayjs(item.shiftDate).day(); // Get the day of the week (0 for Sunday, 6 for Saturday)
+        const dayIndex = (dayOfWeek + 6) % 7; // Convert so Monday is 0 and Sunday is 6
+
+        if (item.status === 'MEDICAL') {
+          totals.MEDICAL[dayIndex] += item._count.status;
+        } else if (item.leave === 'FULLDAY') {
+          totals.LEAVE[dayIndex] += item._count.status;
+        } else if (item.leave === 'HALFDAY') {
+          totals.LEAVE[dayIndex] += item._count.status * 0.5;
+          totals[item.status][dayIndex] += item._count.status;
+        } else {
+          totals[item.status][dayIndex] += item._count.status;
+        }
+      }
+    });
+
+    const datasets = {
+      leave: {
+        data: totals.LEAVE,
+      },
+      late: {
+        data: totals.LATE,
+      },
+      medical: {
+        data: totals.MEDICAL,
+      },
+      absent: {
+        data: totals.NO_SHOW,
+      },
+      ontime: {
+        data: totals.ON_TIME,
+      },
+    };
+
+    return res.json({ datasets });
+  } catch (error) {
+    console.error('Error fetching overview:', error);
+    return res.status(500).json({
+      message: "Internal server error.",
+    });
+  }
+});
+
+
 
 projectAPIRouter.delete("/roster/:rosterCuid", async (req, res) => {
   const user = req.user as User;
