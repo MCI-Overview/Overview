@@ -56,19 +56,47 @@ userAPIRouter.get("/projects", async (req, res) => {
       },
       include: {
         Client: true,
+        Assign: {
+          select: {
+            candidateCuid: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
+        Manage: {
+          include: {
+            Consultant: {
+              select: {
+                name: true,
+                email: true,
+                contact: true,
+              },
+            },
+          },
+          where: {
+            role: "CLIENT_HOLDER",
+          },
+        },
       },
     });
 
     return res.send(
-      projects.map((project) => ({
-        name: project.name,
-        cuid: project.cuid,
-        startDate: project.startDate,
-        endDate: project.endDate,
-        noticePeriodDuration: project.noticePeriodDuration,
-        noticePeriodUnit: project.noticePeriodUnit,
-        Client: project.Client,
-      })),
+      projects.map((project) => {
+        const candidateAssign = project.Assign.filter(
+          (assign) => assign.candidateCuid === cuid,
+        )[0];
+
+        return {
+          name: project.name,
+          cuid: project.cuid,
+          startDate: candidateAssign.startDate,
+          endDate: candidateAssign.endDate,
+          noticePeriodDuration: project.noticePeriodDuration,
+          noticePeriodUnit: project.noticePeriodUnit,
+          Client: project.Client,
+          Manage: project.Manage,
+        };
+      }),
     );
   } catch (error) {
     console.log(error);
