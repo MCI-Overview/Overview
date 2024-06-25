@@ -146,7 +146,6 @@ const Attendance = () => {
         </Box>
 
         <ProjectAttendance data={filteredData} />
-
         <ProjectAttendanceM data={filteredData} />
       </Box>
     </CssVarsProvider>
