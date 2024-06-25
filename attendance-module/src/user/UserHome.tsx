@@ -8,6 +8,7 @@ import {
   UserBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/UserBreadcrumb";
+import UserReport from "./UserReport";
 
 const tabs: Tab[] = [
   {
@@ -15,13 +16,9 @@ const tabs: Tab[] = [
     content: <ClockIn />,
   },
   {
-    label: "History",
-    content: <div>HALLOOOOO</div>,
+    label: "Reports",
+    content: <UserReport />,
   },
-  // {
-  //     label: "Plan",
-  //     content: <div>Plan</div>,
-  // },
 ];
 
 const UserHome: FC = () => {
@@ -54,7 +51,7 @@ const UserHome: FC = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null
+    newValue: string | number | null,
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);

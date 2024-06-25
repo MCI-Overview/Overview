@@ -89,6 +89,7 @@ export type ConsultantUser = {
 
 export type CandidateUser = CommonCandidate & {
   userType: "User";
+  createdAt: string;
 };
 
 export type CommonShift = {
@@ -115,7 +116,7 @@ export type CommonAttendance = {
   status: "PRESENT" | "NO_SHOW" | "MEDICAL";
   shiftType: "FULL" | "FIRST_HALF" | "SECOND_HALF";
   Shift: CommonShift;
-}
+};
 
 export type CommonProject = {
   cuid: string;

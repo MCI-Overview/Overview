@@ -5,12 +5,14 @@ import { User } from "@/types/common";
 import attendanceAPIRoutes from "./attendance";
 import profileAPIRoutes from "./profile";
 import requestAPIRoutes from "./request";
+import reportAPIRoutes from "./report";
 import dayjs from "dayjs";
 const userAPIRouter: Router = Router();
 
 userAPIRouter.use("/", attendanceAPIRoutes);
 userAPIRouter.use("/", profileAPIRoutes);
 userAPIRouter.use("/", requestAPIRoutes);
+userAPIRouter.use("/", reportAPIRoutes);
 
 userAPIRouter.get("/", async (req, res) => {
   const { cuid } = req.user as User;
@@ -53,8 +55,8 @@ userAPIRouter.get("/projects", async (req, res) => {
         status: "ACTIVE",
       },
       include: {
-        Client: true
-      }
+        Client: true,
+      },
     });
 
     return res.send(
@@ -65,7 +67,7 @@ userAPIRouter.get("/projects", async (req, res) => {
         endDate: project.endDate,
         noticePeriodDuration: project.noticePeriodDuration,
         noticePeriodUnit: project.noticePeriodUnit,
-        Client: project.Client
+        Client: project.Client,
       })),
     );
   } catch (error) {
