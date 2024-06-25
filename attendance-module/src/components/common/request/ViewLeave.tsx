@@ -3,8 +3,15 @@ import { CustomRequest } from "../../../types";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { readableEnum } from "../../../utils/capitalize";
 
-export default function ViewClaim({ request }: { request: CustomRequest }) {
+export default function ViewClaim({
+  request,
+  rosterRequestURL,
+}: {
+  request: CustomRequest;
+  rosterRequestURL: string;
+}) {
   const [affectedRoster, setAffectedRoster] = useState<{
     shiftDate: string;
     Shift: {
@@ -18,17 +25,17 @@ export default function ViewClaim({ request }: { request: CustomRequest }) {
   };
 
   useEffect(() => {
-    axios.get(`/api/admin/request/${request.cuid}/roster`).then((response) => {
+    axios.get(rosterRequestURL).then((response) => {
       setAffectedRoster(response.data);
     });
-  }, [request.cuid]);
+  }, [rosterRequestURL]);
 
   if (!affectedRoster) return null;
 
   return (
     <Stack>
       <Typography level="title-md">
-        {request.Assign.Candidate?.name}'s {request.type}
+        {request.Assign.Candidate?.name}'s {readableEnum(request.type)}
       </Typography>
       <Typography level="body-md">
         Date/Time:{" "}
@@ -36,7 +43,7 @@ export default function ViewClaim({ request }: { request: CustomRequest }) {
           ${dayjs(affectedRoster.Shift.startTime).format("HHmm")}`}
       </Typography>
       <Typography level="body-md">
-        Leave duration: {requestData.leaveDuration}
+        Leave duration: {readableEnum(requestData.leaveDuration)}
       </Typography>
       <Typography level="body-md">Reason: {requestData.reason}</Typography>
     </Stack>

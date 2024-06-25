@@ -4,12 +4,15 @@ import LoadingRequestButton from "../../components/LoadingRequestButton";
 import axios from "axios";
 import toast from "react-hot-toast";
 import dayjs, { ManipulateType } from "dayjs";
+import { useRequestContext } from "../../providers/requestContextProvider";
 
 export default function ResignationForm({
   setIsOpen,
 }: {
   setIsOpen: (isOpen: boolean) => void;
 }) {
+  const { updateRequest } = useRequestContext();
+
   const [project, setProject] = useState({
     cuid: "",
     endDate: "",
@@ -61,6 +64,7 @@ export default function ResignationForm({
 
       if (response.status === 200) {
         setIsOpen(false);
+        updateRequest();
         toast.success("Resignation request submitted successfully");
       }
     } catch (error) {
