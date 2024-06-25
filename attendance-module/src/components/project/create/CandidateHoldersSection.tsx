@@ -11,6 +11,8 @@ import {
   IconButton,
   Card,
   CardContent,
+  Avatar,
+  Stack,
 } from "@mui/joy";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -121,16 +123,21 @@ export default function ProjectCandidateHoldersSection({
                   <CardContent>
                     <Grid container alignItems="center">
                       <Grid xs>
-                        <Typography level="body-lg" id="card-description">
-                          {holder.name}
-                        </Typography>
-                        <Typography
-                          level="body-sm"
-                          aria-describedby="card-description"
-                          mb={1}
-                        >
-                          {holder.email}
-                        </Typography>
+                        <Stack direction="row" gap={2} alignItems="center">
+                          <Avatar>{holder.name.substring(0, 1)}</Avatar>
+                          <Stack>
+                            <Typography level="body-lg" id="card-description">
+                              {holder.name}
+                            </Typography>
+                            <Typography
+                              level="body-sm"
+                              aria-describedby="card-description"
+                              mb={1}
+                            >
+                              {holder.email}
+                            </Typography>
+                          </Stack>
+                        </Stack>
                       </Grid>
                       <Grid>
                         <IconButton
@@ -138,8 +145,8 @@ export default function ProjectCandidateHoldersSection({
                             setCandidateHolders(
                               candidateHolders.filter(
                                 (currentHolder) =>
-                                  currentHolder.cuid !== holder.cuid
-                              )
+                                  currentHolder.cuid !== holder.cuid,
+                              ),
                             );
                           }}
                         >
