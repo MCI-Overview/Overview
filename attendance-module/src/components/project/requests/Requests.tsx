@@ -82,9 +82,7 @@ const RequestHistory = () => {
             {requests.length === 0 ? (
               <tr>
                 <td colSpan={6}>
-                  <Typography level="body-xs" sx={{ textAlign: "center" }}>
-                    No request history found
-                  </Typography>
+                  <Typography level="body-xs">No requests found</Typography>
                 </td>
               </tr>
             ) : (

@@ -89,7 +89,7 @@ const ProjectAttendance: React.FC<Props> = ({ data }) => {
           {attendanceData.length === 0 ? (
             <tr>
               <td colSpan={9} style={{ textAlign: "center" }}>
-                <Typography level="body-xs">No candidates found.</Typography>
+                <Typography level="body-xs">No candidates found</Typography>
               </td>
             </tr>
           ) : (

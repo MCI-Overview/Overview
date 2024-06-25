@@ -91,7 +91,7 @@ export function TabBar({
       </Box>
 
       {tabs.map((tab, index) => (
-        <TabPanel key={index} value={index}>
+        <TabPanel key={index} value={index} sx={{ py: 1 }}>
           {tab.content}
         </TabPanel>
       ))}

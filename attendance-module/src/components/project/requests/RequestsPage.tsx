@@ -10,12 +10,12 @@ import PaginationFooter from "../ui/PaginationFooter";
 
 import {
   Box,
-  Grid,
   FormControl,
   FormLabel,
-  Select,
-  Option,
+  Grid,
   Input,
+  Option,
+  Select,
 } from "@mui/joy";
 
 function buildUrl(
@@ -53,9 +53,6 @@ const RequestsPage = () => {
   const { project } = useProjectContext();
   if (!project) return null;
 
-  const isFirstPage = currentPage === 1;
-  const isLastPage = currentPage === maxPage;
-
   const fetchUpcomingShifts = useCallback(async () => {
     try {
       const url = buildUrl(
@@ -76,22 +73,6 @@ const RequestsPage = () => {
     }
   }, [project.cuid, currentPage, searchValue, typeFilter, statusFilter]);
 
-  const handleNextPage = () => {
-    setCurrentPage((prev) => prev + 1);
-  };
-
-  const handlePreviousPage = () => {
-    setCurrentPage((prev) => prev - 1);
-  };
-
-  const handleStatusChange = (value: string | null) => {
-    setStatusFilter(value ?? "");
-  };
-
-  const handleTypeChange = (value: string | null) => {
-    setTypeFilter(value ?? "");
-  };
-
   return (
     <Box sx={{ display: "flex" }}>
       <Box
@@ -111,7 +92,7 @@ const RequestsPage = () => {
               <FormLabel>Search candidates</FormLabel>
               <Input
                 size="sm"
-                placeholder="Search by candidate name/nric"
+                placeholder="Search by name/nric"
                 fullWidth
                 onChange={(e) => {
                   setSearchValue(e.target.value);
@@ -127,9 +108,7 @@ const RequestsPage = () => {
               <Select
                 size="sm"
                 value={typeFilter}
-                onChange={(_e, value) =>
-                  handleTypeChange(value as string | null)
-                }
+                onChange={(_e, value) => setTypeFilter(value ?? "")}
                 slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
               >
                 <Option value="">All</Option>
@@ -148,9 +127,7 @@ const RequestsPage = () => {
               <Select
                 size="sm"
                 value={statusFilter}
-                onChange={(_e, value) =>
-                  handleStatusChange(value as string | null)
-                }
+                onChange={(_e, value) => setStatusFilter(value ?? "")}
                 slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
               >
                 <Option value="">All</Option>
@@ -170,11 +147,11 @@ const RequestsPage = () => {
 
         <PaginationFooter
           maxPage={maxPage}
-          handlePreviousPage={handlePreviousPage}
-          isFirstPage={isFirstPage}
           currentPage={currentPage}
-          handleNextPage={handleNextPage}
-          isLastPage={isLastPage}
+          isFirstPage={currentPage === 1}
+          isLastPage={currentPage === maxPage}
+          handlePreviousPage={() => setCurrentPage((prev) => prev - 1)}
+          handleNextPage={() => setCurrentPage((prev) => prev + 1)}
         />
       </Box>
     </Box>

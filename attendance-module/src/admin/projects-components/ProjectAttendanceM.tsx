@@ -55,7 +55,7 @@ const ProjectAttendanceM: React.FC<Props> = ({ data }) => {
           level="body-xs"
           sx={{ display: "flex", justifyContent: "center", py: 2 }}
         >
-          No candidates found.
+          No candidates found
         </Typography>
       ) : (
         attendanceData.map((listItem: CustomAdminAttendance) => (

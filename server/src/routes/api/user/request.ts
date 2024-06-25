@@ -1,6 +1,6 @@
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { prisma, s3, upload } from "../../../client";
-import { RequestType, User } from "@prisma/client";
+import { Prisma, RequestType, User } from "@prisma/client";
 import { Router } from "express";
 import dayjs from "dayjs";
 import { randomUUID } from "crypto";
@@ -62,17 +62,33 @@ requestAPIRouter.get("/requests/history/:page", async (req, res) => {
   const limit = 10;
   const offset = (page - 1) * limit;
 
-  try {
-    const fetchedData = await prisma.request.findMany({
-      where: {
-        candidateCuid: user.cuid,
-        status: {
-          not: "PENDING",
-        },
-        createdAt: {
-          lt: dayjs().subtract(7, "day").toDate(),
+  const { searchValue, typeFilter, statusFilter } = req.query as any;
+
+  const queryConditions: Prisma.RequestWhereInput | undefined = {
+    candidateCuid: user.cuid,
+    ...(typeFilter && { type: typeFilter }),
+    status: {
+      not: "PENDING",
+      ...(statusFilter && { equals: statusFilter }),
+    },
+    createdAt: {
+      lt: dayjs().subtract(7, "day").toDate(),
+    },
+    ...(searchValue && {
+      Assign: {
+        Project: {
+          name: {
+            contains: searchValue,
+            mode: "insensitive",
+          },
         },
       },
+    }),
+  };
+
+  try {
+    const fetchedData = await prisma.request.findMany({
+      where: queryConditions,
       orderBy: {
         createdAt: "desc",
       },
@@ -92,15 +108,7 @@ requestAPIRouter.get("/requests/history/:page", async (req, res) => {
     });
 
     const totalCount = await prisma.request.count({
-      where: {
-        candidateCuid: user.cuid,
-        status: {
-          not: "PENDING",
-        },
-        createdAt: {
-          lt: dayjs().subtract(7, "day").toDate(),
-        },
-      },
+      where: queryConditions,
     });
 
     const paginationData = {
@@ -183,7 +191,7 @@ requestAPIRouter.post(
             Bucket: process.env.S3_BUCKET_NAME!,
             Key: `receipt/${request.cuid}`,
             Body: receipt.buffer,
-          }),
+          })
         )
         .catch((error) => {
           console.error("Error while uploading receipt:", error);
@@ -197,7 +205,7 @@ requestAPIRouter.post(
       console.error("Error while creating request:", error);
       return res.status(500).send("Internal server error");
     }
-  },
+  }
 );
 
 requestAPIRouter.post("/request/cancel", async (req, res) => {
@@ -345,7 +353,7 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
   });
 
   const affectedProjects = new Set(
-    affectedRoster.map((roster) => roster.Shift.projectCuid),
+    affectedRoster.map((roster) => roster.Shift.projectCuid)
   );
 
   const imageUUID = randomUUID();
@@ -356,7 +364,7 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
         Bucket: process.env.S3_BUCKET_NAME!,
         Key: `mc/${imageUUID}`,
         Body: mc.buffer,
-      }),
+      })
     );
 
     await prisma.$transaction(
@@ -372,8 +380,8 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
               imageUUID,
             },
           },
-        }),
-      ),
+        })
+      )
     );
 
     return res.send("MC request submitted successfully");
@@ -475,14 +483,14 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
                 request.data as {
                   startDate: string;
                 }
-              ).startDate,
+              ).startDate
             ).toDate(),
             lte: dayjs(
               (
                 request.data as {
                   startDate: string;
                 }
-              ).startDate,
+              ).startDate
             )
               .add(
                 parseInt(
@@ -491,9 +499,9 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
                       numberOfDays: string;
                     }
                   ).numberOfDays,
-                  10,
+                  10
                 ) - 1,
-                "day",
+                "day"
               )
               .endOf("day")
               .toDate(),

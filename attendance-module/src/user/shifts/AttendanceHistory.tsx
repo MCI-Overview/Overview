@@ -58,7 +58,7 @@ const AttendanceHistory = ({ data }: AttendanceHistoryProps) => {
             {data.length === 0 ? (
               <tr>
                 <td colSpan={6}>
-                  <Typography level="body-xs" sx={{ textAlign: "center" }}>
+                  <Typography level="body-xs">
                     No attendance history found
                   </Typography>
                 </td>

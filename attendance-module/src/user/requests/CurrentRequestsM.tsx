@@ -65,7 +65,7 @@ const CurrentRequestsM = () => {
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
         {requests.length === 0 ? (
           <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
-            No current requests found
+            No requests found
           </Typography>
         ) : (
           <List

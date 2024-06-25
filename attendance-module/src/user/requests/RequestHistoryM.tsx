@@ -29,8 +29,8 @@ const RequestHistoryM = () => {
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
       {requests.length === 0 ? (
-        <Typography level="body-md" sx={{ py: 2, textAlign: "center" }}>
-          No request history found
+        <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
+          No requests found
         </Typography>
       ) : (
         <List

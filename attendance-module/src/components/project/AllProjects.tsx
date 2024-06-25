@@ -132,7 +132,7 @@ const AllProjects: FC = () => {
               </Typography>
             ) : getCurrentProjectList().length === 0 ? (
               <Typography level="body-sm" textAlign="center">
-                {`No ${value} projects found.`}
+                {`No ${value} projects found`}
               </Typography>
             ) : (
               getCurrentProjectList()

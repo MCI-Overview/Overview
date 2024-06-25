@@ -47,7 +47,7 @@ const MyCandidatesPage = () => {
     const fetchData = async () => {
       try {
         const res = await axios.get(
-          `/api/admin/consultant/${user?.cuid}/candidates`,
+          `/api/admin/consultant/${user?.cuid}/candidates`
         );
         const data = res.data.map((data: ResponseDataType) => ({
           ...data,
@@ -130,10 +130,10 @@ const MyCandidatesPage = () => {
     label: string;
     name: string;
   }[] = [
-      { color: "warning", label: "Upcoming", name: "Project Foo" },
-      { color: "success", label: "Ongoing", name: "Project Bar" },
-      { color: "neutral", label: "Former", name: "Project Baz" },
-    ];
+    { color: "warning", label: "Upcoming", name: "Project Foo" },
+    { color: "success", label: "Ongoing", name: "Project Bar" },
+    { color: "neutral", label: "Former", name: "Project Baz" },
+  ];
 
   const matchSearchValue = (cdd: [string, CandidateData[]]) => {
     return cdd[1].some(
@@ -141,7 +141,7 @@ const MyCandidatesPage = () => {
         project.candidateName
           .toLowerCase()
           .includes(searchValue.toLowerCase()) ||
-        project.candidateNric.toLowerCase().includes(searchValue.toLowerCase()),
+        project.candidateNric.toLowerCase().includes(searchValue.toLowerCase())
     );
   };
 
@@ -188,7 +188,7 @@ const MyCandidatesPage = () => {
               <tbody>
                 {candidateData.length === 0 && (
                   <tr>
-                    <td colSpan={5}>No candidates found.</td>
+                    <td colSpan={5}>No candidates found</td>
                   </tr>
                 )}
                 {Object.entries(groupByCandidates(candidateData))
@@ -219,8 +219,8 @@ const MyCandidatesPage = () => {
                                 new Date() < project.startDate
                                   ? "warning"
                                   : new Date() > project.endDate
-                                    ? "neutral"
-                                    : "success"
+                                  ? "neutral"
+                                  : "success"
                               }
                               href={`#/admin/project/${project.projectCuid}`}
                             >

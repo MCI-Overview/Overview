@@ -120,6 +120,7 @@ const CandidateTable = ({
     return <ArrowDownwardIcon fontSize="small" />;
   };
 
+  // TODO: Fix styling when in AssignCandidateModal
   return (
     <>
       <Sheet
@@ -172,11 +173,8 @@ const CandidateTable = ({
           <tbody>
             {sortedData.length === 0 ? (
               <tr>
-                <td
-                  colSpan={handleDelete ? 10 : 9}
-                  style={{ textAlign: "center" }}
-                >
-                  <Typography level="body-xs">No candidates found.</Typography>
+                <td colSpan={handleDelete ? 10 : 9}>
+                  <Typography level="body-xs">No candidates found</Typography>
                 </td>
               </tr>
             ) : (
@@ -230,7 +228,7 @@ const CandidateTable = ({
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
         {sortedData.length == 0 ? (
           <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
-            No candidates found.
+            No candidates found
           </Typography>
         ) : (
           <List
