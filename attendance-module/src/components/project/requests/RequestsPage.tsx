@@ -6,6 +6,7 @@ import { RequestContextProvider } from "../../../providers/requestContextProvide
 
 import RequestHistory from "./Requests";
 import RequestHistoryM from "./RequestsM";
+import PaginationFooter from "../ui/PaginationFooter";
 
 import {
   Box,
@@ -15,13 +16,7 @@ import {
   Select,
   Option,
   Input,
-  Button,
-  iconButtonClasses,
 } from "@mui/joy";
-import {
-  KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
-  KeyboardArrowRightRounded as KeyboardArrowRightIcon,
-} from "@mui/icons-material";
 
 function buildUrl(
   projectCuid: string,
@@ -49,7 +44,6 @@ function buildUrl(
   return url;
 }
 
-// TODO: Add filtering per request status and request type
 const RequestsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [maxPage, setMaxPage] = useState(1);
@@ -174,48 +168,14 @@ const RequestsPage = () => {
           <RequestHistoryM />
         </RequestContextProvider>
 
-        {maxPage > 1 && (
-          <Box
-            className="Pagination-laptopUp"
-            sx={{
-              pt: 2,
-              gap: 1,
-              [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
-              display: {
-                xs: "flex",
-                md: "flex",
-              },
-            }}
-          >
-            <Button
-              size="sm"
-              variant="outlined"
-              color="neutral"
-              startDecorator={<KeyboardArrowLeftIcon />}
-              onClick={handlePreviousPage}
-              disabled={isFirstPage}
-            >
-              Previous
-            </Button>
-
-            <Box sx={{ flex: 1 }} />
-            <Button size="sm" variant="outlined" color="neutral">
-              {currentPage} / {maxPage}
-            </Button>
-            <Box sx={{ flex: 1 }} />
-
-            <Button
-              size="sm"
-              variant="outlined"
-              color="neutral"
-              endDecorator={<KeyboardArrowRightIcon />}
-              onClick={handleNextPage}
-              disabled={isLastPage}
-            >
-              Next
-            </Button>
-          </Box>
-        )}
+        <PaginationFooter
+          maxPage={maxPage}
+          handlePreviousPage={handlePreviousPage}
+          isFirstPage={isFirstPage}
+          currentPage={currentPage}
+          handleNextPage={handleNextPage}
+          isLastPage={isLastPage}
+        />
       </Box>
     </Box>
   );

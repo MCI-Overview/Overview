@@ -5,20 +5,10 @@ import { CustomAttendance } from "../../types";
 
 import AttendanceHistory from "./AttendanceHistory";
 import AttendanceHistoryM from "./AttendanceHistoryM";
+import PaginationFooter from "../../components/project/ui/PaginationFooter";
 
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  iconButtonClasses,
-} from "@mui/joy";
-import {
-  KeyboardArrowRightRounded as KeyboardArrowRightIcon,
-  KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
-  SearchRounded as SearchIcon,
-} from "@mui/icons-material";
+import { Box, FormControl, FormLabel, Input } from "@mui/joy";
+import { SearchRounded as SearchIcon } from "@mui/icons-material";
 
 type Page = {
   isFirstPage: boolean;
@@ -132,47 +122,14 @@ const ViewAttendance = () => {
       <AttendanceHistory data={data} />
       <AttendanceHistoryM data={data} />
 
-      {page.pageCount > 1 && (
-        <Box
-          sx={{
-            pt: 2,
-            gap: 1,
-            [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
-            display: {
-              xs: "flex",
-              md: "flex",
-            },
-          }}
-        >
-          <Button
-            size="sm"
-            variant="outlined"
-            color="neutral"
-            startDecorator={<KeyboardArrowLeftIcon />}
-            onClick={handlePreviousPage}
-            disabled={page.isFirstPage}
-          >
-            Previous
-          </Button>
-
-          <Box sx={{ flex: 1 }} />
-          <Button size="sm" variant="outlined" color="neutral">
-            {page.currentPage} / {page.pageCount}
-          </Button>
-          <Box sx={{ flex: 1 }} />
-
-          <Button
-            size="sm"
-            variant="outlined"
-            color="neutral"
-            endDecorator={<KeyboardArrowRightIcon />}
-            onClick={handleNextPage}
-            disabled={page.isLastPage}
-          >
-            Next
-          </Button>
-        </Box>
-      )}
+      <PaginationFooter
+        maxPage={page.pageCount}
+        handlePreviousPage={handlePreviousPage}
+        isFirstPage={page.isFirstPage}
+        currentPage={page.currentPage}
+        handleNextPage={handleNextPage}
+        isLastPage={page.isLastPage}
+      />
     </Box>
   );
 };

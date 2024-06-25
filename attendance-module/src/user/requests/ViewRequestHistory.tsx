@@ -5,12 +5,9 @@ import { RequestContextProvider } from "../../providers/requestContextProvider";
 
 import RequestHistory from "./RequestHistory";
 import RequestHistoryM from "./RequestHistoryM";
+import PaginationFooter from "../../components/project/ui/PaginationFooter";
 
-import { Box, Button, iconButtonClasses } from "@mui/joy";
-import {
-  KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
-  KeyboardArrowRightRounded as KeyboardArrowRightIcon,
-} from "@mui/icons-material";
+import { Box } from "@mui/joy";
 
 // TODO: Add filtering per request status and request type
 const ViewRequestHistory = () => {
@@ -62,47 +59,14 @@ const ViewRequestHistory = () => {
           <RequestHistoryM />
         </RequestContextProvider>
 
-        {maxPage > 1 && (
-          <Box
-            sx={{
-              pt: 2,
-              gap: 1,
-              [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
-              display: {
-                xs: "flex",
-                md: "flex",
-              },
-            }}
-          >
-            <Button
-              size="sm"
-              variant="outlined"
-              color="neutral"
-              startDecorator={<KeyboardArrowLeftIcon />}
-              onClick={handlePreviousPage}
-              disabled={isFirstPage}
-            >
-              Previous
-            </Button>
-
-            <Box sx={{ flex: 1 }} />
-            <Button size="sm" variant="outlined" color="neutral">
-              {currentPage} / {maxPage}
-            </Button>
-            <Box sx={{ flex: 1 }} />
-
-            <Button
-              size="sm"
-              variant="outlined"
-              color="neutral"
-              endDecorator={<KeyboardArrowRightIcon />}
-              onClick={handleNextPage}
-              disabled={isLastPage}
-            >
-              Next
-            </Button>
-          </Box>
-        )}
+        <PaginationFooter
+          maxPage={maxPage}
+          handlePreviousPage={handlePreviousPage}
+          isFirstPage={isFirstPage}
+          currentPage={currentPage}
+          handleNextPage={handleNextPage}
+          isLastPage={isLastPage}
+        />
       </Box>
     </Box>
   );
