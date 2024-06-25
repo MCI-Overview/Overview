@@ -17,7 +17,7 @@ import {
 import {
   PendingRounded as PendingIcon,
   BlockRounded as BlockIcon,
-  AutorenewRounded as AutorenewIcon,
+  ClearRounded as ClearIcon,
   CheckRounded as CheckIcon,
 } from "@mui/icons-material";
 
@@ -81,7 +81,7 @@ const RequestHistoryM = () => {
                   startDecorator={
                     {
                       APPROVED: <CheckIcon />,
-                      CANCELLED: <AutorenewIcon />,
+                      CANCELLED: <ClearIcon />,
                       REJECTED: <BlockIcon />,
                       PENDING: <PendingIcon />,
                     }[listItem.status || "UPCOMING"]
