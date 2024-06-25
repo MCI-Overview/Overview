@@ -167,11 +167,14 @@ export default function UserReport() {
           </Select>
         </Stack>
         <Stack
+          spacing={2}
           sx={{
             flexDirection: {
               sm: "column",
               md: "row",
             },
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
           <Box sx={{ maxWidth: "300px" }}>
