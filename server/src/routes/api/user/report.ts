@@ -34,14 +34,19 @@ reportAPIRouter.get("/report", async (req, res) => {
 
   const onTime = attendanceData.filter(
     (attendance) =>
-      attendance.status === "ON_TIME" && attendance.leave === null,
+      attendance.status === "ON_TIME" && attendance.clockOutTime !== null,
   ).length;
   const late = attendanceData.filter(
-    (attendance) => attendance.status === "LATE" && attendance.leave === null,
+    (attendance) =>
+      attendance.status === "LATE" && attendance.clockOutTime !== null,
   ).length;
   const noShow = attendanceData.filter(
     (attendance) =>
       attendance.status === "NO_SHOW" && attendance.leave === null,
+  ).length;
+  const others = attendanceData.filter(
+    (attendance) =>
+      attendance.clockInTime !== null && attendance.clockOutTime === null,
   ).length;
 
   const hoursWorked = attendanceData
@@ -146,6 +151,7 @@ reportAPIRouter.get("/report", async (req, res) => {
     onTime,
     late,
     noShow,
+    others,
     mc,
     leave,
     hoursWorked,
