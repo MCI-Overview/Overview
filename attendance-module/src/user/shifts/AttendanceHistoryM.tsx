@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { Fragment } from "react";
 import { CustomAttendance } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
 
@@ -36,9 +37,8 @@ const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
           }}
         >
           {data.map((listItem: CustomAttendance) => (
-            <>
+            <Fragment key={listItem.cuid}>
               <ListItem
-                key={listItem.cuid}
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -101,7 +101,7 @@ const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
               </ListItem>
 
               <ListDivider />
-            </>
+            </Fragment>
           ))}
         </List>
       )}

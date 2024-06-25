@@ -37,7 +37,6 @@ const CurrentRequests = () => {
   return (
     <>
       <Sheet
-        className="OrderTableContainer"
         variant="outlined"
         sx={{
           display: { xs: "none", sm: "initial" },

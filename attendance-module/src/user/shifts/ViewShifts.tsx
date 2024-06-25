@@ -7,13 +7,11 @@ import UpcomingShifts from "./UpcomingShifts";
 import UpcomingShiftsM from "./UpcomingShiftsM";
 
 import {
+  Box,
   Button,
   FormControl,
   FormLabel,
   Input,
-  CssVarsProvider,
-  CssBaseline,
-  Box,
   iconButtonClasses,
 } from "@mui/joy";
 import {
@@ -97,90 +95,83 @@ const ViewShifts = () => {
   };
 
   return (
-    <CssVarsProvider disableTransitionOnChange>
-      <CssBaseline />
-      <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex" }}>
+      <Box
+        sx={{
+          px: { md: 4 },
+          pb: { xs: 2, sm: 2, md: 3 },
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+          gap: 1,
+        }}
+      >
         <Box
-          component="main"
-          className="MainContent"
           sx={{
-            px: { md: 4 },
-            pb: { xs: 2, sm: 2, md: 3 },
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            minWidth: 0,
-            gap: 1,
+            borderRadius: "sm",
+            flexWrap: "wrap",
+            gap: 1.5,
           }}
         >
+          <FormControl sx={{ flex: 1 }} size="sm">
+            <FormLabel>Search for shift</FormLabel>
+            <Input
+              type="date"
+              size="sm"
+              placeholder="Search"
+              startDecorator={<SearchIcon />}
+              onChange={handleDateChange}
+              disabled={data.length === 0}
+            />
+          </FormControl>
+        </Box>
+
+        <UpcomingShifts data={data} />
+        <UpcomingShiftsM data={data} />
+
+        {page.pageCount > 1 && (
           <Box
-            className="SearchAndFilters-tabletUp"
             sx={{
-              borderRadius: "sm",
-              flexWrap: "wrap",
-              gap: 1.5,
+              gap: 1,
+              [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
+              display: {
+                xs: "flex",
+                md: "flex",
+              },
             }}
           >
-            <FormControl sx={{ flex: 1 }} size="sm">
-              <FormLabel>Search for shift</FormLabel>
-              <Input
-                type="date"
-                size="sm"
-                placeholder="Search"
-                startDecorator={<SearchIcon />}
-                onChange={handleDateChange}
-                disabled={data.length === 0}
-              />
-            </FormControl>
-          </Box>
-
-          <UpcomingShifts data={data} />
-          <UpcomingShiftsM data={data} />
-
-          {page.pageCount > 1 && (
-            <Box
-              className="Pagination-laptopUp"
-              sx={{
-                gap: 1,
-                [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
-                display: {
-                  xs: "flex",
-                  md: "flex",
-                },
-              }}
+            <Button
+              size="sm"
+              variant="outlined"
+              color="neutral"
+              startDecorator={<KeyboardArrowLeftIcon />}
+              onClick={handlePreviousPage}
+              disabled={page.isFirstPage}
             >
-              <Button
-                size="sm"
-                variant="outlined"
-                color="neutral"
-                startDecorator={<KeyboardArrowLeftIcon />}
-                onClick={handlePreviousPage}
-                disabled={page.isFirstPage}
-              >
-                Previous
-              </Button>
+              Previous
+            </Button>
 
-              <Box sx={{ flex: 1 }} />
-              <Button size="sm" variant="outlined" color="neutral">
-                {page.currentPage} / {page.pageCount}
-              </Button>
-              <Box sx={{ flex: 1 }} />
+            <Box sx={{ flex: 1 }} />
+            <Button size="sm" variant="outlined" color="neutral">
+              {page.currentPage} / {page.pageCount}
+            </Button>
+            <Box sx={{ flex: 1 }} />
 
-              <Button
-                size="sm"
-                variant="outlined"
-                color="neutral"
-                endDecorator={<KeyboardArrowRightIcon />}
-                onClick={handleNextPage}
-                disabled={page.isLastPage}
-              >
-                Next
-              </Button>
-            </Box>
-          )}
-        </Box>
+            <Button
+              size="sm"
+              variant="outlined"
+              color="neutral"
+              endDecorator={<KeyboardArrowRightIcon />}
+              onClick={handleNextPage}
+              disabled={page.isLastPage}
+            >
+              Next
+            </Button>
+          </Box>
+        )}
       </Box>
-    </CssVarsProvider>
+    </Box>
   );
 };
 

@@ -17,8 +17,6 @@ import {
   Select,
 } from "@mui/joy";
 import SearchIcon from "@mui/icons-material/Search";
-import CssBaseline from "@mui/joy/CssBaseline";
-import { CssVarsProvider } from "@mui/joy/styles";
 
 const Attendance = () => {
   const [data, setData] = useState<CustomAdminAttendance[]>([]);
@@ -80,93 +78,89 @@ const Attendance = () => {
   });
 
   return (
-    <CssVarsProvider disableTransitionOnChange>
-      <CssBaseline />
-      <Box
+    <Box
+      sx={{
+        display: "flex",
+        px: { md: 4 },
+        pb: { xs: 2, sm: 2, md: 3 },
+        flex: 1,
+        flexDirection: "column",
+        minWidth: 0,
+        gap: 1,
+      }}
+    >
+      <Grid
         sx={{
+          borderRadius: "sm",
           display: "flex",
-          px: { md: 4 },
-          pb: { xs: 2, sm: 2, md: 3 },
-          flex: 1,
-          flexDirection: "column",
-          minWidth: 0,
-          gap: 1,
+          flexWrap: "wrap",
         }}
+        container
+        spacing={{ xs: 1, md: 2 }}
+        columns={{ xs: 6, sm: 12 }}
       >
-        <Grid
-          className="SearchAndFilters-tabletUp"
-          sx={{
-            borderRadius: "sm",
-            display: "flex",
-            flexWrap: "wrap",
-          }}
-          container
-          spacing={{ xs: 1, md: 2 }}
-          columns={{ xs: 6, sm: 12 }}
-        >
-          <Grid xs={4} sm={6}>
-            <FormControl sx={{ flex: 1 }} size="sm">
-              <FormLabel>Search candidate</FormLabel>
-              <Input
-                size="sm"
-                placeholder="Search"
-                startDecorator={<SearchIcon />}
-                onChange={handleSearchChange}
-                disabled={data.length === 0}
-              />
-            </FormControl>
-          </Grid>
-
-          <Grid xs={2} sm={2}>
-            <FormControl size="sm">
-              <FormLabel>Status</FormLabel>
-              <Select
-                size="sm"
-                placeholder="Filter by status"
-                onChange={(_e, value) =>
-                  handleStatusChange(value as string | null)
-                }
-                slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
-              >
-                <Option value="">All</Option>
-                <Option value="ON_TIME">On Time</Option>
-                <Option value="LATE">Late</Option>
-                <Option value="NO_SHOW">No Show</Option>
-                <Option value="MEDICAL">Medical</Option>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid xs={3} sm={2}>
-            <FormControl size="sm">
-              <FormLabel>Search from</FormLabel>
-              <Input
-                type="date"
-                size="sm"
-                value={startDate}
-                onChange={handleStartDateChange}
-              />
-            </FormControl>
-          </Grid>
-
-          <Grid xs={3} sm={2}>
-            <FormControl size="sm">
-              <FormLabel>To</FormLabel>
-              <Input
-                type="date"
-                size="sm"
-                value={endDate}
-                onChange={handleEndDateChange}
-              />
-            </FormControl>
-          </Grid>
+        <Grid xs={4} sm={6}>
+          <FormControl sx={{ flex: 1 }} size="sm">
+            <FormLabel>Search candidate</FormLabel>
+            <Input
+              size="sm"
+              placeholder="Search"
+              startDecorator={<SearchIcon />}
+              onChange={handleSearchChange}
+              disabled={data.length === 0}
+            />
+          </FormControl>
         </Grid>
 
-        <ProjectAttendance data={filteredData} />
+        <Grid xs={2} sm={2}>
+          <FormControl size="sm">
+            <FormLabel>Status</FormLabel>
+            <Select
+              size="sm"
+              placeholder="Filter by status"
+              onChange={(_e, value) =>
+                handleStatusChange(value as string | null)
+              }
+              slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
+            >
+              <Option value="">All</Option>
+              <Option value="ON_TIME">On Time</Option>
+              <Option value="LATE">Late</Option>
+              <Option value="NO_SHOW">No Show</Option>
+              <Option value="MEDICAL">Medical</Option>
+            </Select>
+          </FormControl>
+        </Grid>
 
-        <ProjectAttendanceM data={filteredData} />
-      </Box>
-    </CssVarsProvider>
+        <Grid xs={3} sm={2}>
+          <FormControl size="sm">
+            <FormLabel>Search from</FormLabel>
+            <Input
+              type="date"
+              size="sm"
+              value={startDate}
+              onChange={handleStartDateChange}
+            />
+          </FormControl>
+        </Grid>
+
+        <Grid xs={3} sm={2}>
+          <FormControl size="sm">
+            <FormLabel>To</FormLabel>
+            <Input
+              type="date"
+              size="sm"
+              value={endDate}
+              onChange={handleEndDateChange}
+            />
+          </FormControl>
+        </Grid>
+      </Grid>
+
+      <ProjectAttendance data={filteredData} />
+
+      <ProjectAttendanceM data={filteredData} />
+    </Box>
   );
 };
 

@@ -49,7 +49,6 @@ const ProjectAttendance: React.FC<Props> = ({ data }) => {
 
   return (
     <Sheet
-      className="OrderTableContainer"
       variant="outlined"
       sx={{
         display: { xs: "none", sm: "initial" },

@@ -1,7 +1,9 @@
 import axios from "axios";
 import dayjs from "dayjs";
+import { Fragment } from "react";
 import { CustomRequest } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
+import { useRequestContext } from "../../providers/requestContextProvider";
 
 import {
   Box,
@@ -25,7 +27,6 @@ import {
   CheckRounded as CheckIcon,
   MoreHorizRounded as MoreHorizIcon,
 } from "@mui/icons-material";
-import { useRequestContext } from "../../providers/requestContextProvider";
 
 // TODO: Add viewing and editing of requests
 function RowMenu({ requestCuid }: { requestCuid: string }) {
@@ -63,7 +64,7 @@ const CurrentRequestsM = () => {
     <>
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
         {requests.length === 0 ? (
-          <Typography level="body-md" sx={{ textAlign: "center" }}>
+          <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
             No current requests found
           </Typography>
         ) : (
@@ -74,9 +75,8 @@ const CurrentRequestsM = () => {
             }}
           >
             {requests.map((listItem: CustomRequest) => (
-              <>
+              <Fragment key={listItem.cuid}>
                 <ListItem
-                  key={listItem.cuid}
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -144,7 +144,7 @@ const CurrentRequestsM = () => {
                   </Box>
                 </ListItem>
                 <ListDivider />
-              </>
+              </Fragment>
             ))}
           </List>
         )}

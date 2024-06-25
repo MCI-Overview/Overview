@@ -76,6 +76,7 @@ export type CustomRequest = {
   data: object;
   Assign: {
     Candidate?: {
+      nric: string;
       name: string;
     };
     Project?: {

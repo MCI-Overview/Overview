@@ -1,6 +1,8 @@
 import dayjs from "dayjs";
+import { Fragment } from "react";
 import { CustomRequest } from "../../types";
 import { useRequestContext } from "../../providers/requestContextProvider";
+import { readableEnum } from "../../utils/capitalize";
 
 import {
   Box,
@@ -18,7 +20,6 @@ import {
   AutorenewRounded as AutorenewIcon,
   CheckRounded as CheckIcon,
 } from "@mui/icons-material";
-import { readableEnum } from "../../utils/capitalize";
 
 //TODO: Add viewing on mobile
 const RequestHistoryM = () => {
@@ -28,7 +29,7 @@ const RequestHistoryM = () => {
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
       {requests.length === 0 ? (
-        <Typography level="body-md" sx={{ textAlign: "center" }}>
+        <Typography level="body-md" sx={{ py: 2, textAlign: "center" }}>
           No request history found
         </Typography>
       ) : (
@@ -39,9 +40,8 @@ const RequestHistoryM = () => {
           }}
         >
           {requests.map((listItem: CustomRequest) => (
-            <>
+            <Fragment key={listItem.cuid}>
               <ListItem
-                key={listItem.cuid}
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -99,7 +99,7 @@ const RequestHistoryM = () => {
                 </Chip>
               </ListItem>
               <ListDivider />
-            </>
+            </Fragment>
           ))}
         </List>
       )}

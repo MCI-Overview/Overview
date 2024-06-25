@@ -43,7 +43,6 @@ const RequestHistory = () => {
   return (
     <>
       <Sheet
-        className="OrderTableContainer"
         variant="outlined"
         sx={{
           display: { xs: "none", sm: "initial" },
@@ -74,6 +73,7 @@ const RequestHistory = () => {
               <ThTypo>Date</ThTypo>
               <ThTypo>Nric</ThTypo>
               <ThTypo>Name</ThTypo>
+              <ThTypo>Type</ThTypo>
               <ThTypo>Status</ThTypo>
               <ThTypo> </ThTypo>
             </tr>
@@ -81,7 +81,7 @@ const RequestHistory = () => {
           <tbody>
             {requests.length === 0 ? (
               <tr>
-                <td colSpan={5}>
+                <td colSpan={6}>
                   <Typography level="body-xs" sx={{ textAlign: "center" }}>
                     No request history found
                   </Typography>
@@ -91,6 +91,9 @@ const RequestHistory = () => {
               requests.map((row: CustomRequest) => (
                 <tr key={row.cuid}>
                   <TdTypo>{dayjs(row.createdAt).format("DD MMM YYYY")}</TdTypo>
+                  <TdTypo>
+                    {row.Assign.Candidate && row.Assign.Candidate.nric}
+                  </TdTypo>
                   <TdTypo>
                     {row.Assign.Candidate && row.Assign.Candidate.name}
                   </TdTypo>

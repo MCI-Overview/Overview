@@ -29,7 +29,6 @@ const RequestHistory = () => {
   return (
     <>
       <Sheet
-        className="OrderTableContainer"
         variant="outlined"
         sx={{
           display: { xs: "none", sm: "initial" },

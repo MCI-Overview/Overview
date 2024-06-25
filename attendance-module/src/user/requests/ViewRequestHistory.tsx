@@ -6,13 +6,7 @@ import { RequestContextProvider } from "../../providers/requestContextProvider";
 import RequestHistory from "./RequestHistory";
 import RequestHistoryM from "./RequestHistoryM";
 
-import {
-  Box,
-  CssBaseline,
-  CssVarsProvider,
-  Button,
-  iconButtonClasses,
-} from "@mui/joy";
+import { Box, Button, iconButtonClasses } from "@mui/joy";
 import {
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
@@ -49,74 +43,68 @@ const ViewRequestHistory = () => {
   };
 
   return (
-    <CssVarsProvider disableTransitionOnChange>
-      <CssBaseline />
-      <Box sx={{ display: "flex" }}>
-        <Box
-          component="main"
-          className="MainContent"
-          sx={{
-            px: { md: 4 },
-            pb: { xs: 2, sm: 2, md: 3 },
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            minWidth: 0,
-            gap: 1,
-          }}
+    <Box sx={{ display: "flex" }}>
+      <Box
+        sx={{
+          px: { md: 4 },
+          pb: { xs: 2, sm: 2, md: 3 },
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+          gap: 1,
+        }}
+      >
+        <RequestContextProvider
+          updateFunction={() => fetchUpcomingShifts(currentPage)}
         >
-          <RequestContextProvider
-            updateFunction={() => fetchUpcomingShifts(currentPage)}
+          <RequestHistory />
+          <RequestHistoryM />
+        </RequestContextProvider>
+
+        {maxPage > 1 && (
+          <Box
+            sx={{
+              pt: 2,
+              gap: 1,
+              [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
+              display: {
+                xs: "flex",
+                md: "flex",
+              },
+            }}
           >
-            <RequestHistory />
-            <RequestHistoryM />
-          </RequestContextProvider>
-
-          {maxPage > 1 && (
-            <Box
-              className="Pagination-laptopUp"
-              sx={{
-                pt: 2,
-                gap: 1,
-                [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
-                display: {
-                  xs: "flex",
-                  md: "flex",
-                },
-              }}
+            <Button
+              size="sm"
+              variant="outlined"
+              color="neutral"
+              startDecorator={<KeyboardArrowLeftIcon />}
+              onClick={handlePreviousPage}
+              disabled={isFirstPage}
             >
-              <Button
-                size="sm"
-                variant="outlined"
-                color="neutral"
-                startDecorator={<KeyboardArrowLeftIcon />}
-                onClick={handlePreviousPage}
-                disabled={isFirstPage}
-              >
-                Previous
-              </Button>
+              Previous
+            </Button>
 
-              <Box sx={{ flex: 1 }} />
-              <Button size="sm" variant="outlined" color="neutral">
-                {currentPage} / {maxPage}
-              </Button>
-              <Box sx={{ flex: 1 }} />
+            <Box sx={{ flex: 1 }} />
+            <Button size="sm" variant="outlined" color="neutral">
+              {currentPage} / {maxPage}
+            </Button>
+            <Box sx={{ flex: 1 }} />
 
-              <Button
-                size="sm"
-                variant="outlined"
-                color="neutral"
-                endDecorator={<KeyboardArrowRightIcon />}
-                onClick={handleNextPage}
-                disabled={isLastPage}
-              >
-                Next
-              </Button>
-            </Box>
-          )}
-        </Box>
+            <Button
+              size="sm"
+              variant="outlined"
+              color="neutral"
+              endDecorator={<KeyboardArrowRightIcon />}
+              onClick={handleNextPage}
+              disabled={isLastPage}
+            >
+              Next
+            </Button>
+          </Box>
+        )}
       </Box>
-    </CssVarsProvider>
+    </Box>
   );
 };
 

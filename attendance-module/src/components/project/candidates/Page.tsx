@@ -74,7 +74,6 @@ const CandidatePage = () => {
       }}
     >
       <Box
-        className="SearchAndFilters-tabletUp"
         sx={{
           borderRadius: "sm",
           display: "flex",
