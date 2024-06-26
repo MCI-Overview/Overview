@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import dayjs from 'dayjs';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -29,7 +30,8 @@ type AttendanceGraphProps = {
     absent: {
       data: number[],
     },
-  };
+  },
+  weekStart: Date
 };
 
 const options = {
@@ -58,9 +60,9 @@ const options = {
   },
 };
 
-const labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-const AttendanceGraph: React.FC<AttendanceGraphProps> = ({ datasets }) => {
+const AttendanceGraph: React.FC<AttendanceGraphProps> = ({ datasets, weekStart }) => {
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+  const labels = days.map((day, index) => (`${day} ${dayjs(weekStart).add(index, "days").format("DD/MM")}`));
   const data = {
     labels,
     datasets: [
