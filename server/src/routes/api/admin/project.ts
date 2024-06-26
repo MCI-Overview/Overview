@@ -1541,9 +1541,6 @@ projectAPIRouter.get("/projects/all", async (_req, res) => {
           include: {
             Consultant: true,
           },
-          where: {
-            role: "CLIENT_HOLDER",
-          },
         },
         Client: true,
       },
