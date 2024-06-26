@@ -1,4 +1,4 @@
-import { Typography, Button, Stack } from "@mui/joy";
+import { Typography, Button, Stack, Grid } from "@mui/joy";
 import axios from "axios";
 import { ChangeEventHandler, useState } from "react";
 import LoadingRequestButton from "../../components/LoadingRequestButton";
@@ -73,37 +73,38 @@ export default function UploadNRIC({
         To ensure accurate attendance tracking, please upload both the front and
         back of your NRIC. This helps us verify your identity.
       </Typography>
-      <Stack direction="row" justifyContent="space-between">
-        <Stack spacing={2} padding={2}>
-          <FileUpload
-            onChange={handleNRICFrontFileChange}
-            label="Upload NRIC (Front)"
-          />
-          {nricFrontPreview && (
-            <img
-              src={nricFrontPreview}
-              alt="Image preview"
-              style={{ maxWidth: "100%" }}
+      <Grid container columns={2} spacing={2}>
+        <Grid xs={1}>
+          <Stack spacing={2} padding={2}>
+            <FileUpload
+              onChange={handleNRICFrontFileChange}
+              label="Upload NRIC (Front)"
             />
-          )}
-        </Stack>
-        <Stack spacing={2} padding={2}>
-          <Typography level="title-md" textAlign="center">
-            NRIC (Back)
-          </Typography>
-          <FileUpload
-            onChange={handleNRICBackFileChange}
-            label="Upload NRIC (Back)"
-          />
-          {nricBackPreview && (
-            <img
-              src={nricBackPreview}
-              alt="Image preview"
-              style={{ maxWidth: "100%" }}
+            {nricFrontPreview && (
+              <img
+                src={nricFrontPreview}
+                alt="Image preview"
+                style={{ maxWidth: "100%" }}
+              />
+            )}
+          </Stack>
+        </Grid>
+        <Grid xs={1}>
+          <Stack spacing={2} padding={2}>
+            <FileUpload
+              onChange={handleNRICBackFileChange}
+              label="Upload NRIC (Back)"
             />
-          )}
-        </Stack>
-      </Stack>
+            {nricBackPreview && (
+              <img
+                src={nricBackPreview}
+                alt="Image preview"
+                style={{ maxWidth: "100%" }}
+              />
+            )}
+          </Stack>
+        </Grid>
+      </Grid>
       <Button variant="outlined" onClick={handleBack}>
         Back
       </Button>
