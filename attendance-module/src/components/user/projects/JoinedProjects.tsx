@@ -25,7 +25,7 @@ const JoinedProjects: FC = () => {
   return (
     <>
       <Stack
-        spacing={4}
+        spacing={2}
         sx={{
           display: "flex",
           maxWidth: "800px",
