@@ -47,14 +47,13 @@ const DailyAttendanceSection = () => {
           display: "flex",
           maxWidth: "800px",
           mx: "auto",
-          px: { xs: 2, md: 6 },
-          py: { xs: 2, md: 3 },
+          px: { xs: 1, md: 1 },
+          py: { xs: 2, md: 2 },
         }}
       >
         <Card>
           <Box
             sx={{
-              mb: 1,
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",

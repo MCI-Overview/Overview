@@ -158,7 +158,6 @@ const Attendance = () => {
       </Grid>
 
       <ProjectAttendance data={filteredData} />
-
       <ProjectAttendanceM data={filteredData} />
     </Box>
   );

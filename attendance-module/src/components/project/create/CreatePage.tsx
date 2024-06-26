@@ -52,7 +52,7 @@ const CreateProjectPage = () => {
       const axiosError = error as AxiosError<ErrorResponseData>;
       toast.error(
         axiosError.response?.data.message ||
-          "Error while creating project. Please try again later."
+        "Error while creating project. Please try again later."
       );
     }
   };
@@ -62,10 +62,9 @@ const CreateProjectPage = () => {
       spacing={2}
       sx={{
         display: "flex",
-        width: "600px",
         maxHeight: "100%",
-        overflowY: "auto",
-        scrollbarWidth: "thin",
+        overflow: "auto",
+        scrollbarWidth: "none",
       }}
     >
       <ProjectDetailsSection
@@ -89,7 +88,7 @@ const CreateProjectPage = () => {
 
       <Divider />
 
-      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
         <Button size="sm" variant="solid" onClick={handleSaveProject}>
           Create Project
         </Button>
