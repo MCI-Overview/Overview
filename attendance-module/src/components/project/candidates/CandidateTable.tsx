@@ -74,8 +74,10 @@ const CandidateTable = ({
   if (!project || !user) return null;
 
   const hasEditProjectPermission =
-    project.consultants.find((c) => c.role === "CLIENT_HOLDER")?.cuid ===
-    user.cuid || checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS);
+    project.consultants
+      .filter((c) => c.role === "CLIENT_HOLDER")
+      .some((c) => c.cuid === user.cuid) ||
+    checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS);
 
   const isHolder = (cddCuid: string) => {
     return (
