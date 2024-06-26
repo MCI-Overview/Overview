@@ -51,12 +51,13 @@ const RequestsPage = () => {
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const { project } = useProjectContext();
-  if (!project) return null;
 
   const fetchUpcomingShifts = useCallback(async () => {
+    if (!project) return [];
+
     try {
       const url = buildUrl(
-        project.cuid,
+        project?.cuid,
         currentPage,
         searchValue,
         typeFilter,
@@ -71,7 +72,7 @@ const RequestsPage = () => {
       console.error("Error fetching upcoming shifts: ", error);
       return [];
     }
-  }, [project.cuid, currentPage, searchValue, typeFilter, statusFilter]);
+  }, [project, currentPage, searchValue, typeFilter, statusFilter]);
 
   return (
     <Box sx={{ display: "flex" }}>
