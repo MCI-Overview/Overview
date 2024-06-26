@@ -1,4 +1,5 @@
 import {
+  Divider,
   Tabs,
   TabList,
   tabClasses,
@@ -70,11 +71,11 @@ export function TabBar({
         ))}
       </TabList>
 
-      <Box sx={{ display: { xs: "block", sm: "none" }, px: 2 }}>
+      <Box sx={{ display: { xs: "block", sm: "none" } }}>
         <Select
           value={tabValue}
           onChange={handleTabChange}
-          sx={{ width: "100%" }}
+          sx={{ width: "auto", mx: 2 }}
           renderValue={(selected) => (
             <Typography level="title-sm">{selected?.label}</Typography>
           )}
@@ -85,10 +86,12 @@ export function TabBar({
             </Option>
           ))}
         </Select>
+
+        <Divider sx={{ p: 0.05, mt: 1, backgroundColor: "#888" }} />
       </Box>
 
       {tabs.map((tab, index) => (
-        <TabPanel key={index} value={index}>
+        <TabPanel key={index} value={index} sx={{ py: 1 }}>
           {tab.content}
         </TabPanel>
       ))}

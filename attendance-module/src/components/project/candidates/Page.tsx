@@ -9,6 +9,7 @@ import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import { Box, Button, Input, FormControl, FormLabel, Stack } from "@mui/joy";
 import SearchIcon from "@mui/icons-material/Search";
+import SmallScreenDivider from "../ui/SmallScreenDivider";
 
 const CandidatePage = () => {
   const { project, updateProject } = useProjectContext();
@@ -69,21 +70,16 @@ const CandidatePage = () => {
       spacing={1}
       sx={{
         display: "flex",
-        // maxWidth: "1000px",
         mx: "auto",
-        px: { xs: 2, md: 6 },
+        px: { md: 4 },
       }}
     >
       <Box
-        className="SearchAndFilters-tabletUp"
         sx={{
           borderRadius: "sm",
           display: "flex",
           flexWrap: "wrap",
           gap: 1.5,
-          "& > *": {
-            minWidth: { xs: "120px", md: "160px" },
-          },
         }}
       >
         <FormControl sx={{ flex: 1 }} size="sm">
@@ -97,13 +93,19 @@ const CandidatePage = () => {
             fullWidth
           />
         </FormControl>
-        <FormControl size="sm">
-          <FormLabel>Add candidates</FormLabel>
-          <Button size="sm" onClick={() => setIsUploadOpen(true)}>
-            Import
+
+        <Box sx={{ display: "flex" }}>
+          <Button
+            size="sm"
+            onClick={() => setIsUploadOpen(true)}
+            sx={{ mt: "auto" }}
+          >
+            Import candidates
           </Button>
-        </FormControl>
+        </Box>
       </Box>
+
+      <SmallScreenDivider />
 
       <CandidateTable
         tableData={candidatesData
@@ -114,7 +116,6 @@ const CandidatePage = () => {
             endDate: c.endDate.toISOString(),
             dateOfBirth: c.dateOfBirth.toISOString(),
           }))}
-        // handleEdit={handleEdit}
         handleDelete={handleConfirmDeletion}
         showCandidateHolder={true}
       />

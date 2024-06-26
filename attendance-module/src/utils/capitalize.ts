@@ -33,5 +33,7 @@ export function generateCapitalizations(arr: string[]) {
 }
 
 export function readableEnum(enumValue: string) {
+  if (!enumValue) return "-";
+
   return capitalizeWords(enumValue.replace(/_/g, " "));
 }
