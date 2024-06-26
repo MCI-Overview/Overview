@@ -11,7 +11,7 @@ import {
   AdminBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
-import CandidateDetails from "../components/profile/details/Page";
+import ProfilePage from "../components/profile/details/ProfilePage";
 import { useUserContext } from "../providers/userContextProvider";
 
 const CandidateProfile = () => {
@@ -49,7 +49,7 @@ const CandidateProfile = () => {
 
   const breadcrumbs: BreadcrumbPart[] = [
     {
-      label: "profile",
+      label: "Profile",
       link: path,
     },
   ];
@@ -57,7 +57,7 @@ const CandidateProfile = () => {
   const tabs: Tab[] = [
     {
       label: "Details",
-      content: <CandidateDetails />,
+      content: <ProfilePage />,
     },
     {
       label: "Requests",
@@ -95,7 +95,7 @@ const CandidateProfile = () => {
         <Box sx={{ px: { xs: 2, md: 6 } }}>
           <AdminBreadcrumb breadcrumbs={breadcrumbs} />
           <Typography level="h2" component="h1" sx={{ mt: 1, mb: 2 }}>
-            Candidate Profile
+            {isAdmin ? "Candidate Profile" : "Your Profile"}
           </Typography>
         </Box>
         <TabBar

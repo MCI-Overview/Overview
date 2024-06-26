@@ -1,20 +1,27 @@
 import { Dayjs } from "dayjs";
 
-export type CommonCandidate = {
+export type CommonCandidate = CandidateDetails & {
+  address?: CommonAddress;
+  bankDetails?: BankDetails;
+  emergencyContact?: EmergencyContact;
+};
+
+export type ProjectCandidate = CommonCandidate & {
+  employmentType: "PART_TIME" | "FULL_TIME" | "CONTRACT";
+  consultantCuid: string;
+  startDate: string;
+  endDate: string;
+};
+
+export type CandidateDetails = {
   cuid: string;
   nric: string;
   name: string;
   contact: string;
-  dateOfBirth: Dayjs;
-  consultantCuid: string;
-  startDate: Dayjs;
-  endDate: Dayjs;
-  employmentType: "PART_TIME" | "FULL_TIME" | "CONTRACT";
-  nationality?: string | null;
-  address?: CommonAddress;
-  bankDetails?: BankDetails;
-  emergencyContact?: EmergencyContact;
+  createdAt: string;
+  dateOfBirth: string;
   hasOnboarded: boolean;
+  nationality?: string | null;
 };
 
 export type CommonConsultant = {

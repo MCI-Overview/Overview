@@ -44,7 +44,7 @@ candidateAPIRoutes.get(
 
       const hasReadCandidateDetailsPermission = await checkPermission(
         user.cuid,
-        PermissionList.CAN_READ_CANDIDATE_DETAILS,
+        PermissionList.CAN_READ_CANDIDATE_DETAILS
       );
 
       if (hasReadCandidateDetailsPermission) {
@@ -70,7 +70,7 @@ candidateAPIRoutes.get(
     } catch (error) {
       return res.status(404).send("Candidate not found.");
     }
-  },
+  }
 );
 
 candidateAPIRoutes.post("/candidate", async (req, res) => {
@@ -206,7 +206,7 @@ candidateAPIRoutes.delete("/candidate", async (req, res) => {
 
   const hasDeleteCandidatePermission = await checkPermission(
     user.cuid,
-    PermissionList.CAN_DELETE_CANDIDATES,
+    PermissionList.CAN_DELETE_CANDIDATES
   );
 
   if (!hasDeleteCandidatePermission) {
@@ -260,13 +260,13 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     return res
       .status(400)
       .send(
-        "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required.",
+        "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required."
       );
   }
 
   const hasUpdateCandidatePermission = await checkPermission(
     user.cuid,
-    PermissionList.CAN_UPDATE_CANDIDATES,
+    PermissionList.CAN_UPDATE_CANDIDATES
   );
 
   if (!hasUpdateCandidatePermission) {
@@ -281,58 +281,35 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   }
 
   // Validation for bankDetails
-  let bankDetailsObject;
-  if (bankDetails) {
-    try {
-      bankDetailsObject = JSON.parse(bankDetails);
-      if (
-        !bankDetailsObject.bankHolderName ||
-        !bankDetailsObject.bankName ||
-        !bankDetailsObject.bankNumber
-      ) {
-        return res.status(400).send("Invalid bankDetails JSON.");
-      }
-    } catch (error) {
-      return res.status(400).send("Invalid bankDetails JSON.");
-    }
+  if (
+    bankDetails &&
+    (!bankDetails.bankHolderName ||
+      !bankDetails.bankName ||
+      !bankDetails.bankNumber)
+  ) {
+    return res.status(400).send("Invalid bankDetails JSON.");
   }
-
   // Validation for address
-  let addressObject;
-  if (address) {
-    try {
-      addressObject = JSON.parse(address);
-      if (
-        !addressObject.block ||
-        !addressObject.building ||
-        !addressObject.floor ||
-        !addressObject.unit ||
-        !addressObject.street ||
-        !addressObject.postal ||
-        !addressObject.country
-      ) {
-        return res.status(400).send("Invalid address JSON.");
-      }
-    } catch (error) {
-      return res.status(400).send("Invalid address JSON.");
-    }
+  if (
+    address &&
+    (!address.block ||
+      !address.building ||
+      !address.street ||
+      !address.postal ||
+      !address.country ||
+      (!address.isLanded && !(address.floor || address.unit)))
+  ) {
+    return res.status(400).send("Invalid address JSON.");
   }
 
   // Validation for emergencyContact
-  let emergencyContactObject;
-  if (emergencyContact) {
-    try {
-      emergencyContactObject = JSON.parse(emergencyContact);
-      if (
-        !emergencyContactObject.name ||
-        !emergencyContactObject.relationship ||
-        !emergencyContactObject.contact
-      ) {
-        return res.status(400).send("Invalid emergencyContact JSON.");
-      }
-    } catch (error) {
-      return res.status(400).send("Invalid emergencyContact JSON.");
-    }
+  if (
+    emergencyContact &&
+    (!emergencyContact.name ||
+      !emergencyContact.relationship ||
+      !emergencyContact.contact)
+  ) {
+    return res.status(400).send("Invalid emergencyContact JSON.");
   }
 
   // Build the update data object with only provided fields
@@ -341,11 +318,9 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     ...(contact && { contact: contact }),
     ...(nationality && { nationality }),
     ...(dateOfBirth && { dateOfBirth }),
-    ...(addressObject && { address: { update: addressObject } }),
-    ...(bankDetailsObject && { bankDetails: { update: bankDetailsObject } }),
-    ...(emergencyContactObject && {
-      emergencyContact: { update: emergencyContactObject },
-    }),
+    ...(address && { address }),
+    ...(bankDetails && { bankDetails }),
+    ...(emergencyContact && { emergencyContact }),
   };
 
   // Check if no fields are provided to update
