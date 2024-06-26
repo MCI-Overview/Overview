@@ -28,7 +28,7 @@ const JoinedProjects: FC = () => {
         spacing={4}
         sx={{
           display: "flex",
-          maxWidth: "600px",
+          maxWidth: "800px",
           mx: "auto",
         }}
       >
