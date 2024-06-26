@@ -46,16 +46,13 @@ const options = {
     },
   },
   responsive: true,
+  maintainAspectRatio: false,
   scales: {
     x: {
       stacked: true,
     },
     y: {
       stacked: true,
-      title: {
-        display: true,
-        text: 'Headcount',
-      },
     },
   },
 };
@@ -93,7 +90,12 @@ const AttendanceGraph: React.FC<AttendanceGraphProps> = ({ datasets, weekStart }
       },
     ],
   };
-  return <Bar options={options} data={data} />;
+
+  return (
+    <div style={{ minHeight: '500px' }}>
+      <Bar options={options} data={data} />
+    </div>
+  );
 };
 
 export default AttendanceGraph;
