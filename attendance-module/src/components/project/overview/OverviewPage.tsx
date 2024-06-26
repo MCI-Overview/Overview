@@ -261,10 +261,10 @@ const ProjectOverview = () => {
           <Divider />
           <Stack columnGap={2} rowGap={2} sx={{ flexGrow: 1, mx: 0 }}>
             <Grid container spacing={2}>
-              <Grid sm={12} md={6}>
+              <Grid xs={12} sm={6}>
                 <HeadcountSection active={plotData?.headcount.endDate.ongoing ?? 0} inactive={plotData?.headcount.endDate.hasEnded ?? 0} />
               </Grid>
-              <Grid sm={12} md={6}>
+              <Grid xs={12} sm={6}>
                 <NationalityCount headcount={headcount} />
               </Grid>
             </Grid>
