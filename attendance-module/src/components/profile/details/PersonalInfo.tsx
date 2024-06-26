@@ -49,8 +49,10 @@ export default function PersonalInfo({
 
   const isSame = isEqual(oldCandidateDetails, newCandidateDetails);
 
-  const isNameValid = newCandidateDetails.name.length > 0;
+  const isNameValid =
+    newCandidateDetails.name && newCandidateDetails.name.length > 0;
   const isDateValid =
+    newCandidateDetails.dateOfBirth &&
     dayjs().diff(dayjs(newCandidateDetails.dateOfBirth), "year") >= 13;
 
   return (
@@ -68,7 +70,7 @@ export default function PersonalInfo({
             <FormLabel>Name</FormLabel>
             <Input
               type="text"
-              value={newCandidateDetails.name}
+              value={newCandidateDetails.name || ""}
               onChange={(e) =>
                 setNewCandidateDetails({
                   ...newCandidateDetails,
@@ -84,7 +86,13 @@ export default function PersonalInfo({
         <Grid xs={1}>
           <FormControl disabled>
             <FormLabel>NRIC</FormLabel>
-            <Input type="text" value={newCandidateDetails.nric} />
+            <Input
+              type="text"
+              value={
+                newCandidateDetails.nric ||
+                "An error occured while loading the NRIC"
+              }
+            />
           </FormControl>
         </Grid>
         <Grid xs={1}>
@@ -92,7 +100,7 @@ export default function PersonalInfo({
             <FormLabel>Contact</FormLabel>
             <Input
               type="number"
-              value={newCandidateDetails.contact}
+              value={newCandidateDetails.contact || ""}
               onChange={(e) =>
                 setNewCandidateDetails({
                   ...newCandidateDetails,
@@ -112,7 +120,10 @@ export default function PersonalInfo({
             <FormLabel>Date of Birth</FormLabel>
             <Input
               type="date"
-              value={newCandidateDetails.dateOfBirth.split("T")[0]}
+              value={
+                newCandidateDetails.dateOfBirth.split("T")[0] ||
+                dayjs().format("YYYY-MM-DD")
+              }
               onChange={(e) =>
                 setNewCandidateDetails({
                   ...newCandidateDetails,

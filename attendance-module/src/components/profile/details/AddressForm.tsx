@@ -52,9 +52,9 @@ export default function AddressForm({
 
   const isSame = isEqual(oldAddress, newAddress);
 
-  const isStreetValid = newAddress.street.length > 0;
-  const isBuildingValid = newAddress.building.length > 0;
-  const isCountryValid = newAddress.country.length > 0;
+  const isStreetValid = newAddress.street && newAddress.street.length > 0;
+  const isBuildingValid = newAddress.building && newAddress.building.length > 0;
+  const isCountryValid = newAddress.country && newAddress.country.length > 0;
 
   const isPostalValid = newAddress.postal && newAddress.postal.length > 0;
   const isBlockValid = newAddress.block && newAddress.block.length > 0;
@@ -99,7 +99,7 @@ export default function AddressForm({
           <FormControl error={!isPostalValid || !isBlockPositive}>
             <FormLabel>Postal Code</FormLabel>
             <Input
-              value={newAddress.postal}
+              value={newAddress.postal || ""}
               onChange={(e) =>
                 setNewAddress({ ...newAddress, postal: e.target.value })
               }
@@ -122,7 +122,7 @@ export default function AddressForm({
             <FormLabel>⠀</FormLabel>
             <Button
               onClick={loadAddress}
-              disabled={newAddress.postal.length !== 6}
+              disabled={newAddress.postal && newAddress.postal.length !== 6}
             >
               Search
             </Button>
@@ -132,7 +132,7 @@ export default function AddressForm({
           <FormControl error={!isBlockValid || !isBlockPositive}>
             <FormLabel>Block</FormLabel>
             <Input
-              value={newAddress.block}
+              value={newAddress.block || ""}
               type="number"
               onChange={(e) =>
                 setNewAddress({ ...newAddress, block: e.target.value })
@@ -155,7 +155,7 @@ export default function AddressForm({
           <FormControl error={!isBuildingValid}>
             <FormLabel>Building</FormLabel>
             <Input
-              value={newAddress.building}
+              value={newAddress.building || ""}
               onChange={(e) =>
                 setNewAddress({ ...newAddress, building: e.target.value })
               }
@@ -169,7 +169,7 @@ export default function AddressForm({
           <FormControl error={!isStreetValid}>
             <FormLabel>Street</FormLabel>
             <Input
-              value={newAddress.street}
+              value={newAddress.street || ""}
               onChange={(e) =>
                 setNewAddress({ ...newAddress, street: e.target.value })
               }
@@ -183,7 +183,7 @@ export default function AddressForm({
           <FormControl error={!isCountryValid}>
             <FormLabel>Country</FormLabel>
             <Input
-              value={newAddress.country}
+              value={newAddress.country || ""}
               onChange={(e) =>
                 setNewAddress({ ...newAddress, country: e.target.value })
               }
@@ -198,7 +198,7 @@ export default function AddressForm({
             <FormControl error={!isFloorValid || !isFloorPositive}>
               <FormLabel>Floor</FormLabel>
               <Input
-                value={newAddress.floor}
+                value={newAddress.floor || ""}
                 disabled={newAddress.isLanded}
                 onChange={(e) =>
                   setNewAddress({
@@ -224,7 +224,7 @@ export default function AddressForm({
             <FormControl error={!isUnitValid || !isUnitPositive}>
               <FormLabel>Unit</FormLabel>
               <Input
-                value={newAddress.unit}
+                value={newAddress.unit || ""}
                 disabled={newAddress.isLanded}
                 onChange={(e) =>
                   setNewAddress({

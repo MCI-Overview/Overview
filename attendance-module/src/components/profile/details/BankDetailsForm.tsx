@@ -42,9 +42,12 @@ export default function BankDetailsForm({
 
   const isSame = isEqual(oldBankDetails, newBankDetails);
 
-  const isBankHolderNameValid = newBankDetails.bankHolderName.length > 0;
-  const isBankNameValid = newBankDetails.bankName.length > 0;
-  const isBankNumberValid = newBankDetails.bankNumber.length > 0;
+  const isBankHolderNameValid =
+    newBankDetails.bankHolderName && newBankDetails.bankHolderName.length > 0;
+  const isBankNameValid =
+    newBankDetails.bankName && newBankDetails.bankName.length > 0;
+  const isBankNumberValid =
+    newBankDetails.bankNumber && newBankDetails.bankNumber.length > 0;
 
   return (
     <Card>
@@ -58,7 +61,7 @@ export default function BankDetailsForm({
           <FormControl error={!isBankHolderNameValid}>
             <FormLabel>Bank Holder Name</FormLabel>
             <Input
-              value={newBankDetails.bankHolderName}
+              value={newBankDetails.bankHolderName || ""}
               onChange={(e) =>
                 setNewBankDetails({
                   ...newBankDetails,
@@ -75,7 +78,7 @@ export default function BankDetailsForm({
           <FormControl error={!isBankNameValid}>
             <FormLabel>Bank Name</FormLabel>
             <Input
-              value={newBankDetails.bankName}
+              value={newBankDetails.bankName || ""}
               onChange={(e) =>
                 setNewBankDetails({
                   ...newBankDetails,
@@ -92,7 +95,7 @@ export default function BankDetailsForm({
           <FormControl error={!isBankNumberValid}>
             <FormLabel>Bank Account Number</FormLabel>
             <Input
-              value={newBankDetails.bankNumber}
+              value={newBankDetails.bankNumber || ""}
               type="number"
               onChange={(e) =>
                 setNewBankDetails({

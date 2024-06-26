@@ -41,9 +41,10 @@ export default function EmergencyContactForm({
 
   const isSame = isEqual(oldContact, newContact);
 
-  const isNameValid = newContact.name.length > 0;
-  const isContactValid = newContact.contact.length > 0;
-  const isRelationshipValid = newContact.relationship.length > 0;
+  const isNameValid = newContact.name && newContact.name.length > 0;
+  const isContactValid = newContact.contact && newContact.contact.length > 0;
+  const isRelationshipValid =
+    newContact.relationship && newContact.relationship.length > 0;
 
   return (
     <Card>
@@ -59,7 +60,7 @@ export default function EmergencyContactForm({
           <FormControl error={!isNameValid}>
             <FormLabel>Name</FormLabel>
             <Input
-              value={newContact.name}
+              value={newContact.name || ""}
               onChange={(e) =>
                 setNewContact({ ...newContact, name: e.target.value })
               }
@@ -73,7 +74,7 @@ export default function EmergencyContactForm({
           <FormControl error={!isContactValid}>
             <FormLabel>Contact Number</FormLabel>
             <Input
-              value={newContact.contact}
+              value={newContact.contact || ""}
               type="number"
               onChange={(e) =>
                 setNewContact({ ...newContact, contact: e.target.value })
@@ -93,7 +94,7 @@ export default function EmergencyContactForm({
           <FormControl error={!isRelationshipValid}>
             <FormLabel>Relationship</FormLabel>
             <Input
-              value={newContact.relationship}
+              value={newContact.relationship || ""}
               onChange={(e) =>
                 setNewContact({ ...newContact, relationship: e.target.value })
               }
