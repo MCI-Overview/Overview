@@ -13,7 +13,7 @@ profileAPIRouter.get("/bankStatement", async (req, res) => {
   try {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `${cuid}-bankStatement`,
+      Key: `${cuid}/bank-statement`,
     });
 
     const response = await s3.send(command);
@@ -35,7 +35,7 @@ profileAPIRouter.get("/nric/front", async (req, res) => {
   try {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `${cuid}-nricFront`,
+      Key: `${cuid}/nric/front`,
     });
 
     const response = await s3.send(command);
@@ -57,7 +57,7 @@ profileAPIRouter.get("/nric/back", async (req, res) => {
   try {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `${cuid}-nricBack`,
+      Key: `${cuid}/nric/back`,
     });
 
     const response = await s3.send(command);
@@ -127,16 +127,16 @@ profileAPIRouter.post(
         s3.send(
           new PutObjectCommand({
             Bucket: process.env.S3_BUCKET_NAME!,
-            Key: `${cuid}-nricFront`,
+            Key: `${cuid}/nric/front`,
             Body: nricFront.buffer,
-          }),
+          })
         ),
         s3.send(
           new PutObjectCommand({
             Bucket: process.env.S3_BUCKET_NAME!,
-            Key: `${cuid}-nricBack`,
+            Key: `${cuid}/nric/back`,
             Body: nricBack.buffer,
-          }),
+          })
         ),
       ]);
 
@@ -145,7 +145,7 @@ profileAPIRouter.post(
       console.error("Error while uploading file:", error);
       return res.status(500).send("Internal server error");
     }
-  },
+  }
 );
 
 profileAPIRouter.post(
@@ -164,9 +164,9 @@ profileAPIRouter.post(
         s3.send(
           new PutObjectCommand({
             Bucket: process.env.S3_BUCKET_NAME!,
-            Key: `${cuid}-bankStatement`,
+            Key: `${cuid}/bank-statement`,
             Body: bankStatement.buffer,
-          }),
+          })
         ),
         prisma.candidate.update({
           where: {
@@ -188,14 +188,12 @@ profileAPIRouter.post(
       console.error("Error while uploading file:", error);
       return res.status(500).send("Internal server error");
     }
-  },
+  }
 );
 
 profileAPIRouter.post("/emergencyContact", async (req, res) => {
   const { cuid } = req.user as User;
   const { name, relationship, contact } = req.body;
-
-  console.log("req.body", req.body);
 
   try {
     await prisma.candidate.update({
