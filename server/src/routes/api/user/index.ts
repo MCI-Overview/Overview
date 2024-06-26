@@ -83,7 +83,7 @@ userAPIRouter.get("/projects", async (req, res) => {
     return res.send(
       projects.map((project) => {
         const candidateAssign = project.Assign.filter(
-          (assign) => assign.candidateCuid === cuid,
+          (assign) => assign.candidateCuid === cuid
         )[0];
 
         return {
@@ -96,7 +96,7 @@ userAPIRouter.get("/projects", async (req, res) => {
           Client: project.Client,
           Manage: project.Manage,
         };
-      }),
+      })
     );
   } catch (error) {
     console.log(error);
@@ -147,7 +147,7 @@ userAPIRouter.get("/claimableShifts", async (req, res) => {
         acc[projectCuid]["shifts"].push(shift);
 
         return acc;
-      }, {} as Record<string, any>),
+      }, {} as Record<string, any>)
     );
   } catch (error) {
     console.log(error);
@@ -189,11 +189,107 @@ userAPIRouter.get("/upcomingShifts", async (req, res) => {
         acc[projectCuid]["shifts"].push(shift);
 
         return acc;
-      }, {} as Record<string, any>),
+      }, {} as Record<string, any>)
     );
   } catch (error) {
     console.log(error);
     return res.status(500).send("Internal server error");
+  }
+});
+
+userAPIRouter.patch("/", async (req, res) => {
+  const user = req.user as User;
+
+  const {
+    name,
+    contact,
+    nationality,
+    dateOfBirth,
+    bankDetails,
+    address,
+    emergencyContact,
+  } = req.body;
+
+  if (
+    !name &&
+    !contact &&
+    !nationality &&
+    !dateOfBirth &&
+    !bankDetails &&
+    !address &&
+    !emergencyContact
+  ) {
+    return res
+      .status(400)
+      .send(
+        "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required."
+      );
+  }
+
+  // Validation for dateOfBirth
+  if (dateOfBirth && !Date.parse(dateOfBirth)) {
+    return res.status(400).send("Invalid dateOfBirth parameter.");
+  }
+
+  // Validation for bankDetails
+  if (
+    bankDetails &&
+    (!bankDetails.bankHolderName ||
+      !bankDetails.bankName ||
+      !bankDetails.bankNumber)
+  ) {
+    return res.status(400).send("Invalid bankDetails JSON.");
+  }
+  // Validation for address
+  if (
+    address &&
+    (!address.block ||
+      !address.building ||
+      !address.street ||
+      !address.postal ||
+      !address.country ||
+      (!address.isLanded && !(address.floor || address.unit)))
+  ) {
+    console.log(address);
+    return res.status(400).send("Invalid address JSON.");
+  }
+
+  // Validation for emergencyContact
+  if (
+    emergencyContact &&
+    (!emergencyContact.name ||
+      !emergencyContact.relationship ||
+      !emergencyContact.contact)
+  ) {
+    return res.status(400).send("Invalid emergencyContact JSON.");
+  }
+
+  // Build the update data object with only provided fields
+  const updateData = {
+    ...(name && { name }),
+    ...(contact && { contact: contact }),
+    ...(nationality && { nationality }),
+    ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
+    ...(address && { address }),
+    ...(bankDetails && { bankDetails }),
+    ...(emergencyContact && { emergencyContact }),
+  };
+
+  // Check if no fields are provided to update
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).send("No valid fields provided for update.");
+  }
+
+  try {
+    await prisma.candidate.update({
+      where: { cuid: user.cuid },
+      data: updateData,
+    });
+
+    return res.send(`Profile updated successfully.`);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal server error.");
   }
 });
 
