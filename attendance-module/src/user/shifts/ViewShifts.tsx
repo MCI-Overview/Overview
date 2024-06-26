@@ -9,6 +9,7 @@ import UpcomingShiftsM from "./UpcomingShiftsM";
 import { Box, FormControl, FormLabel, Input } from "@mui/joy";
 import { SearchRounded as SearchIcon } from "@mui/icons-material";
 import PaginationFooter from "../../components/project/ui/PaginationFooter";
+import SmallScreenDivider from "../../components/project/ui/SmallScreenDivider";
 
 type Page = {
   isFirstPage: boolean;
@@ -85,50 +86,50 @@ const ViewShifts = () => {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box
+      sx={{
+        px: { md: 4 },
+        pb: { xs: 2, sm: 2, md: 3 },
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        minWidth: 0,
+        gap: 1,
+      }}
+    >
       <Box
         sx={{
-          px: { md: 4 },
-          pb: { xs: 2, sm: 2, md: 3 },
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          minWidth: 0,
-          gap: 1,
+          borderRadius: "sm",
+          flexWrap: "wrap",
+          gap: 1.5,
         }}
       >
-        <Box
-          sx={{
-            borderRadius: "sm",
-            flexWrap: "wrap",
-            gap: 1.5,
-          }}
-        >
-          <FormControl sx={{ flex: 1 }} size="sm">
-            <FormLabel>Search for shift</FormLabel>
-            <Input
-              type="date"
-              size="sm"
-              placeholder="Search"
-              startDecorator={<SearchIcon />}
-              onChange={handleDateChange}
-              disabled={data.length === 0}
-            />
-          </FormControl>
-        </Box>
-
-        <UpcomingShifts data={data} />
-        <UpcomingShiftsM data={data} />
-
-        <PaginationFooter
-          maxPage={page.pageCount}
-          handlePreviousPage={handlePreviousPage}
-          isFirstPage={page.isFirstPage}
-          currentPage={page.currentPage}
-          handleNextPage={handleNextPage}
-          isLastPage={page.isLastPage}
-        />
+        <FormControl sx={{ flex: 1 }} size="sm">
+          <FormLabel>Search for shift</FormLabel>
+          <Input
+            type="date"
+            size="sm"
+            placeholder="Search"
+            startDecorator={<SearchIcon />}
+            onChange={handleDateChange}
+            disabled={data.length === 0}
+          />
+        </FormControl>
       </Box>
+
+      <SmallScreenDivider />
+
+      <UpcomingShifts data={data} />
+      <UpcomingShiftsM data={data} />
+
+      <PaginationFooter
+        maxPage={page.pageCount}
+        handlePreviousPage={handlePreviousPage}
+        isFirstPage={page.isFirstPage}
+        currentPage={page.currentPage}
+        handleNextPage={handleNextPage}
+        isLastPage={page.isLastPage}
+      />
     </Box>
   );
 };

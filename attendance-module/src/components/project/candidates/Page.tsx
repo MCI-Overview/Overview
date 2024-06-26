@@ -9,6 +9,7 @@ import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import { Box, Button, Input, FormControl, FormLabel, Stack } from "@mui/joy";
 import SearchIcon from "@mui/icons-material/Search";
+import SmallScreenDivider from "../ui/SmallScreenDivider";
 
 const CandidatePage = () => {
   const { project, updateProject } = useProjectContext();
@@ -93,13 +94,18 @@ const CandidatePage = () => {
           />
         </FormControl>
 
-        <FormControl size="sm">
-          <FormLabel>Add candidates</FormLabel>
-          <Button size="sm" onClick={() => setIsUploadOpen(true)}>
-            Import
+        <Box sx={{ display: "flex" }}>
+          <Button
+            size="sm"
+            onClick={() => setIsUploadOpen(true)}
+            sx={{ mt: "auto" }}
+          >
+            Import candidates
           </Button>
-        </FormControl>
+        </Box>
       </Box>
+
+      <SmallScreenDivider />
 
       <CandidateTable
         tableData={candidatesData

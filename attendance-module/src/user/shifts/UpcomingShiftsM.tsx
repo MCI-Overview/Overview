@@ -30,7 +30,7 @@ const UpcomingShiftsM = ({ data }: UpcomingShiftsMProps) => {
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
         {data.length === 0 ? (
           <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
-            No upcoming shifts found
+            No shifts found
           </Typography>
         ) : (
           <List

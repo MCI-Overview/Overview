@@ -55,9 +55,7 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
           {data.length === 0 ? (
             <tr>
               <td colSpan={6}>
-                <Typography level="body-xs">
-                  No upcoming shifts found
-                </Typography>
+                <Typography level="body-xs">No shifts found</Typography>
               </td>
             </tr>
           ) : (

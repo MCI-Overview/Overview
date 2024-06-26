@@ -9,18 +9,20 @@ import { ThTypo, TdTypo } from "../ui/TableTypo";
 
 import {
   Box,
-  Table,
-  TableProps,
-  Typography,
-  Tooltip,
+  Card,
+  Chip,
+  ColorPaletteProp,
   IconButton,
-  Sheet,
   List,
   ListItem,
   ListItemContent,
-  Chip,
-  ColorPaletteProp,
   ListDivider,
+  Sheet,
+  Table,
+  TableProps,
+  Tooltip,
+  Typography,
+  CardOverflow,
 } from "@mui/joy";
 import {
   DeleteRounded as DeleteIcon,
@@ -50,6 +52,9 @@ export interface CandidateTableProps {
 type SortableKeys = "age" | "startDate" | "endDate";
 
 const CandidateTable = ({
+  tableTitle,
+  tableDescription,
+  tableProps,
   tableData,
   handleDelete,
   showCandidateHolder = false,
@@ -124,7 +129,6 @@ const CandidateTable = ({
   return (
     <>
       <Sheet
-        variant="outlined"
         sx={{
           display: { xs: "none", sm: "initial" },
           width: "100%",
@@ -134,94 +138,119 @@ const CandidateTable = ({
           minHeight: 0,
         }}
       >
-        <Table
-          aria-labelledby="tableTitle"
-          stickyHeader
-          hoverRow
-          sx={{
-            "--TableCell-headBackground":
-              "var(--joy-palette-background-level1)",
-            "--Table-headerUnderlineThickness": "1px",
-            "--TableRow-hoverBackground":
-              "var(--joy-palette-background-level1)",
-            "--TableCell-paddingY": "4px",
-            "--TableCell-paddingX": "8px",
-            "& tr > *": { textAlign: "center" },
-          }}
-        >
-          <thead>
-            <tr>
-              <ThTypo>Nric</ThTypo>
-              <ThTypo>Name</ThTypo>
-              <ThTypo>Contact</ThTypo>
-              <ThTypo>Date of birth</ThTypo>
-              <ThTypo onClick={() => requestSort("age")}>
-                {renderSortIcon("age")} Age
-              </ThTypo>
-              <ThTypo onClick={() => requestSort("startDate")}>
-                {renderSortIcon("startDate")} Start date
-              </ThTypo>
-              <ThTypo onClick={() => requestSort("endDate")}>
-                {renderSortIcon("endDate")} End date
-              </ThTypo>
-              <ThTypo>Type</ThTypo>
-              {showCandidateHolder && <ThTypo>Consultant</ThTypo>}
-              {handleDelete && <ThTypo>Action</ThTypo>}
-            </tr>
-          </thead>
+        {tableTitle && tableDescription && (
+          <Box sx={{ mb: 1 }}>
+            <Typography level="title-sm">{tableTitle}</Typography>
+            <Typography level="body-xs">{tableDescription}</Typography>
+          </Box>
+        )}
 
-          <tbody>
-            {sortedData.length === 0 ? (
-              <tr>
-                <td colSpan={handleDelete ? 10 : 9}>
-                  <Typography level="body-xs">No candidates found</Typography>
-                </td>
-              </tr>
-            ) : (
-              sortedData.map((row) => (
-                <tr key={row.cuid}>
-                  <TdTypo>{row.nric}</TdTypo>
-                  <TdTypo>{row.name}</TdTypo>
-                  <TdTypo>{row.contact}</TdTypo>
-                  <TdTypo>{dayjs(row.dateOfBirth).format("DD/MM/YYYY")}</TdTypo>
-                  <TdTypo>{dayjs().diff(row.dateOfBirth, "years")}</TdTypo>
-                  <TdTypo>{dayjs(row.startDate).format("DD/MM/YYYY")}</TdTypo>
-                  <TdTypo>{dayjs(row.endDate).format("DD/MM/YYYY")}</TdTypo>
-                  <TdTypo>{readableEnum(row.employmentType)}</TdTypo>
-                  {showCandidateHolder && <TdTypo>{row.consultantName}</TdTypo>}
-
-                  {handleDelete && (
-                    <td>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          justifyContent: "center",
-                          gap: 1,
-                        }}
-                      >
-                        {handleDelete && (
-                          <Tooltip size="sm" title="Delete" placement="right">
-                            <IconButton
-                              size="sm"
-                              color="danger"
-                              onClick={() => handleDelete([row.cuid])}
-                              disabled={
-                                !hasEditProjectPermission && !isHolder(row.cuid)
-                              }
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </Box>
-                    </td>
-                  )}
+        <Card>
+          <CardOverflow sx={{ px: "0px" }}>
+            <Table
+              aria-labelledby="tableTitle"
+              stickyHeader
+              hoverRow
+              sx={{
+                "--TableCell-headBackground":
+                  "var(--joy-palette-background-level1)",
+                "--Table-headerUnderlineThickness": "1px",
+                "--TableRow-hoverBackground":
+                  "var(--joy-palette-background-level1)",
+                "--TableCell-paddingY": "4px",
+                "--TableCell-paddingX": "8px",
+                "& tr > *": { textAlign: "center" },
+              }}
+              {...tableProps}
+            >
+              <thead>
+                <tr>
+                  <ThTypo>Nric</ThTypo>
+                  <ThTypo>Name</ThTypo>
+                  <ThTypo>Contact</ThTypo>
+                  <ThTypo>Date of birth</ThTypo>
+                  <ThTypo onClick={() => requestSort("age")}>
+                    {renderSortIcon("age")} Age
+                  </ThTypo>
+                  <ThTypo onClick={() => requestSort("startDate")}>
+                    {renderSortIcon("startDate")} Start date
+                  </ThTypo>
+                  <ThTypo onClick={() => requestSort("endDate")}>
+                    {renderSortIcon("endDate")} End date
+                  </ThTypo>
+                  <ThTypo>Type</ThTypo>
+                  {showCandidateHolder && <ThTypo>Consultant</ThTypo>}
+                  {handleDelete && <ThTypo>Action</ThTypo>}
                 </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
+              </thead>
+
+              <tbody>
+                {sortedData.length === 0 ? (
+                  <tr>
+                    <td colSpan={handleDelete ? 10 : 9}>
+                      <Typography level="body-xs">
+                        No candidates found
+                      </Typography>
+                    </td>
+                  </tr>
+                ) : (
+                  sortedData.map((row) => (
+                    <tr key={row.cuid}>
+                      <TdTypo>{row.nric}</TdTypo>
+                      <TdTypo>{row.name}</TdTypo>
+                      <TdTypo>{row.contact}</TdTypo>
+                      <TdTypo>
+                        {dayjs(row.dateOfBirth).format("DD/MM/YYYY")}
+                      </TdTypo>
+                      <TdTypo>{dayjs().diff(row.dateOfBirth, "years")}</TdTypo>
+                      <TdTypo>
+                        {dayjs(row.startDate).format("DD/MM/YYYY")}
+                      </TdTypo>
+                      <TdTypo>{dayjs(row.endDate).format("DD/MM/YYYY")}</TdTypo>
+                      <TdTypo>{readableEnum(row.employmentType)}</TdTypo>
+                      {showCandidateHolder && (
+                        <TdTypo>{row.consultantName}</TdTypo>
+                      )}
+
+                      {handleDelete && (
+                        <td>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              justifyContent: "center",
+                              gap: 1,
+                            }}
+                          >
+                            {handleDelete && (
+                              <Tooltip
+                                size="sm"
+                                title="Delete"
+                                placement="right"
+                              >
+                                <IconButton
+                                  size="sm"
+                                  color="danger"
+                                  onClick={() => handleDelete([row.cuid])}
+                                  disabled={
+                                    !hasEditProjectPermission &&
+                                    !isHolder(row.cuid)
+                                  }
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          </Box>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </Table>
+          </CardOverflow>
+        </Card>
       </Sheet>
 
       {/* List display for smaller screens */}

@@ -9,6 +9,7 @@ import PaginationFooter from "../../components/project/ui/PaginationFooter";
 
 import { Box, FormControl, FormLabel, Input } from "@mui/joy";
 import { SearchRounded as SearchIcon } from "@mui/icons-material";
+import SmallScreenDivider from "../../components/project/ui/SmallScreenDivider";
 
 type Page = {
   isFirstPage: boolean;
@@ -118,6 +119,8 @@ const ViewAttendance = () => {
           />
         </FormControl>
       </Box>
+
+      <SmallScreenDivider />
 
       <AttendanceHistory data={data} />
       <AttendanceHistoryM data={data} />
