@@ -264,12 +264,12 @@ projectAPIRouter.get(
                 .add(startTime.minute(), "minute"),
               shiftEndTime: startTime.isBefore(endTime)
                 ? startDate
-                  .add(endTime.hour(), "hour")
-                  .add(endTime.minute(), "minute")
+                    .add(endTime.hour(), "hour")
+                    .add(endTime.minute(), "minute")
                 : startDate
-                  .add(endTime.hour(), "hour")
-                  .add(endTime.minute(), "minute")
-                  .add(1, "day"),
+                    .add(endTime.hour(), "hour")
+                    .add(endTime.minute(), "minute")
+                    .add(1, "day"),
               consultantCuid: cr.Shift.Project.Manage.filter(
                 (manage) => manage.role === Role.CLIENT_HOLDER,
               ).map((manage) => manage.consultantCuid)[0],
@@ -410,34 +410,39 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
   const { projectCuid } = req.params;
   const { startDate, endDate } = req.query;
 
-  const start = typeof startDate === 'string' ? startDate : undefined;
-  const end = typeof endDate === 'string' ? endDate : undefined;
+  const start = typeof startDate === "string" ? startDate : undefined;
+  const end = typeof endDate === "string" ? endDate : undefined;
   const now = dayjs();
-  const adjustedEnd = end && dayjs(end).isAfter(now) ? now.startOf('day').toDate() : end ? dayjs(end).startOf('day').toDate() : undefined;
+  const adjustedEnd =
+    end && dayjs(end).isAfter(now)
+      ? now.startOf("day").toDate()
+      : end
+      ? dayjs(end).startOf("day").toDate()
+      : undefined;
 
   try {
     const response = await prisma.attendance.findMany({
       where: {
         shiftDate: {
-          gte: start ? dayjs(start).startOf('day').toDate() : undefined,
-          lte: adjustedEnd
+          gte: start ? dayjs(start).startOf("day").toDate() : undefined,
+          lte: adjustedEnd,
         },
         Shift: {
-          projectCuid: projectCuid
-        }
+          projectCuid: projectCuid,
+        },
       },
       include: {
         Shift: {
           include: {
-            Project: true
-          }
+            Project: true,
+          },
         },
-        Candidate: true
+        Candidate: true,
       },
       orderBy: {
-        shiftDate: "asc"
-      }
-    })
+        shiftDate: "asc",
+      },
+    });
 
     return res.send(
       response.map((row) => ({
@@ -449,7 +454,7 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
         shiftEnd: row.Shift.endTime,
         rawStart: row.clockInTime,
         rawEnd: row.clockOutTime,
-        status: row.status
+        status: row.status,
       })),
     );
   } catch (error) {
@@ -1472,6 +1477,14 @@ projectAPIRouter.get("/projects", async (req, res) => {
         },
       },
       include: {
+        Manage: {
+          include: {
+            Consultant: true,
+          },
+          where: {
+            role: "CLIENT_HOLDER",
+          },
+        },
         Client: true,
       },
     });
@@ -1505,6 +1518,9 @@ projectAPIRouter.get("/projects/all", async (_req, res) => {
         Manage: {
           include: {
             Consultant: true,
+          },
+          where: {
+            role: "CLIENT_HOLDER",
           },
         },
         Client: true,

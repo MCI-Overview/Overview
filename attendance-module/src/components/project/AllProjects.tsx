@@ -2,7 +2,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { FC, useState, useEffect } from "react";
 import { Project } from "../../types/index";
-import ProjectDisplay from "./ui/Project";
+import AdminProjectDisplay from "./ui/AdminProjectDisplay";
 
 import {
   Box,
@@ -26,7 +26,7 @@ const AllProjects: FC = () => {
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [futureProjects, setFutureProjects] = useState<Project[]>([]);
   const [value, setValue] = useState<"concluded" | "ongoing" | "future">(
-    "ongoing"
+    "ongoing",
   );
 
   const { user } = useUserContext();
@@ -37,26 +37,26 @@ const AllProjects: FC = () => {
     axios.get("/api/admin/projects/all").then((response) => {
       const allProjects = response.data as Project[];
 
-      console.log(allProjects);
-
       const projects = allProjects.filter((project) => {
         return !project.Manage.find((m) => m.consultantCuid === user.cuid);
       });
 
       setPreviousProjects(
-        projects.filter((project) => dayjs().isAfter(dayjs(project.endDate)))
+        projects.filter((project) => dayjs().isAfter(dayjs(project.endDate))),
       );
 
       setOngoingProjects(
         projects.filter(
           (project) =>
             dayjs().isAfter(dayjs(project.startDate)) &&
-            dayjs().isBefore(dayjs(project.endDate))
-        )
+            dayjs().isBefore(dayjs(project.endDate)),
+        ),
       );
 
       setFutureProjects(
-        projects.filter((project) => dayjs().isBefore(dayjs(project.startDate)))
+        projects.filter((project) =>
+          dayjs().isBefore(dayjs(project.startDate)),
+        ),
       );
     });
   }, [user]);
@@ -72,12 +72,6 @@ const AllProjects: FC = () => {
       case "future":
         return futureProjects;
     }
-  };
-
-  const getClientHolders = (project: Project) => {
-    return project.Manage.filter((m) => m.role === "CLIENT_HOLDER").map(
-      (m) => m.Consultant.name
-    );
   };
 
   return (
@@ -138,13 +132,10 @@ const AllProjects: FC = () => {
               getCurrentProjectList()
                 .sort(projectComparator)
                 .map((project: Project) => (
-                  <ProjectDisplay
+                  <AdminProjectDisplay
                     key={project.cuid}
-                    projectName={project.name}
-                    companyName={project.Client.name}
-                    projectCuid={project.cuid}
-                    clientHolders={getClientHolders(project)}
-                    viewOnly={true}
+                    project={project}
+                    viewOnly
                   />
                 ))
             )}

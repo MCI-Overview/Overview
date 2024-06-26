@@ -2,7 +2,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { FC, useState, useEffect } from "react";
 import { Project } from "../../types/index";
-import ProjectDisplay from "./ui/Project";
+import AdminProjectDisplay from "./ui/AdminProjectDisplay";
 import CreateProjectPage from "./create/CreatePage";
 
 import {
@@ -33,7 +33,7 @@ const MyProjects: FC = () => {
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [futureProjects, setFutureProjects] = useState<Project[]>([]);
   const [value, setValue] = useState<"concluded" | "ongoing" | "future">(
-    "ongoing"
+    "ongoing",
   );
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -43,19 +43,21 @@ const MyProjects: FC = () => {
       const projects = response.data as Project[];
 
       setPreviousProjects(
-        projects.filter((project) => dayjs().isAfter(dayjs(project.endDate)))
+        projects.filter((project) => dayjs().isAfter(dayjs(project.endDate))),
       );
 
       setOngoingProjects(
         projects.filter(
           (project) =>
             dayjs().isAfter(dayjs(project.startDate)) &&
-            dayjs().isBefore(dayjs(project.endDate))
-        )
+            dayjs().isBefore(dayjs(project.endDate)),
+        ),
       );
 
       setFutureProjects(
-        projects.filter((project) => dayjs().isBefore(dayjs(project.startDate)))
+        projects.filter((project) =>
+          dayjs().isBefore(dayjs(project.startDate)),
+        ),
       );
     });
   }, []);
@@ -145,11 +147,9 @@ const MyProjects: FC = () => {
               getCurrentProjectList()
                 .sort(projectComparator)
                 .map((project: Project) => (
-                  <ProjectDisplay
+                  <AdminProjectDisplay
                     key={project.cuid}
-                    projectName={project.name}
-                    companyName={project.Client.name}
-                    projectCuid={project.cuid}
+                    project={project}
                   />
                 ))
             )}

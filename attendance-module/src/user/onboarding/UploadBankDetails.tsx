@@ -9,7 +9,7 @@ import {
 import axios from "axios";
 import { ChangeEventHandler, useState } from "react";
 import LoadingRequestButton from "../../components/LoadingRequestButton";
-import { FileUpload } from "@mui/icons-material";
+import FileUpload from "../../components/FileUpload";
 
 export default function UploadBankDetails({
   handleNext,

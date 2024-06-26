@@ -42,27 +42,42 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
     {
       name: "Home",
       icon: <HomeIcon />,
-      onClick: () => navigate("/user/home"),
+      onClick: () => {
+        closeSidebar();
+        navigate("/user/home");
+      },
     },
     {
       name: "Shifts",
       icon: <WorkHistoryIcon />,
-      onClick: () => navigate("/user/shifts"),
+      onClick: () => {
+        closeSidebar();
+        navigate("/user/shifts");
+      },
     },
     {
       name: "Requests",
       icon: <MailRoundedIcon />,
-      onClick: () => navigate("/user/requests"),
+      onClick: () => {
+        closeSidebar();
+        navigate("/user/requests");
+      },
     },
     {
       name: "Projects",
       icon: <AccountTree />,
-      onClick: () => navigate("/user/projects"),
+      onClick: () => {
+        closeSidebar();
+        navigate("/user/projects");
+      },
     },
     {
       name: "Profile",
       icon: <PersonIcon />,
-      onClick: () => navigate("/user/profile"),
+      onClick: () => {
+        closeSidebar();
+        navigate("/user/profile");
+      },
     },
   ];
 
@@ -70,12 +85,18 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
     {
       name: "Home",
       icon: <HomeIcon />,
-      onClick: () => navigate("/admin/home"),
+      onClick: () => {
+        closeSidebar();
+        navigate("/admin/home");
+      },
     },
     {
       name: "Candidates",
       icon: <GroupIcon />,
-      onClick: () => navigate("/admin/candidates"),
+      onClick: () => {
+        closeSidebar();
+        navigate("/admin/candidates");
+      },
     },
   ];
 
