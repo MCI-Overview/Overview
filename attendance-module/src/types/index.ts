@@ -27,6 +27,8 @@ export type Manage = {
   Consultant: {
     // TODO: fix type
     name: string;
+    email: string;
+    contact: string;
   };
 };
 
@@ -113,7 +115,7 @@ export type CustomAttendance = {
           latitude: string;
           longitude: string;
           postalCode: string;
-        }
+        },
       ];
     };
   };

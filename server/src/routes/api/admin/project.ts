@@ -1499,6 +1499,14 @@ projectAPIRouter.get("/projects", async (req, res) => {
         },
       },
       include: {
+        Manage: {
+          include: {
+            Consultant: true,
+          },
+          where: {
+            role: "CLIENT_HOLDER",
+          },
+        },
         Client: true,
       },
     });
@@ -1532,6 +1540,9 @@ projectAPIRouter.get("/projects/all", async (_req, res) => {
         Manage: {
           include: {
             Consultant: true,
+          },
+          where: {
+            role: "CLIENT_HOLDER",
           },
         },
         Client: true,

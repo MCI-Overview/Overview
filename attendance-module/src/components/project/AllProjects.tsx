@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { FC, useState, useEffect } from "react";
 import { Project } from "../../types/index";
 import { useUserContext } from "../../providers/userContextProvider";
-import ProjectDisplay from "./ui/Project";
+import AdminProjectDisplay from "./ui/AdminProjectDisplay";
 
 import {
   Box,
@@ -72,12 +72,6 @@ const AllProjects: FC = () => {
     }
   };
 
-  const getClientHolders = (project: Project) => {
-    return project.Manage.filter((m) => m.role === "CLIENT_HOLDER").map(
-      (m) => m.Consultant.name
-    );
-  };
-
   return (
     <>
       <Stack
@@ -136,13 +130,10 @@ const AllProjects: FC = () => {
               getCurrentProjectList()
                 .sort(projectComparator)
                 .map((project: Project) => (
-                  <ProjectDisplay
+                  <AdminProjectDisplay
                     key={project.cuid}
-                    projectName={project.name}
-                    companyName={project.Client.name}
-                    projectCuid={project.cuid}
-                    clientHolders={getClientHolders(project)}
-                    viewOnly={true}
+                    project={project}
+                    viewOnly
                   />
                 ))
             )}

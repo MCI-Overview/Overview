@@ -49,7 +49,16 @@ export default function CardDisplay({
       }).map((_, index) => {
         const date = startDate.add(index, "days");
         return (
-          <Card sx={{ display: "flex" }} key={date.format("YYYY-MM-DD, ddd")}>
+          <Card
+            sx={{
+              display: "flex",
+              "&:hover": {
+                boxShadow: "md",
+                borderColor: "neutral.outlinedHoverBorder",
+              },
+            }}
+            key={date.format("YYYY-MM-DD, ddd")}
+          >
             <Stack sx={{ minWidth: "15rem", flexGrow: 1 }}>
               <Table
                 sx={{
@@ -70,7 +79,7 @@ export default function CardDisplay({
                   {collectedRosterData &&
                     collectedRosterData[date.format("YYYY-MM-DD")] &&
                     Object.entries(
-                      collectedRosterData[date.format("YYYY-MM-DD")]
+                      collectedRosterData[date.format("YYYY-MM-DD")],
                     ).map(([shiftCuid, shiftCounts]) => {
                       if (!project.shiftDict[shiftCuid]) return null;
 
@@ -88,7 +97,7 @@ export default function CardDisplay({
                               rowSpan={halfDayStartTime ? 3 : 1}
                               colSpan={halfDayStartTime ? 1 : 2}
                             >{`${startTime.format("HHmm")} - ${endTime.format(
-                              "HHmm"
+                              "HHmm",
                             )}`}</td>
                             {halfDayStartTime && <td>Full</td>}
                             <td>{FULL_DAY}</td>
@@ -96,7 +105,7 @@ export default function CardDisplay({
                           {halfDayEndTime && (
                             <Tooltip
                               title={`${startTime.format(
-                                "HHmm"
+                                "HHmm",
                               )} - ${halfDayEndTime?.format("HHmm")}`}
                             >
                               <tr>
@@ -108,7 +117,7 @@ export default function CardDisplay({
                           {halfDayStartTime && (
                             <Tooltip
                               title={`${halfDayStartTime?.format(
-                                "HHmm"
+                                "HHmm",
                               )} - ${endTime.format("HHmm")}`}
                             >
                               <tr>

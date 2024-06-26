@@ -8,10 +8,8 @@ import L from "leaflet";
 import Clock from "./Clock";
 import { CommonLocation, getAttendanceResponse } from "../../types/common";
 import dayjs, { Dayjs } from "dayjs";
-import utc from "dayjs/plugin/utc";
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
-dayjs.extend(utc);
 
 import {
   Box,
