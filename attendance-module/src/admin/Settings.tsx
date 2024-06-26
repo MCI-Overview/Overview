@@ -3,13 +3,15 @@ import GeneralProjectSettings from "../components/project/manage/GeneralProjectS
 import ManageProjectAccess from "../components/project/manage/ManageProjectAccess";
 
 import {
+  Button,
   Divider,
+  Grid,
   List,
   ListItem,
   ListItemButton,
   ListItemDecorator,
   ListItemContent,
-  Grid,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/joy";
 import {
@@ -43,20 +45,20 @@ const sections = [
 ];
 
 const Settings = () => {
-  const [activeSection, setActiveSection] = useState(0);
+  const [activeSection, setActiveSection] = useState<string | null>("General");
 
   return (
     <Grid container spacing={2} sx={{ flexGrow: 1 }}>
       <Grid xs={12} lg={2}>
-        <List>
-          {sections.map((section, index) => (
+        <List sx={{ display: { xs: "none", lg: "block" } }}>
+          {sections.map((section) => (
             <ListItem
-              key={index}
-              onClick={() => setActiveSection(index)}
+              key={section.title}
+              onClick={() => setActiveSection(section.title)}
               sx={{
                 cursor: "pointer",
               }}
-              variant={index === activeSection ? "soft" : "plain"}
+              variant={section.title === activeSection ? "soft" : "plain"}
             >
               <ListItemButton sx={{ gap: 0 }}>
                 <ListItemDecorator>{section.icon}</ListItemDecorator>
@@ -68,9 +70,34 @@ const Settings = () => {
           ))}
           <Divider />
         </List>
+
+        <ToggleButtonGroup
+          value={activeSection}
+          onChange={(_event, newSection) => {
+            if (newSection !== null) {
+              setActiveSection(newSection);
+            }
+          }}
+          sx={{ width: "100%", display: { xs: "block", lg: "none" } }}
+          variant="plain"
+        >
+          {sections.map((section) => (
+            <Button
+              key={section.title}
+              value={section.title}
+              sx={{ gap: 1, width: "25%" }}
+            >
+              <ListItemDecorator sx={{ display: { xs: "none", sm: "block" } }}>
+                {section.icon}
+              </ListItemDecorator>
+              <Typography level="body-sm">{section.title}</Typography>
+            </Button>
+          ))}
+        </ToggleButtonGroup>
       </Grid>
+
       <Grid xs={12} lg={10}>
-        {sections[activeSection].children}
+        {sections.find((s) => s.title === activeSection)!.children}
       </Grid>
     </Grid>
   );
