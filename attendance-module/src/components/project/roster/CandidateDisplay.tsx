@@ -69,7 +69,7 @@ export default function CandidateDisplay({
       >
         {Array.from({ length: endDate.diff(startDate, "days") + 1 }).map(
           (_, index) => {
-            const date = startDate.add(index + 1, "days");
+            const date = startDate.add(index, "days");
             return (
               <Grid xs={1} key={`${cuid} ${index}`}>
                 <DayBin
