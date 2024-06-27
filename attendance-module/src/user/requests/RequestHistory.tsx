@@ -1,11 +1,11 @@
 import dayjs from "dayjs";
 import { CustomRequest } from "../../types";
-import { readableEnum } from "../../utils/capitalize";
 import { useRequestContext } from "../../providers/requestContextProvider";
 import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
 
 import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
 import RequestStatusChip from "../../components/project/requests/RequestStatusChip";
+import RequestTypeChip from "../../components/project/requests/RequestTypeChip";
 
 import { Table, Sheet, Typography } from "@mui/joy";
 
@@ -59,7 +59,9 @@ const RequestHistory = () => {
               <tr key={req.cuid}>
                 <TdTypo>{dayjs(req.createdAt).format("DD/MM/YY HH:mm")}</TdTypo>
                 <TdTypo>{req.Assign.Project && req.Assign.Project.name}</TdTypo>
-                <TdTypo>{readableEnum(req.type)}</TdTypo>
+                <td>
+                  <RequestTypeChip type={req.type} />
+                </td>
                 <td>
                   <RequestStatusChip status={req.status} />
                 </td>

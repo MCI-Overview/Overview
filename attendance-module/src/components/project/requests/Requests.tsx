@@ -1,11 +1,11 @@
 import dayjs from "dayjs";
 import { CustomRequest } from "../../../types";
 import { useRequestContext } from "../../../providers/requestContextProvider";
-import { readableEnum } from "../../../utils/capitalize";
 import { TdTypo, ThTypo } from "../ui/TableTypo";
 
 import ViewDetailsModal from "../../common/request/ViewDetailsModal";
 import RequestStatusChip from "./RequestStatusChip";
+import RequestTypeChip from "./RequestTypeChip";
 
 import { Table, Sheet, Typography } from "@mui/joy";
 
@@ -69,8 +69,10 @@ const RequestHistory = () => {
                   </TdTypo>
                   <TdTypo>
                     {req.Assign.Candidate && req.Assign.Candidate.name}
-                  </TdTypo>
-                  <TdTypo>{readableEnum(req.type)}</TdTypo>
+                  </TdTypo>{" "}
+                  <td>
+                    <RequestTypeChip type={req.type} />
+                  </td>
                   <td>
                     <RequestStatusChip status={req.status} />
                   </td>

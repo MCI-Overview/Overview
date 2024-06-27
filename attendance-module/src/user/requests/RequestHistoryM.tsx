@@ -2,10 +2,10 @@ import dayjs from "dayjs";
 import { Fragment } from "react";
 import { CustomRequest } from "../../types";
 import { useRequestContext } from "../../providers/requestContextProvider";
-import { readableEnum } from "../../utils/capitalize";
 
 import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
 import RequestStatusChip from "../../components/project/requests/RequestStatusChip";
+import RequestTypeChip from "../../components/project/requests/RequestTypeChip";
 
 import {
   Box,
@@ -16,7 +16,6 @@ import {
   Typography,
 } from "@mui/joy";
 
-//TODO: Add viewing on mobile
 const RequestHistoryM = () => {
   const { requests, updateRequest } = useRequestContext();
   if (!requests) return null;
@@ -37,6 +36,7 @@ const RequestHistoryM = () => {
           {requests.map((req: CustomRequest) => (
             <Fragment key={req.cuid}>
               <ListItem>
+                {" "}
                 <ViewDetailsModal
                   request={req}
                   updateRequest={updateRequest}
@@ -48,33 +48,26 @@ const RequestHistoryM = () => {
                     alignItems: "start",
                   }}
                 >
-                  <ListItemContent
-                    sx={{ display: "flex", gap: 2, alignItems: "start" }}
-                  >
-                    <Box>
-                      <Typography fontWeight={600} gutterBottom>
-                        {dayjs(req.createdAt).format("DD/MM/YYYY HH:mm")}
+                  <ListItemContent>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <RequestTypeChip type={req.type} />
+                      <RequestStatusChip status={req.status} />
+                    </Box>
+
+                    <Box sx={{ my: 0.5, width: "100%" }}>
+                      <Typography level="body-xs">
+                        Proj name:{" "}
+                        {req.Assign.Project && req.Assign.Project.name}
                       </Typography>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 0.5,
-                          mb: 1,
-                        }}
-                      >
-                        <Typography level="body-xs">
-                          {req.Assign.Project && req.Assign.Project.name}
-                        </Typography>
-                        <Typography level="body-xs">&bull;</Typography>
-                        <Typography level="body-xs">
-                          {readableEnum(req.type)}
-                        </Typography>
-                      </Box>
+
+                      <Typography level="body-xs">
+                        Submitted:{" "}
+                        {dayjs(req.createdAt).format("DD/MM/YY HH:mm")}
+                      </Typography>
                     </Box>
                   </ListItemContent>
-                  <RequestStatusChip status={req.status} />
                 </ViewDetailsModal>
               </ListItem>
               <ListDivider />

@@ -2,10 +2,10 @@ import dayjs from "dayjs";
 import { Fragment } from "react";
 import { CustomRequest } from "../../../types";
 import { useRequestContext } from "../../../providers/requestContextProvider";
-import { readableEnum } from "../../../utils/capitalize";
 
 import ViewDetailsModal from "../../common/request/ViewDetailsModal";
 import RequestStatusChip from "./RequestStatusChip";
+import RequestTypeChip from "./RequestTypeChip";
 
 import {
   Box,
@@ -16,7 +16,6 @@ import {
   Typography,
 } from "@mui/joy";
 
-// TODO: Add button to view details and approve/reject requests on mobile
 const RequestHistoryM = () => {
   const { requests, updateRequest } = useRequestContext();
   if (!requests) return null;
@@ -34,11 +33,11 @@ const RequestHistoryM = () => {
             "--ListItem-paddingX": 0,
           }}
         >
-          {requests.map((listItem: CustomRequest) => (
-            <Fragment key={listItem.cuid}>
+          {requests.map((req: CustomRequest) => (
+            <Fragment key={req.cuid}>
               <ListItem>
                 <ViewDetailsModal
-                  request={listItem}
+                  request={req}
                   updateRequest={updateRequest}
                   type="ADMIN"
                   variant="MOBILE"
@@ -48,35 +47,27 @@ const RequestHistoryM = () => {
                     alignItems: "start",
                   }}
                 >
-                  <ListItemContent
-                    sx={{ display: "flex", gap: 2, alignItems: "start" }}
-                  >
-                    <Box>
-                      <Typography fontWeight={600} gutterBottom>
-                        {listItem.Assign.Candidate &&
-                          listItem.Assign.Candidate.name}
-                      </Typography>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 0.5,
-                          mb: 1,
-                        }}
-                      >
+                  <ListItemContent>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <RequestTypeChip type={req.type} />
+                      <RequestStatusChip status={req.status} />
+                    </Box>
+                    {req.Assign.Candidate && (
+                      <Box sx={{ my: 0.5, width: "100%" }}>
                         <Typography level="body-xs">
-                          {dayjs(listItem.createdAt).format("DD/MM/YY HH:mm")}
+                          Candidate: {req.Assign.Candidate.name} [
+                          {req.Assign.Candidate.nric}]
                         </Typography>
-                        <Typography level="body-xs">&bull;</Typography>
+
                         <Typography level="body-xs">
-                          {readableEnum(listItem.type)}
+                          Submitted:{" "}
+                          {dayjs(req.createdAt).format("DD/MM/YY HH:mm")}
                         </Typography>
                       </Box>
-                    </Box>
+                    )}
                   </ListItemContent>
-
-                  <RequestStatusChip status={listItem.status} />
                 </ViewDetailsModal>
               </ListItem>
               <ListDivider />

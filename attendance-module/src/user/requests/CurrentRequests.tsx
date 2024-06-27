@@ -1,6 +1,5 @@
 import dayjs from "dayjs";
 import { CustomRequest } from "../../types";
-import { readableEnum } from "../../utils/capitalize";
 import { useRequestContext } from "../../providers/requestContextProvider";
 import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
 
@@ -8,6 +7,7 @@ import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
 
 import { Table, Sheet, Typography } from "@mui/joy";
 import RequestStatusChip from "../../components/project/requests/RequestStatusChip";
+import RequestTypeChip from "../../components/project/requests/RequestTypeChip";
 
 // TODO: Add editing of requests
 const CurrentRequests = () => {
@@ -62,7 +62,9 @@ const CurrentRequests = () => {
                   {dayjs(req.createdAt).format("DD/MM/YYYY HH:mm")}
                 </TdTypo>
                 <TdTypo>{req.Assign.Project && req.Assign.Project.name}</TdTypo>
-                <TdTypo>{readableEnum(req.type)}</TdTypo>
+                <td>
+                  <RequestTypeChip type={req.type} />
+                </td>
                 <td>
                   <RequestStatusChip status={req.status} />
                 </td>
