@@ -14,10 +14,10 @@ import {
 import ProjectOverview from "../components/project/overview/OverviewPage.tsx";
 import AssignCandidatePage from "../components/project/candidates/Page";
 import { useProjectContext } from "../providers/projectContextProvider";
-import RosterPage from "../components/project/roster/RosterPage";
 import Settings from "./Settings.tsx";
 import RequestsPage from "../components/project/requests/RequestsPage.tsx";
 import Attendance from "./projects-components/Attendance.tsx";
+import RosterPageHandler from "../components/project/roster/RosterPageHandler.tsx";
 
 const tabs: Tab[] = [
   {
@@ -38,7 +38,7 @@ const tabs: Tab[] = [
   },
   {
     label: "Roster",
-    content: <RosterPage />,
+    content: <RosterPageHandler />,
   },
   {
     label: "Settings",

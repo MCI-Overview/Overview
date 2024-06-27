@@ -1,4 +1,7 @@
-import { Chip } from "@mui/joy";
+import {
+  Chip,
+  Card
+} from "@mui/joy";
 import { useDrag } from "react-dnd";
 import { Dayjs } from "dayjs";
 import { DraggableChipProps } from "../../../types";
@@ -8,17 +11,6 @@ export type Shift = {
   startTime: Dayjs;
   endTime: Dayjs;
 };
-
-function getPrefix(type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF") {
-  switch (type) {
-    case "FULL_DAY":
-      return "Full:";
-    case "FIRST_HALF":
-      return "AM:";
-    case "SECOND_HALF":
-      return "PM:";
-  }
-}
 
 export default function DraggableChip({
   type,
@@ -35,16 +27,21 @@ export default function DraggableChip({
   });
 
   return (
-    <Chip
+    <Card
       ref={drag}
+      sx={{
+        width: '200px',
+        marginBottom: '15px'
+      }}
       style={{
         opacity: isDragging ? 0.5 : 1,
         cursor: "move",
       }}
     >
-      {`${getPrefix(type)} ${startTime.format("HHmm")} - ${endTime.format(
+      <Chip>{type}</Chip>
+      {`${startTime.format("HHmm")} - ${endTime.format(
         "HHmm"
       )}`}
-    </Chip>
+    </Card>
   );
 }
