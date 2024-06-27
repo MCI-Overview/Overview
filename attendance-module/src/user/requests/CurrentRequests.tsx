@@ -1,4 +1,3 @@
-import axios from "axios";
 import dayjs from "dayjs";
 import { CustomRequest } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
@@ -6,33 +5,19 @@ import { useRequestContext } from "../../providers/requestContextProvider";
 import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
 
 import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
-import LoadingRequestIconButton from "../../components/LoadingRequestIconButton";
 
+import { Chip, Table, Sheet, Typography, ColorPaletteProp } from "@mui/joy";
 import {
-  Chip,
-  Table,
-  Sheet,
-  Typography,
-  ColorPaletteProp,
-  Box,
-  Stack,
-  Tooltip,
-} from "@mui/joy";
-import {
-  PendingRounded as PendingIcon,
   BlockRounded as BlockIcon,
   ClearRounded as ClearIcon,
   CheckRounded as CheckIcon,
+  HourglassEmptyRounded as HourglassEmptyIcon,
 } from "@mui/icons-material";
 
 // TODO: Add editing of requests
 const CurrentRequests = () => {
   const { requests, updateRequest } = useRequestContext();
   if (!requests) return null;
-
-  async function cancelRequest(requestCuid: string) {
-    axios.post("/api/user/request/cancel", { requestCuid }).then(updateRequest);
-  }
 
   return (
     <Sheet
@@ -61,7 +46,7 @@ const CurrentRequests = () => {
       >
         <thead>
           <tr>
-            <ThTypo>Date</ThTypo>
+            <ThTypo>Submitted at</ThTypo>
             <ThTypo>Project</ThTypo>
             <ThTypo>Type</ThTypo>
             <ThTypo>Status</ThTypo>
@@ -76,11 +61,13 @@ const CurrentRequests = () => {
               </td>
             </tr>
           ) : (
-            requests.map((row: CustomRequest) => (
-              <tr key={row.cuid}>
-                <TdTypo>{dayjs(row.createdAt).format("DD MMM YYYY")}</TdTypo>
-                <TdTypo>{row.Assign.Project && row.Assign.Project.name}</TdTypo>
-                <TdTypo>{readableEnum(row.type)}</TdTypo>
+            requests.map((req: CustomRequest) => (
+              <tr key={req.cuid}>
+                <TdTypo>
+                  {dayjs(req.createdAt).format("DD/MM/YYYY HH:MM")}
+                </TdTypo>
+                <TdTypo>{req.Assign.Project && req.Assign.Project.name}</TdTypo>
+                <TdTypo>{readableEnum(req.type)}</TdTypo>
                 <td>
                   <Chip
                     variant="soft"
@@ -90,8 +77,8 @@ const CurrentRequests = () => {
                         APPROVED: <CheckIcon />,
                         CANCELLED: <ClearIcon />,
                         REJECTED: <BlockIcon />,
-                        PENDING: <PendingIcon />,
-                      }[row.status || "UPCOMING"]
+                        PENDING: <HourglassEmptyIcon />,
+                      }[req.status || "UPCOMING"]
                     }
                     color={
                       {
@@ -99,35 +86,19 @@ const CurrentRequests = () => {
                         CANCELLED: "neutral",
                         REJECTED: "danger",
                         PENDING: "warning",
-                      }[row.status || "UPCOMING"] as ColorPaletteProp
+                      }[req.status || "UPCOMING"] as ColorPaletteProp
                     }
                   >
-                    {readableEnum(row.status || "UPCOMING")}
+                    {readableEnum(req.status || "UPCOMING")}
                   </Chip>
                 </td>
                 <td>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <td>
-                      <Stack direction="row" gap={1}>
-                        <ViewDetailsModal
-                          data={row}
-                          type="USER"
-                          variant="DESKTOP"
-                        />
-                        {row.status === "PENDING" && (
-                          <>
-                            <Tooltip title="Cancel">
-                              <LoadingRequestIconButton
-                                promise={() => cancelRequest(row.cuid)}
-                                icon={<BlockIcon />}
-                                color="danger"
-                              />
-                            </Tooltip>
-                          </>
-                        )}
-                      </Stack>
-                    </td>
-                  </Box>
+                  <ViewDetailsModal
+                    request={req}
+                    updateRequest={updateRequest}
+                    type="USER"
+                    variant="DESKTOP"
+                  />
                 </td>
               </tr>
             ))

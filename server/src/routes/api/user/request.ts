@@ -95,6 +95,11 @@ requestAPIRouter.get("/requests/history/:page", async (req, res) => {
       include: {
         Assign: {
           select: {
+            Candidate: {
+              select: {
+                name: true,
+              },
+            },
             Project: {
               select: {
                 name: true,

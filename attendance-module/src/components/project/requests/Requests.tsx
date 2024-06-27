@@ -1,4 +1,3 @@
-import axios from "axios";
 import dayjs from "dayjs";
 import { CustomRequest } from "../../../types";
 import { useRequestContext } from "../../../providers/requestContextProvider";
@@ -6,39 +5,18 @@ import { readableEnum } from "../../../utils/capitalize";
 import { TdTypo, ThTypo } from "../ui/TableTypo";
 
 import ViewDetailsModal from "../../common/request/ViewDetailsModal";
-import LoadingRequestIconButton from "../../LoadingRequestIconButton";
 
+import { Chip, Table, Sheet, Typography, ColorPaletteProp } from "@mui/joy";
 import {
-  Chip,
-  Table,
-  Sheet,
-  Typography,
-  ColorPaletteProp,
-  Stack,
-  Tooltip,
-} from "@mui/joy";
-import {
-  PendingRounded as PendingIcon,
   BlockRounded as BlockIcon,
   ClearRounded as ClearIcon,
   CheckRounded as CheckIcon,
+  HourglassEmptyRounded as HourglassEmptyIcon,
 } from "@mui/icons-material";
 
 const RequestHistory = () => {
   const { requests, updateRequest } = useRequestContext();
   if (!requests) return null;
-
-  async function approveRequest(requestCuid: string) {
-    axios
-      .post(`/api/admin/request/${requestCuid}/approve`)
-      .then(() => updateRequest());
-  }
-
-  async function rejectRequest(requestCuid: string) {
-    axios
-      .post(`/api/admin/request/${requestCuid}/reject`)
-      .then(() => updateRequest());
-  }
 
   return (
     <>
@@ -70,7 +48,7 @@ const RequestHistory = () => {
         >
           <thead>
             <tr>
-              <ThTypo>Date</ThTypo>
+              <ThTypo>Submitted at</ThTypo>
               <ThTypo>Nric</ThTypo>
               <ThTypo>Name</ThTypo>
               <ThTypo>Type</ThTypo>
@@ -86,16 +64,18 @@ const RequestHistory = () => {
                 </td>
               </tr>
             ) : (
-              requests.map((row: CustomRequest) => (
-                <tr key={row.cuid}>
-                  <TdTypo>{dayjs(row.createdAt).format("DD MMM YYYY")}</TdTypo>
+              requests.map((req: CustomRequest) => (
+                <tr key={req.cuid}>
                   <TdTypo>
-                    {row.Assign.Candidate && row.Assign.Candidate.nric}
+                    {dayjs(req.createdAt).format("DD/MM/YYYY HH:MM")}
                   </TdTypo>
                   <TdTypo>
-                    {row.Assign.Candidate && row.Assign.Candidate.name}
+                    {req.Assign.Candidate && req.Assign.Candidate.nric}
                   </TdTypo>
-                  <TdTypo>{readableEnum(row.type)}</TdTypo>
+                  <TdTypo>
+                    {req.Assign.Candidate && req.Assign.Candidate.name}
+                  </TdTypo>
+                  <TdTypo>{readableEnum(req.type)}</TdTypo>
                   <td>
                     <Chip
                       variant="soft"
@@ -105,8 +85,8 @@ const RequestHistory = () => {
                           APPROVED: <CheckIcon />,
                           CANCELLED: <ClearIcon />,
                           REJECTED: <BlockIcon />,
-                          PENDING: <PendingIcon />,
-                        }[row.status || "UPCOMING"]
+                          PENDING: <HourglassEmptyIcon />,
+                        }[req.status || "UPCOMING"]
                       }
                       color={
                         {
@@ -114,38 +94,19 @@ const RequestHistory = () => {
                           CANCELLED: "neutral",
                           REJECTED: "danger",
                           PENDING: "warning",
-                        }[row.status || "UPCOMING"] as ColorPaletteProp
+                        }[req.status || "UPCOMING"] as ColorPaletteProp
                       }
                     >
-                      {readableEnum(row.status || "UPCOMING")}
+                      {readableEnum(req.status || "UPCOMING")}
                     </Chip>
                   </td>
                   <td>
-                    <Stack direction="row" gap={1}>
-                      <ViewDetailsModal
-                        data={row}
-                        type="ADMIN"
-                        variant="DESKTOP"
-                      />
-                      {row.status === "PENDING" && (
-                        <>
-                          <Tooltip title="Approve">
-                            <LoadingRequestIconButton
-                              promise={() => approveRequest(row.cuid)}
-                              icon={<CheckIcon />}
-                              color="success"
-                            />
-                          </Tooltip>
-                          <Tooltip title="Reject">
-                            <LoadingRequestIconButton
-                              promise={() => rejectRequest(row.cuid)}
-                              icon={<BlockIcon />}
-                              color="danger"
-                            />
-                          </Tooltip>
-                        </>
-                      )}
-                    </Stack>
+                    <ViewDetailsModal
+                      request={req}
+                      updateRequest={updateRequest}
+                      type="ADMIN"
+                      variant="DESKTOP"
+                    />
                   </td>
                 </tr>
               ))

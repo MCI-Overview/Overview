@@ -1,82 +1,54 @@
-import axios from "axios";
 import dayjs from "dayjs";
 import { Fragment } from "react";
 import { CustomRequest } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
 import { useRequestContext } from "../../providers/requestContextProvider";
 
+import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
+
 import {
   Box,
   Chip,
-  Typography,
   ColorPaletteProp,
   List,
+  ListDivider,
   ListItem,
   ListItemContent,
-  ListDivider,
-  Dropdown,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItem,
+  Typography,
 } from "@mui/joy";
 import {
-  PendingRounded as PendingIcon,
   BlockRounded as BlockIcon,
   ClearRounded as ClearIcon,
   CheckRounded as CheckIcon,
-  MoreHorizRounded as MoreHorizIcon,
+  HourglassEmptyRounded as HourglassEmptyIcon,
 } from "@mui/icons-material";
 
-// TODO: Add viewing and editing of requests
-function RowMenu({ requestCuid }: { requestCuid: string }) {
-  const { updateRequest } = useRequestContext();
-  function handleCancel() {
-    axios
-      .post("/api/user/request/cancel", { requestCuid })
-      .then(() => updateRequest());
-  }
-  return (
-    <>
-      <Dropdown>
-        <MenuButton
-          slots={{ root: IconButton }}
-          slotProps={{
-            root: { variant: "plain", color: "neutral", size: "sm" },
-          }}
-        >
-          <MoreHorizIcon />
-        </MenuButton>
-        <Menu size="sm" sx={{ minWidth: 140 }}>
-          {/* <MenuItem>View / Edit</MenuItem> */}
-          <MenuItem onClick={handleCancel}>Cancel</MenuItem>
-        </Menu>
-      </Dropdown>
-    </>
-  );
-}
-
+// TODO: Add editing of requests
 const CurrentRequestsM = () => {
-  const { requests } = useRequestContext();
+  const { requests, updateRequest } = useRequestContext();
   if (!requests) return null;
 
   return (
-    <>
-      <Box sx={{ display: { xs: "block", sm: "none" } }}>
-        {requests.length === 0 ? (
-          <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
-            No requests found
-          </Typography>
-        ) : (
-          <List
-            size="sm"
-            sx={{
-              "--ListItem-paddingX": 0,
-            }}
-          >
-            {requests.map((listItem: CustomRequest) => (
-              <Fragment key={listItem.cuid}>
-                <ListItem
+    <Box sx={{ display: { xs: "block", sm: "none" } }}>
+      {requests.length === 0 ? (
+        <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
+          No requests found
+        </Typography>
+      ) : (
+        <List
+          size="sm"
+          sx={{
+            "--ListItem-paddingX": 0,
+          }}
+        >
+          {requests.map((listItem: CustomRequest) => (
+            <Fragment key={listItem.cuid}>
+              <ListItem>
+                <ViewDetailsModal
+                  request={listItem}
+                  updateRequest={updateRequest}
+                  type="USER"
+                  variant="MOBILE"
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -86,9 +58,9 @@ const CurrentRequestsM = () => {
                   <ListItemContent
                     sx={{ display: "flex", gap: 2, alignItems: "start" }}
                   >
-                    <div>
+                    <Box>
                       <Typography fontWeight={600} gutterBottom>
-                        {dayjs(listItem.createdAt).format("DD MMM YYYY")}
+                        {dayjs(listItem.createdAt).format("DD/MM/YY HH:MM")}
                       </Typography>
                       <Box
                         sx={{
@@ -108,17 +80,19 @@ const CurrentRequestsM = () => {
                           {readableEnum(listItem.type)}
                         </Typography>
                       </Box>
-                    </div>
+                    </Box>
                   </ListItemContent>
+
                   <Chip
                     variant="soft"
                     size="sm"
+                    sx={{}}
                     startDecorator={
                       {
                         APPROVED: <CheckIcon />,
                         CANCELLED: <ClearIcon />,
                         REJECTED: <BlockIcon />,
-                        PENDING: <PendingIcon />,
+                        PENDING: <HourglassEmptyIcon />,
                       }[listItem.status || "UPCOMING"]
                     }
                     color={
@@ -132,24 +106,14 @@ const CurrentRequestsM = () => {
                   >
                     {readableEnum(listItem.status || "UPCOMING")}
                   </Chip>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      mt: "auto",
-                      mb: "auto",
-                    }}
-                  >
-                    <RowMenu requestCuid={listItem.cuid} />
-                  </Box>
-                </ListItem>
-                <ListDivider />
-              </Fragment>
-            ))}
-          </List>
-        )}
-      </Box>
-    </>
+                </ViewDetailsModal>
+              </ListItem>
+              <ListDivider />
+            </Fragment>
+          ))}
+        </List>
+      )}
+    </Box>
   );
 };
 
