@@ -109,7 +109,10 @@ const RequestsPage = () => {
               <Select
                 size="sm"
                 value={typeFilter}
-                onChange={(_e, value) => setTypeFilter(value ?? "")}
+                onChange={(_e, value) => {
+                  setTypeFilter(value ?? "");
+                  setCurrentPage(1);
+                }}
                 slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
               >
                 <Option value="">All</Option>
@@ -128,7 +131,10 @@ const RequestsPage = () => {
               <Select
                 size="sm"
                 value={statusFilter}
-                onChange={(_e, value) => setStatusFilter(value ?? "")}
+                onChange={(_e, value) => {
+                  setStatusFilter(value ?? "");
+                  setCurrentPage(1);
+                }}
                 slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
               >
                 <Option value="">All</Option>
