@@ -16,6 +16,7 @@ import {
   checkEmploymentByValidity,
   checkNoticePeriodValidity,
   checkTimesValidity,
+  maskNRIC,
 } from "../../../utils/";
 import bcrypt from "bcrypt";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -308,8 +309,7 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
 
     if (
       !project.Manage.some(
-        (manage) =>
-          manage.role === "CLIENT_HOLDER" && manage.consultantCuid === user.cuid
+        (m) => m.role === "CLIENT_HOLDER" && m.consultantCuid === user.cuid
       )
     ) {
       return res
@@ -364,6 +364,11 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
       take: limit,
     });
 
+    const maskedData = fetchedData.map((req) => {
+      req.Assign.Candidate.nric = maskNRIC(req.Assign.Candidate.nric);
+      return req;
+    });
+
     const totalCount = await prisma.request.count({
       where: queryConditions,
     });
@@ -378,7 +383,7 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
       totalCount: totalCount,
     };
 
-    return res.json([fetchedData, paginationData]);
+    return res.json([maskedData, paginationData]);
   } catch (error) {
     console.error("Error while fetching requests:", error);
     return res.status(500).send("Internal server error");
