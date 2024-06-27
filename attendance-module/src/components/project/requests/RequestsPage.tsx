@@ -17,6 +17,7 @@ import {
   Option,
   Select,
 } from "@mui/joy";
+import SmallScreenDivider from "../ui/SmallScreenDivider";
 
 function buildUrl(
   projectCuid: string,
@@ -146,6 +147,8 @@ const RequestsPage = () => {
             </FormControl>
           </Grid>
         </Grid>
+
+        <SmallScreenDivider />
 
         <RequestContextProvider updateFunction={() => fetchUpcomingShifts()}>
           <RequestHistory />

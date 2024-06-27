@@ -202,13 +202,11 @@ const CandidateTable = ({
                       <TdTypo>{row.name}</TdTypo>
                       <TdTypo>{row.contact}</TdTypo>
                       <TdTypo>
-                        {dayjs(row.dateOfBirth).format("DD/MM/YYYY")}
+                        {dayjs(row.dateOfBirth).format("DD/MM/YY")}
                       </TdTypo>
                       <TdTypo>{dayjs().diff(row.dateOfBirth, "years")}</TdTypo>
-                      <TdTypo>
-                        {dayjs(row.startDate).format("DD/MM/YYYY")}
-                      </TdTypo>
-                      <TdTypo>{dayjs(row.endDate).format("DD/MM/YYYY")}</TdTypo>
+                      <TdTypo>{dayjs(row.startDate).format("DD/MM/YY")}</TdTypo>
+                      <TdTypo>{dayjs(row.endDate).format("DD/MM/YY")}</TdTypo>
                       <TdTypo>{readableEnum(row.employmentType)}</TdTypo>
                       {showCandidateHolder && (
                         <TdTypo>{row.consultantName}</TdTypo>
@@ -296,7 +294,7 @@ const CandidateTable = ({
                         <Typography level="body-md">{listItem.nric}</Typography>
                         <Typography level="body-md">&bull;</Typography>
                         <Typography level="body-md">
-                          {dayjs(listItem.dateOfBirth).format("DD/MM/YYYY")}
+                          {dayjs(listItem.dateOfBirth).format("DD/MM/YY")}
                         </Typography>
                       </Box>
                       <Typography level="body-xs">Contact</Typography>
@@ -305,8 +303,8 @@ const CandidateTable = ({
                       </Typography>
                       <Typography level="body-xs">Work period</Typography>
                       <Typography level="body-md" gutterBottom>
-                        {dayjs(listItem.startDate).format("DD/MM/YYYY")} -{" "}
-                        {dayjs(listItem.endDate).format("DD/MM/YYYY")}
+                        {dayjs(listItem.startDate).format("DD/MM/YY")} -{" "}
+                        {dayjs(listItem.endDate).format("DD/MM/YY")}
                       </Typography>
                       <Typography level="body-xs">Candidate holder</Typography>
                       <Typography level="body-md" gutterBottom>

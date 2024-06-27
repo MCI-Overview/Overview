@@ -17,6 +17,7 @@ import {
   Select,
 } from "@mui/joy";
 import SearchIcon from "@mui/icons-material/Search";
+import SmallScreenDivider from "../ui/SmallScreenDivider";
 
 const Attendance = () => {
   const [data, setData] = useState<CustomAdminAttendance[]>([]);
@@ -156,6 +157,8 @@ const Attendance = () => {
           </FormControl>
         </Grid>
       </Grid>
+
+      <SmallScreenDivider />
 
       <ProjectAttendance data={filteredData} />
       <ProjectAttendanceM data={filteredData} />

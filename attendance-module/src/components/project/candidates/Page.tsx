@@ -98,7 +98,7 @@ const CandidatePage = () => {
           <Button
             size="sm"
             onClick={() => setIsUploadOpen(true)}
-            sx={{ mt: "auto" }}
+            sx={{ mt: "auto", display: { xs: "none", sm: "block" } }}
           >
             Import candidates
           </Button>
