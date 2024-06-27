@@ -1,4 +1,4 @@
-import { CircularProgress, IconButton, Stack, Tooltip } from "@mui/joy";
+import { CircularProgress, IconButton, Stack, Tooltip, Chip } from "@mui/joy";
 import { CancelRounded as CancelIcon } from "@mui/icons-material";
 import axios from "axios";
 import { useProjectContext } from "../../../providers/projectContextProvider";
@@ -27,7 +27,7 @@ function ShiftTooltipDisplay({
         alignItems: "center",
       }}
     >
-      {date.toString().slice(0, 10)}
+      {date.format('DD-MM-YYYY').toString()}
       {shifts.map((shift) => (
         <Stack
           direction="row"
@@ -37,6 +37,7 @@ function ShiftTooltipDisplay({
             alignItems: "center",
             justifyContent: "center",
           }}
+          key={shift.rosterCuid}
         >
           <div>
             {`${shift.startTime.format("HHmm")} -
@@ -59,13 +60,21 @@ function ShiftTooltipDisplay({
   );
 }
 
+function ShiftCard({ shift }: { shift: Roster }) {
+  return (
+    <Chip>{shift.startTime.format("HHmm")} - {shift.endTime.format("HHmm")}</Chip>
+  );
+}
+
 function renderSquare({
+  shifts,
   backgroundColor,
   firstHalfBackground,
   secondHalfBackground,
   tooltip = "",
   loading = false,
 }: {
+  shifts?: Roster[];
   backgroundColor: string;
   firstHalfBackground?: string;
   secondHalfBackground?: string;
@@ -80,28 +89,48 @@ function renderSquare({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          height: "2rem",
+          height: "6rem",
           width: "100%",
           overflow: "hidden",
+          position: "relative", // Added for positioning the CircularProgress
+          backgroundColor,
         }}
       >
-        <div
+        <Stack
           style={{
             width: "50%",
             height: "100%",
             backgroundColor: firstHalfBackground || backgroundColor,
           }}
         />
-        <div
+        <Stack
           style={{
             width: "50%",
             height: "100%",
             backgroundColor: secondHalfBackground || backgroundColor,
             boxSizing: "border-box",
-            borderRight: "1px solid",
-            borderColor: "#CDD7E1",
           }}
         />
+        {shifts && shifts.length > 0 && (
+          <Stack
+            spacing={1}
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {shifts.map((shift) => (
+              <ShiftCard key={shift.rosterCuid} shift={shift} />
+            ))}
+          </Stack>
+        )}
         {loading && (
           <CircularProgress size="sm" sx={{ position: "absolute" }} />
         )}
@@ -156,7 +185,7 @@ export default function Square({
 
   if (disabled) {
     return renderSquare({
-      backgroundColor: "gray",
+      backgroundColor: "rgb(179, 179, 179, 0.3)",
     });
   }
 
@@ -166,13 +195,13 @@ export default function Square({
       firstHalfBackground: hasFirstHalfItem
         ? "red"
         : hasFirstHalfRoster
-        ? "blue"
-        : "transparent",
+          ? "blue"
+          : "transparent",
       secondHalfBackground: hasSecondHalfItem
         ? "red"
         : hasSecondHalfRoster
-        ? "blue"
-        : "transparent",
+          ? "blue"
+          : "transparent",
     });
   }
 
@@ -182,13 +211,13 @@ export default function Square({
       firstHalfBackground: hasFirstHalfItem
         ? "green"
         : hasFirstHalfRoster
-        ? "blue"
-        : "transparent",
+          ? "blue"
+          : "transparent",
       secondHalfBackground: hasSecondHalfItem
         ? "green"
         : hasSecondHalfRoster
-        ? "blue"
-        : "transparent",
+          ? "blue"
+          : "transparent",
     });
   }
 
@@ -202,13 +231,14 @@ export default function Square({
           updateRosterData={updateRosterData}
         />
       ),
-      firstHalfBackground: hasFirstHalfRoster ? "blue" : "transparent",
-      secondHalfBackground: hasSecondHalfRoster ? "blue" : "transparent",
+      firstHalfBackground: hasFirstHalfRoster ? "rgb(60, 179, 113, 0.8)" : "transparent",
+      secondHalfBackground: hasSecondHalfRoster ? "rgb(60, 179, 113, 0.8)" : "transparent",
+      shifts: roster,
     });
   }
 
   return renderSquare({
-    tooltip: date.format("YYYY-MM-DD"),
+    tooltip: date.format("DD-MM-YYYY"),
     backgroundColor: "transparent",
   });
-}
+} 

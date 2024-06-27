@@ -46,11 +46,22 @@ export default function CandidateDisplay({
 
   return (
     <Grid container>
-      <Grid xs={2} display="flex" justifyContent="center" alignItems="center">
-        <Typography>{name}</Typography>
+      <Grid xs={5} sm={3} md={2} display="flex" justifyContent="flex-start" alignItems="center">
+        <Typography
+          pl={1}
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {name}
+        </Typography>
       </Grid>
       <Grid
-        xs={10}
+        xs={7}
+        sm={9}
+        md={10}
         container
         display="flex"
         direction="row"
@@ -58,7 +69,7 @@ export default function CandidateDisplay({
       >
         {Array.from({ length: endDate.diff(startDate, "days") + 1 }).map(
           (_, index) => {
-            const date = startDate.add(index, "days");
+            const date = startDate.add(index + 1, "days");
             return (
               <Grid xs={1} key={`${cuid} ${index}`}>
                 <DayBin

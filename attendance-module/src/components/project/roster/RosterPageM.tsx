@@ -23,7 +23,7 @@ import DeleteBin from "./DeleteBin";
 import DraggableChip from "./DraggableChip";
 
 function getDateRange(date: Dayjs, weekOffset: number, days: number) {
-  const startOfWeek = date.startOf("isoWeek").add(weekOffset * 7, "days");
+  const startOfWeek = date.startOf("isoWeek").add(weekOffset * 3, "days");
   return {
     startDate: startOfWeek.startOf("day"),
     endDate: startOfWeek.clone().add(days, "days").endOf("day"),
@@ -36,15 +36,15 @@ function enumerateDaysBetweenDates(startDate: Dayjs, endDate: Dayjs) {
     (_, i) => dayjs(startDate).add(i, "days")
   );
 }
-export default function RosterPage() {
+export default function RosterPageM() {
   const { project } = useProjectContext();
-  const dayOffset = Math.floor(dayjs().diff(project?.startDate, 'day') / 7);
+  const dayOffset = Math.floor(dayjs().diff(project?.startDate, 'day') / 3);
   const [weekOffset, setWeekOffset] = useState(dayOffset);
   const [rosterData, setRosterData] = useState<MappedRosterResponse | null>(
     null
   );
 
-  const dateRange = getDateRange(project?.startDate || dayjs(), weekOffset, 6);
+  const dateRange = getDateRange(project?.startDate || dayjs(), weekOffset, 2);
 
   function updateRosterData(
     projectCuid: string,

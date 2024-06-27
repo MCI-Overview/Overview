@@ -41,8 +41,15 @@ export default function CardDisplay({
       direction="row"
       spacing={1}
       flexWrap="nowrap"
-      overflow="auto"
       height="100%"
+      sx={{
+        overflow: "auto",
+        "&::-webkit-scrollbar": {
+          display: "none",
+        },
+        "-ms-overflow-style": "none",  // Internet Explorer 10+
+        "scrollbar-width": "none",     // Firefox
+      }}
     >
       {Array.from({
         length: endDate.diff(startDate, "days") + 1,

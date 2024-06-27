@@ -147,6 +147,7 @@ const ProjectOverview = () => {
         }}
       >
         <Stack
+          pt={2}
           spacing={2}
           sx={{
             display: "flex-start",
@@ -270,6 +271,7 @@ const ProjectOverview = () => {
             </Grid>
           </Stack>
         </Stack>
+
         <Stack
           pt={4}
           spacing={2}
