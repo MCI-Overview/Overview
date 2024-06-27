@@ -4,23 +4,17 @@ import { CustomRequest } from "../../../types";
 import { useRequestContext } from "../../../providers/requestContextProvider";
 import { readableEnum } from "../../../utils/capitalize";
 
+import ViewDetailsModal from "../../common/request/ViewDetailsModal";
+import RequestStatusChip from "./RequestStatusChip";
+
 import {
   Box,
-  Chip,
-  Typography,
-  ColorPaletteProp,
   List,
+  ListDivider,
   ListItem,
   ListItemContent,
-  ListDivider,
+  Typography,
 } from "@mui/joy";
-import {
-  BlockRounded as BlockIcon,
-  ClearRounded as ClearIcon,
-  CheckRounded as CheckIcon,
-  HourglassEmptyRounded as HourglassEmptyIcon,
-} from "@mui/icons-material";
-import ViewDetailsModal from "../../common/request/ViewDetailsModal";
 
 // TODO: Add button to view details and approve/reject requests on mobile
 const RequestHistoryM = () => {
@@ -81,28 +75,8 @@ const RequestHistoryM = () => {
                       </Box>
                     </Box>
                   </ListItemContent>
-                  <Chip
-                    variant="soft"
-                    size="sm"
-                    startDecorator={
-                      {
-                        APPROVED: <CheckIcon />,
-                        CANCELLED: <ClearIcon />,
-                        REJECTED: <BlockIcon />,
-                        PENDING: <HourglassEmptyIcon />,
-                      }[listItem.status]
-                    }
-                    color={
-                      {
-                        APPROVED: "success",
-                        CANCELLED: "neutral",
-                        REJECTED: "danger",
-                        PENDING: "warning",
-                      }[listItem.status] as ColorPaletteProp
-                    }
-                  >
-                    {readableEnum(listItem.status || "NO_SHOW")}
-                  </Chip>
+
+                  <RequestStatusChip status={listItem.status} />
                 </ViewDetailsModal>
               </ListItem>
               <ListDivider />

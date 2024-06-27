@@ -5,23 +5,16 @@ import { readableEnum } from "../../utils/capitalize";
 import { useRequestContext } from "../../providers/requestContextProvider";
 
 import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
+import RequestStatusChip from "../../components/project/requests/RequestStatusChip";
 
 import {
   Box,
-  Chip,
-  ColorPaletteProp,
   List,
   ListDivider,
   ListItem,
   ListItemContent,
   Typography,
 } from "@mui/joy";
-import {
-  BlockRounded as BlockIcon,
-  ClearRounded as ClearIcon,
-  CheckRounded as CheckIcon,
-  HourglassEmptyRounded as HourglassEmptyIcon,
-} from "@mui/icons-material";
 
 // TODO: Add editing of requests
 const CurrentRequestsM = () => {
@@ -41,11 +34,11 @@ const CurrentRequestsM = () => {
             "--ListItem-paddingX": 0,
           }}
         >
-          {requests.map((listItem: CustomRequest) => (
-            <Fragment key={listItem.cuid}>
+          {requests.map((req: CustomRequest) => (
+            <Fragment key={req.cuid}>
               <ListItem>
                 <ViewDetailsModal
-                  request={listItem}
+                  request={req}
                   updateRequest={updateRequest}
                   type="USER"
                   variant="MOBILE"
@@ -60,7 +53,7 @@ const CurrentRequestsM = () => {
                   >
                     <Box>
                       <Typography fontWeight={600} gutterBottom>
-                        {dayjs(listItem.createdAt).format("DD/MM/YY HH:MM")}
+                        {dayjs(req.createdAt).format("DD/MM/YY HH:MM")}
                       </Typography>
                       <Box
                         sx={{
@@ -72,40 +65,17 @@ const CurrentRequestsM = () => {
                         }}
                       >
                         <Typography level="body-xs">
-                          {listItem.Assign.Project &&
-                            listItem.Assign.Project.name}
+                          {req.Assign.Project && req.Assign.Project.name}
                         </Typography>
                         <Typography level="body-xs">&bull;</Typography>
                         <Typography level="body-xs">
-                          {readableEnum(listItem.type)}
+                          {readableEnum(req.type)}
                         </Typography>
                       </Box>
                     </Box>
                   </ListItemContent>
 
-                  <Chip
-                    variant="soft"
-                    size="sm"
-                    sx={{}}
-                    startDecorator={
-                      {
-                        APPROVED: <CheckIcon />,
-                        CANCELLED: <ClearIcon />,
-                        REJECTED: <BlockIcon />,
-                        PENDING: <HourglassEmptyIcon />,
-                      }[listItem.status || "UPCOMING"]
-                    }
-                    color={
-                      {
-                        APPROVED: "success",
-                        CANCELLED: "neutral",
-                        REJECTED: "danger",
-                        PENDING: "warning",
-                      }[listItem.status || "UPCOMING"] as ColorPaletteProp
-                    }
-                  >
-                    {readableEnum(listItem.status || "UPCOMING")}
-                  </Chip>
+                  <RequestStatusChip status={req.status} />
                 </ViewDetailsModal>
               </ListItem>
               <ListDivider />

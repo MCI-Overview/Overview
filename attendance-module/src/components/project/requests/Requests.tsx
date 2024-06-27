@@ -5,14 +5,9 @@ import { readableEnum } from "../../../utils/capitalize";
 import { TdTypo, ThTypo } from "../ui/TableTypo";
 
 import ViewDetailsModal from "../../common/request/ViewDetailsModal";
+import RequestStatusChip from "./RequestStatusChip";
 
-import { Chip, Table, Sheet, Typography, ColorPaletteProp } from "@mui/joy";
-import {
-  BlockRounded as BlockIcon,
-  ClearRounded as ClearIcon,
-  CheckRounded as CheckIcon,
-  HourglassEmptyRounded as HourglassEmptyIcon,
-} from "@mui/icons-material";
+import { Table, Sheet, Typography } from "@mui/joy";
 
 const RequestHistory = () => {
   const { requests, updateRequest } = useRequestContext();
@@ -77,28 +72,7 @@ const RequestHistory = () => {
                   </TdTypo>
                   <TdTypo>{readableEnum(req.type)}</TdTypo>
                   <td>
-                    <Chip
-                      variant="soft"
-                      size="sm"
-                      startDecorator={
-                        {
-                          APPROVED: <CheckIcon />,
-                          CANCELLED: <ClearIcon />,
-                          REJECTED: <BlockIcon />,
-                          PENDING: <HourglassEmptyIcon />,
-                        }[req.status || "UPCOMING"]
-                      }
-                      color={
-                        {
-                          APPROVED: "success",
-                          CANCELLED: "neutral",
-                          REJECTED: "danger",
-                          PENDING: "warning",
-                        }[req.status || "UPCOMING"] as ColorPaletteProp
-                      }
-                    >
-                      {readableEnum(req.status || "UPCOMING")}
-                    </Chip>
+                    <RequestStatusChip status={req.status} />
                   </td>
                   <td>
                     <ViewDetailsModal

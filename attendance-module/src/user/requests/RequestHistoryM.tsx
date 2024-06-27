@@ -4,23 +4,17 @@ import { CustomRequest } from "../../types";
 import { useRequestContext } from "../../providers/requestContextProvider";
 import { readableEnum } from "../../utils/capitalize";
 
+import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
+import RequestStatusChip from "../../components/project/requests/RequestStatusChip";
+
 import {
   Box,
-  Chip,
-  Typography,
-  ColorPaletteProp,
   List,
+  ListDivider,
   ListItem,
   ListItemContent,
-  ListDivider,
+  Typography,
 } from "@mui/joy";
-import {
-  BlockRounded as BlockIcon,
-  ClearRounded as ClearIcon,
-  CheckRounded as CheckIcon,
-  HourglassEmptyRounded as HourglassEmptyIcon,
-} from "@mui/icons-material";
-import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
 
 //TODO: Add viewing on mobile
 const RequestHistoryM = () => {
@@ -40,11 +34,11 @@ const RequestHistoryM = () => {
             "--ListItem-paddingX": 0,
           }}
         >
-          {requests.map((listItem: CustomRequest) => (
-            <Fragment key={listItem.cuid}>
+          {requests.map((req: CustomRequest) => (
+            <Fragment key={req.cuid}>
               <ListItem>
                 <ViewDetailsModal
-                  request={listItem}
+                  request={req}
                   updateRequest={updateRequest}
                   type="USER"
                   variant="MOBILE"
@@ -59,7 +53,7 @@ const RequestHistoryM = () => {
                   >
                     <Box>
                       <Typography fontWeight={600} gutterBottom>
-                        {dayjs(listItem.createdAt).format("DD/MM/YYYY HH:MM")}
+                        {dayjs(req.createdAt).format("DD/MM/YYYY HH:MM")}
                       </Typography>
                       <Box
                         sx={{
@@ -71,38 +65,16 @@ const RequestHistoryM = () => {
                         }}
                       >
                         <Typography level="body-xs">
-                          {listItem.Assign.Project &&
-                            listItem.Assign.Project.name}
+                          {req.Assign.Project && req.Assign.Project.name}
                         </Typography>
                         <Typography level="body-xs">&bull;</Typography>
                         <Typography level="body-xs">
-                          {readableEnum(listItem.type)}
+                          {readableEnum(req.type)}
                         </Typography>
                       </Box>
                     </Box>
                   </ListItemContent>
-                  <Chip
-                    variant="soft"
-                    size="sm"
-                    startDecorator={
-                      {
-                        APPROVED: <CheckIcon />,
-                        CANCELLED: <ClearIcon />,
-                        REJECTED: <BlockIcon />,
-                        PENDING: <HourglassEmptyIcon />,
-                      }[listItem.status || "UPCOMING"]
-                    }
-                    color={
-                      {
-                        APPROVED: "success",
-                        CANCELLED: "neutral",
-                        REJECTED: "danger",
-                        PENDING: "warning",
-                      }[listItem.status || "UPCOMING"] as ColorPaletteProp
-                    }
-                  >
-                    {readableEnum(listItem.status || "NO_SHOW")}
-                  </Chip>
+                  <RequestStatusChip status={req.status} />
                 </ViewDetailsModal>
               </ListItem>
               <ListDivider />

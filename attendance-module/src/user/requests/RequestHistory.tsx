@@ -5,14 +5,9 @@ import { useRequestContext } from "../../providers/requestContextProvider";
 import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
 
 import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
+import RequestStatusChip from "../../components/project/requests/RequestStatusChip";
 
-import { Chip, Table, Sheet, Typography, ColorPaletteProp } from "@mui/joy";
-import {
-  BlockRounded as BlockIcon,
-  ClearRounded as ClearIcon,
-  CheckRounded as CheckIcon,
-  HourglassEmptyRounded as HourglassEmptyIcon,
-} from "@mui/icons-material";
+import { Table, Sheet, Typography } from "@mui/joy";
 
 const RequestHistory = () => {
   const { requests, updateRequest } = useRequestContext();
@@ -60,38 +55,17 @@ const RequestHistory = () => {
               </td>
             </tr>
           ) : (
-            requests.map((row: CustomRequest) => (
-              <tr key={row.cuid}>
-                <TdTypo>{dayjs(row.createdAt).format("DD/MM/YY HH:MM")}</TdTypo>
-                <TdTypo>{row.Assign.Project && row.Assign.Project.name}</TdTypo>
-                <TdTypo>{readableEnum(row.type)}</TdTypo>
+            requests.map((req: CustomRequest) => (
+              <tr key={req.cuid}>
+                <TdTypo>{dayjs(req.createdAt).format("DD/MM/YY HH:MM")}</TdTypo>
+                <TdTypo>{req.Assign.Project && req.Assign.Project.name}</TdTypo>
+                <TdTypo>{readableEnum(req.type)}</TdTypo>
                 <td>
-                  <Chip
-                    variant="soft"
-                    size="sm"
-                    startDecorator={
-                      {
-                        APPROVED: <CheckIcon />,
-                        CANCELLED: <ClearIcon />,
-                        REJECTED: <BlockIcon />,
-                        PENDING: <HourglassEmptyIcon />,
-                      }[row.status || "UPCOMING"]
-                    }
-                    color={
-                      {
-                        APPROVED: "success",
-                        CANCELLED: "neutral",
-                        REJECTED: "danger",
-                        PENDING: "warning",
-                      }[row.status || "UPCOMING"] as ColorPaletteProp
-                    }
-                  >
-                    {readableEnum(row.status || "UPCOMING")}
-                  </Chip>
+                  <RequestStatusChip status={req.status} />
                 </td>
                 <td>
                   <ViewDetailsModal
-                    request={row}
+                    request={req}
                     updateRequest={updateRequest}
                     type="USER"
                     variant="DESKTOP"
