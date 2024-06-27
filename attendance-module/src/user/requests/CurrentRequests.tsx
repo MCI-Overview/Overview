@@ -59,7 +59,7 @@ const CurrentRequests = () => {
             requests.map((req: CustomRequest) => (
               <tr key={req.cuid}>
                 <TdTypo>
-                  {dayjs(req.createdAt).format("DD/MM/YYYY HH:MM")}
+                  {dayjs(req.createdAt).format("DD/MM/YYYY HH:mm")}
                 </TdTypo>
                 <TdTypo>{req.Assign.Project && req.Assign.Project.name}</TdTypo>
                 <TdTypo>{readableEnum(req.type)}</TdTypo>

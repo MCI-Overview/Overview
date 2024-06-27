@@ -3,8 +3,8 @@ import { CustomAdminAttendance } from "../../../types";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import axios from "axios";
 import dayjs from "dayjs";
-import ProjectAttendance from "../../../admin/projects-components/ProjectAttendance";
-import ProjectAttendanceM from "../../../admin/projects-components/ProjectAttendanceM";
+import ProjectAttendance from "../attendance/ProjectAttendance";
+import ProjectAttendanceM from "../attendance/ProjectAttendanceM";
 import LateCount from "./LateCount";
 import McCount from "./McCount";
 import NoShowCount from "./NoShowCount";
@@ -12,32 +12,26 @@ import OnTimeCount from "./OnTimeCount";
 import CandidaeCount from "./CandidateCount";
 import OnLeave from "./OnLeave";
 
-import {
-  Grid,
-  Stack,
-  Typography,
-  Box,
-  Divider
-} from "@mui/joy";
+import { Grid, Stack, Typography, Box, Divider } from "@mui/joy";
 import AttendanceGraph from "./AttendanceGraph";
 
 type displayData = {
   datasets: {
     leave: {
-      data: number[],
-    },
+      data: number[];
+    };
     late: {
-      data: number[],
-    },
+      data: number[];
+    };
     ontime: {
-      data: number[],
-    },
+      data: number[];
+    };
     medical: {
-      data: number[],
-    },
+      data: number[];
+    };
     absent: {
-      data: number[],
-    },
+      data: number[];
+    };
   };
 };
 
@@ -46,8 +40,8 @@ const ProjectOverview = () => {
   const [plotData, setPlotData] = useState<displayData>();
   const context = useProjectContext();
   const projectCuid = context.project?.cuid;
-  const startDate = dayjs().startOf('day').toISOString();
-  const endDate = dayjs().endOf('day').toISOString();
+  const startDate = dayjs().startOf("day").toISOString();
+  const endDate = dayjs().endOf("day").toISOString();
   useEffect(() => {
     const fetchUpcomingShifts = async (startDate: string, endDate: string) => {
       try {
@@ -67,7 +61,7 @@ const ProjectOverview = () => {
     };
 
     const getDisplayData = async () => {
-      const weekStart = dayjs().startOf('week').toISOString();
+      const weekStart = dayjs().startOf("week").toISOString();
       const formattedWeekStart = dayjs(weekStart).format(
         "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
       );
@@ -75,7 +69,7 @@ const ProjectOverview = () => {
       const response = await axios.get(url);
       const fetchedData = response.data;
       setPlotData(fetchedData);
-    }
+    };
 
     getDisplayData();
     fetchUpcomingShifts(startDate, endDate);
@@ -85,13 +79,12 @@ const ProjectOverview = () => {
 
   const total = plotData
     ? sumArray(plotData.datasets.leave.data) +
-    sumArray(plotData.datasets.late.data) +
-    sumArray(plotData.datasets.ontime.data) +
-    sumArray(plotData.datasets.medical.data) +
-    sumArray(plotData.datasets.absent.data)
+      sumArray(plotData.datasets.late.data) +
+      sumArray(plotData.datasets.ontime.data) +
+      sumArray(plotData.datasets.medical.data) +
+      sumArray(plotData.datasets.absent.data)
     : 0;
 
-  console.log('total', total);
   return (
     <>
       <Box
@@ -105,7 +98,6 @@ const ProjectOverview = () => {
           gap: 1,
         }}
       >
-
         <Stack
           spacing={2}
           sx={{
@@ -125,7 +117,7 @@ const ProjectOverview = () => {
               </Box>
 
               <Typography level="body-sm">
-                Attendance history for {dayjs(startDate).format('DD MMM YYYY')}
+                Attendance history for {dayjs(startDate).format("DD MMM YYYY")}
               </Typography>
             </Box>
           </Box>
@@ -164,25 +156,38 @@ const ProjectOverview = () => {
           <Stack spacing={2} sx={{ my: 1 }}>
             <Grid container sx={{ flexGrow: 1 }}>
               <Grid xs={12} md={6} lg={3} pr={2} pb={2}>
-                <LateCount count={sumArray(plotData?.datasets.late.data ?? [])} total={total} />
+                <LateCount
+                  count={sumArray(plotData?.datasets.late.data ?? [])}
+                  total={total}
+                />
               </Grid>
               <Grid xs={12} md={6} lg={3} pr={2} pb={2}>
-                <McCount count={sumArray(plotData?.datasets.medical.data ?? [])} total={total} />
+                <McCount
+                  count={sumArray(plotData?.datasets.medical.data ?? [])}
+                  total={total}
+                />
               </Grid>
               <Grid xs={12} md={6} lg={3} pr={2} pb={2}>
-                <NoShowCount count={sumArray(plotData?.datasets.absent.data ?? [])} total={total} />
+                <NoShowCount
+                  count={sumArray(plotData?.datasets.absent.data ?? [])}
+                  total={total}
+                />
               </Grid>
               <Grid xs={12} md={6} lg={3} pr={2} pb={2}>
-                <OnTimeCount count={sumArray(plotData?.datasets.ontime.data ?? [])} total={total} />
+                <OnTimeCount
+                  count={sumArray(plotData?.datasets.ontime.data ?? [])}
+                  total={total}
+                />
               </Grid>
               <Grid xs={12} md={6} lg={3} pr={2} pb={2}>
-                <OnLeave count={sumArray(plotData?.datasets.leave.data ?? [])} total={total} />
+                <OnLeave
+                  count={sumArray(plotData?.datasets.leave.data ?? [])}
+                  total={total}
+                />
               </Grid>
             </Grid>
 
-            <Typography level="body-sm">
-              Weekly attendance trends
-            </Typography>
+            <Typography level="body-sm">Weekly attendance trends</Typography>
             <Divider />
             {plotData && <AttendanceGraph datasets={plotData.datasets} />}
           </Stack>

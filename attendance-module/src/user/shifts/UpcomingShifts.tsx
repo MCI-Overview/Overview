@@ -3,13 +3,9 @@ import { CustomAttendance } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
 import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
 
-import { ColorPaletteProp, Chip, Table, Sheet, Typography } from "@mui/joy";
-import {
-  BlockRounded as BlockIcon,
-  CheckRounded as CheckIcon,
-  QueryBuilderRounded as QueryBuilderIcon,
-  MedicalServicesOutlined as MedicalServicesIcon,
-} from "@mui/icons-material";
+import AttendanceStatusChip from "../../components/project/attendance/AttendanceStatusChip";
+
+import { Table, Sheet, Typography } from "@mui/joy";
 
 interface UpcomingShiftsProps {
   data: CustomAttendance[];
@@ -59,39 +55,16 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
               </td>
             </tr>
           ) : (
-            data.map((row: CustomAttendance) => (
-              <tr key={row.cuid}>
-                <TdTypo>{dayjs(row.shiftDate).format("DD MMM YYYY")}</TdTypo>
-                <TdTypo>{row.Shift.Project.name}</TdTypo>
+            data.map((att: CustomAttendance) => (
+              <tr key={att.cuid}>
+                <TdTypo>{dayjs(att.shiftDate).format("DD/MM/YYYY")}</TdTypo>
+                <TdTypo>{att.Shift.Project.name}</TdTypo>
                 <td>
-                  <Chip
-                    variant="soft"
-                    size="sm"
-                    startDecorator={
-                      {
-                        ON_TIME: <CheckIcon />,
-                        LATE: <QueryBuilderIcon />,
-                        NO_SHOW: <BlockIcon />,
-                        MEDICAL: <MedicalServicesIcon />,
-                        UPCOMING: null,
-                      }[row.status || "UPCOMING"]
-                    }
-                    color={
-                      {
-                        ON_TIME: "success",
-                        LATE: "warning",
-                        NO_SHOW: "danger",
-                        MEDICAL: "neutral",
-                        UPCOMING: "success",
-                      }[row.status || "UPCOMING"] as ColorPaletteProp
-                    }
-                  >
-                    {readableEnum(row.status || "UPCOMING")}
-                  </Chip>
+                  <AttendanceStatusChip status={att.status} />
                 </td>
-                <TdTypo>{readableEnum(row.shiftType)}</TdTypo>
-                <TdTypo>{dayjs(row.Shift.startTime).format("hh:mm a")}</TdTypo>
-                <TdTypo>{dayjs(row.Shift.endTime).format("hh:mm a")}</TdTypo>
+                <TdTypo>{readableEnum(att.shiftType)}</TdTypo>
+                <TdTypo>{dayjs(att.Shift.startTime).format("HH:mm")}</TdTypo>
+                <TdTypo>{dayjs(att.Shift.endTime).format("HH:mm")}</TdTypo>
               </tr>
             ))
           )}

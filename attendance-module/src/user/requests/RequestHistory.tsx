@@ -57,7 +57,7 @@ const RequestHistory = () => {
           ) : (
             requests.map((req: CustomRequest) => (
               <tr key={req.cuid}>
-                <TdTypo>{dayjs(req.createdAt).format("DD/MM/YY HH:MM")}</TdTypo>
+                <TdTypo>{dayjs(req.createdAt).format("DD/MM/YY HH:mm")}</TdTypo>
                 <TdTypo>{req.Assign.Project && req.Assign.Project.name}</TdTypo>
                 <TdTypo>{readableEnum(req.type)}</TdTypo>
                 <td>

@@ -1,8 +1,8 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { CustomAdminAttendance } from "../../types";
-import { useProjectContext } from "../../providers/projectContextProvider";
+import { CustomAdminAttendance } from "../../../types";
+import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import ProjectAttendance from "./ProjectAttendance";
 import ProjectAttendanceM from "./ProjectAttendanceM";

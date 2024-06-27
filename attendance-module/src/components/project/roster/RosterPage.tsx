@@ -12,7 +12,7 @@ import { capitalizeWords } from "../../../utils/capitalize";
 import dayjs, { Dayjs } from "dayjs";
 
 import { GetRosterResponse, MappedRosterResponse } from "../../../types/common";
-import CreateShiftModal from "../shift/CreateShiftModal";
+import CreateShiftModal from "./CreateShiftModal";
 import CandidateDisplay from "./CandidateDisplay";
 import CardDisplay from "./CardDisplay";
 import DeleteBin from "./DeleteBin";

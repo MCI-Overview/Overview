@@ -66,7 +66,7 @@ const RequestHistoryM = () => {
                         }}
                       >
                         <Typography level="body-xs">
-                          {dayjs(listItem.createdAt).format("DD/MM/YY HH:MM")}
+                          {dayjs(listItem.createdAt).format("DD/MM/YY HH:mm")}
                         </Typography>
                         <Typography level="body-xs">&bull;</Typography>
                         <Typography level="body-xs">

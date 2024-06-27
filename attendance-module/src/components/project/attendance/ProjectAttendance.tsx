@@ -1,11 +1,10 @@
 import dayjs from "dayjs";
-import { CustomAdminAttendance } from "../../types";
-import { readableEnum } from "../../utils/capitalize";
-import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
+import { CustomAdminAttendance } from "../../../types";
+import { TdTypo, ThTypo } from "../ui/TableTypo";
+
+import AttendanceStatusChip from "./AttendanceStatusChip";
 
 import {
-  Box,
-  Chip,
   Dropdown,
   IconButton,
   Menu,
@@ -15,14 +14,7 @@ import {
   Table,
   Typography,
 } from "@mui/joy";
-import {
-  BlockRounded as BlockIcon,
-  CheckRounded as CheckIcon,
-  QueryBuilderRounded as QueryBuilderIcon,
-  MedicalServicesOutlined as MedicalServicesIcon,
-  MoreHorizRounded as MoreHorizIcon,
-} from "@mui/icons-material";
-import { ColorPaletteProp } from "@mui/joy/styles";
+import { MoreHorizRounded as MoreHorizIcon } from "@mui/icons-material";
 
 type Props = {
   data: CustomAdminAttendance[];
@@ -78,8 +70,8 @@ const ProjectAttendance: React.FC<Props> = ({ data }) => {
             <ThTypo>Nric</ThTypo>
             <ThTypo>Name</ThTypo>
             <ThTypo>Status</ThTypo>
-            <ThTypo>Shift Start</ThTypo>
-            <ThTypo>Shift End</ThTypo>
+            <ThTypo>Start Time</ThTypo>
+            <ThTypo>End Time</ThTypo>
             <ThTypo>Clock In</ThTypo>
             <ThTypo>Clock Out</ThTypo>
             <ThTypo> </ThTypo>
@@ -93,47 +85,24 @@ const ProjectAttendance: React.FC<Props> = ({ data }) => {
               </td>
             </tr>
           ) : (
-            attendanceData.map((row: CustomAdminAttendance) => (
-              <tr key={row.attendanceCuid}>
-                <TdTypo>{dayjs(row.date).format("DD MMM YYYY")}</TdTypo>
-                <TdTypo>{row.nric}</TdTypo>
-                <TdTypo>{row.name}</TdTypo>
-                <td>
-                  <Chip
-                    variant="soft"
-                    size="sm"
-                    startDecorator={
-                      {
-                        ON_TIME: <CheckIcon />,
-                        LATE: <QueryBuilderIcon />,
-                        NO_SHOW: <BlockIcon />,
-                        MEDICAL: <MedicalServicesIcon />,
-                      }[row.status || "NO_SHOW"]
-                    }
-                    color={
-                      {
-                        ON_TIME: "success",
-                        LATE: "warning",
-                        NO_SHOW: "danger",
-                        MEDICAL: "neutral",
-                      }[row.status || "NO_SHOW"] as ColorPaletteProp
-                    }
-                  >
-                    {readableEnum(row.status || "NO_SHOW")}
-                  </Chip>
+            attendanceData.map((att: CustomAdminAttendance) => (
+              <tr key={att.attendanceCuid}>
+                <TdTypo>{dayjs(att.date).format("DD/MM/YYYY")}</TdTypo>
+                <TdTypo>{att.nric}</TdTypo>
+                <TdTypo>{att.name}</TdTypo>
+                <td style={{ overflow: "clip" }}>
+                  <AttendanceStatusChip status={att.status} />
                 </td>
-                <TdTypo>{dayjs(row.shiftStart).format("hh:mm a")}</TdTypo>
-                <TdTypo>{dayjs(row.shiftEnd).format("hh:mm a")}</TdTypo>
+                <TdTypo>{dayjs(att.shiftStart).format("HH:mm")}</TdTypo>
+                <TdTypo>{dayjs(att.shiftEnd).format("HH:mm")}</TdTypo>
                 <TdTypo>
-                  {row.rawStart ? dayjs(row.rawStart).format("hh:mm a") : "-"}
+                  {att.rawStart ? dayjs(att.rawStart).format("HH:mm") : "-"}
                 </TdTypo>
                 <TdTypo>
-                  {row.rawEnd ? dayjs(row.rawEnd).format("hh:mm a") : "-"}
+                  {att.rawEnd ? dayjs(att.rawEnd).format("HH:mm") : "-"}
                 </TdTypo>
                 <td>
-                  <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                    <RowMenu />
-                  </Box>
+                  <RowMenu />
                 </td>
               </tr>
             ))

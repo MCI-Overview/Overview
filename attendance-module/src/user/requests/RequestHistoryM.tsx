@@ -53,7 +53,7 @@ const RequestHistoryM = () => {
                   >
                     <Box>
                       <Typography fontWeight={600} gutterBottom>
-                        {dayjs(req.createdAt).format("DD/MM/YYYY HH:MM")}
+                        {dayjs(req.createdAt).format("DD/MM/YYYY HH:mm")}
                       </Typography>
                       <Box
                         sx={{

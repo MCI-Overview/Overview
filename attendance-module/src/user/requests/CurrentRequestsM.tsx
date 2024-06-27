@@ -53,7 +53,7 @@ const CurrentRequestsM = () => {
                   >
                     <Box>
                       <Typography fontWeight={600} gutterBottom>
-                        {dayjs(req.createdAt).format("DD/MM/YY HH:MM")}
+                        {dayjs(req.createdAt).format("DD/MM/YY HH:mm")}
                       </Typography>
                       <Box
                         sx={{
