@@ -23,7 +23,7 @@ import DeleteBin from "./DeleteBin";
 import DraggableChip from "./DraggableChip";
 
 function getDateRange(date: Dayjs, weekOffset: number, days: number) {
-  const startOfWeek = date.startOf("isoWeek").add(weekOffset * 1, "days");
+  const startOfWeek = date.startOf("isoWeek").add(weekOffset * 2, "days");
   return {
     startDate: startOfWeek.startOf("day"),
     endDate: startOfWeek.clone().add(days, "days").endOf("day"),
@@ -44,7 +44,7 @@ export default function RosterPageS() {
     null
   );
 
-  const dateRange = getDateRange(project?.startDate || dayjs(), weekOffset, 0);
+  const dateRange = getDateRange(project?.startDate || dayjs(), weekOffset, 1);
 
   function updateRosterData(
     projectCuid: string,
