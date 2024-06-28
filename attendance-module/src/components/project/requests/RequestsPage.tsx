@@ -158,10 +158,7 @@ const RequestsPage = () => {
         <PaginationFooter
           maxPage={maxPage}
           currentPage={currentPage}
-          isFirstPage={currentPage === 1}
-          isLastPage={currentPage === maxPage}
-          handlePreviousPage={() => setCurrentPage((prev) => prev - 1)}
-          handleNextPage={() => setCurrentPage((prev) => prev + 1)}
+          setCurrentPage={setCurrentPage}
         />
       </Box>
     </Box>

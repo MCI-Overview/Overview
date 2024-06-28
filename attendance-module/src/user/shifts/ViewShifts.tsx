@@ -73,18 +73,6 @@ const ViewShifts = () => {
     fetchUpcomingShifts(page.currentPage);
   }, [page.currentPage]);
 
-  const handleNextPage = () => {
-    if (!page.isLastPage && page.nextPage !== null) {
-      fetchUpcomingShifts(page.nextPage);
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (!page.isFirstPage && page.previousPage !== null) {
-      fetchUpcomingShifts(page.previousPage);
-    }
-  };
-
   return (
     <Box
       sx={{
@@ -124,11 +112,8 @@ const ViewShifts = () => {
 
       <PaginationFooter
         maxPage={page.pageCount}
-        handlePreviousPage={handlePreviousPage}
-        isFirstPage={page.isFirstPage}
         currentPage={page.currentPage}
-        handleNextPage={handleNextPage}
-        isLastPage={page.isLastPage}
+        setCurrentPage={fetchUpcomingShifts}
       />
     </Box>
   );
