@@ -86,7 +86,7 @@ export default function CreateShiftModal() {
   return (
     <>
       <Modal open={isOpen}>
-        <ModalDialog sx={{ minWidth: "34rem" }}>
+        <ModalDialog sx={{ maxWidth: '500px' }}>
           <ModalClose onClick={() => setIsOpen(false)} />
           <Box>
             <Typography level="title-lg">Create shifts</Typography>
