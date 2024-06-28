@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { prisma } from "../../../client";
+import { prisma, s3, upload } from "../../../client";
 import { PrismaError } from "@/types";
 import { User } from "@/types/common";
 import attendanceAPIRoutes from "./attendance";
@@ -7,6 +7,7 @@ import profileAPIRoutes from "./profile";
 import requestAPIRoutes from "./request";
 import reportAPIRoutes from "./report";
 import dayjs from "dayjs";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 const userAPIRouter: Router = Router();
 
 userAPIRouter.use("/", attendanceAPIRoutes);
@@ -197,100 +198,175 @@ userAPIRouter.get("/upcomingShifts", async (req, res) => {
   }
 });
 
-userAPIRouter.patch("/", async (req, res) => {
-  const user = req.user as User;
+userAPIRouter.patch(
+  "/",
+  upload.fields([
+    { name: "bankStatement", maxCount: 1 },
+    { name: "nricFront", maxCount: 1 },
+    { name: "nricBack", maxCount: 1 },
+  ]),
+  async (req, res) => {
+    const user = req.user as User;
 
-  const {
-    name,
-    contact,
-    nationality,
-    dateOfBirth,
-    bankDetails,
-    address,
-    emergencyContact,
-  } = req.body;
+    const files = req.files as {
+      [fieldname: string]: Express.Multer.File[];
+    };
 
-  if (
-    !name &&
-    !contact &&
-    !nationality &&
-    !dateOfBirth &&
-    !bankDetails &&
-    !address &&
-    !emergencyContact
-  ) {
-    return res
-      .status(400)
-      .send(
-        "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact) is required."
-      );
+    const bankStatement = files && files["bankStatement"]?.[0];
+    const nricFront = files && files["nricFront"]?.[0];
+    const nricBack = files && files["nricBack"]?.[0];
+
+    const {
+      name,
+      contact,
+      nationality,
+      dateOfBirth,
+      bankDetails,
+      address,
+      emergencyContact,
+    } = req.body;
+
+    if (
+      !name &&
+      !contact &&
+      !nationality &&
+      !dateOfBirth &&
+      !bankDetails &&
+      !address &&
+      !emergencyContact &&
+      !bankStatement &&
+      !nricFront &&
+      !nricBack
+    ) {
+      return res
+        .status(400)
+        .send(
+          "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact, bankStatement, nricFront, nricBack) is required."
+        );
+    }
+
+    // Validation for dateOfBirth
+    if (dateOfBirth && !Date.parse(dateOfBirth)) {
+      return res.status(400).send("Invalid dateOfBirth parameter.");
+    }
+
+    // Validation for bankDetails
+    if (
+      bankDetails &&
+      (!bankDetails.bankHolderName ||
+        !bankDetails.bankName ||
+        !bankDetails.bankNumber)
+    ) {
+      return res.status(400).send("Invalid bankDetails JSON.");
+    }
+
+    // Validation for address
+    if (
+      address &&
+      (!address.block ||
+        !address.building ||
+        !address.street ||
+        !address.postal ||
+        !address.country ||
+        (!address.isLanded && !(address.floor || address.unit)))
+    ) {
+      return res.status(400).send("Invalid address JSON.");
+    }
+
+    // Validation for emergencyContact
+    if (
+      emergencyContact &&
+      (!emergencyContact.name ||
+        !emergencyContact.relationship ||
+        !emergencyContact.contact)
+    ) {
+      return res.status(400).send("Invalid emergencyContact JSON.");
+    }
+
+    if (bankDetails && !bankStatement) {
+      return res.status(400).send("Bank Statement image is required.");
+    }
+
+    // Build the update data object with only provided fields
+    const updateData = {
+      ...(name && { name }),
+      ...(contact && { contact: contact }),
+      ...(nationality && { nationality }),
+      ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
+      ...(address && { address }),
+      ...(emergencyContact && { emergencyContact }),
+      ...(bankDetails && { bankDetails, hasOnboarded: true }),
+    };
+
+    // TODO: Fix transaction timeout issue
+    await prisma.$transaction(
+      async () => {
+        if (Object.keys(updateData).length !== 0) {
+          try {
+            await prisma.candidate.update({
+              where: { cuid: user.cuid },
+              data: updateData,
+            });
+          } catch (error) {
+            console.error("Error while updating candidate data:", error);
+            return res.status(500).send("Unable to update candidate data.");
+          }
+        }
+
+        if (bankStatement) {
+          try {
+            await s3.send(
+              new PutObjectCommand({
+                Bucket: process.env.S3_BUCKET_NAME!,
+                Key: `${user.cuid}/bank-statement`,
+                Body: bankStatement.buffer,
+              })
+            );
+          } catch (error) {
+            console.error("Error while uploading Bank Statement file:", error);
+            return res.status(500).send("Unable to upload bank statement.");
+          }
+        }
+
+        if (nricFront) {
+          try {
+            await s3.send(
+              new PutObjectCommand({
+                Bucket: process.env.S3_BUCKET_NAME!,
+                Key: `${user.cuid}/nric/front`,
+                Body: nricFront.buffer,
+              })
+            );
+          } catch (error) {
+            console.error("Error while uploading NRIC (Front) file:", error);
+            return res.status(500).send("Unable to upload NRIC (Front).");
+          }
+        }
+
+        if (nricBack) {
+          try {
+            await s3.send(
+              new PutObjectCommand({
+                Bucket: process.env.S3_BUCKET_NAME!,
+                Key: `${user.cuid}/nric/back`,
+                Body: nricBack.buffer,
+              })
+            );
+          } catch (error) {
+            console.error("Error while uploading NRIC (Back) file:", error);
+            return res.status(500).send("Unable to upload NRIC (Back).");
+          }
+        }
+
+        return res.send("Profile updated successfully.");
+      },
+      {
+        timeout: 15000,
+      }
+    );
+
+    return;
   }
-
-  // Validation for dateOfBirth
-  if (dateOfBirth && !Date.parse(dateOfBirth)) {
-    return res.status(400).send("Invalid dateOfBirth parameter.");
-  }
-
-  // Validation for bankDetails
-  if (
-    bankDetails &&
-    (!bankDetails.bankHolderName ||
-      !bankDetails.bankName ||
-      !bankDetails.bankNumber)
-  ) {
-    return res.status(400).send("Invalid bankDetails JSON.");
-  }
-  // Validation for address
-  if (
-    address &&
-    (!address.block ||
-      !address.building ||
-      !address.street ||
-      !address.postal ||
-      !address.country ||
-      (!address.isLanded && !(address.floor || address.unit)))
-  ) {
-    console.log(address);
-    return res.status(400).send("Invalid address JSON.");
-  }
-
-  // Validation for emergencyContact
-  if (
-    emergencyContact &&
-    (!emergencyContact.name ||
-      !emergencyContact.relationship ||
-      !emergencyContact.contact)
-  ) {
-    return res.status(400).send("Invalid emergencyContact JSON.");
-  }
-
-  // Build the update data object with only provided fields
-  const updateData = {
-    ...(name && { name }),
-    ...(contact && { contact: contact }),
-    ...(nationality && { nationality }),
-    ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
-    ...(address && { address }),
-    ...(bankDetails && { bankDetails }),
-    ...(emergencyContact && { emergencyContact }),
-  };
-
-  // Check if no fields are provided to update
-  if (Object.keys(updateData).length === 0) {
-    return res.status(400).send("No valid fields provided for update.");
-  }
-
-  try {
-    await prisma.candidate.update({
-      where: { cuid: user.cuid },
-      data: updateData,
-    });
-
-    return res.send(`Profile updated successfully.`);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send("Internal server error.");
-  }
-});
+);
 
 export default userAPIRouter;

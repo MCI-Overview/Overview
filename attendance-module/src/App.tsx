@@ -19,7 +19,6 @@ import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
 import { ProjectContextProvider } from "./providers/projectContextProvider";
 import { UserContextProvider } from "./providers/userContextProvider";
 import { RemoveTrailingSlash } from "./utils/remove-trailing-slash";
-import UserNew from "./user/onboarding/UserNew";
 import AdminCandidates from "./admin/Candidates";
 import UserRequests from "./user/UserRequests";
 import CandidateProfile from "./user/Profile";
@@ -33,6 +32,7 @@ import UserShifts from "./user/UserShifts";
 import Header from "./components/Header";
 import UserHome from "./user/UserHome";
 import Project from "./admin/Project";
+import OnboardingPage from "./user/onboarding/OnboardingPage";
 
 dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
@@ -91,7 +91,6 @@ function App() {
                 className="MainContent"
                 sx={{
                   pt: { xs: "calc(12px + var(--Header-height))", md: 3 },
-                  pb: { xs: 2, sm: 2, md: 3 },
                   flex: 1,
                   display: "flex",
                   flexDirection: "column",
@@ -106,7 +105,7 @@ function App() {
                   <Routes>
                     <Route element={<PrivateUserRoutes />}>
                       <Route path="/" element={<LoginUser />} />
-                      <Route path="/user/new" element={<UserNew />} />
+                      <Route path="/user/new" element={<OnboardingPage />} />
                       <Route path="/user/home" element={<UserHome />} />
                       <Route path="/user/requests" element={<UserRequests />} />
                       <Route

@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useUserContext } from "../../../providers/userContextProvider";
 
 import { Stack } from "@mui/joy";
-import PersonalInfo from "./PersonalInfo";
+import PersonalInfoForm from "./PersonalInfoForm";
 import AddressForm from "./AddressForm";
 import BankDetailsForm from "./BankDetailsForm";
 import EmergencyContactForm from "./EmergencyContactForm";
@@ -74,13 +74,13 @@ const ProfilePage = () => {
           mx: "auto",
         }}
       >
-        <PersonalInfo
+        <PersonalInfoForm
           candidateDetails={details}
           handleSubmit={handleSubmitHandler}
         />
         <AddressForm address={address} handleSubmit={handleSubmitHandler} />
         <BankDetailsForm
-          bankdetails={bankDetails}
+          bankDetails={bankDetails}
           handleSubmit={handleSubmitHandler}
         />
         <EmergencyContactForm
