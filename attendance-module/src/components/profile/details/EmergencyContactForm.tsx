@@ -71,12 +71,6 @@ export default function EmergencyContactForm({
   const isRelationshipValid =
     newContact.relationship && newContact.relationship.length > 0;
 
-  const relationshipType = newContact.relationship
-    ? RELATIONSHIPS.includes(newContact.relationship)
-      ? newContact.relationship
-      : "Others"
-    : "";
-
   return (
     <Card>
       <Box sx={{ mb: 1 }}>

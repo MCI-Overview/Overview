@@ -48,7 +48,6 @@ export default function AddressStep() {
     street: oldStreet,
     building: oldBuilding,
     country: oldCountry,
-    isLanded: oldIsLanded,
   } = oldCandidate.address || DEFAULT_ADDRESS;
   const {
     postal: newPostal,
