@@ -3,13 +3,13 @@ import dayjs from "dayjs";
 import { ChangeEvent, useEffect, useState } from "react";
 import { CustomAttendance } from "../../types";
 
-import AttendanceHistory from "./AttendanceHistory";
-import AttendanceHistoryM from "./AttendanceHistoryM";
+import AttendanceHistory from "./UserAttendanceHistoryTable";
+import AttendanceHistoryM from "./UserAttendanceHistoryList";
 import PaginationFooter from "../../components/project/ui/PaginationFooter";
+import SmallScreenDivider from "../../components/project/ui/SmallScreenDivider";
 
 import { Box, FormControl, FormLabel, Input } from "@mui/joy";
 import { SearchRounded as SearchIcon } from "@mui/icons-material";
-import SmallScreenDivider from "../../components/project/ui/SmallScreenDivider";
 
 type Page = {
   isFirstPage: boolean;
@@ -73,18 +73,6 @@ const ViewAttendance = () => {
     fetchUpcomingShifts(page.currentPage);
   }, [page.currentPage]);
 
-  const handleNextPage = () => {
-    if (!page.isLastPage && page.nextPage !== null) {
-      fetchUpcomingShifts(page.nextPage);
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (!page.isFirstPage && page.previousPage !== null) {
-      fetchUpcomingShifts(page.previousPage);
-    }
-  };
-
   return (
     <Box
       sx={{
@@ -127,11 +115,8 @@ const ViewAttendance = () => {
 
       <PaginationFooter
         maxPage={page.pageCount}
-        handlePreviousPage={handlePreviousPage}
-        isFirstPage={page.isFirstPage}
         currentPage={page.currentPage}
-        handleNextPage={handleNextPage}
-        isLastPage={page.isLastPage}
+        setCurrentPage={fetchUpcomingShifts}
       />
     </Box>
   );

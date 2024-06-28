@@ -1,36 +1,29 @@
 import dayjs from "dayjs";
 import { Fragment } from "react";
-import { CustomRequest } from "../../types";
-import { useRequestContext } from "../../providers/requestContextProvider";
+import { CustomAttendance } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
+
+import AttendanceStatusChip from "../../components/project/attendance/AttendanceStatusChip";
 
 import {
   Box,
-  Chip,
   Typography,
-  ColorPaletteProp,
   List,
   ListItem,
   ListItemContent,
   ListDivider,
 } from "@mui/joy";
-import {
-  PendingRounded as PendingIcon,
-  BlockRounded as BlockIcon,
-  ClearRounded as ClearIcon,
-  CheckRounded as CheckIcon,
-} from "@mui/icons-material";
 
-//TODO: Add viewing on mobile
-const RequestHistoryM = () => {
-  const { requests } = useRequestContext();
-  if (!requests) return null;
+interface AttendanceHistoryMProps {
+  data: CustomAttendance[];
+}
 
+const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
-      {requests.length === 0 ? (
+      {data.length === 0 ? (
         <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
-          No requests found
+          No attendance history found
         </Typography>
       ) : (
         <List
@@ -39,8 +32,8 @@ const RequestHistoryM = () => {
             "--ListItem-paddingX": 0,
           }}
         >
-          {requests.map((listItem: CustomRequest) => (
-            <Fragment key={listItem.cuid}>
+          {data.map((att: CustomAttendance) => (
+            <Fragment key={att.cuid}>
               <ListItem
                 sx={{
                   display: "flex",
@@ -53,7 +46,11 @@ const RequestHistoryM = () => {
                 >
                   <Box>
                     <Typography fontWeight={600} gutterBottom>
-                      {dayjs(listItem.createdAt).format("DD MMM YYYY")}
+                      {dayjs(att.shiftDate).format("DD/MM/YYYY")}
+                    </Typography>
+                    <Typography level="body-xs" gutterBottom>
+                      {dayjs(att.Shift.startTime).format("HH:mm")} to{" "}
+                      {dayjs(att.Shift.endTime).format("HH:mm")}
                     </Typography>
                     <Box
                       sx={{
@@ -65,39 +62,19 @@ const RequestHistoryM = () => {
                       }}
                     >
                       <Typography level="body-xs">
-                        {listItem.Assign.Project &&
-                          listItem.Assign.Project.name}
+                        {att.Shift.Project.name}
                       </Typography>
                       <Typography level="body-xs">&bull;</Typography>
                       <Typography level="body-xs">
-                        {readableEnum(listItem.type)}
+                        {readableEnum(att.shiftType)}
                       </Typography>
                     </Box>
                   </Box>
                 </ListItemContent>
-                <Chip
-                  variant="soft"
-                  size="sm"
-                  startDecorator={
-                    {
-                      APPROVED: <CheckIcon />,
-                      CANCELLED: <ClearIcon />,
-                      REJECTED: <BlockIcon />,
-                      PENDING: <PendingIcon />,
-                    }[listItem.status || "UPCOMING"]
-                  }
-                  color={
-                    {
-                      APPROVED: "success",
-                      CANCELLED: "neutral",
-                      REJECTED: "danger",
-                      PENDING: "warning",
-                    }[listItem.status || "UPCOMING"] as ColorPaletteProp
-                  }
-                >
-                  {readableEnum(listItem.status || "NO_SHOW")}
-                </Chip>
+
+                <AttendanceStatusChip status={att.status} />
               </ListItem>
+
               <ListDivider />
             </Fragment>
           ))}
@@ -107,4 +84,4 @@ const RequestHistoryM = () => {
   );
 };
 
-export default RequestHistoryM;
+export default AttendanceHistoryM;

@@ -3,8 +3,8 @@ import { CustomAdminAttendance } from "../../../types";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
-import ProjectAttendance from "../../../admin/projects-components/ProjectAttendance";
-import ProjectAttendanceM from "../../../admin/projects-components/ProjectAttendanceM";
+import AdminProjectAttendanceTable from "../attendance/AdminProjectAttendanceTable";
+import AdminProjectAttendanceList from "../attendance/AdminProjectAttendanceList";
 import LateCount from "./LateCount";
 import McCount from "./McCount";
 import NoShowCount from "./NoShowCount";
@@ -19,7 +19,7 @@ import {
   Divider,
   Button,
   iconButtonClasses,
-  CircularProgress
+  CircularProgress,
 } from "@mui/joy";
 import {
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
@@ -32,42 +32,42 @@ import NationalityCount from "./NationalityCount";
 type displayData = {
   datasets: {
     leave: {
-      data: number[],
-    },
+      data: number[];
+    };
     late: {
-      data: number[],
-    },
+      data: number[];
+    };
     ontime: {
-      data: number[],
-    },
+      data: number[];
+    };
     medical: {
-      data: number[],
-    },
+      data: number[];
+    };
     absent: {
-      data: number[],
-    },
-  },
+      data: number[];
+    };
+  };
   headcount: {
     nationality: {
-      singapore: number,
-      malaysia: number,
-      china: number
-    },
+      singapore: number;
+      malaysia: number;
+      china: number;
+    };
     endDate: {
-      ongoing: number
-      hasEnded: number
-    }
-  }
+      ongoing: number;
+      hasEnded: number;
+    };
+  };
 };
 
 const ProjectOverview = () => {
   const [data, setData] = useState<CustomAdminAttendance[]>([]);
   const [plotData, setPlotData] = useState<displayData>();
-  const [weekStart, setWeekStart] = useState<Dayjs>(dayjs().startOf('week'))
+  const [weekStart, setWeekStart] = useState<Dayjs>(dayjs().startOf("week"));
   const context = useProjectContext();
   const projectCuid = context.project?.cuid;
-  const startDate = dayjs().startOf('day').toISOString();
-  const endDate = dayjs().endOf('day').toISOString();
+  const startDate = dayjs().startOf("day").toISOString();
+  const endDate = dayjs().endOf("day").toISOString();
 
   useEffect(() => {
     const fetchUpcomingShifts = async (startDate: string, endDate: string) => {
@@ -95,7 +95,7 @@ const ProjectOverview = () => {
       const response = await axios.get(url);
       const fetchedData = response.data;
       setPlotData(fetchedData);
-    }
+    };
 
     getDisplayData();
     fetchUpcomingShifts(startDate, endDate);
@@ -105,18 +105,18 @@ const ProjectOverview = () => {
 
   const total = plotData
     ? sumArray(plotData.datasets.leave.data) +
-    sumArray(plotData.datasets.late.data) +
-    sumArray(plotData.datasets.ontime.data) +
-    sumArray(plotData.datasets.medical.data) +
-    sumArray(plotData.datasets.absent.data)
+      sumArray(plotData.datasets.late.data) +
+      sumArray(plotData.datasets.ontime.data) +
+      sumArray(plotData.datasets.medical.data) +
+      sumArray(plotData.datasets.absent.data)
     : 0;
 
   const handlePrevious = () => {
-    setWeekStart(prev => prev.subtract(1, 'week'));
+    setWeekStart((prev) => prev.subtract(1, "week"));
   };
 
   const handleNext = () => {
-    setWeekStart(prev => prev.add(1, 'week'));
+    setWeekStart((prev) => prev.add(1, "week"));
   };
 
   const defaultHeadcount = {
@@ -127,11 +127,28 @@ const ProjectOverview = () => {
 
   const headcount = plotData?.headcount?.nationality ?? defaultHeadcount;
 
-  if (!plotData) return <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-      <CircularProgress />
-    </div>
-  </div>
+  if (!plotData)
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+          }}
+        >
+          <CircularProgress />
+        </div>
+      </div>
+    );
 
   return (
     <>
@@ -172,27 +189,45 @@ const ProjectOverview = () => {
           </Box>
           <Divider />
           <Stack spacing={2} sx={{ my: 1 }}>
-            <Grid container columnGap={2} rowGap={2} sx={{ flexGrow: 1, mx: 0 }}>
+            <Grid
+              container
+              columnGap={2}
+              rowGap={2}
+              sx={{ flexGrow: 1, mx: 0 }}
+            >
               <Grid xs={12} sm={5} lg={3} xl={2}>
-                <LateCount count={sumArray(plotData?.datasets.late.data ?? [])} total={total} />
+                <LateCount
+                  count={sumArray(plotData?.datasets.late.data ?? [])}
+                  total={total}
+                />
               </Grid>
               <Grid xs={12} sm={5} lg={3} xl={2}>
-                <McCount count={sumArray(plotData?.datasets.medical.data ?? [])} total={total} />
+                <McCount
+                  count={sumArray(plotData?.datasets.medical.data ?? [])}
+                  total={total}
+                />
               </Grid>
               <Grid xs={12} sm={5} lg={3} xl={2}>
-                <NoShowCount count={sumArray(plotData?.datasets.absent.data ?? [])} total={total} />
+                <NoShowCount
+                  count={sumArray(plotData?.datasets.absent.data ?? [])}
+                  total={total}
+                />
               </Grid>
               <Grid xs={12} sm={5} lg={3} xl={2}>
-                <OnTimeCount count={sumArray(plotData?.datasets.ontime.data ?? [])} total={total} />
+                <OnTimeCount
+                  count={sumArray(plotData?.datasets.ontime.data ?? [])}
+                  total={total}
+                />
               </Grid>
               <Grid xs={12} sm={5} lg={3} xl={2}>
-                <OnLeave count={sumArray(plotData?.datasets.leave.data ?? [])} total={total} />
+                <OnLeave
+                  count={sumArray(plotData?.datasets.leave.data ?? [])}
+                  total={total}
+                />
               </Grid>
             </Grid>
 
-            <Typography level="body-sm">
-              Weekly attendance trends
-            </Typography>
+            <Typography level="body-sm">Weekly attendance trends</Typography>
             <Box
               className="Pagination-laptopUp"
               sx={{
@@ -217,7 +252,7 @@ const ProjectOverview = () => {
 
               <Box sx={{ flex: 1 }} />
               <Button size="sm" variant="outlined" color="neutral">
-                Week of {weekStart.format('DD/MM/YY')}
+                Week of {weekStart.format("DD/MM/YY")}
               </Button>
               <Box sx={{ flex: 1 }} />
 
@@ -231,7 +266,12 @@ const ProjectOverview = () => {
                 Next
               </Button>
             </Box>
-            {plotData && <AttendanceGraph datasets={plotData.datasets} weekStart={weekStart.toDate()} />}
+            {plotData && (
+              <AttendanceGraph
+                datasets={plotData.datasets}
+                weekStart={weekStart.toDate()}
+              />
+            )}
           </Stack>
         </Stack>
 
@@ -263,7 +303,10 @@ const ProjectOverview = () => {
           <Stack columnGap={2} rowGap={2} sx={{ flexGrow: 1, mx: 0 }}>
             <Grid container spacing={2}>
               <Grid xs={12} sm={6}>
-                <HeadcountSection active={plotData?.headcount.endDate.ongoing ?? 0} inactive={plotData?.headcount.endDate.hasEnded ?? 0} />
+                <HeadcountSection
+                  active={plotData?.headcount.endDate.ongoing ?? 0}
+                  inactive={plotData?.headcount.endDate.hasEnded ?? 0}
+                />
               </Grid>
               <Grid xs={12} sm={6}>
                 <NationalityCount headcount={headcount} />
@@ -292,14 +335,14 @@ const ProjectOverview = () => {
               </Box>
 
               <Typography level="body-sm">
-                Attendance history for {dayjs(startDate).format('DD MMM YYYY')}
+                Attendance history for {dayjs(startDate).format("DD MMM YYYY")}
               </Typography>
             </Box>
           </Box>
           <Divider />
           <Stack spacing={2} sx={{ my: 1 }}>
-            <ProjectAttendance data={data} />
-            <ProjectAttendanceM data={data} />
+            <AdminProjectAttendanceTable data={data} />
+            <AdminProjectAttendanceList data={data} />
           </Stack>
         </Stack>
       </Box>

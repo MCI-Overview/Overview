@@ -2,14 +2,16 @@ import axios from "axios";
 import { Fragment, useEffect, useState } from "react";
 import { useUserContext } from "../../providers/userContextProvider";
 import { formatDate } from "../../utils/date-time";
+import { TdTypo, ThTypo } from "../project/ui/TableTypo";
 
 import {
   Box,
-  Card,
-  CardOverflow,
   Chip,
+  FormControl,
+  FormLabel,
   Input,
   Link,
+  Sheet,
   Stack,
   Table,
   Typography,
@@ -155,89 +157,101 @@ const MyCandidatesPage = () => {
         px: { xs: 2, md: 6 },
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+      <FormControl size="sm">
+        <FormLabel>Search candidates</FormLabel>
         <Input
-          placeholder="Search candidates by name/nric"
+          placeholder="Search by name/nric"
           fullWidth
           onChange={(e) => setSearchValue(e.target.value)}
         />
-      </Box>
+      </FormControl>
 
-      <Card>
-        <CardOverflow sx={{ px: "0px" }}>
-          <Box maxHeight="60vh" overflow="auto" sx={{ scrollbarWidth: "thin" }}>
-            <Table
-              sx={{
-                "& tr > *": { textAlign: "center" },
-                maxHeight: "60vh",
-                overflow: "auto",
-                scrollbarWidth: "thin",
-              }}
-              size="sm"
-              stickyHeader
-            >
-              <thead>
-                <tr>
-                  <th>NRIC</th>
-                  <th>Name</th>
-                  <th>Project</th>
-                  <th>Start date</th>
-                  <th>End date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {candidateData.length === 0 && (
-                  <tr>
-                    <td colSpan={5}>No candidates found</td>
-                  </tr>
-                )}
-                {Object.entries(groupByCandidates(candidateData))
-                  .filter(matchSearchValue)
-                  .map(([candidateCuid, projects]) => (
-                    <Fragment key={candidateCuid}>
-                      {projects.sort(dateComparator).map((project, index) => (
-                        <tr key={project.projectCuid}>
-                          {index === 0 && (
-                            <td rowSpan={projects.length}>
-                              {project.candidateNric}
-                            </td>
-                          )}
-                          {index === 0 && (
-                            <td rowSpan={projects.length}>
-                              <Link
-                                variant="soft"
-                                href={`#/admin/candidate/${candidateCuid}`} // TODO: Change this to the correct path
-                              >
-                                {project.candidateName}
-                              </Link>
-                            </td>
-                          )}
-                          <td>
-                            <Link
-                              variant="soft"
-                              color={
-                                new Date() < project.startDate
-                                  ? "warning"
-                                  : new Date() > project.endDate
-                                  ? "neutral"
-                                  : "success"
-                              }
-                              href={`#/admin/project/${project.projectCuid}`}
-                            >
-                              {project.projectName}
-                            </Link>
-                          </td>
-                          <td>{formatDate(project.startDate)}</td>
-                          <td>{formatDate(project.endDate)}</td>
-                        </tr>
-                      ))}
-                    </Fragment>
+      <Sheet
+        variant="outlined"
+        sx={{
+          display: { xs: "none", sm: "initial" },
+          width: "100%",
+          borderRadius: "sm",
+          flexShrink: 1,
+          overflow: "auto",
+          minHeight: 0,
+        }}
+      >
+        <Table
+          aria-labelledby="tableTitle"
+          stickyHeader
+          // hoverRow
+          sx={{
+            "--TableCell-headBackground":
+              "var(--joy-palette-background-level1)",
+            "--Table-headerUnderlineThickness": "1px",
+            "--TableRow-hoverBackground":
+              "var(--joy-palette-background-level1)",
+            "--TableCell-paddingY": "4px",
+            "--TableCell-paddingX": "8px",
+            "& tr > *": { textAlign: "center" },
+          }}
+        >
+          <thead>
+            <tr>
+              <ThTypo>NRIC</ThTypo>
+              <ThTypo>Name</ThTypo>
+              <ThTypo>Project</ThTypo>
+              <ThTypo>Start date</ThTypo>
+              <ThTypo>End date</ThTypo>
+            </tr>
+          </thead>
+          <tbody>
+            {candidateData.length === 0 && (
+              <tr>
+                <TdTypo colSpan={5}>No candidates found</TdTypo>
+              </tr>
+            )}
+            {Object.entries(groupByCandidates(candidateData))
+              .filter(matchSearchValue)
+              .map(([candidateCuid, projects]) => (
+                <Fragment key={candidateCuid}>
+                  {projects.sort(dateComparator).map((project, index) => (
+                    <tr key={project.projectCuid}>
+                      {index === 0 && (
+                        <TdTypo rowSpan={projects.length}>
+                          {project.candidateNric}
+                        </TdTypo>
+                      )}
+                      {index === 0 && (
+                        <TdTypo rowSpan={projects.length}>
+                          <Link
+                            variant="soft"
+                            href={`#/admin/candidate/${candidateCuid}`}
+                          >
+                            {project.candidateName}
+                          </Link>
+                        </TdTypo>
+                      )}
+                      <TdTypo>
+                        <Link
+                          variant="soft"
+                          color={
+                            new Date() < project.startDate
+                              ? "warning"
+                              : new Date() > project.endDate
+                              ? "neutral"
+                              : "success"
+                          }
+                          href={`#/admin/project/${project.projectCuid}`}
+                        >
+                          {project.projectName}
+                        </Link>
+                      </TdTypo>
+                      <TdTypo>{formatDate(project.startDate)}</TdTypo>
+                      <TdTypo>{formatDate(project.endDate)}</TdTypo>
+                    </tr>
                   ))}
-              </tbody>
-            </Table>
-          </Box>
-        </CardOverflow>
-      </Card>
+                </Fragment>
+              ))}
+          </tbody>
+        </Table>
+      </Sheet>
 
       <Box
         sx={{

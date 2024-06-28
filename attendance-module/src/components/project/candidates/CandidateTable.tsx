@@ -189,11 +189,9 @@ const CandidateTable = ({
               <tbody>
                 {sortedData.length === 0 ? (
                   <tr>
-                    <td colSpan={handleDelete ? 10 : 9}>
-                      <Typography level="body-xs">
-                        No candidates found
-                      </Typography>
-                    </td>
+                    <TdTypo colSpan={handleDelete ? 10 : 9}>
+                      No candidates found
+                    </TdTypo>
                   </tr>
                 ) : (
                   sortedData.map((row) => (
@@ -202,13 +200,11 @@ const CandidateTable = ({
                       <TdTypo>{row.name}</TdTypo>
                       <TdTypo>{row.contact}</TdTypo>
                       <TdTypo>
-                        {dayjs(row.dateOfBirth).format("DD/MM/YYYY")}
+                        {dayjs(row.dateOfBirth).format("DD/MM/YY")}
                       </TdTypo>
                       <TdTypo>{dayjs().diff(row.dateOfBirth, "years")}</TdTypo>
-                      <TdTypo>
-                        {dayjs(row.startDate).format("DD/MM/YYYY")}
-                      </TdTypo>
-                      <TdTypo>{dayjs(row.endDate).format("DD/MM/YYYY")}</TdTypo>
+                      <TdTypo>{dayjs(row.startDate).format("DD/MM/YY")}</TdTypo>
+                      <TdTypo>{dayjs(row.endDate).format("DD/MM/YY")}</TdTypo>
                       <TdTypo>{readableEnum(row.employmentType)}</TdTypo>
                       {showCandidateHolder && (
                         <TdTypo>{row.consultantName}</TdTypo>
@@ -277,56 +273,62 @@ const CandidateTable = ({
                     alignItems: "start",
                   }}
                 >
-                  <ListItemContent
-                    sx={{ display: "flex", gap: 2, alignItems: "start" }}
-                  >
+                  <ListItemContent>
                     <Box>
-                      <Typography fontWeight={600} gutterBottom>
-                        {listItem.name}
-                      </Typography>
                       <Box
                         sx={{
                           display: "flex",
-                          alignItems: "center",
                           justifyContent: "space-between",
-                          gap: 0.5,
-                          mb: 1,
                         }}
                       >
-                        <Typography level="body-md">{listItem.nric}</Typography>
-                        <Typography level="body-md">&bull;</Typography>
-                        <Typography level="body-md">
-                          {dayjs(listItem.dateOfBirth).format("DD/MM/YYYY")}
+                        <Typography level="body-xs">
+                          Name: {listItem.name}
                         </Typography>
+
+                        <Chip
+                          variant="soft"
+                          size="sm"
+                          color={
+                            {
+                              FULL_TIME: "success",
+                              PART_TIME: "neutral",
+                              CONTRACT: "warning",
+                            }[listItem.employmentType] as ColorPaletteProp
+                          }
+                        >
+                          {readableEnum(listItem.employmentType)}
+                        </Chip>
                       </Box>
-                      <Typography level="body-xs">Contact</Typography>
-                      <Typography level="body-md" gutterBottom>
-                        {listItem.contact}
-                      </Typography>
-                      <Typography level="body-xs">Work period</Typography>
-                      <Typography level="body-md" gutterBottom>
-                        {dayjs(listItem.startDate).format("DD/MM/YYYY")} -{" "}
-                        {dayjs(listItem.endDate).format("DD/MM/YYYY")}
-                      </Typography>
-                      <Typography level="body-xs">Candidate holder</Typography>
-                      <Typography level="body-md" gutterBottom>
-                        {listItem.consultantName}
-                      </Typography>
+
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Box>
+                          <Typography level="body-xs">
+                            NRIC: {listItem.nric}
+                          </Typography>
+                          <Typography level="body-xs">
+                            Contact: {listItem.contact}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography level="body-xs">
+                            Start:{" "}
+                            {dayjs(listItem.startDate).format("DD/MM/YY")}
+                          </Typography>
+                          <Typography level="body-xs">
+                            End: {dayjs(listItem.endDate).format("DD/MM/YY")}
+                          </Typography>
+                        </Box>
+                      </Box>
                     </Box>
+                    <Typography level="body-xs">
+                      Holder: {listItem.consultantName}
+                    </Typography>
                   </ListItemContent>
-                  <Chip
-                    variant="soft"
-                    size="sm"
-                    color={
-                      {
-                        FULL_TIME: "success",
-                        PART_TIME: "neutral",
-                        CONTRACT: "warning",
-                      }[listItem.employmentType] as ColorPaletteProp
-                    }
-                  >
-                    {readableEnum(listItem.employmentType)}
-                  </Chip>
                 </ListItem>
                 <ListDivider />
               </Fragment>

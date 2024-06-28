@@ -6,8 +6,8 @@ import {
   UserBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/UserBreadcrumb";
-import ViewShifts from "./shifts/ViewShifts";
-import ViewAttendance from "./shifts/ViewAttendance";
+import ViewShifts from "./shifts/UserUpcomingShiftsPage";
+import ViewAttendance from "./shifts/UserAttendanceHistoryPage";
 
 const UserShifts: FC = () => {
   const location = useLocation();

@@ -3,31 +3,27 @@ import { Fragment } from "react";
 import { CustomAttendance } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
 
+import AttendanceStatusChip from "../../components/project/attendance/AttendanceStatusChip";
+
 import {
   Box,
-  Chip,
-  Typography,
   List,
+  ListDivider,
   ListItem,
   ListItemContent,
-  ListDivider,
-  ColorPaletteProp,
+  Typography,
 } from "@mui/joy";
-import {
-  CheckRounded as CheckIcon,
-  BlockRounded as BlockIcon,
-} from "@mui/icons-material";
 
-interface AttendanceHistoryMProps {
+interface UpcomingShiftsMProps {
   data: CustomAttendance[];
 }
 
-const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
+const UpcomingShiftsM = ({ data }: UpcomingShiftsMProps) => {
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
       {data.length === 0 ? (
         <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
-          No attendance history found
+          No shifts found
         </Typography>
       ) : (
         <List
@@ -36,8 +32,8 @@ const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
             "--ListItem-paddingX": 0,
           }}
         >
-          {data.map((listItem: CustomAttendance) => (
-            <Fragment key={listItem.cuid}>
+          {data.map((att: CustomAttendance) => (
+            <Fragment key={att.cuid}>
               <ListItem
                 sx={{
                   display: "flex",
@@ -50,11 +46,11 @@ const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
                 >
                   <Box>
                     <Typography fontWeight={600} gutterBottom>
-                      {dayjs(listItem.shiftDate).format("DD MMM YYYY")}
+                      {dayjs(att.shiftDate).format("DD/MM/YYYY")}
                     </Typography>
                     <Typography level="body-xs" gutterBottom>
-                      {dayjs(listItem.Shift.startTime).format("hh:mm a")} to{" "}
-                      {dayjs(listItem.Shift.endTime).format("hh:mm a")}
+                      {dayjs(att.Shift.startTime).format("HH:mm")} to{" "}
+                      {dayjs(att.Shift.endTime).format("HH:mm")}
                     </Typography>
                     <Box
                       sx={{
@@ -66,40 +62,18 @@ const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
                       }}
                     >
                       <Typography level="body-xs">
-                        {listItem.Shift.Project.name}
+                        {att.Shift.Project.name}
                       </Typography>
                       <Typography level="body-xs">&bull;</Typography>
                       <Typography level="body-xs">
-                        {readableEnum(listItem.shiftType)}
+                        {readableEnum(att.shiftType)}
                       </Typography>
                     </Box>
                   </Box>
                 </ListItemContent>
 
-                <Chip
-                  variant="soft"
-                  size="sm"
-                  startDecorator={
-                    {
-                      ON_TIME: <CheckIcon />,
-                      LATE: <CheckIcon />,
-                      NO_SHOW: <BlockIcon />,
-                      MEDICAL: <BlockIcon />,
-                    }[listItem.status || "NO_SHOW"]
-                  }
-                  color={
-                    {
-                      ON_TIME: "success",
-                      LATE: "warning",
-                      NO_SHOW: "danger",
-                      MEDICAL: "neutral",
-                    }[listItem.status || "NO_SHOW"] as ColorPaletteProp
-                  }
-                >
-                  {readableEnum(listItem.status || "NO_SHOW")}
-                </Chip>
+                <AttendanceStatusChip status={att.status} />
               </ListItem>
-
               <ListDivider />
             </Fragment>
           ))}
@@ -109,4 +83,4 @@ const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
   );
 };
 
-export default AttendanceHistoryM;
+export default UpcomingShiftsM;

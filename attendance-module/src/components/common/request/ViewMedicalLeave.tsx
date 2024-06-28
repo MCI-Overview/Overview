@@ -63,8 +63,9 @@ export default function ViewMedicalLeave({
         <img
           src={mcPreview}
           alt="Medical Certificate"
-          height={400}
-          width={"auto"}
+          style={{
+            maxWidth: "500px",
+          }}
         />
       )}
       <Button onClick={() => setShowMc(!showMc)}>

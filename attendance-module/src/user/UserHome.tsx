@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tab, TabBar } from "../components/TabBar";
-import ClockIn from "./user-home-components/ClockIn";
+import ClockIn from "./home/ClockIn";
 
 import { Typography, Box } from "@mui/joy";
 import {
@@ -51,7 +51,7 @@ const UserHome: FC = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null,
+    newValue: string | number | null
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);
