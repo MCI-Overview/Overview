@@ -1,15 +1,15 @@
-import { ColorPaletteProp, IconButton } from "@mui/joy";
-import { ReactElement, useState, forwardRef } from "react";
+import { Button, ColorPaletteProp } from "@mui/joy";
+import { useState, forwardRef, ReactNode } from "react";
 
-const LoadingRequestIconButton = forwardRef<
+const LoadingRequestButton = forwardRef<
   HTMLButtonElement,
   {
     promise: () => Promise<void>;
     disabled?: boolean;
     color?: ColorPaletteProp;
-    icon: ReactElement;
+    children: ReactNode;
   }
->(({ promise, disabled, color, icon }, ref) => {
+>(({ promise, disabled, color, children }, ref) => {
   const [loading, setLoading] = useState(false);
 
   const handleRequest = async () => {
@@ -18,17 +18,18 @@ const LoadingRequestIconButton = forwardRef<
   };
 
   return (
-    <IconButton
+    <Button
       variant="soft"
       loading={loading}
       onClick={handleRequest}
       disabled={disabled}
       color={color || "primary"}
       ref={ref}
+      sx={{ width: "100%" }}
     >
-      {icon}
-    </IconButton>
+      {children}
+    </Button>
   );
 });
 
-export default LoadingRequestIconButton;
+export default LoadingRequestButton;

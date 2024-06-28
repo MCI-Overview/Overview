@@ -5,7 +5,7 @@ import {
   AdminBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
-import MyCandidatesPage from "../components/candidates/Page";
+import MyCandidatesPage from "../components/candidates/MyCandidatesPage";
 
 import { Typography, Box } from "@mui/joy";
 

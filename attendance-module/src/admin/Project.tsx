@@ -12,11 +12,11 @@ import {
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
 import ProjectOverview from "../components/project/overview/OverviewPage.tsx";
-import AssignCandidatePage from "../components/project/candidates/Page";
+import AdminProjectCandidatesPage from "../components/project/candidates/AdminProjectCandidatesPage.tsx";
 import { useProjectContext } from "../providers/projectContextProvider";
 import Settings from "./Settings.tsx";
-import RequestsPage from "../components/project/requests/RequestsPage.tsx";
-import Attendance from "./projects-components/Attendance.tsx";
+import AdminRequestsPage from "../components/project/requests/AdminRequestsPage.tsx";
+import AdminProjectAttendancePage from "../components/project/attendance/AdminProjectAttendancePage.tsx";
 import RosterPageHandler from "../components/project/roster/RosterPageHandler.tsx";
 
 const tabs: Tab[] = [
@@ -26,15 +26,15 @@ const tabs: Tab[] = [
   },
   {
     label: "Attendance",
-    content: <Attendance />,
+    content: <AdminProjectAttendancePage />,
   },
   {
     label: "Candidates",
-    content: <AssignCandidatePage />,
+    content: <AdminProjectCandidatesPage />,
   },
   {
     label: "Requests",
-    content: <RequestsPage />,
+    content: <AdminRequestsPage />,
   },
   {
     label: "Roster",

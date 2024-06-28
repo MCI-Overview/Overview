@@ -72,7 +72,13 @@ export default function ViewClaim({
         Description: {requestData.claimDescription}
       </Typography>
       {showReceipt && receiptPreview && (
-        <img src={receiptPreview} alt="Receipt" height={400} width={"auto"} />
+        <img
+          src={receiptPreview}
+          alt="Receipt"
+          style={{
+            maxWidth: "500px",
+          }}
+        />
       )}
       <Button onClick={() => setShowReceipt(!showReceipt)}>
         {showReceipt ? "Hide" : "Show"} Receipt

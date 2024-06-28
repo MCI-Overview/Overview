@@ -87,10 +87,13 @@ const Settings = () => {
               value={section.title}
               sx={{ gap: 1, width: "25%" }}
             >
-              <ListItemDecorator sx={{ display: { xs: "none", sm: "block" } }}>
-                {section.icon}
-              </ListItemDecorator>
-              <Typography level="body-sm">{section.title}</Typography>
+              <ListItemDecorator>{section.icon}</ListItemDecorator>
+              <Typography
+                level="body-sm"
+                sx={{ display: { xs: "none", sm: "block" } }}
+              >
+                {section.title}
+              </Typography>
             </Button>
           ))}
         </ToggleButtonGroup>

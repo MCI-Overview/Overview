@@ -13,10 +13,12 @@ const ThTypo: React.FC<{
 };
 
 const TdTypo: React.FC<{
+  colSpan?: number;
+  rowSpan?: number;
   children: ReactNode;
-}> = ({ children }) => {
+}> = ({ colSpan, rowSpan, children }) => {
   return (
-    <td>
+    <td colSpan={colSpan} rowSpan={rowSpan}>
       <Typography level="body-xs">{children}</Typography>
     </td>
   );

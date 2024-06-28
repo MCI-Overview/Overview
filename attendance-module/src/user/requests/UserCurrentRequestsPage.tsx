@@ -3,9 +3,9 @@ import { useState } from "react";
 import { CustomRequest } from "../../types";
 import { RequestContextProvider } from "../../providers/requestContextProvider";
 
-import CurrentRequests from "./CurrentRequests";
-import CurrentRequestsM from "./CurrentRequestsM";
-import NewRequest from "./NewRequestModal";
+import UserCurrentRequestsTable from "./UserCurrentRequestsTable";
+import UserCurrentRequestsList from "./UserCurrentRequestsList";
+import NewRequestModal from "./NewRequestModal";
 import SmallScreenDivider from "../../components/project/ui/SmallScreenDivider";
 
 import {
@@ -18,7 +18,7 @@ import {
   Select,
 } from "@mui/joy";
 
-const ViewRequests = () => {
+const UserCurrentRequestsPage = () => {
   const [searchValue, setSearchValue] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -80,7 +80,7 @@ const ViewRequests = () => {
             xs={2}
             sx={{ display: { xs: "block", sm: "none" }, whiteSpace: "nowrap" }}
           >
-            <NewRequest />
+            <NewRequestModal />
           </Grid>
 
           <Grid xs={3} sm={2}>
@@ -126,17 +126,17 @@ const ViewRequests = () => {
             xs={2}
             sx={{ display: { xs: "none", sm: "block" }, whiteSpace: "nowrap" }}
           >
-            <NewRequest />
+            <NewRequestModal />
           </Grid>
         </Grid>
 
         <SmallScreenDivider />
 
-        <CurrentRequests />
-        <CurrentRequestsM />
+        <UserCurrentRequestsTable />
+        <UserCurrentRequestsList />
       </Box>
     </RequestContextProvider>
   );
 };
 
-export default ViewRequests;
+export default UserCurrentRequestsPage;

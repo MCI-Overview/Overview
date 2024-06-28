@@ -6,22 +6,32 @@ import {
 
 interface PaginationFooterProps {
   maxPage: number;
-  handlePreviousPage: () => void;
-  isFirstPage: boolean;
   currentPage: number;
-  handleNextPage: () => void;
-  isLastPage: boolean;
+  setCurrentPage: (page: number) => void;
 }
 
 const PaginationFooter = ({
   maxPage,
-  handlePreviousPage,
-  isFirstPage,
   currentPage,
-  handleNextPage,
-  isLastPage,
+  setCurrentPage,
 }: PaginationFooterProps) => {
   if (maxPage <= 1) return null;
+
+  const isFirstPage = currentPage === 1;
+  const isLastPage = currentPage === maxPage;
+
+  const handlePreviousPage = () => {
+    if (!isFirstPage) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (!isLastPage) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   return (
     <Box
       sx={{

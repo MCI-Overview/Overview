@@ -7,17 +7,17 @@ import {
   UserBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/UserBreadcrumb";
-import ViewRequestHistory from "./requests/ViewRequestHistory";
-import ViewRequests from "./requests/ViewRequests";
+import UserRequestHistoryPage from "./requests/UserRequestHistoryPage";
+import UserCurrentRequestsPage from "./requests/UserCurrentRequestsPage";
 
 const tabs: Tab[] = [
   {
     label: "Current",
-    content: <ViewRequests />,
+    content: <UserCurrentRequestsPage />,
   },
   {
     label: "History",
-    content: <ViewRequestHistory />,
+    content: <UserRequestHistoryPage />,
   },
 ];
 
@@ -48,7 +48,7 @@ const UserClaims: FC = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null,
+    newValue: string | number | null
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);

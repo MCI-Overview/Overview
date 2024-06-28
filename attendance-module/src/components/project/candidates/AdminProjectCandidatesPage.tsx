@@ -11,7 +11,7 @@ import { Box, Button, Input, FormControl, FormLabel, Stack } from "@mui/joy";
 import SearchIcon from "@mui/icons-material/Search";
 import SmallScreenDivider from "../ui/SmallScreenDivider";
 
-const CandidatePage = () => {
+const AdminProjectCandidatesPage = () => {
   const { project, updateProject } = useProjectContext();
 
   const candidatesData =
@@ -83,10 +83,10 @@ const CandidatePage = () => {
         }}
       >
         <FormControl sx={{ flex: 1 }} size="sm">
-          <FormLabel>Search by nric / name</FormLabel>
+          <FormLabel>Search candidates</FormLabel>
           <Input
             size="sm"
-            placeholder="Search"
+            placeholder="Search by name/nric"
             startDecorator={<SearchIcon />}
             onChange={(e) => setSearchValue(e.target.value)}
             disabled={candidatesData.length === 0}
@@ -98,7 +98,7 @@ const CandidatePage = () => {
           <Button
             size="sm"
             onClick={() => setIsUploadOpen(true)}
-            sx={{ mt: "auto" }}
+            sx={{ mt: "auto", display: { xs: "none", sm: "block" } }}
           >
             Import candidates
           </Button>
@@ -136,4 +136,4 @@ const CandidatePage = () => {
   );
 };
 
-export default CandidatePage;
+export default AdminProjectCandidatesPage;
