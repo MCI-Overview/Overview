@@ -71,12 +71,12 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
 
     const hasPermission =
       projectData.Manage.some(
-        (manage) => manage.consultantCuid === user.cuid,
+        (manage) => manage.consultantCuid === user.cuid
       ) ||
       (await checkPermission(
         user.cuid,
         PermissionList.CAN_READ_ALL_PROJECTS,
-        permissionData,
+        permissionData
       ));
 
     if (!hasPermission) {
@@ -264,14 +264,14 @@ projectAPIRouter.get(
                 .add(startTime.minute(), "minute"),
               shiftEndTime: startTime.isBefore(endTime)
                 ? startDate
-                    .add(endTime.hour(), "hour")
-                    .add(endTime.minute(), "minute")
+                  .add(endTime.hour(), "hour")
+                  .add(endTime.minute(), "minute")
                 : startDate
-                    .add(endTime.hour(), "hour")
-                    .add(endTime.minute(), "minute")
-                    .add(1, "day"),
+                  .add(endTime.hour(), "hour")
+                  .add(endTime.minute(), "minute")
+                  .add(1, "day"),
               consultantCuid: cr.Shift.Project.Manage.filter(
-                (manage) => manage.role === Role.CLIENT_HOLDER,
+                (manage) => manage.role === Role.CLIENT_HOLDER
               ).map((manage) => manage.consultantCuid)[0],
             };
           }),
@@ -279,7 +279,7 @@ projectAPIRouter.get(
     });
 
     return res.json(data);
-  },
+  }
 );
 
 // TODO: Add root permission check
@@ -289,6 +289,8 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
   const page = parseInt(req.params.page, 10);
   const limit = 10;
   const offset = (page - 1) * limit;
+
+  const { searchValue, typeFilter, statusFilter } = req.query as any;
 
   try {
     const project = await prisma.project.findUniqueOrThrow({
@@ -307,8 +309,7 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
     if (
       !project.Manage.some(
         (manage) =>
-          manage.role === "CLIENT_HOLDER" &&
-          manage.consultantCuid === user.cuid,
+          manage.role === "CLIENT_HOLDER" && manage.consultantCuid === user.cuid
       )
     ) {
       return res
@@ -316,15 +317,40 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
         .send("You are not authorized to view this project's requests.");
     }
 
+    const queryConditions = {
+      projectCuid: cuid,
+      ...(typeFilter && { type: typeFilter }),
+      ...(statusFilter && { status: statusFilter }),
+      ...(searchValue && {
+        Assign: {
+          Candidate: {
+            OR: [
+              {
+                nric: {
+                  contains: searchValue,
+                  mode: "insensitive",
+                },
+              },
+              {
+                name: {
+                  contains: searchValue,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+        },
+      }),
+    };
+
     const fetchedData = await prisma.request.findMany({
-      where: {
-        projectCuid: cuid,
-      },
+      where: queryConditions,
       include: {
         Assign: {
           select: {
             Candidate: {
               select: {
+                nric: true,
                 name: true,
               },
             },
@@ -339,9 +365,7 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
     });
 
     const totalCount = await prisma.request.count({
-      where: {
-        projectCuid: cuid,
-      },
+      where: queryConditions,
     });
 
     const paginationData = {
@@ -417,8 +441,8 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
     end && dayjs(end).isAfter(now)
       ? now.startOf("day").toDate()
       : end
-      ? dayjs(end).startOf("day").toDate()
-      : undefined;
+        ? dayjs(end).startOf("day").toDate()
+        : undefined;
 
   try {
     const response = await prisma.attendance.findMany({
@@ -455,7 +479,7 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
         rawStart: row.clockInTime,
         rawEnd: row.clockOutTime,
         status: row.status,
-      })),
+      }))
     );
   } catch (error) {
     return res.status(500).json({
@@ -464,16 +488,17 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
   }
 });
 
-projectAPIRouter.get('/project/:projectCuid/overview', async (req, res) => {
+projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
   const { projectCuid } = req.params;
   const { weekStart } = req.query;
 
-  const start = typeof weekStart === 'string' ? weekStart : undefined;
-  const formattedWeekStart = dayjs(start).startOf('week').toDate();
-  const formattedWeekEnd = dayjs(start).endOf('week').toDate();
+  const start = typeof weekStart === "string" ? weekStart : undefined;
+  const formattedWeekStart = dayjs(start).startOf("week").toDate();
+  const formattedWeekEnd = dayjs(start).endOf("week").toDate();
 
   try {
-    const response = await prisma.attendance.groupBy({
+    // Fetch attendance data
+    const attendanceResponse = await prisma.attendance.groupBy({
       by: ['status', 'shiftDate', 'leave'],
       where: {
         Shift: {
@@ -498,16 +523,16 @@ projectAPIRouter.get('/project/:projectCuid/overview', async (req, res) => {
       LEAVE: Array(7).fill(0),
     };
 
-    response.forEach(item => {
+    attendanceResponse.forEach(item => {
       if (item.shiftDate && item.status) {
         const dayOfWeek = dayjs(item.shiftDate).day(); // Get the day of the week (0 for Sunday, 6 for Saturday)
         const dayIndex = (dayOfWeek + 6) % 7; // Convert so Monday is 0 and Sunday is 6
 
-        if (item.status === 'MEDICAL') {
+        if (item.status === "MEDICAL") {
           totals.MEDICAL[dayIndex] += item._count.status;
-        } else if (item.leave === 'FULLDAY') {
+        } else if (item.leave === "FULLDAY") {
           totals.LEAVE[dayIndex] += item._count.status;
-        } else if (item.leave === 'HALFDAY') {
+        } else if (item.leave === "HALFDAY") {
           totals.LEAVE[dayIndex] += item._count.status * 0.5;
           totals[item.status][dayIndex] += item._count.status;
         } else {
@@ -516,6 +541,43 @@ projectAPIRouter.get('/project/:projectCuid/overview', async (req, res) => {
       }
     });
 
+    // Fetch headcount data
+    const nationalityResponse = await prisma.candidate.groupBy({
+      by: ['nationality'],
+      _count: {
+        nationality: true,
+      },
+    });
+
+    const endDateResponse = await prisma.assign.groupBy({
+      by: ['endDate'],
+      where: {
+        projectCuid: projectCuid,
+      },
+      _count: {
+        endDate: true,
+      },
+    });
+
+    const nationalityData: Record<string, number> = nationalityResponse.reduce((acc: Record<string, number>, item) => {
+      if (item.nationality) {
+        acc[item.nationality.toLowerCase()] = item._count.nationality;
+      }
+      return acc;
+    }, {});
+
+    const endDateData = endDateResponse.reduce((acc, item) => {
+      if (item.endDate) {
+        const isOngoing = item.endDate > new Date();
+        if (isOngoing) {
+          acc.ongoing += item._count.endDate;
+        } else {
+          acc.hasEnded += item._count.endDate;
+        }
+      }
+      return acc;
+    }, { ongoing: 0, hasEnded: 0 });
+
     const datasets = {
       leave: {
         data: totals.LEAVE,
@@ -523,27 +585,30 @@ projectAPIRouter.get('/project/:projectCuid/overview', async (req, res) => {
       late: {
         data: totals.LATE,
       },
+      ontime: {
+        data: totals.ON_TIME,
+      },
       medical: {
         data: totals.MEDICAL,
       },
       absent: {
         data: totals.NO_SHOW,
       },
-      ontime: {
-        data: totals.ON_TIME,
-      },
     };
 
-    return res.json({ datasets });
+    const headcount = {
+      nationality: nationalityData,
+      endDate: endDateData,
+    };
+
+    return res.json({ datasets, headcount });
   } catch (error) {
-    console.error('Error fetching overview:', error);
+    console.error("Error fetching overview:", error);
     return res.status(500).json({
       message: "Internal server error.",
     });
   }
 });
-
-
 
 projectAPIRouter.delete("/roster/:rosterCuid", async (req, res) => {
   const user = req.user as User;
@@ -644,7 +709,7 @@ projectAPIRouter.post("/project", async (req, res) => {
     noticePeriodDuration,
     noticePeriodUnit,
     startDate,
-    endDate,
+    endDate
   );
   if (!noticePeriodValidity.isValid) {
     return res.status(400).json({
@@ -800,14 +865,14 @@ projectAPIRouter.delete("/project/permanent", async (req, res) => {
 
   const hasHardDeletePermission = await checkPermission(
     user.cuid,
-    PermissionList.CAN_HARD_DELETE_PROJECTS,
+    PermissionList.CAN_HARD_DELETE_PROJECTS
   );
 
   if (!hasHardDeletePermission) {
     return res
       .status(401)
       .send(
-        PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_HARD_DELETE_PROJECTS,
+        PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_HARD_DELETE_PROJECTS
       );
   }
 
@@ -884,7 +949,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
 
   const hasCanEditAllProjects = await checkPermission(
     user.cuid,
-    PermissionList.CAN_EDIT_ALL_PROJECTS,
+    PermissionList.CAN_EDIT_ALL_PROJECTS
   );
 
   let updateData = {
@@ -981,7 +1046,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
       !cdd.dateOfBirth ||
       !cdd.startDate ||
       !cdd.endDate ||
-      !cdd.employmentType,
+      !cdd.employmentType
   );
 
   if (invalidCandidates.length > 0) {
@@ -1050,8 +1115,8 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
                 },
               },
             },
-          }),
-        ),
+          })
+        )
       );
 
       // retrieve cuids
@@ -1069,10 +1134,10 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
           consultantCuid: user.cuid,
           projectCuid: projectCuid,
           startDate: new Date(
-            candidates.find((c) => c.nric === cdd.nric).startDate,
+            candidates.find((c) => c.nric === cdd.nric).startDate
           ),
           endDate: new Date(
-            candidates.find((c) => c.nric === cdd.nric).endDate,
+            candidates.find((c) => c.nric === cdd.nric).endDate
           ),
           employmentType: candidates.find((c) => c.nric === cdd.nric)
             .employmentType as EmploymentType,
@@ -1087,7 +1152,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
       const alreadyAssignedCandidates = candidatesInDb
         .filter(
           (cdd) =>
-            !createdAssigns.some((assign) => assign.candidateCuid === cdd.cuid),
+            !createdAssigns.some((assign) => assign.candidateCuid === cdd.cuid)
         )
         .map((cdd) => cdd.cuid);
 
@@ -1164,7 +1229,7 @@ projectAPIRouter.delete(
     }
 
     return res.send("Candidates removed successfully.");
-  },
+  }
 );
 
 projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
@@ -1226,8 +1291,8 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
       .status(400)
       .send(
         `Minimum break duration is 45 minutes for a ${shiftDuration.toFixed(
-          1,
-        )}h shift.`,
+          1
+        )}h shift.`
       );
   }
 
@@ -1256,7 +1321,7 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
     projectData.Manage.some(
       (manage) =>
         manage.consultantCuid === user.cuid &&
-        manage.role === Role.CLIENT_HOLDER,
+        manage.role === Role.CLIENT_HOLDER
     ) ||
     (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
@@ -1352,7 +1417,7 @@ projectAPIRouter.get(
 
     const hasPermission =
       projectData.Manage.some(
-        (manage) => manage.consultantCuid === user.cuid,
+        (manage) => manage.consultantCuid === user.cuid
       ) ||
       (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
@@ -1381,7 +1446,7 @@ projectAPIRouter.get(
       console.log(error);
       return res.status(500).send("Internal server error.");
     }
-  },
+  }
 );
 
 projectAPIRouter.get(
@@ -1429,7 +1494,7 @@ projectAPIRouter.get(
 
     const hasPermission =
       projectData.Manage.some(
-        (manage) => manage.consultantCuid === user.cuid,
+        (manage) => manage.consultantCuid === user.cuid
       ) ||
       (await checkPermission(user.cuid, PermissionList.CAN_READ_ALL_PROJECTS));
 
@@ -1461,7 +1526,7 @@ projectAPIRouter.get(
       console.log(error);
       return res.status(500).send("Internal server error.");
     }
-  },
+  }
 );
 
 projectAPIRouter.get("/projects", async (req, res) => {
@@ -1519,9 +1584,6 @@ projectAPIRouter.get("/projects/all", async (_req, res) => {
           include: {
             Consultant: true,
           },
-          where: {
-            role: "CLIENT_HOLDER",
-          },
         },
         Client: true,
       },
@@ -1577,7 +1639,7 @@ projectAPIRouter.post("/project/:projectCuid/manage", async (req, res) => {
 
   const hasPermission =
     projectData.Manage.some(
-      (m) => m.consultantCuid === user.cuid && m.role === "CLIENT_HOLDER",
+      (m) => m.consultantCuid === user.cuid && m.role === "CLIENT_HOLDER"
     ) ||
     (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
@@ -1646,7 +1708,7 @@ projectAPIRouter.patch("/project/:projectCuid/manage", async (req, res) => {
 
   const hasPermission =
     projectData.Manage.some(
-      (m) => m.consultantCuid === user.cuid && m.role === "CLIENT_HOLDER",
+      (m) => m.consultantCuid === user.cuid && m.role === "CLIENT_HOLDER"
     ) ||
     (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
@@ -1657,7 +1719,7 @@ projectAPIRouter.patch("/project/:projectCuid/manage", async (req, res) => {
   }
 
   const currentManage = projectData.Manage.find(
-    (m) => m.consultantCuid === consultantCuid,
+    (m) => m.consultantCuid === consultantCuid
   );
 
   // verify that the consultant is a collaborator
@@ -1744,7 +1806,7 @@ projectAPIRouter.delete("/project/:projectCuid/manage", async (req, res) => {
 
   const hasPermission =
     projectData.Manage.some(
-      (m) => m.consultantCuid === user.cuid && m.role === "CLIENT_HOLDER",
+      (m) => m.consultantCuid === user.cuid && m.role === "CLIENT_HOLDER"
     ) ||
     (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
@@ -1755,7 +1817,7 @@ projectAPIRouter.delete("/project/:projectCuid/manage", async (req, res) => {
   }
 
   const clientHolders = projectData.Manage.filter(
-    (m) => m.role === "CLIENT_HOLDER",
+    (m) => m.role === "CLIENT_HOLDER"
   );
 
   // prevent removing the last client holder
@@ -1774,7 +1836,7 @@ projectAPIRouter.delete("/project/:projectCuid/manage", async (req, res) => {
     const assignEntry = projectData.Assign.find(
       (assign) =>
         assign.candidateCuid === candidateCuid &&
-        assign.consultantCuid === consultantCuid,
+        assign.consultantCuid === consultantCuid
     );
 
     if (!assignEntry) {

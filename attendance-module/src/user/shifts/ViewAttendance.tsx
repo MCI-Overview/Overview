@@ -1,25 +1,15 @@
-import { ChangeEvent, useEffect, useState } from "react";
-import {
-  CssVarsProvider,
-  CssBaseline,
-  Box,
-  iconButtonClasses,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-} from "@mui/joy";
-import {
-  KeyboardArrowRightRounded as KeyboardArrowRightIcon,
-  KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
-  SearchRounded as SearchIcon,
-} from "@mui/icons-material";
-import { CustomAttendance } from "../../types";
-import dayjs from "dayjs";
 import axios from "axios";
+import dayjs from "dayjs";
+import { ChangeEvent, useEffect, useState } from "react";
+import { CustomAttendance } from "../../types";
 
 import AttendanceHistory from "./AttendanceHistory";
 import AttendanceHistoryM from "./AttendanceHistoryM";
+import PaginationFooter from "../../components/project/ui/PaginationFooter";
+
+import { Box, FormControl, FormLabel, Input } from "@mui/joy";
+import { SearchRounded as SearchIcon } from "@mui/icons-material";
+import SmallScreenDivider from "../../components/project/ui/SmallScreenDivider";
 
 type Page = {
   isFirstPage: boolean;
@@ -32,7 +22,7 @@ type Page = {
 };
 
 const ViewAttendance = () => {
-  const [data, setData] = useState<CustomAttendance[] | null>(null);
+  const [data, setData] = useState<CustomAttendance[]>([]);
   const [page, setPage] = useState<Page>({
     isFirstPage: true,
     isLastPage: true,
@@ -72,7 +62,7 @@ const ViewAttendance = () => {
       }
       const response = await axios.get(url);
       const [fetchedData, paginationData] = response.data;
-      setData(fetchedData);
+      setData(fetchedData || []);
       setPage(paginationData);
     } catch (error) {
       console.error("Error fetching upcoming shifts: ", error);
@@ -96,91 +86,54 @@ const ViewAttendance = () => {
   };
 
   return (
-    <CssVarsProvider disableTransitionOnChange>
-      <CssBaseline />
-      <Box sx={{ display: "flex" }}>
-        <Box
-          component="main"
-          className="MainContent"
-          sx={{
-            px: { xs: 2, md: 6 },
-            pb: { xs: 2, sm: 2, md: 3 },
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            minWidth: 0,
-            gap: 1,
-          }}
-        >
-          <Box
-            className="SearchAndFilters-tabletUp"
-            sx={{
-              borderRadius: "sm",
-              py: 2,
-              flexWrap: "wrap",
-              gap: 1.5,
-              "& > *": {
-                minWidth: { xs: "120px", md: "160px" },
-              },
-            }}
-          >
-            <FormControl sx={{ flex: 1 }} size="sm">
-              <FormLabel>Search for shift</FormLabel>
-              <Input
-                type="date"
-                size="sm"
-                placeholder="Search"
-                startDecorator={<SearchIcon />}
-                onChange={handleDateChange}
-              />
-            </FormControl>
-          </Box>
-          <AttendanceHistory data={data} />
-          <AttendanceHistoryM data={data} />
-
-          <Box
-            className="Pagination-laptopUp"
-            sx={{
-              pt: 2,
-              gap: 1,
-              [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
-              display: {
-                xs: "flex",
-                md: "flex",
-              },
-            }}
-          >
-            <Button
-              size="sm"
-              variant="outlined"
-              color="neutral"
-              startDecorator={<KeyboardArrowLeftIcon />}
-              onClick={handlePreviousPage}
-              disabled={page.isFirstPage}
-            >
-              Previous
-            </Button>
-
-            <Box sx={{ flex: 1 }} />
-            <Button size="sm" variant="outlined" color="neutral">
-              {page.currentPage} / {page.pageCount}
-            </Button>
-            <Box sx={{ flex: 1 }} />
-
-            <Button
-              size="sm"
-              variant="outlined"
-              color="neutral"
-              endDecorator={<KeyboardArrowRightIcon />}
-              onClick={handleNextPage}
-              disabled={page.isLastPage}
-            >
-              Next
-            </Button>
-          </Box>
-        </Box>
+    <Box
+      sx={{
+        display: "flex",
+        px: { md: 4 },
+        pb: { xs: 2, sm: 2, md: 3 },
+        flex: 1,
+        flexDirection: "column",
+        minWidth: 0,
+        gap: 1,
+      }}
+    >
+      <Box
+        sx={{
+          borderRadius: "sm",
+          flexWrap: "wrap",
+          gap: 1.5,
+          "& > *": {
+            minWidth: { xs: "120px", md: "160px" },
+          },
+        }}
+      >
+        <FormControl sx={{ flex: 1 }} size="sm">
+          <FormLabel>Search for shift</FormLabel>
+          <Input
+            type="date"
+            size="sm"
+            placeholder="Search"
+            startDecorator={<SearchIcon />}
+            onChange={handleDateChange}
+            disabled={data.length === 0}
+          />
+        </FormControl>
       </Box>
-    </CssVarsProvider>
+
+      <SmallScreenDivider />
+
+      <AttendanceHistory data={data} />
+      <AttendanceHistoryM data={data} />
+
+      <PaginationFooter
+        maxPage={page.pageCount}
+        handlePreviousPage={handlePreviousPage}
+        isFirstPage={page.isFirstPage}
+        currentPage={page.currentPage}
+        handleNextPage={handleNextPage}
+        isLastPage={page.isLastPage}
+      />
+    </Box>
   );
 };
 

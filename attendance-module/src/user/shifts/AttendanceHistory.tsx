@@ -1,22 +1,24 @@
 import dayjs from "dayjs";
 import { CustomAttendance } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
+import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
 
 import { Chip, Table, Sheet, Typography, ColorPaletteProp } from "@mui/joy";
 import {
-  CheckRounded as CheckIcon,
   BlockRounded as BlockIcon,
+  CheckRounded as CheckIcon,
+  QueryBuilderRounded as QueryBuilderIcon,
+  MedicalServicesOutlined as MedicalServicesIcon,
 } from "@mui/icons-material";
 
 interface AttendanceHistoryProps {
-  data: CustomAttendance[] | null;
+  data: CustomAttendance[];
 }
 
 const AttendanceHistory = ({ data }: AttendanceHistoryProps) => {
   return (
     <>
       <Sheet
-        className="OrderTableContainer"
         variant="outlined"
         sx={{
           display: { xs: "none", sm: "initial" },
@@ -39,46 +41,49 @@ const AttendanceHistory = ({ data }: AttendanceHistoryProps) => {
               "var(--joy-palette-background-level1)",
             "--TableCell-paddingY": "4px",
             "--TableCell-paddingX": "8px",
+            "& tr > *": { textAlign: "center" },
           }}
         >
           <thead>
             <tr>
-              <th style={{ width: 120, padding: "12px 6px" }}>Date</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Project</th>
-              <th style={{ width: 140, padding: "12px 6px" }}>Status</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Type</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>Start</th>
-              <th style={{ width: 100, padding: "12px 6px" }}>End</th>
+              <ThTypo>Date</ThTypo>
+              <ThTypo>Project</ThTypo>
+              <ThTypo>Status</ThTypo>
+              <ThTypo>Type</ThTypo>
+              <ThTypo>Start</ThTypo>
+              <ThTypo>End</ThTypo>
             </tr>
           </thead>
           <tbody>
-            {data &&
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan={6}>
+                  <Typography level="body-xs">
+                    No attendance history found
+                  </Typography>
+                </td>
+              </tr>
+            ) : (
               data.map((row: CustomAttendance) => (
                 <tr key={row.cuid}>
-                  <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.shiftDate).format("DD MMM YYYY")}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {row.Shift.Project.name}
-                    </Typography>
-                  </td>
+                  <TdTypo>{dayjs(row.shiftDate).format("DD MMM YYYY")}</TdTypo>
+                  <TdTypo>{row.Shift.Project.name}</TdTypo>
                   <td>
                     <Chip
                       variant="soft"
                       size="sm"
                       startDecorator={
                         {
-                          PRESENT: <CheckIcon />,
+                          ON_TIME: <CheckIcon />,
+                          LATE: <QueryBuilderIcon />,
                           NO_SHOW: <BlockIcon />,
-                          MEDICAL: <BlockIcon />,
+                          MEDICAL: <MedicalServicesIcon />,
                         }[row.status || "NO_SHOW"]
                       }
                       color={
                         {
-                          PRESENT: "success",
+                          ON_TIME: "success",
+                          LATE: "warning",
                           NO_SHOW: "danger",
                           MEDICAL: "neutral",
                         }[row.status || "NO_SHOW"] as ColorPaletteProp
@@ -87,31 +92,13 @@ const AttendanceHistory = ({ data }: AttendanceHistoryProps) => {
                       {readableEnum(row.status || "NO_SHOW")}
                     </Chip>
                   </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {readableEnum(row.shiftType)}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.Shift?.startTime).format("hh:mm a") || "N/A"}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.Shift?.endTime).format("hh:mm a") || "N/A"}
-                    </Typography>
-                  </td>
+                  <TdTypo>{readableEnum(row.shiftType)}</TdTypo>
+                  <TdTypo>
+                    {dayjs(row.Shift.startTime).format("hh:mm a")}
+                  </TdTypo>
+                  <TdTypo>{dayjs(row.Shift.endTime).format("hh:mm a")}</TdTypo>
                 </tr>
-              ))}
-            {data && data.length === 0 && (
-              <tr>
-                <td colSpan={6}>
-                  <Typography level="body-md" sx={{ textAlign: "center" }}>
-                    No attendance history found
-                  </Typography>
-                </td>
-              </tr>
+              ))
             )}
           </tbody>
         </Table>

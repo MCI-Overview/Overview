@@ -44,7 +44,7 @@ const JoinedProjects: FC = () => {
             {!projectsList && <div>Loading...</div>}
             {projectsList && projectsList.length === 0 && (
               <Typography level="body-sm" textAlign="center">
-                No projects found. What are you doing here :/
+                No projects found.
               </Typography>
             )}
             {projectsList &&

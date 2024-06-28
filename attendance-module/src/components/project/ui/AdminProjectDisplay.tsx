@@ -16,7 +16,7 @@ export function AdminProjectDisplay({
   const navigate = useNavigate();
   const { user } = useUserContext();
 
-  const manage = project.Manage[0];
+  const manage = project.Manage.filter((m) => m.role === "CLIENT_HOLDER")[0];
 
   const isClientHolder =
     project.Manage.filter((manage) => manage.consultantCuid === user?.cuid)
@@ -49,15 +49,14 @@ export function AdminProjectDisplay({
         <Stack>
           <Typography level="title-md">{project.name}</Typography>
           <Typography level="body-sm">{`${dayjs(project.startDate).format(
-            "DD MMM YY",
+            "DD MMM YY"
           )} - ${dayjs(project.endDate).format("DD MMM YY")}`}</Typography>
         </Stack>
         <Chip sx={{ marginY: "auto" }}>{project.Client.name}</Chip>
       </Box>
-      {isClientHolder && (
+      {isClientHolder ? (
         <Typography level="body-sm">You are the client holder!</Typography>
-      )}
-      {!isClientHolder && (
+      ) : (
         <Stack direction="row" gap={2}>
           <Avatar>{manage.Consultant.name.substring(0, 1)}</Avatar>
           <Stack>

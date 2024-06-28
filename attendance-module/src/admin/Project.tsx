@@ -14,10 +14,10 @@ import {
 import ProjectOverview from "../components/project/overview/OverviewPage.tsx";
 import AssignCandidatePage from "../components/project/candidates/Page";
 import { useProjectContext } from "../providers/projectContextProvider";
-import RosterPage from "../components/project/roster/RosterPage";
 import Settings from "./Settings.tsx";
 import RequestsPage from "../components/project/requests/RequestsPage.tsx";
 import Attendance from "./projects-components/Attendance.tsx";
+import RosterPageHandler from "../components/project/roster/RosterPageHandler.tsx";
 
 const tabs: Tab[] = [
   {
@@ -38,7 +38,7 @@ const tabs: Tab[] = [
   },
   {
     label: "Roster",
-    content: <RosterPage />,
+    content: <RosterPageHandler />,
   },
   {
     label: "Settings",
@@ -68,11 +68,14 @@ const AdminProjects = () => {
       case "candidates":
         setTabValue(2);
         break;
-      case "roster":
+      case "requests":
         setTabValue(3);
         break;
-      case "settings":
+      case "roster":
         setTabValue(4);
+        break;
+      case "settings":
+        setTabValue(5);
         break;
       default:
         setTabValue(0);
@@ -97,7 +100,7 @@ const AdminProjects = () => {
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
-    newValue: string | number | null,
+    newValue: string | number | null
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);
@@ -112,9 +115,12 @@ const AdminProjects = () => {
         navigate(`/admin/project/${project.cuid}#candidates`);
         break;
       case 3:
-        navigate(`/admin/project/${project.cuid}#roster`);
+        navigate(`/admin/project/${project.cuid}#requests`);
         break;
       case 4:
+        navigate(`/admin/project/${project.cuid}#roster`);
+        break;
+      case 5:
         navigate(`/admin/project/${project.cuid}#settings`);
         break;
       default:

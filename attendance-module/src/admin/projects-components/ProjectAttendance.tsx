@@ -13,12 +13,13 @@ import {
   MenuItem,
   Sheet,
   Table,
+  Typography,
 } from "@mui/joy";
 import {
   BlockRounded as BlockIcon,
   CheckRounded as CheckIcon,
   QueryBuilderRounded as QueryBuilderIcon,
-  MedicalServicesRounded as MedicalServicesIcon,
+  MedicalServicesOutlined as MedicalServicesIcon,
   MoreHorizRounded as MoreHorizIcon,
 } from "@mui/icons-material";
 import { ColorPaletteProp } from "@mui/joy/styles";
@@ -45,11 +46,9 @@ function RowMenu() {
 
 const ProjectAttendance: React.FC<Props> = ({ data }) => {
   const attendanceData = data;
-  console.log(data);
 
   return (
     <Sheet
-      className="OrderTableContainer"
       variant="outlined"
       sx={{
         display: { xs: "none", sm: "initial" },
@@ -90,7 +89,7 @@ const ProjectAttendance: React.FC<Props> = ({ data }) => {
           {attendanceData.length === 0 ? (
             <tr>
               <td colSpan={9} style={{ textAlign: "center" }}>
-                No candidates found.
+                <Typography level="body-xs">No candidates found</Typography>
               </td>
             </tr>
           ) : (
@@ -123,14 +122,8 @@ const ProjectAttendance: React.FC<Props> = ({ data }) => {
                     {readableEnum(row.status || "NO_SHOW")}
                   </Chip>
                 </td>
-                <TdTypo>
-                  {row.shiftStart
-                    ? dayjs(row.shiftStart).format("hh:mm a")
-                    : "-"}
-                </TdTypo>
-                <TdTypo>
-                  {row.shiftEnd ? dayjs(row.shiftEnd).format("hh:mm a") : "-"}
-                </TdTypo>
+                <TdTypo>{dayjs(row.shiftStart).format("hh:mm a")}</TdTypo>
+                <TdTypo>{dayjs(row.shiftEnd).format("hh:mm a")}</TdTypo>
                 <TdTypo>
                   {row.rawStart ? dayjs(row.rawStart).format("hh:mm a") : "-"}
                 </TdTypo>

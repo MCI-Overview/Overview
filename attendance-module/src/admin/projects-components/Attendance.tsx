@@ -3,13 +3,22 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { CustomAdminAttendance } from "../../types";
 import { useProjectContext } from "../../providers/projectContextProvider";
+
 import ProjectAttendance from "./ProjectAttendance";
 import ProjectAttendanceM from "./ProjectAttendanceM";
+import AttendanceExportModal from "../../components/project/attendance/AttendanceExportModal";
 
-import { Box, FormControl, FormLabel, Input, Option, Select } from "@mui/joy";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Grid,
+  Input,
+  Option,
+  Select,
+} from "@mui/joy";
 import SearchIcon from "@mui/icons-material/Search";
-import CssBaseline from "@mui/joy/CssBaseline";
-import { CssVarsProvider } from "@mui/joy/styles";
 
 const Attendance = () => {
   const [data, setData] = useState<CustomAdminAttendance[]>([]);
@@ -19,6 +28,15 @@ const Attendance = () => {
   const [endDate, setEndDate] = useState<string>(dayjs().format("YYYY-MM-DD"));
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string | null>("");
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
 
   const context = useProjectContext();
   const projectCuid = context.project?.cuid;
@@ -71,31 +89,28 @@ const Attendance = () => {
   });
 
   return (
-    <CssVarsProvider disableTransitionOnChange>
-      <CssBaseline />
-      <Box
+    <Box
+      sx={{
+        display: "flex",
+        px: { md: 4 },
+        pb: { xs: 2, sm: 2, md: 3 },
+        flex: 1,
+        flexDirection: "column",
+        minWidth: 0,
+        gap: 1,
+      }}
+    >
+      <Grid
         sx={{
+          borderRadius: "sm",
           display: "flex",
-          px: { xs: 2, md: 6 },
-          pb: { xs: 2, sm: 2, md: 3 },
-          flex: 1,
-          flexDirection: "column",
-          minWidth: 0,
-          gap: 1,
+          flexWrap: "wrap",
         }}
+        container
+        spacing={{ xs: 1, md: 2 }}
+        columns={{ xs: 6, sm: 12 }}
       >
-        <Box
-          className="SearchAndFilters-tabletUp"
-          sx={{
-            borderRadius: "sm",
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 1.5,
-            "& > *": {
-              minWidth: { xs: "120px", md: "160px" },
-            },
-          }}
-        >
+        <Grid xs={4} sm={4}>
           <FormControl sx={{ flex: 1 }} size="sm">
             <FormLabel>Search candidate</FormLabel>
             <Input
@@ -103,29 +118,12 @@ const Attendance = () => {
               placeholder="Search"
               startDecorator={<SearchIcon />}
               onChange={handleSearchChange}
+              disabled={data.length === 0}
             />
           </FormControl>
+        </Grid>
 
-          <FormControl size="sm">
-            <FormLabel>Search from</FormLabel>
-            <Input
-              type="date"
-              size="sm"
-              value={startDate}
-              onChange={handleStartDateChange}
-            />
-          </FormControl>
-
-          <FormControl size="sm">
-            <FormLabel>To</FormLabel>
-            <Input
-              type="date"
-              size="sm"
-              value={endDate}
-              onChange={handleEndDateChange}
-            />
-          </FormControl>
-
+        <Grid xs={2} sm={2}>
           <FormControl size="sm">
             <FormLabel>Status</FormLabel>
             <Select
@@ -143,12 +141,47 @@ const Attendance = () => {
               <Option value="MEDICAL">Medical</Option>
             </Select>
           </FormControl>
-        </Box>
+        </Grid>
 
-        <ProjectAttendance data={filteredData} />
-        <ProjectAttendanceM data={filteredData} />
-      </Box>
-    </CssVarsProvider>
+        <Grid xs={3} sm={2}>
+          <FormControl size="sm">
+            <FormLabel>Search from</FormLabel>
+            <Input
+              type="date"
+              size="sm"
+              value={startDate}
+              onChange={handleStartDateChange}
+            />
+          </FormControl>
+        </Grid>
+
+        <Grid xs={3} sm={2}>
+          <FormControl size="sm">
+            <FormLabel>To</FormLabel>
+            <Input
+              type="date"
+              size="sm"
+              value={endDate}
+              onChange={handleEndDateChange}
+            />
+          </FormControl>
+        </Grid>
+
+        <Grid sm={2}>
+          <FormControl size="sm">
+            <FormLabel>Export</FormLabel>
+            <Button size='sm' onClick={handleOpenModal}>
+              Export to excel
+            </Button>
+          </FormControl>
+        </Grid>
+      </Grid>
+
+      <AttendanceExportModal show={showModal} onClose={handleCloseModal} projectCuid={projectCuid || ''} />
+
+      <ProjectAttendance data={filteredData} />
+      <ProjectAttendanceM data={filteredData} />
+    </Box>
   );
 };
 

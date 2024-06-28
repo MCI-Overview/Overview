@@ -4,7 +4,7 @@ import { useProjectContext } from "../../../providers/projectContextProvider";
 import { DraggableChipProps } from "../../../types";
 import toast from "react-hot-toast";
 import { Delete } from "@mui/icons-material";
-import { Sheet, Tooltip } from "@mui/joy";
+import { Card, Tooltip } from "@mui/joy";
 
 const DeleteBin = () => {
   const { updateProject } = useProjectContext();
@@ -37,23 +37,20 @@ const DeleteBin = () => {
 
   return (
     <Tooltip title="Drop shift here to delete">
-      <Sheet
+      <Card
         ref={drop}
         color="danger"
         variant={isOver ? "solid" : "soft"}
         sx={{
-          py: 0,
-          px: 5,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           border: "2px dashed grey",
-          borderRadius: "20px",
           transition: "background-color 0.5s ease",
         }}
       >
         <Delete />
-      </Sheet>
+      </Card>
     </Tooltip>
   );
 };

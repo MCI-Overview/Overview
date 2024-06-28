@@ -1,3 +1,13 @@
+import axios from "axios";
+import dayjs from "dayjs";
+import { CustomRequest } from "../../../types";
+import { useRequestContext } from "../../../providers/requestContextProvider";
+import { readableEnum } from "../../../utils/capitalize";
+import { TdTypo, ThTypo } from "../ui/TableTypo";
+
+import ViewDetailsModal from "../../common/request/ViewDetailsModal";
+import LoadingRequestIconButton from "../../LoadingRequestIconButton";
+
 import {
   Chip,
   Table,
@@ -13,16 +23,10 @@ import {
   ClearRounded as ClearIcon,
   CheckRounded as CheckIcon,
 } from "@mui/icons-material";
-import { CustomRequest } from "../../../types";
-import dayjs from "dayjs";
-import axios from "axios";
-import ViewDetailsModal from "../../common/request/ViewDetailsModal";
-import LoadingRequestIconButton from "../../LoadingRequestIconButton";
-import { useRequestContext } from "../../../providers/requestContextProvider";
-import { readableEnum } from "../../../utils/capitalize";
 
 const RequestHistory = () => {
-  const { requests: data, updateRequest } = useRequestContext();
+  const { requests, updateRequest } = useRequestContext();
+  if (!requests) return null;
 
   async function approveRequest(requestCuid: string) {
     axios
@@ -39,7 +43,6 @@ const RequestHistory = () => {
   return (
     <>
       <Sheet
-        className="OrderTableContainer"
         variant="outlined"
         sx={{
           display: { xs: "none", sm: "initial" },
@@ -62,36 +65,37 @@ const RequestHistory = () => {
               "var(--joy-palette-background-level1)",
             "--TableCell-paddingY": "4px",
             "--TableCell-paddingX": "8px",
+            "& tr > *": { textAlign: "center" },
           }}
         >
           <thead>
             <tr>
-              <th style={{ padding: "12px 6px" }}>Date</th>
-              <th style={{ padding: "12px 6px" }}>Name</th>
-              <th style={{ padding: "12px 6px" }}>Type</th>
-              <th style={{ padding: "12px 6px" }}>Status</th>
-              <th style={{ padding: "12px 6px" }} />
+              <ThTypo>Date</ThTypo>
+              <ThTypo>Nric</ThTypo>
+              <ThTypo>Name</ThTypo>
+              <ThTypo>Type</ThTypo>
+              <ThTypo>Status</ThTypo>
+              <ThTypo> </ThTypo>
             </tr>
           </thead>
           <tbody>
-            {data &&
-              data.map((row: CustomRequest) => (
+            {requests.length === 0 ? (
+              <tr>
+                <td colSpan={6}>
+                  <Typography level="body-xs">No requests found</Typography>
+                </td>
+              </tr>
+            ) : (
+              requests.map((row: CustomRequest) => (
                 <tr key={row.cuid}>
-                  <td>
-                    <Typography level="body-xs">
-                      {dayjs(row.createdAt).format("DD MMM YYYY")}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {row.Assign.Candidate && row.Assign.Candidate.name}
-                    </Typography>
-                  </td>
-                  <td>
-                    <Typography level="body-xs">
-                      {readableEnum(row.type)}
-                    </Typography>
-                  </td>
+                  <TdTypo>{dayjs(row.createdAt).format("DD MMM YYYY")}</TdTypo>
+                  <TdTypo>
+                    {row.Assign.Candidate && row.Assign.Candidate.nric}
+                  </TdTypo>
+                  <TdTypo>
+                    {row.Assign.Candidate && row.Assign.Candidate.name}
+                  </TdTypo>
+                  <TdTypo>{readableEnum(row.type)}</TdTypo>
                   <td>
                     <Chip
                       variant="soft"
@@ -144,15 +148,7 @@ const RequestHistory = () => {
                     </Stack>
                   </td>
                 </tr>
-              ))}
-            {data && data.length === 0 && (
-              <tr>
-                <td colSpan={5}>
-                  <Typography level="body-md" sx={{ textAlign: "center" }}>
-                    No request history found
-                  </Typography>
-                </td>
-              </tr>
+              ))
             )}
           </tbody>
         </Table>

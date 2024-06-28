@@ -2,6 +2,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { FC, useState, useEffect } from "react";
 import { Project } from "../../types/index";
+import { useUserContext } from "../../providers/userContextProvider";
 import AdminProjectDisplay from "./ui/AdminProjectDisplay";
 
 import {
@@ -14,7 +15,6 @@ import {
   Typography,
 } from "@mui/joy";
 import { ArrowDropDown as ArrowDropDownIcon } from "@mui/icons-material";
-import { useUserContext } from "../../providers/userContextProvider";
 
 // sort by createdAt (most recent first)
 const projectComparator = (a: Project, b: Project) => {
@@ -26,7 +26,7 @@ const AllProjects: FC = () => {
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [futureProjects, setFutureProjects] = useState<Project[]>([]);
   const [value, setValue] = useState<"concluded" | "ongoing" | "future">(
-    "ongoing",
+    "ongoing"
   );
 
   const { user } = useUserContext();
@@ -42,21 +42,19 @@ const AllProjects: FC = () => {
       });
 
       setPreviousProjects(
-        projects.filter((project) => dayjs().isAfter(dayjs(project.endDate))),
+        projects.filter((project) => dayjs().isAfter(dayjs(project.endDate)))
       );
 
       setOngoingProjects(
         projects.filter(
           (project) =>
             dayjs().isAfter(dayjs(project.startDate)) &&
-            dayjs().isBefore(dayjs(project.endDate)),
-        ),
+            dayjs().isBefore(dayjs(project.endDate))
+        )
       );
 
       setFutureProjects(
-        projects.filter((project) =>
-          dayjs().isBefore(dayjs(project.startDate)),
-        ),
+        projects.filter((project) => dayjs().isBefore(dayjs(project.startDate)))
       );
     });
   }, [user]);
@@ -126,7 +124,7 @@ const AllProjects: FC = () => {
               </Typography>
             ) : getCurrentProjectList().length === 0 ? (
               <Typography level="body-sm" textAlign="center">
-                {`No ${value} projects found.`}
+                {`No ${value} projects found`}
               </Typography>
             ) : (
               getCurrentProjectList()

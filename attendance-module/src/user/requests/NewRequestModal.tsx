@@ -14,14 +14,15 @@ import {
   FormControl,
   FormLabel,
   Button,
+  Sheet,
 } from "@mui/joy";
 
-export default function NewRequest() {
+const NewRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [type, setType] = useState("MC");
 
   return (
-    <>
+    <Sheet sx={{ display: "flex", height: "100%" }}>
       <Modal open={isOpen} onClose={() => setIsOpen(false)}>
         <ModalDialog>
           <Typography level="title-lg">New Request</Typography>
@@ -41,7 +42,16 @@ export default function NewRequest() {
           {type === "Resign" && <ResignationForm setIsOpen={setIsOpen} />}
         </ModalDialog>
       </Modal>
-      <Button onClick={() => setIsOpen(true)}>New Request</Button>
-    </>
+      <Button
+        onClick={() => setIsOpen(true)}
+        sx={{ mt: "auto" }}
+        fullWidth
+        size="sm"
+      >
+        New Request
+      </Button>
+    </Sheet>
   );
-}
+};
+
+export default NewRequestModal;

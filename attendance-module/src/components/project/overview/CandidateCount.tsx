@@ -1,11 +1,6 @@
-import Box from "@mui/joy/Box";
-import Button from "@mui/joy/Button";
-import Card from "@mui/joy/Card";
-import CardContent from "@mui/joy/CardContent";
-import Typography from "@mui/joy/Typography";
-import Sheet from "@mui/joy/Sheet";
+import { Box, Button, Card, CardContent, Sheet, Typography } from "@mui/joy";
 
-export default function CandidaeCount() {
+export default function CandidateCount() {
   return (
     <Box
       sx={{
