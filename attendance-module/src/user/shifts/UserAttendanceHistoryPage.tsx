@@ -3,13 +3,13 @@ import dayjs from "dayjs";
 import { ChangeEvent, useEffect, useState } from "react";
 import { CustomAttendance } from "../../types";
 
-import AttendanceHistory from "./AttendanceHistory";
-import AttendanceHistoryM from "./AttendanceHistoryM";
+import AttendanceHistory from "./UserAttendanceHistoryTable";
+import AttendanceHistoryM from "./UserAttendanceHistoryList";
 import PaginationFooter from "../../components/project/ui/PaginationFooter";
+import SmallScreenDivider from "../../components/project/ui/SmallScreenDivider";
 
 import { Box, FormControl, FormLabel, Input } from "@mui/joy";
 import { SearchRounded as SearchIcon } from "@mui/icons-material";
-import SmallScreenDivider from "../../components/project/ui/SmallScreenDivider";
 
 type Page = {
   isFirstPage: boolean;

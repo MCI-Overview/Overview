@@ -11,7 +11,7 @@ import { Box, Button, Input, FormControl, FormLabel, Stack } from "@mui/joy";
 import SearchIcon from "@mui/icons-material/Search";
 import SmallScreenDivider from "../ui/SmallScreenDivider";
 
-const CandidatePage = () => {
+const AdminProjectCandidatesPage = () => {
   const { project, updateProject } = useProjectContext();
 
   const candidatesData =
@@ -136,4 +136,4 @@ const CandidatePage = () => {
   );
 };
 
-export default CandidatePage;
+export default AdminProjectCandidatesPage;

@@ -35,11 +35,13 @@ function RowMenu() {
   );
 }
 
-type Props = {
+type AdminProjectAttendanceListProps = {
   data: CustomAdminAttendance[];
 };
 
-const ProjectAttendanceM: React.FC<Props> = ({ data }) => {
+const AdminProjectAttendanceList = ({
+  data,
+}: AdminProjectAttendanceListProps) => {
   const attendanceData = data;
 
   return (
@@ -122,4 +124,4 @@ const ProjectAttendanceM: React.FC<Props> = ({ data }) => {
   );
 };
 
-export default ProjectAttendanceM;
+export default AdminProjectAttendanceList;

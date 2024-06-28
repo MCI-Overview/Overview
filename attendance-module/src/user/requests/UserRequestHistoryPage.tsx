@@ -3,9 +3,9 @@ import { useState } from "react";
 import { CustomRequest } from "../../types";
 import { RequestContextProvider } from "../../providers/requestContextProvider";
 
-import RequestHistory from "./RequestHistory";
-import RequestHistoryM from "./RequestHistoryM";
-import NewRequest from "./NewRequestModal";
+import UserRequestHistoryTable from "./UserRequestHistoryTable";
+import UserRequestHistoryList from "./UserRequestHistoryList";
+import NewRequestModal from "./NewRequestModal";
 import SmallScreenDivider from "../../components/project/ui/SmallScreenDivider";
 import PaginationFooter from "../../components/project/ui/PaginationFooter";
 
@@ -45,7 +45,7 @@ function buildUrl(
 }
 
 // TODO: Add filtering per request status and request type
-const ViewRequestHistory = () => {
+const UserRequestHistoryPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [maxPage, setMaxPage] = useState(1);
 
@@ -96,7 +96,7 @@ const ViewRequestHistory = () => {
           xs={2}
           sx={{ display: { xs: "block", sm: "none" }, whiteSpace: "nowrap" }}
         >
-          <NewRequest />
+          <NewRequestModal />
         </Grid>
 
         <Grid xs={3} sm={2}>
@@ -147,7 +147,7 @@ const ViewRequestHistory = () => {
           xs={2}
           sx={{ display: { xs: "none", sm: "block" }, whiteSpace: "nowrap" }}
         >
-          <NewRequest />
+          <NewRequestModal />
         </Grid>
       </Grid>
 
@@ -156,8 +156,8 @@ const ViewRequestHistory = () => {
       <RequestContextProvider
         updateFunction={() => fetchUpcomingShifts(currentPage)}
       >
-        <RequestHistory />
-        <RequestHistoryM />
+        <UserRequestHistoryTable />
+        <UserRequestHistoryList />
       </RequestContextProvider>
 
       <PaginationFooter
@@ -169,4 +169,4 @@ const ViewRequestHistory = () => {
   );
 };
 
-export default ViewRequestHistory;
+export default UserRequestHistoryPage;

@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { CustomAdminAttendance } from "../../../types";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import ProjectAttendance from "./ProjectAttendance";
-import ProjectAttendanceM from "./ProjectAttendanceM";
+import ProjectAttendance from "./AdminProjectAttendanceTable";
+import AdminProjectAttendanceList from "./AdminProjectAttendanceList";
+import SmallScreenDivider from "../ui/SmallScreenDivider";
 
 import {
   Box,
@@ -17,9 +18,8 @@ import {
   Select,
 } from "@mui/joy";
 import SearchIcon from "@mui/icons-material/Search";
-import SmallScreenDivider from "../ui/SmallScreenDivider";
 
-const Attendance = () => {
+const AdminProjectAttendancePage = () => {
   const [data, setData] = useState<CustomAdminAttendance[]>([]);
   const [startDate, setStartDate] = useState<string>(
     dayjs().format("YYYY-MM-DD")
@@ -161,9 +161,9 @@ const Attendance = () => {
       <SmallScreenDivider />
 
       <ProjectAttendance data={filteredData} />
-      <ProjectAttendanceM data={filteredData} />
+      <AdminProjectAttendanceList data={filteredData} />
     </Box>
   );
 };
 
-export default Attendance;
+export default AdminProjectAttendancePage;

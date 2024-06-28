@@ -16,7 +16,7 @@ import {
   Typography,
 } from "@mui/joy";
 
-const RequestHistoryM = () => {
+const UserRequestHistoryList = () => {
   const { requests, updateRequest } = useRequestContext();
   if (!requests) return null;
 
@@ -79,4 +79,4 @@ const RequestHistoryM = () => {
   );
 };
 
-export default RequestHistoryM;
+export default UserRequestHistoryList;

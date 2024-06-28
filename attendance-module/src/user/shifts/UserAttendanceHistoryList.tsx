@@ -3,6 +3,8 @@ import { Fragment } from "react";
 import { CustomAttendance } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
 
+import AttendanceStatusChip from "../../components/project/attendance/AttendanceStatusChip";
+
 import {
   Box,
   Typography,
@@ -11,7 +13,6 @@ import {
   ListItemContent,
   ListDivider,
 } from "@mui/joy";
-import AttendanceStatusChip from "../../components/project/attendance/AttendanceStatusChip";
 
 interface AttendanceHistoryMProps {
   data: CustomAttendance[];

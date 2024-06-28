@@ -3,13 +3,13 @@ import dayjs from "dayjs";
 import { ChangeEvent, useEffect, useState } from "react";
 import { CustomAttendance } from "../../types";
 
-import UpcomingShifts from "./UpcomingShifts";
-import UpcomingShiftsM from "./UpcomingShiftsM";
+import UpcomingShifts from "./UserUpcomingShiftsTable";
+import UpcomingShiftsM from "./UserUpcomingShiftsList";
+import SmallScreenDivider from "../../components/project/ui/SmallScreenDivider";
+import PaginationFooter from "../../components/project/ui/PaginationFooter";
 
 import { Box, FormControl, FormLabel, Input } from "@mui/joy";
 import { SearchRounded as SearchIcon } from "@mui/icons-material";
-import PaginationFooter from "../../components/project/ui/PaginationFooter";
-import SmallScreenDivider from "../../components/project/ui/SmallScreenDivider";
 
 type Page = {
   isFirstPage: boolean;

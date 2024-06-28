@@ -1,11 +1,11 @@
 import dayjs from "dayjs";
 import { Fragment } from "react";
-import { CustomRequest } from "../../../types";
-import { useRequestContext } from "../../../providers/requestContextProvider";
+import { CustomRequest } from "../../types";
+import { useRequestContext } from "../../providers/requestContextProvider";
 
-import ViewDetailsModal from "../../common/request/ViewDetailsModal";
-import RequestStatusChip from "./RequestStatusChip";
-import RequestTypeChip from "./RequestTypeChip";
+import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
+import RequestStatusChip from "../../components/project/requests/RequestStatusChip";
+import RequestTypeChip from "../../components/project/requests/RequestTypeChip";
 
 import {
   Box,
@@ -16,7 +16,8 @@ import {
   Typography,
 } from "@mui/joy";
 
-const RequestHistoryM = () => {
+// TODO: Add editing of requests
+const UserCurrentRequestsList = () => {
   const { requests, updateRequest } = useRequestContext();
   if (!requests) return null;
 
@@ -39,7 +40,7 @@ const RequestHistoryM = () => {
                 <ViewDetailsModal
                   request={req}
                   updateRequest={updateRequest}
-                  type="ADMIN"
+                  type="USER"
                   variant="MOBILE"
                   sx={{
                     display: "flex",
@@ -54,19 +55,18 @@ const RequestHistoryM = () => {
                       <RequestTypeChip type={req.type} />
                       <RequestStatusChip status={req.status} />
                     </Box>
-                    {req.Assign.Candidate && (
-                      <Box sx={{ my: 0.5, width: "100%" }}>
-                        <Typography level="body-xs">
-                          Candidate: {req.Assign.Candidate.name} [
-                          {req.Assign.Candidate.nric}]
-                        </Typography>
 
-                        <Typography level="body-xs">
-                          Submitted:{" "}
-                          {dayjs(req.createdAt).format("DD/MM/YY HH:mm")}
-                        </Typography>
-                      </Box>
-                    )}
+                    <Box sx={{ my: 0.5, width: "100%" }}>
+                      <Typography level="body-xs">
+                        Proj name:{" "}
+                        {req.Assign.Project && req.Assign.Project.name}
+                      </Typography>
+
+                      <Typography level="body-xs">
+                        Submitted:{" "}
+                        {dayjs(req.createdAt).format("DD/MM/YY HH:mm")}
+                      </Typography>
+                    </Box>
                   </ListItemContent>
                 </ViewDetailsModal>
               </ListItem>
@@ -79,4 +79,4 @@ const RequestHistoryM = () => {
   );
 };
 
-export default RequestHistoryM;
+export default UserCurrentRequestsList;

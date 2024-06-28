@@ -10,7 +10,7 @@ import RequestStatusChip from "../../components/project/requests/RequestStatusCh
 import RequestTypeChip from "../../components/project/requests/RequestTypeChip";
 
 // TODO: Add editing of requests
-const CurrentRequests = () => {
+const UserCurrentRequestsTable = () => {
   const { requests, updateRequest } = useRequestContext();
   if (!requests) return null;
 
@@ -85,4 +85,4 @@ const CurrentRequests = () => {
   );
 };
 
-export default CurrentRequests;
+export default UserCurrentRequestsTable;

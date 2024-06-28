@@ -4,8 +4,9 @@ import { CustomRequest } from "../../../types";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { RequestContextProvider } from "../../../providers/requestContextProvider";
 
-import RequestHistory from "./Requests";
-import RequestHistoryM from "./RequestsM";
+import AdminRequestsTable from "./AdminRequestsTable";
+import AdminRequestsList from "./AdminRequestsList";
+import SmallScreenDivider from "../ui/SmallScreenDivider";
 import PaginationFooter from "../ui/PaginationFooter";
 
 import {
@@ -17,7 +18,6 @@ import {
   Option,
   Select,
 } from "@mui/joy";
-import SmallScreenDivider from "../ui/SmallScreenDivider";
 
 function buildUrl(
   projectCuid: string,
@@ -45,7 +45,7 @@ function buildUrl(
   return url;
 }
 
-const RequestsPage = () => {
+const AdminRequestsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [maxPage, setMaxPage] = useState(1);
   const [searchValue, setSearchValue] = useState<string>("");
@@ -151,8 +151,8 @@ const RequestsPage = () => {
         <SmallScreenDivider />
 
         <RequestContextProvider updateFunction={() => fetchUpcomingShifts()}>
-          <RequestHistory />
-          <RequestHistoryM />
+          <AdminRequestsTable />
+          <AdminRequestsList />
         </RequestContextProvider>
 
         <PaginationFooter
@@ -165,4 +165,4 @@ const RequestsPage = () => {
   );
 };
 
-export default RequestsPage;
+export default AdminRequestsPage;

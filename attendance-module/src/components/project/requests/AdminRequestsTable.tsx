@@ -9,7 +9,7 @@ import RequestTypeChip from "./RequestTypeChip";
 
 import { Table, Sheet, Typography } from "@mui/joy";
 
-const RequestHistory = () => {
+const AdminRequestsTable = () => {
   const { requests, updateRequest } = useRequestContext();
   if (!requests) return null;
 
@@ -94,4 +94,4 @@ const RequestHistory = () => {
   );
 };
 
-export default RequestHistory;
+export default AdminRequestsTable;

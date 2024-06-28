@@ -3,8 +3,8 @@ import { CustomAdminAttendance } from "../../../types";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import axios from "axios";
 import dayjs from "dayjs";
-import ProjectAttendance from "../attendance/ProjectAttendance";
-import ProjectAttendanceM from "../attendance/ProjectAttendanceM";
+import ProjectAttendance from "../attendance/AdminProjectAttendanceTable";
+import AdminProjectAttendanceList from "../attendance/AdminProjectAttendanceList";
 import LateCount from "./LateCount";
 import McCount from "./McCount";
 import NoShowCount from "./NoShowCount";
@@ -124,7 +124,7 @@ const ProjectOverview = () => {
           <Divider />
           <Stack spacing={2} sx={{ my: 1 }}>
             <ProjectAttendance data={data} />
-            <ProjectAttendanceM data={data} />
+            <AdminProjectAttendanceList data={data} />
           </Stack>
         </Stack>
 

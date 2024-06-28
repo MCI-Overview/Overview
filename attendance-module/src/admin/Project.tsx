@@ -16,8 +16,8 @@ import AssignCandidatePage from "../components/project/candidates/Page";
 import { useProjectContext } from "../providers/projectContextProvider";
 import RosterPage from "../components/project/roster/RosterPage";
 import Settings from "./Settings.tsx";
-import RequestsPage from "../components/project/requests/RequestsPage.tsx";
-import Attendance from "../components/project/attendance/Attendance.tsx";
+import AdminRequestsPage from "../components/project/requests/AdminRequestsPage.tsx";
+import AdminProjectAttendancePage from "../components/project/attendance/AdminProjectAttendancePage.tsx";
 
 const tabs: Tab[] = [
   {
@@ -26,7 +26,7 @@ const tabs: Tab[] = [
   },
   {
     label: "Attendance",
-    content: <Attendance />,
+    content: <AdminProjectAttendancePage />,
   },
   {
     label: "Candidates",
@@ -34,7 +34,7 @@ const tabs: Tab[] = [
   },
   {
     label: "Requests",
-    content: <RequestsPage />,
+    content: <AdminRequestsPage />,
   },
   {
     label: "Roster",
