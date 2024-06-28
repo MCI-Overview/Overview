@@ -70,12 +70,6 @@ export default function EmergencyContactStep() {
     relationship: newRelationship,
   } = newCandidate.emergencyContact || DEFAULT_CONTACT;
 
-  const newRelationshipType = newRelationship
-    ? RELATIONSHIPS.includes(newRelationship)
-      ? newRelationship
-      : "Others"
-    : "";
-
   return (
     <Stack
       sx={{
@@ -136,44 +130,22 @@ export default function EmergencyContactStep() {
           <FormControl>
             <FormLabel>Relationship</FormLabel>
             <Autocomplete
-              value={newRelationshipType || ""}
+              value={newRelationship || ""}
               options={RELATIONSHIPS}
-              onChange={(_e, value) => {
-                if (value !== "Others") {
-                  setNewCandidate({
-                    ...newCandidate,
-                    emergencyContact: {
-                      contact: newContact,
-                      relationship: value || "",
-                      name: newName,
-                    },
-                  });
-                }
+              freeSolo
+              onInputChange={(_e, value) => {
+                setNewCandidate({
+                  ...newCandidate,
+                  emergencyContact: {
+                    contact: newContact,
+                    relationship: value || "",
+                    name: newName,
+                  },
+                });
               }}
             />
-            <FormHelperText></FormHelperText>
           </FormControl>
         </Grid>
-        {newRelationship === "Others" && (
-          <Grid xs={2} sm={1}>
-            <FormControl>
-              <FormLabel>Custom Relationship</FormLabel>
-              <Input
-                value={newRelationship || ""}
-                onChange={(e) =>
-                  setNewCandidate({
-                    ...newCandidate,
-                    emergencyContact: {
-                      contact: newContact,
-                      relationship: e.target.value || "",
-                      name: newName,
-                    },
-                  })
-                }
-              />
-            </FormControl>
-          </Grid>
-        )}
       </Grid>
       <Box
         sx={{

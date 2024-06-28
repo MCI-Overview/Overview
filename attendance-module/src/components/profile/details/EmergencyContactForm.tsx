@@ -27,6 +27,30 @@ type EmergencyContactFormProps = {
   ) => void;
 };
 
+const RELATIONSHIPS = [
+  "Mother",
+  "Father",
+  "Daughter",
+  "Son",
+  "Sister",
+  "Brother",
+  "Aunt",
+  "Uncle",
+  "Niece",
+  "Nephew",
+  "Cousin (Female)",
+  "Cousin (Male)",
+  "Grandmother",
+  "Grandfather",
+  "Granddaughter",
+  "Grandson",
+  "Stepsister",
+  "Stepbrother",
+  "Stepmother",
+  "Stepfather",
+  "Others",
+];
+
 export default function EmergencyContactForm({
   contact,
   handleSubmit,
@@ -47,7 +71,11 @@ export default function EmergencyContactForm({
   const isRelationshipValid =
     newContact.relationship && newContact.relationship.length > 0;
 
-  const [relationship, setRelationship] = useState<string | null>(null);
+  const relationshipType = newContact.relationship
+    ? RELATIONSHIPS.includes(newContact.relationship)
+      ? newContact.relationship
+      : "Others"
+    : "";
 
   return (
     <Card>
@@ -94,71 +122,26 @@ export default function EmergencyContactForm({
           </FormControl>
         </Grid>
         <Grid xs={2} sm={1}>
-          <FormControl error={!isRelationshipValid && !relationship}>
+          <FormControl error={!isRelationshipValid}>
             <FormLabel>Relationship</FormLabel>
             <Autocomplete
-              value={relationship || ""}
-              options={[
-                "Mother",
-                "Father",
-                "Daughter",
-                "Son",
-                "Sister",
-                "Brother",
-                "Aunt",
-                "Uncle",
-                "Niece",
-                "Nephew",
-                "Cousin (Female)",
-                "Cousin (Male)",
-                "Grandmother",
-                "Grandfather",
-                "Granddaughter",
-                "Grandson",
-                "Stepsister",
-                "Stepbrother",
-                "Stepmother",
-                "Stepfather",
-                "Others",
-              ]}
-              onChange={(_e, value) => {
-                setRelationship(value);
+              value={newContact.relationship || ""}
+              options={RELATIONSHIPS}
+              freeSolo
+              onInputChange={(_e, value) => {
                 setNewContact({
                   ...newContact,
-                  relationship: "",
+                  relationship: value || "",
                 });
-
-                if (value !== "Others") {
-                  setNewContact({
-                    ...newContact,
-                    relationship: value || "",
-                  });
-                }
               }}
             />
             <FormHelperText>
               {!isRelationshipValid &&
-                !relationship &&
+                !newContact.relationship &&
                 "Please select a relationship."}
             </FormHelperText>
           </FormControl>
         </Grid>
-        {relationship === "Others" && (
-          <Grid xs={2} sm={1}>
-            <FormControl error={!isRelationshipValid}>
-              <FormLabel>Custom Relationship</FormLabel>
-              <Input
-                value={newContact.relationship || ""}
-                onChange={(e) =>
-                  setNewContact({ ...newContact, relationship: e.target.value })
-                }
-              />
-              <FormHelperText>
-                {!isRelationshipValid && "Please specify a relationship."}
-              </FormHelperText>
-            </FormControl>
-          </Grid>
-        )}
       </Grid>
       <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
         <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>

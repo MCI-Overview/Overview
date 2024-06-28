@@ -305,7 +305,9 @@ export default function AddressStep() {
                   ...(newStreet !== oldStreet && { street: newStreet }),
                   ...(newBuilding !== oldBuilding && { building: newBuilding }),
                   ...(newCountry !== oldCountry && { country: newCountry }),
-                  ...(newIsLanded !== oldIsLanded && { isLanded: newIsLanded }),
+                  ...((newFloor !== oldFloor || newUnit !== oldUnit) && {
+                    isLanded: newIsLanded,
+                  }),
                 },
               };
 
