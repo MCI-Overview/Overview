@@ -126,7 +126,14 @@ export default function AddressStep() {
             <FormLabel>⠀</FormLabel>
             <Button
               onClick={loadAddress}
-              disabled={newPostal !== undefined && newPostal.length !== 6}
+              disabled={
+                (newPostal !== undefined && newPostal.length !== 6) ||
+                (oldPostal === newPostal &&
+                  oldBlock === newBlock &&
+                  oldStreet === newStreet &&
+                  oldCountry === newCountry &&
+                  oldBuilding === newBuilding)
+              }
             >
               Search
             </Button>

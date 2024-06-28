@@ -100,6 +100,11 @@ export default function AddressForm({
                   postal: e.target.value.replace(/[^0-9]/g, ""),
                 })
               }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  loadAddress();
+                }
+              }}
             />
             <FormHelperText>
               {isPostalValid ? "" : "Postal code cannot be empty."}
@@ -112,8 +117,13 @@ export default function AddressForm({
             <Button
               onClick={loadAddress}
               disabled={
-                newAddress.postal !== undefined &&
-                newAddress.postal.length !== 6
+                (newAddress.postal !== undefined &&
+                  newAddress.postal.length !== 6) ||
+                (oldAddress.postal === newAddress.postal &&
+                  oldAddress.block === newAddress.block &&
+                  oldAddress.street === newAddress.street &&
+                  oldAddress.country === newAddress.country &&
+                  oldAddress.building === newAddress.building)
               }
             >
               Search
