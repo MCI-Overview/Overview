@@ -33,7 +33,8 @@
     "react-router-dom": "^6.23.1",
     "react-spreadsheet-import": "^4.6.1",
     "react-webcam": "^7.2.0",
-    "use-count-up": "^3.0.1"
+    "use-count-up": "^3.0.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.12",

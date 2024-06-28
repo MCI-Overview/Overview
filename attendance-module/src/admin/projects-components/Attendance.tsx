@@ -6,9 +6,11 @@ import { useProjectContext } from "../../providers/projectContextProvider";
 
 import ProjectAttendance from "./ProjectAttendance";
 import ProjectAttendanceM from "./ProjectAttendanceM";
+import AttendanceExportModal from "../../components/project/attendance/AttendanceExportModal";
 
 import {
   Box,
+  Button,
   FormControl,
   FormLabel,
   Grid,
@@ -26,6 +28,15 @@ const Attendance = () => {
   const [endDate, setEndDate] = useState<string>(dayjs().format("YYYY-MM-DD"));
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string | null>("");
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
 
   const context = useProjectContext();
   const projectCuid = context.project?.cuid;
@@ -99,7 +110,7 @@ const Attendance = () => {
         spacing={{ xs: 1, md: 2 }}
         columns={{ xs: 6, sm: 12 }}
       >
-        <Grid xs={4} sm={6}>
+        <Grid xs={4} sm={4}>
           <FormControl sx={{ flex: 1 }} size="sm">
             <FormLabel>Search candidate</FormLabel>
             <Input
@@ -155,7 +166,18 @@ const Attendance = () => {
             />
           </FormControl>
         </Grid>
+
+        <Grid sm={2}>
+          <FormControl size="sm">
+            <FormLabel>Export</FormLabel>
+            <Button size='sm' onClick={handleOpenModal}>
+              Export to excel
+            </Button>
+          </FormControl>
+        </Grid>
       </Grid>
+
+      <AttendanceExportModal show={showModal} onClose={handleCloseModal} projectCuid={projectCuid || ''} />
 
       <ProjectAttendance data={filteredData} />
       <ProjectAttendanceM data={filteredData} />
