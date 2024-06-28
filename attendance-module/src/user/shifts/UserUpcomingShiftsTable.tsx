@@ -5,7 +5,7 @@ import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
 
 import AttendanceStatusChip from "../../components/project/attendance/AttendanceStatusChip";
 
-import { Table, Sheet, Typography } from "@mui/joy";
+import { Table, Sheet } from "@mui/joy";
 
 interface UpcomingShiftsProps {
   data: CustomAttendance[];
@@ -50,9 +50,7 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
         <tbody>
           {data.length === 0 ? (
             <tr>
-              <td colSpan={6}>
-                <Typography level="body-xs">No shifts found</Typography>
-              </td>
+              <TdTypo colSpan={6}>No shifts found</TdTypo>
             </tr>
           ) : (
             data.map((att: CustomAttendance) => (

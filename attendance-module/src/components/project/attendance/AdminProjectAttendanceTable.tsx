@@ -12,7 +12,6 @@ import {
   MenuItem,
   Sheet,
   Table,
-  Typography,
 } from "@mui/joy";
 import { MoreHorizRounded as MoreHorizIcon } from "@mui/icons-material";
 
@@ -80,9 +79,7 @@ const AdminProjectAttendanceTable: React.FC<Props> = ({ data }) => {
         <tbody>
           {attendanceData.length === 0 ? (
             <tr>
-              <td colSpan={9} style={{ textAlign: "center" }}>
-                <Typography level="body-xs">No candidates found</Typography>
-              </td>
+              <TdTypo colSpan={9}>No candidates found</TdTypo>
             </tr>
           ) : (
             attendanceData.map((att: CustomAdminAttendance) => (

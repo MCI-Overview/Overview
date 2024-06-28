@@ -4,10 +4,10 @@ import { useRequestContext } from "../../providers/requestContextProvider";
 import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
 
 import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
-
-import { Table, Sheet, Typography } from "@mui/joy";
 import RequestStatusChip from "../../components/project/requests/RequestStatusChip";
 import RequestTypeChip from "../../components/project/requests/RequestTypeChip";
+
+import { Table, Sheet } from "@mui/joy";
 
 // TODO: Add editing of requests
 const UserCurrentRequestsTable = () => {
@@ -51,9 +51,7 @@ const UserCurrentRequestsTable = () => {
         <tbody>
           {requests.length === 0 ? (
             <tr>
-              <td colSpan={5}>
-                <Typography level="body-xs">No requests found</Typography>
-              </td>
+              <TdTypo colSpan={5}>No requests found</TdTypo>
             </tr>
           ) : (
             requests.map((req: CustomRequest) => (

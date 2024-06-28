@@ -189,11 +189,9 @@ const CandidateTable = ({
               <tbody>
                 {sortedData.length === 0 ? (
                   <tr>
-                    <td colSpan={handleDelete ? 10 : 9}>
-                      <Typography level="body-xs">
-                        No candidates found
-                      </Typography>
-                    </td>
+                    <TdTypo colSpan={handleDelete ? 10 : 9}>
+                      No candidates found
+                    </TdTypo>
                   </tr>
                 ) : (
                   sortedData.map((row) => (

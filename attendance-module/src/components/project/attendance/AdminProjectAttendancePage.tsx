@@ -26,28 +26,10 @@ const AdminProjectAttendancePage = () => {
   );
   const [endDate, setEndDate] = useState<string>(dayjs().format("YYYY-MM-DD"));
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string | null>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
 
-  const context = useProjectContext();
-  const projectCuid = context.project?.cuid;
-
-  const handleStartDateChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setStartDate(event.target.value);
-  };
-
-  const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEndDate(event.target.value);
-  };
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value.toLowerCase());
-  };
-
-  const handleStatusChange = (value: string | null) => {
-    setStatusFilter(value === "" ? null : value);
-  };
+  const { project } = useProjectContext();
+  const projectCuid = project?.cuid;
 
   useEffect(() => {
     const fetchUpcomingShifts = async (startDate: string, endDate: string) => {
@@ -102,12 +84,12 @@ const AdminProjectAttendancePage = () => {
       >
         <Grid xs={4} sm={6}>
           <FormControl sx={{ flex: 1 }} size="sm">
-            <FormLabel>Search candidate</FormLabel>
+            <FormLabel>Search candidates</FormLabel>
             <Input
               size="sm"
-              placeholder="Search"
+              placeholder="Search by name/nric"
               startDecorator={<SearchIcon />}
-              onChange={handleSearchChange}
+              onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
               disabled={data.length === 0}
             />
           </FormControl>
@@ -115,13 +97,11 @@ const AdminProjectAttendancePage = () => {
 
         <Grid xs={2} sm={2}>
           <FormControl size="sm">
-            <FormLabel>Status</FormLabel>
+            <FormLabel>Filter by status</FormLabel>
             <Select
               size="sm"
-              placeholder="Filter by status"
-              onChange={(_e, value) =>
-                handleStatusChange(value as string | null)
-              }
+              value={statusFilter}
+              onChange={(_e, value) => setStatusFilter(value ?? "")}
               slotProps={{ button: { sx: { whiteSpace: "nowrap" } } }}
             >
               <Option value="">All</Option>
@@ -140,7 +120,7 @@ const AdminProjectAttendancePage = () => {
               type="date"
               size="sm"
               value={startDate}
-              onChange={handleStartDateChange}
+              onChange={(e) => setStartDate(e.target.value)}
             />
           </FormControl>
         </Grid>
@@ -152,7 +132,7 @@ const AdminProjectAttendancePage = () => {
               type="date"
               size="sm"
               value={endDate}
-              onChange={handleEndDateChange}
+              onChange={(e) => setEndDate(e.target.value)}
             />
           </FormControl>
         </Grid>

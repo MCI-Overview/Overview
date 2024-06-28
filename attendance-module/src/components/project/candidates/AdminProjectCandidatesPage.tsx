@@ -83,10 +83,10 @@ const AdminProjectCandidatesPage = () => {
         }}
       >
         <FormControl sx={{ flex: 1 }} size="sm">
-          <FormLabel>Search by nric / name</FormLabel>
+          <FormLabel>Search candidates</FormLabel>
           <Input
             size="sm"
-            placeholder="Search"
+            placeholder="Search by name/nric"
             startDecorator={<SearchIcon />}
             onChange={(e) => setSearchValue(e.target.value)}
             disabled={candidatesData.length === 0}

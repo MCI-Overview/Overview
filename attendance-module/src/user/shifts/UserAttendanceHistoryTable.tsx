@@ -5,7 +5,7 @@ import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
 
 import AttendanceStatusChip from "../../components/project/attendance/AttendanceStatusChip";
 
-import { Table, Sheet, Typography } from "@mui/joy";
+import { Table, Sheet } from "@mui/joy";
 
 interface AttendanceHistoryProps {
   data: CustomAttendance[];
@@ -50,11 +50,7 @@ const AttendanceHistory = ({ data }: AttendanceHistoryProps) => {
         <tbody>
           {data.length === 0 ? (
             <tr>
-              <td colSpan={6}>
-                <Typography level="body-xs">
-                  No attendance history found
-                </Typography>
-              </td>
+              <TdTypo colSpan={6}>No attendance history found</TdTypo>
             </tr>
           ) : (
             data.map((att: CustomAttendance) => (

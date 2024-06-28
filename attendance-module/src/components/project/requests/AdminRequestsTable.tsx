@@ -7,7 +7,7 @@ import ViewDetailsModal from "../../common/request/ViewDetailsModal";
 import RequestStatusChip from "./RequestStatusChip";
 import RequestTypeChip from "./RequestTypeChip";
 
-import { Table, Sheet, Typography } from "@mui/joy";
+import { Table, Sheet } from "@mui/joy";
 
 const AdminRequestsTable = () => {
   const { requests, updateRequest } = useRequestContext();
@@ -54,9 +54,7 @@ const AdminRequestsTable = () => {
           <tbody>
             {requests.length === 0 ? (
               <tr>
-                <td colSpan={6}>
-                  <Typography level="body-xs">No requests found</Typography>
-                </td>
+                <TdTypo colSpan={6}>No requests found</TdTypo>
               </tr>
             ) : (
               requests.map((req: CustomRequest) => (

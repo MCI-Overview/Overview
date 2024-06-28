@@ -7,7 +7,7 @@ import ViewDetailsModal from "../../components/common/request/ViewDetailsModal";
 import RequestStatusChip from "../../components/project/requests/RequestStatusChip";
 import RequestTypeChip from "../../components/project/requests/RequestTypeChip";
 
-import { Table, Sheet, Typography } from "@mui/joy";
+import { Table, Sheet } from "@mui/joy";
 
 const UserRequestHistoryTable = () => {
   const { requests, updateRequest } = useRequestContext();
@@ -50,9 +50,7 @@ const UserRequestHistoryTable = () => {
         <tbody>
           {requests.length === 0 ? (
             <tr>
-              <td colSpan={5}>
-                <Typography level="body-xs">No requests found</Typography>
-              </td>
+              <TdTypo colSpan={5}>No requests found</TdTypo>
             </tr>
           ) : (
             requests.map((req: CustomRequest) => (

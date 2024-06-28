@@ -9,6 +9,8 @@ import AdminRequestsList from "./AdminRequestsList";
 import SmallScreenDivider from "../ui/SmallScreenDivider";
 import PaginationFooter from "../ui/PaginationFooter";
 
+import { SearchRounded as SearchIcon } from "@mui/icons-material";
+
 import {
   Box,
   FormControl,
@@ -95,6 +97,7 @@ const AdminRequestsPage = () => {
               <Input
                 size="sm"
                 placeholder="Search by name/nric"
+                startDecorator={<SearchIcon />}
                 fullWidth
                 onChange={(e) => {
                   setSearchValue(e.target.value);
