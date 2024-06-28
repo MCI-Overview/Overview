@@ -1,13 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import {
-  Box,
-  Grid,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/joy";
+import { Box, Grid, IconButton, Stack, Typography } from "@mui/joy";
 import {
   ChevronLeftRounded as ChevronLeftIcon,
   ChevronRightRounded as ChevronRightIcon,
@@ -23,7 +17,7 @@ import DeleteBin from "./DeleteBin";
 import DraggableChip from "./DraggableChip";
 
 function getDateRange(date: Dayjs, weekOffset: number, days: number) {
-  const startOfWeek = date.startOf("isoWeek").add(weekOffset * 7, "days");
+  const startOfWeek = date.startOf("isoWeek").add(weekOffset * 1, "days");
   return {
     startDate: startOfWeek.startOf("day"),
     endDate: startOfWeek.clone().add(days, "days").endOf("day"),
@@ -36,15 +30,15 @@ function enumerateDaysBetweenDates(startDate: Dayjs, endDate: Dayjs) {
     (_, i) => dayjs(startDate).add(i, "days")
   );
 }
-export default function RosterPage() {
+export default function RosterPageS() {
   const { project } = useProjectContext();
-  const dayOffset = Math.floor(dayjs().diff(project?.startDate, 'day') / 7);
+  const dayOffset = Math.floor(dayjs().diff(project?.startDate, "day"));
   const [weekOffset, setWeekOffset] = useState(dayOffset);
   const [rosterData, setRosterData] = useState<MappedRosterResponse | null>(
     null
   );
 
-  const dateRange = getDateRange(project?.startDate || dayjs(), weekOffset, 6);
+  const dateRange = getDateRange(project?.startDate || dayjs(), weekOffset, 0);
 
   function updateRosterData(
     projectCuid: string,
@@ -179,8 +173,8 @@ export default function RosterPage() {
                 "&::-webkit-scrollbar": {
                   display: "none",
                 },
-                "-ms-overflow-style": "none",  // Internet Explorer 10+
-                "scrollbar-width": "none",     // Firefox
+                "-ms-overflow-style": "none", // Internet Explorer 10+
+                "scrollbar-width": "none", // Firefox
               }}
             >
               {!rosterData && (
@@ -233,7 +227,7 @@ export default function RosterPage() {
             </Stack>
           </Box>
         </Stack>
-      </Stack >
+      </Stack>
 
       <Stack
         pt={4}
@@ -243,16 +237,12 @@ export default function RosterPage() {
           mx: "auto",
         }}
       >
-        <Stack spacing={2} sx={{ my: 1 }}>
-
-        </Stack>
+        <Stack spacing={2} sx={{ my: 1 }}></Stack>
       </Stack>
       {/* Shifts */}
-      <Box >
+      <Box>
         <Grid container columnGap={2} rowGap={2} sx={{ flexGrow: 1, mx: 0 }}>
-
           <DeleteBin />
-
 
           <Grid xs={12}>
             <Stack
@@ -263,13 +253,13 @@ export default function RosterPage() {
                 "&::-webkit-scrollbar": {
                   display: "none",
                 },
-                "-ms-overflow-style": "none",  // Internet Explorer 10+
-                "scrollbar-width": "none",     // Firefox
+                "-ms-overflow-style": "none", // Internet Explorer 10+
+                "scrollbar-width": "none", // Firefox
               }}
             >
               <CreateShiftModal />
               {project.shifts.map((shift) => (
-                <Stack width={'200px'}>
+                <Stack width={"200px"}>
                   <DraggableChip
                     type="FULL_DAY"
                     cuid={shift.cuid}
@@ -313,6 +303,6 @@ export default function RosterPage() {
           />
         </Box>
       </Stack>
-    </Box >
+    </Box>
   );
 }

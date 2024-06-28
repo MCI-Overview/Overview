@@ -7,7 +7,7 @@ import { CreateShiftData } from "../../../types";
 import {
   Box,
   Button,
-  Chip,
+  Card,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -20,6 +20,8 @@ import {
   Table,
   Typography,
 } from "@mui/joy";
+
+import AddIcon from '@mui/icons-material/Add';
 
 function getShiftDuration(startTime: string | null, endTime: string | null) {
   if (!startTime || !endTime) return 0;
@@ -64,6 +66,13 @@ export default function CreateShiftModal() {
       setIsOpen(false);
       updateProject();
       toast.success("Shift created successfully.");
+      setShiftData({
+        startTime: null,
+        endTime: null,
+        halfDayStartTime: null,
+        halfDayEndTime: null,
+        breakDuration: null,
+      });
     } catch (error) {
       const axiosError = error as AxiosError;
       if (axiosError.response && axiosError.response.status === 400) {
@@ -201,17 +210,17 @@ export default function CreateShiftModal() {
                   <td>
                     {hasHalfDay
                       ? getShiftDuration(
-                          shiftData.startTime,
-                          shiftData.halfDayEndTime
-                        ).toFixed(1) + "h"
+                        shiftData.startTime,
+                        shiftData.halfDayEndTime
+                      ).toFixed(1) + "h"
                       : "-"}
                   </td>
                   <td>
                     {hasHalfDay
                       ? getShiftDuration(
-                          shiftData.halfDayStartTime,
-                          shiftData.endTime
-                        ).toFixed(1) + "h"
+                        shiftData.halfDayStartTime,
+                        shiftData.endTime
+                      ).toFixed(1) + "h"
                       : "-"}
                   </td>
                 </tr>
@@ -221,14 +230,17 @@ export default function CreateShiftModal() {
           <Button onClick={handleCreateShift}>Create Shift</Button>
         </ModalDialog>
       </Modal>
-      <Chip
+      <Card
         onClick={() => setIsOpen(true)}
-        sx={{ height: "2rem" }}
-        variant="solid"
         color="primary"
+        sx={{
+          height: '93px'
+        }}
       >
-        Create Shift
-      </Chip>
+        <Stack width={'200px'}>
+          <AddIcon /> Create shift
+        </Stack>
+      </Card>
     </>
   );
 }

@@ -36,7 +36,7 @@ function RowMenu() {
   );
 }
 
-const ProjectAttendance: React.FC<Props> = ({ data }) => {
+const AdminProjectAttendanceTable: React.FC<Props> = ({ data }) => {
   const attendanceData = data;
 
   return (
@@ -113,4 +113,4 @@ const ProjectAttendance: React.FC<Props> = ({ data }) => {
   );
 };
 
-export default ProjectAttendance;
+export default AdminProjectAttendanceTable;

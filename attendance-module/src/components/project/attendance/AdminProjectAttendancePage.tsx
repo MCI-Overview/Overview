@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { CustomAdminAttendance } from "../../../types";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import ProjectAttendance from "./AdminProjectAttendanceTable";
+import AdminProjectAttendanceTable from "./AdminProjectAttendanceTable";
 import AdminProjectAttendanceList from "./AdminProjectAttendanceList";
 import SmallScreenDivider from "../ui/SmallScreenDivider";
 
@@ -160,7 +160,7 @@ const AdminProjectAttendancePage = () => {
 
       <SmallScreenDivider />
 
-      <ProjectAttendance data={filteredData} />
+      <AdminProjectAttendanceTable data={filteredData} />
       <AdminProjectAttendanceList data={filteredData} />
     </Box>
   );

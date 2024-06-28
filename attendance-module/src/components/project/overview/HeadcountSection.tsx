@@ -1,14 +1,10 @@
-import { useNavigate, useLocation } from "react-router-dom";
-
 import {
   Box,
-  Button,
   Divider,
   Stack,
   Typography,
   Card,
-  CardActions,
-  CardOverflow,
+  Sheet
 } from "@mui/joy";
 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
@@ -16,22 +12,30 @@ import { Doughnut } from "react-chartjs-2";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const HeadcountSection = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+type Props = {
+  active: number,
+  inactive: number
+};
 
+const HeadcountSection: React.FC<Props> = ({ active, inactive }) => {
   const data = {
-    labels: ["Filled", "Open"],
+    labels: ["Active", "Inactive"],
     datasets: [
       {
-        data: [12, 19],
+        data: [active, inactive],
         backgroundColor: ["rgba(54, 162, 235)", "rgba(255, 99, 132, 0.6)"],
       },
     ],
   };
 
-  const handleViewCandidates = () => {
-    navigate(`${location.pathname}#candidates`);
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
   };
 
   return (
@@ -50,35 +54,43 @@ const HeadcountSection = () => {
             justifyContent: "center",
           }}
         >
-          <Box
-            sx={{
-              width: 200,
-            }}
-          >
+          <Box sx={{ width: '100%', height: '317px' }}>
             <Doughnut
               data={data}
-              options={{
-                rotation: -90,
-                circumference: 180,
-                cutout: "60%",
-                maintainAspectRatio: true,
-                responsive: true,
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                },
-              }}
+              options={options}
             />
           </Box>
+          <Sheet
+            sx={{
+              bgcolor: 'background.level1',
+              borderRadius: 'sm',
+              p: 1.5,
+              my: 1.5,
+              display: 'flex',
+              gap: 2,
+              '& > div': { flex: 1 },
+            }}
+          >
+            <div>
+              <Typography level="body-xs" fontWeight="lg">
+                Active
+              </Typography>
+              <Typography fontWeight="lg">{active}</Typography>
+            </div>
+            <div>
+              <Typography level="body-xs" fontWeight="lg">
+                Inactive
+              </Typography>
+              <Typography fontWeight="lg">{inactive}</Typography>
+            </div>
+            <div>
+              <Typography level="body-xs" fontWeight="lg">
+                Total
+              </Typography>
+              <Typography fontWeight="lg">{active + inactive}</Typography>
+            </div>
+          </Sheet>
         </Stack>
-        <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
-          <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
-            <Button size="sm" variant="solid" onClick={handleViewCandidates}>
-              View candidates
-            </Button>
-          </CardActions>
-        </CardOverflow>
       </Card>
     </>
   );
