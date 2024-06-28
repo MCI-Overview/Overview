@@ -11,6 +11,7 @@ import {
   CardActions,
   Button,
   FormHelperText,
+  Autocomplete,
 } from "@mui/joy";
 import { CandidateDetails } from "../../../types/common";
 import { useState } from "react";
@@ -18,7 +19,7 @@ import isEqual from "../../../utils";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
 
-type PersonalInfoProps = {
+type PersonalInfoFormProps = {
   candidateDetails: CandidateDetails | undefined;
   handleSubmit: (
     data: object,
@@ -27,10 +28,10 @@ type PersonalInfoProps = {
   ) => void;
 };
 
-export default function PersonalInfo({
+export default function PersonalInfoForm({
   candidateDetails,
   handleSubmit,
-}: PersonalInfoProps) {
+}: PersonalInfoFormProps) {
   const [oldCandidateDetails, setOldCandidateDetails] =
     useState<CandidateDetails>({
       ...candidateDetails,
@@ -38,6 +39,7 @@ export default function PersonalInfo({
     } as CandidateDetails) || {
       name: "",
       nric: "",
+      nationality: "",
       contact: "",
       dateOfBirth: "",
       cuid: "",
@@ -65,7 +67,7 @@ export default function PersonalInfo({
       </Box>
       <Divider />
       <Grid container columns={2} spacing={2}>
-        <Grid xs={1}>
+        <Grid xs={2} sm={1}>
           <FormControl error={!isNameValid}>
             <FormLabel>Name</FormLabel>
             <Input
@@ -83,7 +85,7 @@ export default function PersonalInfo({
             </FormHelperText>
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+        <Grid xs={2} sm={1}>
           <FormControl disabled>
             <FormLabel>NRIC</FormLabel>
             <Input
@@ -95,7 +97,7 @@ export default function PersonalInfo({
             />
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+        <Grid xs={2} sm={1}>
           <FormControl>
             <FormLabel>Contact</FormLabel>
             <Input
@@ -115,7 +117,7 @@ export default function PersonalInfo({
             />
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+        <Grid xs={2} sm={1}>
           <FormControl error={!isDateValid}>
             <FormLabel>Date of Birth</FormLabel>
             <Input
@@ -139,6 +141,26 @@ export default function PersonalInfo({
             <FormHelperText>
               {isDateValid ? "" : "Must be at least 13 years old."}
             </FormHelperText>
+          </FormControl>
+        </Grid>
+        <Grid xs={2} sm={1}>
+          <FormControl>
+            <FormLabel>Nationality</FormLabel>
+            <Autocomplete
+              value={newCandidateDetails.nationality || ""}
+              options={["Singapore", "Malaysia", "China"]}
+              onChange={(_e, value) =>
+                setNewCandidateDetails({
+                  ...newCandidateDetails,
+                  nationality: value,
+                })
+              }
+              onKeyDown={(e) => {
+                if (e.key === "e" || e.key === "-") {
+                  e.preventDefault();
+                }
+              }}
+            />
           </FormControl>
         </Grid>
       </Grid>

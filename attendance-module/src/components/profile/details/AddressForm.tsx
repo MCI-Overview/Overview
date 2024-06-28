@@ -12,6 +12,7 @@ import {
   CardOverflow,
   CardActions,
   Button,
+  Autocomplete,
 } from "@mui/joy";
 import { CommonAddress } from "../../../types/common";
 import { useState } from "react";
@@ -63,13 +64,6 @@ export default function AddressForm({
   const isUnitValid =
     newAddress.isLanded || (newAddress.unit && newAddress.unit.length > 0);
 
-  const isPostalPositive = newAddress.postal && parseInt(newAddress.postal) > 0;
-  const isBlockPositive = newAddress.block && parseInt(newAddress.block) > 0;
-  const isFloorPositive =
-    newAddress.isLanded || (newAddress.floor && parseInt(newAddress.floor) > 0);
-  const isUnitPositive =
-    newAddress.isLanded || (newAddress.unit && parseInt(newAddress.unit) > 0);
-
   async function loadAddress() {
     axios
       .get(
@@ -94,64 +88,74 @@ export default function AddressForm({
         <Typography level="body-sm">Update your address here.</Typography>
       </Box>
       <Divider />
-      <Grid container columns={2} spacing={2}>
-        <Grid xs={1}>
-          <FormControl error={!isPostalValid || !isBlockPositive}>
+      <Grid container spacing={2} columns={2}>
+        <Grid xs={1} sm={1}>
+          <FormControl error={!isPostalValid}>
             <FormLabel>Postal Code</FormLabel>
             <Input
               value={newAddress.postal || ""}
               onChange={(e) =>
-                setNewAddress({ ...newAddress, postal: e.target.value })
+                setNewAddress({
+                  ...newAddress,
+                  postal: e.target.value.replace(/[^0-9]/g, ""),
+                })
               }
-              onKeyDown={(e) => {
-                if (e.key === "e" || e.key === "-") {
-                  e.preventDefault();
-                }
-              }}
             />
             <FormHelperText>
               {isPostalValid ? "" : "Postal code cannot be empty."}
-              {!isPostalValid || isPostalPositive
-                ? ""
-                : "Postal code must be positive."}
             </FormHelperText>
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+        <Grid xs={1} sm={1}>
           <FormControl>
             <FormLabel>⠀</FormLabel>
             <Button
               onClick={loadAddress}
-              disabled={newAddress.postal && newAddress.postal.length !== 6}
+              disabled={
+                newAddress.postal !== undefined &&
+                newAddress.postal.length !== 6
+              }
             >
               Search
             </Button>
           </FormControl>
         </Grid>
         <Grid xs={1}>
-          <FormControl error={!isBlockValid || !isBlockPositive}>
+          <FormControl error={!isBlockValid}>
             <FormLabel>Block</FormLabel>
             <Input
               value={newAddress.block || ""}
-              type="number"
               onChange={(e) =>
-                setNewAddress({ ...newAddress, block: e.target.value })
+                setNewAddress({
+                  ...newAddress,
+                  block: e.target.value.replace(/[^0-9]/g, ""),
+                })
               }
-              onKeyDown={(e) => {
-                if (e.key === "e" || e.key === "-") {
-                  e.preventDefault();
-                }
-              }}
             />
             <FormHelperText>
               {isBlockValid ? "" : "Block cannot be empty."}
-              {!isBlockValid || isBlockPositive
-                ? ""
-                : "Block must be positive."}
             </FormHelperText>
           </FormControl>
         </Grid>
         <Grid xs={1}>
+          <FormControl error={!isCountryValid}>
+            <FormLabel>Country</FormLabel>
+            <Autocomplete
+              value={newAddress.country || ""}
+              options={["Singapore", "Malaysia"]}
+              onChange={(_e, value) =>
+                setNewAddress({
+                  ...newAddress,
+                  country: value || "",
+                })
+              }
+            />
+            <FormHelperText>
+              {isCountryValid ? "" : "Country cannot be empty."}
+            </FormHelperText>
+          </FormControl>
+        </Grid>
+        <Grid xs={2} sm={1}>
           <FormControl error={!isBuildingValid}>
             <FormLabel>Building</FormLabel>
             <Input
@@ -165,7 +169,7 @@ export default function AddressForm({
             </FormHelperText>
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+        <Grid xs={2} sm={1}>
           <FormControl error={!isStreetValid}>
             <FormLabel>Street</FormLabel>
             <Input
@@ -179,23 +183,9 @@ export default function AddressForm({
             </FormHelperText>
           </FormControl>
         </Grid>
-        <Grid xs={1}>
-          <FormControl error={!isCountryValid}>
-            <FormLabel>Country</FormLabel>
-            <Input
-              value={newAddress.country || ""}
-              onChange={(e) =>
-                setNewAddress({ ...newAddress, country: e.target.value })
-              }
-            />
-            <FormHelperText>
-              {isCountryValid ? "" : "Country cannot be empty."}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
         <Grid container xs={2}>
           <Grid xs={1}>
-            <FormControl error={!isFloorValid || !isFloorPositive}>
+            <FormControl error={!isFloorValid}>
               <FormLabel>Floor</FormLabel>
               <Input
                 value={newAddress.floor || ""}
@@ -203,25 +193,17 @@ export default function AddressForm({
                 onChange={(e) =>
                   setNewAddress({
                     ...newAddress,
-                    floor: e.target.value,
+                    floor: e.target.value.replace(/[^0-9]/g, ""),
                   })
                 }
-                onKeyDown={(e) => {
-                  if (e.key === "e" || e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}
               />
               <FormHelperText>
                 {isFloorValid ? "" : "Floor cannot be empty."}
-                {!isFloorValid || isFloorPositive
-                  ? ""
-                  : "Floor must be positive."}
               </FormHelperText>
             </FormControl>
           </Grid>
           <Grid xs={1}>
-            <FormControl error={!isUnitValid || !isUnitPositive}>
+            <FormControl error={!isUnitValid}>
               <FormLabel>Unit</FormLabel>
               <Input
                 value={newAddress.unit || ""}
@@ -229,22 +211,16 @@ export default function AddressForm({
                 onChange={(e) =>
                   setNewAddress({
                     ...newAddress,
-                    unit: e.target.value,
+                    unit: e.target.value.replace(/[^0-9]/g, ""),
                   })
                 }
-                onKeyDown={(e) => {
-                  if (e.key === "e" || e.key === "-") {
-                    e.preventDefault();
-                  }
-                }}
               />
               <FormHelperText>
                 {isUnitValid ? "" : "Unit cannot be empty."}
-                {!isUnitValid || isUnitPositive ? "" : "Unit must be positive."}
               </FormHelperText>
             </FormControl>
           </Grid>
-          <Grid xs={1}>
+          <Grid xs={2} sm={1}>
             <FormControl>
               <Checkbox
                 label="Landed property"
@@ -301,11 +277,7 @@ export default function AddressForm({
               !isBuildingValid ||
               !isCountryValid ||
               !isFloorValid ||
-              !isUnitValid ||
-              !isPostalPositive ||
-              !isBlockPositive ||
-              !isFloorPositive ||
-              !isUnitPositive
+              !isUnitValid
             }
           >
             Save

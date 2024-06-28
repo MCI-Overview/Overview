@@ -11,6 +11,7 @@ import {
   CardActions,
   Button,
   FormHelperText,
+  Autocomplete,
 } from "@mui/joy";
 import { EmergencyContact } from "../../../types/common";
 import { useState } from "react";
@@ -46,6 +47,8 @@ export default function EmergencyContactForm({
   const isRelationshipValid =
     newContact.relationship && newContact.relationship.length > 0;
 
+  const [relationship, setRelationship] = useState<string | null>(null);
+
   return (
     <Card>
       <Box sx={{ mb: 1 }}>
@@ -56,7 +59,7 @@ export default function EmergencyContactForm({
       </Box>
       <Divider />
       <Grid container columns={2} spacing={2}>
-        <Grid xs={1}>
+        <Grid xs={2} sm={1}>
           <FormControl error={!isNameValid}>
             <FormLabel>Name</FormLabel>
             <Input
@@ -66,11 +69,11 @@ export default function EmergencyContactForm({
               }
             />
             <FormHelperText>
-              {isNameValid ? "" : "Name cannot be empty."}
+              {!isNameValid && "Name cannot be empty."}
             </FormHelperText>
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+        <Grid xs={2} sm={1}>
           <FormControl error={!isContactValid}>
             <FormLabel>Contact Number</FormLabel>
             <Input
@@ -86,24 +89,76 @@ export default function EmergencyContactForm({
               }}
             />
             <FormHelperText>
-              {isContactValid ? "" : "Contact number cannot be empty."}
+              {!isContactValid && "Contact number cannot be empty."}
             </FormHelperText>
           </FormControl>
         </Grid>
-        <Grid xs={1}>
-          <FormControl error={!isRelationshipValid}>
+        <Grid xs={2} sm={1}>
+          <FormControl error={!isRelationshipValid && !relationship}>
             <FormLabel>Relationship</FormLabel>
-            <Input
-              value={newContact.relationship || ""}
-              onChange={(e) =>
-                setNewContact({ ...newContact, relationship: e.target.value })
-              }
+            <Autocomplete
+              value={relationship || ""}
+              options={[
+                "Mother",
+                "Father",
+                "Daughter",
+                "Son",
+                "Sister",
+                "Brother",
+                "Aunt",
+                "Uncle",
+                "Niece",
+                "Nephew",
+                "Cousin (Female)",
+                "Cousin (Male)",
+                "Grandmother",
+                "Grandfather",
+                "Granddaughter",
+                "Grandson",
+                "Stepsister",
+                "Stepbrother",
+                "Stepmother",
+                "Stepfather",
+                "Others",
+              ]}
+              onChange={(_e, value) => {
+                setRelationship(value);
+                setNewContact({
+                  ...newContact,
+                  relationship: "",
+                });
+
+                if (value !== "Others") {
+                  setNewContact({
+                    ...newContact,
+                    relationship: value || "",
+                  });
+                }
+              }}
             />
             <FormHelperText>
-              {isRelationshipValid ? "" : "Relationship cannot be empty."}
+              {!isRelationshipValid &&
+                !relationship &&
+                "Please select a relationship."}
             </FormHelperText>
           </FormControl>
         </Grid>
+        {relationship === "Others" && (
+          <Grid xs={2} sm={1}>
+            <FormControl error={!isRelationshipValid}>
+              <FormLabel>Custom Relationship</FormLabel>
+              <Input
+                value={newContact.relationship || ""}
+                onChange={(e) =>
+                  setNewContact({ ...newContact, relationship: e.target.value })
+                }
+              />
+              <FormHelperText>
+                {!isRelationshipValid && "Please specify a relationship."}
+              </FormHelperText>
+            </FormControl>
+          </Grid>
+        )}
       </Grid>
       <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
         <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>

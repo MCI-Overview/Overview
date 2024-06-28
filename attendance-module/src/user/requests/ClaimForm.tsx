@@ -15,7 +15,7 @@ import {
   Autocomplete,
   Sheet,
 } from "@mui/joy";
-import FileUpload from "../../components/FileUpload";
+import FileUpload from "../../components/InputFileUpload";
 import { useRequestContext } from "../../providers/requestContextProvider";
 
 export default function ClaimForm({
@@ -59,7 +59,7 @@ export default function ClaimForm({
   }, []);
 
   const handleReceiptFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const selectedFile = event.target.files && event.target.files[0];
     if (selectedFile) {
@@ -182,17 +182,17 @@ export default function ClaimForm({
                       shiftStartTime: dayjs(
                         shift.shiftType === "SECOND_HALF"
                           ? shift.Shift.halfDayStartTime
-                          : shift.Shift.startTime,
+                          : shift.Shift.startTime
                       ),
                     };
                   })
                   .sort((a, b) =>
-                    a.shiftDate.isBefore(b.shiftDate) ? -1 : 1,
+                    a.shiftDate.isBefore(b.shiftDate) ? -1 : 1
                   ) || []
               }
               getOptionLabel={(option) =>
                 `${option.shiftDate.format(
-                  "DD MMM YYYY",
+                  "DD MMM YYYY"
                 )} - ${option.shiftStartTime.format("HHmm")}`
               }
               onChange={(_e, value) => {

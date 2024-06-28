@@ -12,7 +12,7 @@ import {
   Input,
   Sheet,
 } from "@mui/joy";
-import FileUpload from "../../components/FileUpload";
+import FileUpload from "../../components/InputFileUpload";
 import { useRequestContext } from "../../providers/requestContextProvider";
 
 export default function MedicalLeaveForm({
@@ -23,7 +23,7 @@ export default function MedicalLeaveForm({
   const { updateRequest } = useRequestContext();
 
   const [startDate, setStartDate] = useState<string>(
-    dayjs().format("YYYY-MM-DD"),
+    dayjs().format("YYYY-MM-DD")
   );
   const [numberOfDays, setNumberOfDays] = useState("1");
 

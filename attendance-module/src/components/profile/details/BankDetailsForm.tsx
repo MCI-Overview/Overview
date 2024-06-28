@@ -11,6 +11,7 @@ import {
   CardActions,
   Button,
   FormHelperText,
+  Autocomplete,
 } from "@mui/joy";
 import { BankDetails } from "../../../types/common";
 import { useState } from "react";
@@ -18,7 +19,7 @@ import isEqual from "../../../utils";
 import toast from "react-hot-toast";
 
 type BankDetailsFormProps = {
-  bankdetails: BankDetails | undefined;
+  bankDetails: BankDetails | undefined;
   handleSubmit: (
     data: object,
     successCallback: () => void,
@@ -27,11 +28,11 @@ type BankDetailsFormProps = {
 };
 
 export default function BankDetailsForm({
-  bankdetails,
+  bankDetails,
   handleSubmit,
 }: BankDetailsFormProps) {
   const [oldBankDetails, setOldBankDetails] = useState<BankDetails>(
-    bankdetails || {
+    bankDetails || {
       bankHolderName: "",
       bankName: "",
       bankNumber: "",
@@ -57,7 +58,7 @@ export default function BankDetailsForm({
       </Box>
       <Divider />
       <Grid container columns={2} spacing={2}>
-        <Grid xs={1}>
+        <Grid xs={2} sm={1}>
           <FormControl error={!isBankHolderNameValid}>
             <FormLabel>Bank Holder Name</FormLabel>
             <Input
@@ -74,15 +75,24 @@ export default function BankDetailsForm({
             </FormHelperText>
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+        <Grid xs={2} sm={1}>
           <FormControl error={!isBankNameValid}>
             <FormLabel>Bank Name</FormLabel>
-            <Input
+            <Autocomplete
               value={newBankDetails.bankName || ""}
-              onChange={(e) =>
+              options={[
+                "DBS/POSB",
+                "UOB",
+                "OCBC",
+                "HSBC Personal",
+                "Standard Chartered",
+                "Maybank",
+                "Citibank",
+              ]}
+              onChange={(_e, value) =>
                 setNewBankDetails({
                   ...newBankDetails,
-                  bankName: e.target.value,
+                  bankName: value || "",
                 })
               }
             />
@@ -91,22 +101,16 @@ export default function BankDetailsForm({
             </FormHelperText>
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+        <Grid xs={2} sm={1}>
           <FormControl error={!isBankNumberValid}>
             <FormLabel>Bank Account Number</FormLabel>
             <Input
               value={newBankDetails.bankNumber || ""}
-              type="number"
-              onChange={(e) =>
+              onChange={(e) => {
                 setNewBankDetails({
                   ...newBankDetails,
-                  bankNumber: e.target.value,
-                })
-              }
-              onKeyDown={(e) => {
-                if (e.key === "e") {
-                  e.preventDefault();
-                }
+                  bankNumber: e.target.value.replace(/[^0-9]/g, ""),
+                });
               }}
             />
             <FormHelperText>
