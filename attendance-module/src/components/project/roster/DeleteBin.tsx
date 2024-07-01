@@ -4,7 +4,7 @@ import { useProjectContext } from "../../../providers/projectContextProvider";
 import { DraggableChipProps } from "../../../types";
 import toast from "react-hot-toast";
 import { Delete } from "@mui/icons-material";
-import { Card, Tooltip } from "@mui/joy";
+import { Card, Tooltip, Typography } from "@mui/joy";
 
 const DeleteBin = () => {
   const { updateProject } = useProjectContext();
@@ -41,15 +41,19 @@ const DeleteBin = () => {
         ref={drop}
         color="danger"
         variant={isOver ? "solid" : "soft"}
+        size="sm"
         sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           border: "2px dashed grey",
           transition: "background-color 0.5s ease",
+          height: "100%",
         }}
       >
-        <Delete />
+        <Typography level="body-xs" sx={{ color: "inherit" }}>
+          <Delete />
+        </Typography>
       </Card>
     </Tooltip>
   );

@@ -4,6 +4,10 @@ export type CommonCandidate = CandidateDetails & {
   address?: CommonAddress;
   bankDetails?: BankDetails;
   emergencyContact?: EmergencyContact;
+  employmentType: "PART_TIME" | "FULL_TIME" | "CONTRACT";
+  consultantCuid: string;
+  startDate: string;
+  endDate: string;
 };
 
 export type ProjectCandidate = CommonCandidate & {
@@ -190,6 +194,7 @@ export type GetCandidateResponse = {
   contact: string;
   dateOfBirth: string;
   consultantCuid: string;
+  createdAt: string;
   startDate: string;
   endDate: string;
   employmentType: "PART_TIME" | "FULL_TIME" | "CONTRACT";

@@ -22,6 +22,7 @@ const AdminProjectCandidatesPage = () => {
         name: cdd.name,
         contact: cdd.contact,
         dateOfBirth: cdd.dateOfBirth,
+        createdAt: cdd.createdAt,
         startDate: cdd.startDate,
         endDate: cdd.endDate,
         hasOnboarded: cdd.hasOnboarded,
@@ -39,9 +40,7 @@ const AdminProjectCandidatesPage = () => {
   const [candidatesToDelete, setCandidatesToDelete] = useState<string[]>([]);
 
   // TODO: Fix type
-  const matchSearchValue = (
-    c: Omit<Omit<Omit<CommonCandidate, "dateOfBirth">, "startDate">, "endDate">
-  ) =>
+  const matchSearchValue = (c: CommonCandidate) =>
     c.nric.toLowerCase().includes(searchValue.toLowerCase()) ||
     c.name.toLowerCase().includes(searchValue.toLowerCase());
 
@@ -108,14 +107,7 @@ const AdminProjectCandidatesPage = () => {
       <SmallScreenDivider />
 
       <CandidateTable
-        tableData={candidatesData
-          .filter((c) => matchSearchValue(c))
-          .map((c) => ({
-            ...c,
-            startDate: c.startDate.toISOString(),
-            endDate: c.endDate.toISOString(),
-            dateOfBirth: c.dateOfBirth.toISOString(),
-          }))}
+        tableData={candidatesData.filter((c) => matchSearchValue(c))}
         handleDelete={handleConfirmDeletion}
         showCandidateHolder={true}
       />
