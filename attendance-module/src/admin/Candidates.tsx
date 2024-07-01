@@ -16,10 +16,6 @@ const tabs: Tab[] = [
     label: "Candidates",
     content: <MyCandidatesPage />,
   },
-  {
-    label: "Requests",
-    content: <div>Requests</div>,
-  },
 ];
 
 const AdminCandidates = () => {
@@ -38,9 +34,6 @@ const AdminCandidates = () => {
   useEffect(() => {
     const hash = location.hash.replace("#", "");
     switch (hash) {
-      case "create":
-        setTabValue(1);
-        break;
       default:
         setTabValue(0);
         break;
@@ -56,9 +49,6 @@ const AdminCandidates = () => {
     switch (newValue) {
       case 0:
         navigate("/admin/candidates");
-        break;
-      case 1:
-        navigate("/admin/candidates#requests");
         break;
       default:
         break;
