@@ -1,22 +1,20 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Tab, TabBar } from "../components/TabBar";
+
 import {
   AdminBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
+import { Tab, TabBar } from "../components/TabBar";
 import MyCandidatesPage from "../components/candidates/MyCandidatesPage";
 
-import { Typography, Box } from "@mui/joy";
+import { Typography, Box, Stack } from "@mui/joy";
+import { PeopleRounded as PeopleIcon } from "@mui/icons-material";
 
 const tabs: Tab[] = [
   {
     label: "Candidates",
     content: <MyCandidatesPage />,
-  },
-  {
-    label: "Requests",
-    content: <div>Requests</div>,
   },
 ];
 
@@ -36,9 +34,6 @@ const AdminCandidates = () => {
   useEffect(() => {
     const hash = location.hash.replace("#", "");
     switch (hash) {
-      case "create":
-        setTabValue(1);
-        break;
       default:
         setTabValue(0);
         break;
@@ -54,9 +49,6 @@ const AdminCandidates = () => {
     switch (newValue) {
       case 0:
         navigate("/admin/candidates");
-        break;
-      case 1:
-        navigate("/admin/candidates#requests");
         break;
       default:
         break;
@@ -76,8 +68,15 @@ const AdminCandidates = () => {
     >
       <Box sx={{ px: { xs: 2, md: 6 } }}>
         <AdminBreadcrumb breadcrumbs={breadcrumbs} />
-        <Typography level="h2" component="h1" sx={{ mt: 1, mb: 2 }}>
-          Candidates
+        <Typography
+          level="h2"
+          component="h1"
+          sx={{ mt: 1, mb: 2, display: "flex", alignItems: "center" }}
+        >
+          <Stack direction="row" gap={1}>
+            <PeopleIcon />
+            Candidates
+          </Stack>
         </Typography>
       </Box>
 

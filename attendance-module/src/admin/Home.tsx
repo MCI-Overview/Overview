@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Tab, TabBar } from "../components/TabBar";
-import { Typography, Box } from "@mui/joy";
+
 import {
   AdminBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
+import { Tab, TabBar } from "../components/TabBar";
 import MyProjects from "../components/project/MyProjects";
 import AllProjects from "../components/project/AllProjects";
+
+import { Box, Stack, Typography } from "@mui/joy";
+import { HomeRounded as HomeIcon } from "@mui/icons-material";
 
 const tabs: Tab[] = [
   {
@@ -74,8 +77,15 @@ const AdminProjects = () => {
       >
         <Box sx={{ px: { xs: 2, md: 6 } }}>
           <AdminBreadcrumb breadcrumbs={breadcrumbs} />
-          <Typography level="h2" component="h1" sx={{ mt: 1, mb: 2 }}>
-            Home
+          <Typography
+            level="h2"
+            component="h1"
+            sx={{ mt: 1, mb: 2, display: "flex", alignItems: "center" }}
+          >
+            <Stack direction="row" gap={1}>
+              <HomeIcon />
+              Home
+            </Stack>
           </Typography>
         </Box>
         <TabBar
