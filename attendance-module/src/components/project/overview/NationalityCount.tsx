@@ -21,7 +21,6 @@ const NationalityCount: React.FC<BarChartProps> = ({ headcount }) => {
     labels: ["Singapore", "Malaysia", "China"],
     datasets: [
       {
-        label: "Count",
         data: [headcount.singapore, headcount.malaysia, headcount.china],
         backgroundColor: "rgba(75, 192, 192, 0.5)",
       },

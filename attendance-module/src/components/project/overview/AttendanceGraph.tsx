@@ -110,7 +110,7 @@ const AttendanceGraph: React.FC<AttendanceGraphProps> = ({
         backgroundColor: "rgba(255, 150, 120, 0.5)",
       },
       {
-        label: "Ontime",
+        label: "On Time",
         data: datasets.ontime.data,
         backgroundColor: "rgba(75, 192, 192, 0.5)",
       },
