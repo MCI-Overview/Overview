@@ -33,6 +33,7 @@ import Header from "./components/Header";
 import UserHome from "./user/UserHome";
 import Project from "./admin/Project";
 import OnboardingPage from "./user/onboarding/OnboardingPage";
+import NotFound from "./components/NotFound";
 
 dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
@@ -136,23 +137,7 @@ function App() {
                     </Route>
 
                     <Route path="*" element={<Navigate to="/404" />} />
-                    <Route
-                      path="/404"
-                      element={
-                        <h1
-                          style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            height: "100vh",
-                            margin: 0,
-                            textAlign: "center",
-                          }}
-                        >
-                          TODO: 404 Page
-                        </h1>
-                      }
-                    />
+                    <Route path="/404" element={<NotFound />} />
                   </Routes>
                 </ProjectContextProvider>
               </Box>
