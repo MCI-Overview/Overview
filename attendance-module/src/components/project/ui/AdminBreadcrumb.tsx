@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Breadcrumbs, Typography, Link } from "@mui/joy";
+import { Breadcrumbs, Typography } from "@mui/joy";
 import {
   HomeRounded as HomeIcon,
   ChevronRightRounded as ChevronRightIcon,
@@ -12,27 +12,13 @@ export type BreadcrumbPart = {
   link: string;
 };
 
-function CustomLink({ breadcrumbPart }: { breadcrumbPart: BreadcrumbPart }) {
-  const navigate = useNavigate();
-
-  return (
-    <Typography
-      color="primary"
-      fontWeight={500}
-      fontSize={12}
-      sx={{ cursor: "pointer" }}
-      onClick={() => navigate(breadcrumbPart.link)}
-    >
-      {breadcrumbPart.label}
-    </Typography>
-  );
-}
-
 export function AdminBreadcrumb({
   breadcrumbs,
 }: {
   breadcrumbs: BreadcrumbPart[];
 }) {
+  const navigate = useNavigate();
+
   return (
     <Breadcrumbs
       size="sm"
@@ -40,17 +26,22 @@ export function AdminBreadcrumb({
       separator={<ChevronRightIcon />}
       sx={{ pl: 0 }}
     >
-      <Link
-        underline="none"
-        color="neutral"
-        href="/admin/home"
-        aria-label="Home"
-      >
-        <HomeIcon />
-      </Link>
-      {breadcrumbs.map((breadcrumb, index) => (
-        <CustomLink key={index} breadcrumbPart={breadcrumb} />
-      ))}
+      <HomeIcon
+        sx={{ cursor: "pointer" }}
+        onClick={() => navigate("/admin/home")}
+      />
+      {breadcrumbs &&
+        breadcrumbs.map((breadcrumb) => (
+          <Typography
+            color="primary"
+            fontWeight={500}
+            fontSize={12}
+            sx={{ cursor: "pointer" }}
+            onClick={() => navigate(breadcrumb.link)}
+          >
+            {breadcrumb.label}
+          </Typography>
+        ))}
     </Breadcrumbs>
   );
 }
