@@ -63,7 +63,7 @@ type displayData = {
 const ProjectOverview = () => {
   const [data, setData] = useState<CustomAdminAttendance[]>([]);
   const [plotData, setPlotData] = useState<displayData>();
-  const [weekStart, setWeekStart] = useState<Dayjs>(dayjs().startOf("week"));
+  const [weekStart, setWeekStart] = useState<Dayjs>(dayjs().startOf("isoWeek"));
   const context = useProjectContext();
   const projectCuid = context.project?.cuid;
   const startDate = dayjs().startOf("day").toISOString();
