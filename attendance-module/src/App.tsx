@@ -34,6 +34,7 @@ import UserHome from "./user/UserHome";
 import Project from "./admin/Project";
 import OnboardingPage from "./user/onboarding/OnboardingPage";
 import NotFound from "./components/NotFound";
+import GatewayTimeout from "./components/GatewayTimeout";
 
 dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
@@ -43,7 +44,7 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 function App() {
   const location = useLocation();
-  const hideSidebarRoutes = ["/", "/admin", "/user/new", "/404"];
+  const hideSidebarRoutes = ["/", "/admin", "/user/new", "/404", "/504"];
   const shouldHideSidebar = hideSidebarRoutes.includes(location.pathname);
 
   useEffect(() => {
@@ -138,6 +139,7 @@ function App() {
 
                     <Route path="*" element={<Navigate to="/404" />} />
                     <Route path="/404" element={<NotFound />} />
+                    <Route path="/504" element={<GatewayTimeout />} />
                   </Routes>
                 </ProjectContextProvider>
               </Box>
