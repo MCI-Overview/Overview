@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { closeSidebar } from "../utils/toggle-sidebar";
 import { useUserContext } from "../providers/userContextProvider";
 import ColorSchemeToggle from "./ColorSchemeToggle";
-import { AccountTree } from "@mui/icons-material";
 
 import {
   GlobalStyles,
@@ -20,13 +19,14 @@ import {
 } from "@mui/joy";
 
 import {
+  MailRounded as MailIcon,
   HomeRounded as HomeIcon,
   GroupRounded as GroupIcon,
   PersonRounded as PersonIcon,
   LogoutRounded as LogoutIcon,
   SupportRounded as SupportIcon,
-  MailRounded as MailRoundedIcon,
   SettingsRounded as SettingsIcon,
+  AccountTreeRounded as AccountTreeIcon,
   WorkHistoryRounded as WorkHistoryIcon,
   BrightnessAutoRounded as BrightnessAutoIcon,
 } from "@mui/icons-material";
@@ -57,7 +57,7 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
     },
     {
       name: "Requests",
-      icon: <MailRoundedIcon />,
+      icon: <MailIcon />,
       onClick: () => {
         closeSidebar();
         navigate("/user/requests");
@@ -65,7 +65,7 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
     },
     {
       name: "Projects",
-      icon: <AccountTree />,
+      icon: <AccountTreeIcon />,
       onClick: () => {
         closeSidebar();
         navigate("/user/projects");
@@ -96,6 +96,14 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
       onClick: () => {
         closeSidebar();
         navigate("/admin/candidates");
+      },
+    },
+    {
+      name: "Requests",
+      icon: <MailIcon />,
+      onClick: () => {
+        closeSidebar();
+        navigate("/admin/requests");
       },
     },
   ];

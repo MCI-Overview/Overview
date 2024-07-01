@@ -2,6 +2,7 @@
 import { createContext, useContext, useState } from "react";
 import { User } from "../types/common";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const UserContext = createContext<{
   user: User | null;
@@ -17,6 +18,7 @@ export function UserContextProvider({
   children: React.ReactNode;
 }) {
   const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
 
   async function updateUser(finallyFunction?: () => void) {
     await axios
@@ -32,7 +34,7 @@ export function UserContextProvider({
           });
         }
       })
-      .catch(() => setUser(null))
+      .catch(() => navigate("/504"))
       .finally(finallyFunction);
   }
 

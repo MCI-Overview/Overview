@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import axios from "axios";
-import OnLeave from "../components/project/overview/OnLeave";
+import OnLeave from "../components/project/overview/OnLeaveCount";
 import McCount from "../components/project/overview/McCount";
 import HoursWorked from "../components/project/overview/HoursWorked";
 
