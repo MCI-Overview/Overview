@@ -32,12 +32,9 @@ import {
 } from "@mui/icons-material";
 
 //TODO: Fix type
-export type CddTableDataType = Omit<
-  Omit<Omit<CommonCandidate, "dateOfBirth">, "startDate">,
-  "endDate"
-> & {
+export type CddTableDataType = CommonCandidate & {
   consultantName: string;
-} & { dateOfBirth: string; startDate: string; endDate: string };
+};
 
 export interface CandidateTableProps {
   tableTitle?: string;

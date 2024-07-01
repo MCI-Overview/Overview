@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import {
   Box,
+  Card,
+  CardOverflow,
   Grid,
   IconButton,
   Stack,
@@ -12,7 +14,6 @@ import {
   ChevronLeftRounded as ChevronLeftIcon,
   ChevronRightRounded as ChevronRightIcon,
 } from "@mui/icons-material";
-import { capitalizeWords } from "../../../utils/capitalize";
 import dayjs, { Dayjs } from "dayjs";
 
 import { GetRosterResponse, MappedRosterResponse } from "../../../types/common";
@@ -38,7 +39,7 @@ function enumerateDaysBetweenDates(startDate: Dayjs, endDate: Dayjs) {
 }
 export default function RosterPage() {
   const { project } = useProjectContext();
-  const dayOffset = Math.floor(dayjs().diff(project?.startDate, 'day') / 7);
+  const dayOffset = Math.floor(dayjs().diff(project?.startDate, "day") / 7);
   const [weekOffset, setWeekOffset] = useState(dayOffset);
   const [rosterData, setRosterData] = useState<MappedRosterResponse | null>(
     null
@@ -91,185 +92,180 @@ export default function RosterPage() {
   return (
     <Box
       sx={{
-        display: "flex-start",
         px: { xs: 0, md: 4 },
-        pb: { xs: 2, sm: 2, md: 3 },
-        flex: 1,
+        display: "flex",
         flexDirection: "column",
-        minWidth: 0,
         gap: 1,
+        position: "sticky",
       }}
     >
-      <Stack
-        spacing={2}
-        sx={{
-          display: "flex-start",
-          mx: "auto",
-        }}
-      >
-        <Stack spacing={2} sx={{ my: 1 }}>
-          {/* Timetable */}
-          <Box height="500px">
-            <Stack
-              sx={{
-                "--Grid-borderWidth": "1px",
-                borderTop: "var(--Grid-borderWidth) solid",
-                borderLeft: "var(--Grid-borderWidth) solid",
+      <Stack spacing={2}>
+        {/* Timetable */}
+        <Box>
+          <Stack
+            sx={{
+              "--Grid-borderWidth": "1px",
+              borderTop: "var(--Grid-borderWidth) solid",
+              borderLeft: "var(--Grid-borderWidth) solid",
+              borderColor: "divider",
+              "& > div": {
+                borderRight: "var(--Grid-borderWidth) solid",
                 borderColor: "divider",
-                "& > div": {
-                  borderRight: "var(--Grid-borderWidth) solid",
-                  borderBottom: "var(--Grid-borderWidth) solid",
-                  borderColor: "divider",
-                },
-              }}
-            >
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
+              },
+            }}
+          >
+            <Grid container>
+              <Grid
+                xs={5}
+                sm={3}
+                md={1.5}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
               >
                 <IconButton
+                  size="sm"
                   onClick={() => setWeekOffset(weekOffset - 1)}
                   disabled={weekOffset === 0}
                 >
                   <ChevronLeftIcon />
                 </IconButton>
-                <Typography level="h4">
-                  {dateRange.startDate.format("DD MMM YY")} -{" "}
-                  {dateRange.endDate.format("DD MMM YY")}
-                </Typography>
-                <IconButton onClick={() => setWeekOffset(weekOffset + 1)}>
+
+                <IconButton
+                  size="sm"
+                  onClick={() => setWeekOffset(weekOffset + 1)}
+                >
                   <ChevronRightIcon />
                 </IconButton>
-              </Stack>
-
-              <Grid container>
-                <Grid xs={5} sm={3} md={2}>
-                  <Box />
-                </Grid>
-                {enumerateDaysBetweenDates(
-                  dateRange.startDate,
-                  dateRange.endDate
-                ).map((date, index) => (
-                  <Grid xs key={index}>
-                    <Typography textAlign="center">
-                      {date.format("DD MMM")}
-                    </Typography>
-                    <Typography textAlign="center">
-                      {capitalizeWords(date.format("ddd"))}
-                    </Typography>
-                  </Grid>
-                ))}
               </Grid>
-            </Stack>
-            <Stack
-              sx={{
-                "--Grid-borderWidth": "1px",
-                borderTop: "var(--Grid-borderWidth) solid",
-                borderLeft: "var(--Grid-borderWidth) solid",
+
+              {enumerateDaysBetweenDates(
+                dateRange.startDate,
+                dateRange.endDate
+              ).map((date, index) => (
+                <Grid xs key={index}>
+                  <Typography
+                    level="body-xs"
+                    sx={{
+                      display: "flex",
+                      height: "100%",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    {date.format("ddd DD MMM")}
+                  </Typography>
+                </Grid>
+              ))}
+            </Grid>
+          </Stack>
+
+          <Stack
+            sx={{
+              "--Grid-borderWidth": "1px",
+              borderTop: "var(--Grid-borderWidth) solid",
+              borderLeft: "var(--Grid-borderWidth) solid",
+              borderColor: "divider",
+              "& > div": {
+                borderRight: "var(--Grid-borderWidth) solid",
+                borderBottom: "var(--Grid-borderWidth) solid",
                 borderColor: "divider",
-                "& > div": {
-                  borderRight: "var(--Grid-borderWidth) solid",
-                  borderBottom: "var(--Grid-borderWidth) solid",
-                  borderColor: "divider",
-                },
-                minHeight: "2rem",
-                height: "25rem",
-                overflow: "auto",
-                "&::-webkit-scrollbar": {
-                  display: "none",
-                },
-                "-ms-overflow-style": "none",  // Internet Explorer 10+
-                "scrollbar-width": "none",     // Firefox
-              }}
-            >
-              {!rosterData && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "4rem",
-                  }}
-                />
-              )}
-              {rosterData && rosterData.length === 0 && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "4rem",
-                  }}
-                >
-                  <Typography>No candidates found for this period.</Typography>
-                </Box>
-              )}
-              {rosterData && rosterData.length !== 0 && (
-                <>
-                  {rosterData.map((candidate) => (
-                    <CandidateDisplay
-                      key={candidate.cuid}
-                      cuid={candidate.cuid}
-                      name={candidate.name}
-                      projectStartDate={project.startDate}
-                      projectEndDate={project.endDate}
-                      currentRoster={candidate.roster}
-                      startDate={dateRange.startDate}
-                      endDate={dateRange.endDate}
-                      firstDay={dayjs(candidate.startDate)}
-                      lastDay={dayjs(candidate.endDate)}
-                      updateRosterData={() =>
-                        updateRosterData(
-                          project.cuid,
-                          dateRange.startDate,
-                          dateRange.endDate
-                        )
-                      }
-                    />
-                  ))}
-                </>
-              )}
-            </Stack>
-          </Box>
-        </Stack>
-      </Stack >
-
-      <Stack
-        pt={4}
-        spacing={2}
-        sx={{
-          display: "flex-start",
-          mx: "auto",
-        }}
-      >
-        <Stack spacing={2} sx={{ my: 1 }}>
-
-        </Stack>
+              },
+              minHeight: "2rem",
+              height: "24rem",
+              overflow: "auto",
+              "&::-webkit-scrollbar": {
+                display: "none",
+              },
+              "-ms-overflow-style": "none", // Internet Explorer 10+
+              "scrollbar-width": "none", // Firefox
+            }}
+          >
+            {!rosterData && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "4rem",
+                }}
+              />
+            )}
+            {rosterData && rosterData.length === 0 && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "4rem",
+                }}
+              >
+                <Typography level="body-xs">
+                  No candidates found for this period.
+                </Typography>
+              </Box>
+            )}
+            {rosterData && rosterData.length !== 0 && (
+              <>
+                {rosterData.map((candidate) => (
+                  <CandidateDisplay
+                    key={candidate.cuid}
+                    cuid={candidate.cuid}
+                    name={candidate.name}
+                    projectStartDate={project.startDate}
+                    projectEndDate={project.endDate}
+                    currentRoster={candidate.roster}
+                    startDate={dateRange.startDate}
+                    endDate={dateRange.endDate}
+                    firstDay={dayjs(candidate.startDate)}
+                    lastDay={dayjs(candidate.endDate)}
+                    updateRosterData={() =>
+                      updateRosterData(
+                        project.cuid,
+                        dateRange.startDate,
+                        dateRange.endDate
+                      )
+                    }
+                  />
+                ))}
+              </>
+            )}
+          </Stack>
+        </Box>
       </Stack>
+
       {/* Shifts */}
-      <Box >
-        <Grid container columnGap={2} rowGap={2} sx={{ flexGrow: 1, mx: 0 }}>
-
+      <Box sx={{ display: "flex", gap: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+          }}
+        >
+          <CreateShiftModal />
           <DeleteBin />
+        </Box>
 
-
-          <Grid xs={12}>
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{
-                overflow: "auto",
-                "&::-webkit-scrollbar": {
-                  display: "none",
-                },
-                "-ms-overflow-style": "none",  // Internet Explorer 10+
-                "scrollbar-width": "none",     // Firefox
-              }}
-            >
-              <CreateShiftModal />
-              {project.shifts.map((shift) => (
-                <Stack width={'200px'}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            overflow: "auto",
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+            "-ms-overflow-style": "none", // Internet Explorer 10+
+            "scrollbar-width": "none", // Firefox
+          }}
+        >
+          {project.shifts
+            .sort((a, b) => (a.startTime.isBefore(b.startTime) ? -1 : 1))
+            .map((shift) => (
+              <Card>
+                <CardOverflow sx={{ p: 1, gap: 1 }}>
                   <DraggableChip
                     type="FULL_DAY"
                     cuid={shift.cuid}
@@ -294,25 +290,19 @@ export default function RosterPage() {
                       endTime={shift.endTime}
                     />
                   )}
-                </Stack>
-              ))}
-            </Stack>
-          </Grid>
-        </Grid>
+                </CardOverflow>
+              </Card>
+            ))}
+        </Stack>
       </Box>
 
-      <Stack
-        sx={{ display: "flex", flexGrow: 1, overflow: "hidden" }}
-        spacing={3}
-      >
-        <Box height="35vh">
-          <CardDisplay
-            startDate={dateRange.startDate}
-            endDate={dateRange.endDate}
-            rosterData={rosterData}
-          />
-        </Box>
+      <Stack sx={{ display: "flex" }}>
+        <CardDisplay
+          startDate={dateRange.startDate}
+          endDate={dateRange.endDate}
+          rosterData={rosterData}
+        />
       </Stack>
-    </Box >
+    </Box>
   );
 }

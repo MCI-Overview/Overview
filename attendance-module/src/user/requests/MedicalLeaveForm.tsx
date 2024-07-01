@@ -118,7 +118,11 @@ export default function MedicalLeaveForm({
         </Grid>
       </Grid>
       <FormControl>
-        <FileUpload onChange={handleMcFileChange} label="Upload MC" />
+        <FileUpload
+          label="Upload MC"
+          hasFile={!!mcFile}
+          setState={handleMcFileChange}
+        />
       </FormControl>
       {mcPreview && (
         <Sheet sx={{ overflowY: "auto", width: "100%" }}>

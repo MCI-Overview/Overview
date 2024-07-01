@@ -27,9 +27,9 @@ const LocationsSection = () => {
   const { project } = useProjectContext();
 
   const hasEditProjectsPermission =
-    project?.consultants.find(
-      (consultant) => consultant.role === "CLIENT_HOLDER",
-    )?.cuid === user?.cuid ||
+    project?.consultants.some(
+      (c) => c.cuid === user?.cuid && c.role === "CLIENT_HOLDER"
+    ) ||
     (user && checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
   const [locations, setLocations] = useState(project?.locations || []);

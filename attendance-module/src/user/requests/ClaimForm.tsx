@@ -212,8 +212,9 @@ export default function ClaimForm({
       </FormControl>
       <FormControl>
         <FileUpload
-          onChange={handleReceiptFileChange}
           label="Upload Claim Receipt"
+          hasFile={!!receiptFile}
+          setState={handleReceiptFileChange}
         />
       </FormControl>
       {receiptPreview && (
