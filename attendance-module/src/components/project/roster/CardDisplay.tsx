@@ -1,4 +1,4 @@
-import { Stack, Card, Table, CardOverflow } from "@mui/joy";
+import { Stack, Card, Table, CardOverflow, Typography } from "@mui/joy";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { Dayjs } from "dayjs";
 import { MappedRosterResponse } from "../../../types/common";
@@ -170,7 +170,7 @@ const TdTypoNowrap = ({
 }) => {
   return (
     <TdTypo sx={{ whiteSpace: "nowrap" }}>
-      {getPrefix(type)}{" "}
+      <Typography fontSize={14}>{getPrefix(type)} </Typography>
       {`${startTime.format("HHmm")} - ${endTime.format("HHmm")}: `}
       {children}
     </TdTypo>
