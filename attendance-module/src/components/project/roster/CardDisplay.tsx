@@ -1,8 +1,10 @@
-import { Stack, Card, Table, Typography, Tooltip } from "@mui/joy";
+import { Stack, Card, Table, CardOverflow } from "@mui/joy";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { Dayjs } from "dayjs";
 import { MappedRosterResponse } from "../../../types/common";
 import { Fragment } from "react";
+import { TdTypo, ThTypo } from "../ui/TableTypo";
+import { getPrefix } from "./DraggableChip";
 
 export default function CardDisplay({
   startDate,
@@ -47,8 +49,8 @@ export default function CardDisplay({
         "&::-webkit-scrollbar": {
           display: "none",
         },
-        "-ms-overflow-style": "none",  // Internet Explorer 10+
-        "scrollbar-width": "none",     // Firefox
+        "-ms-overflow-style": "none", // Internet Explorer 10+
+        "scrollbar-width": "none", // Firefox
       }}
     >
       {Array.from({
@@ -63,34 +65,37 @@ export default function CardDisplay({
                 boxShadow: "md",
                 borderColor: "neutral.outlinedHoverBorder",
               },
+              "& tr > *": { textAlign: "center" },
+              minWidth: "150px",
             }}
             key={date.format("YYYY-MM-DD, ddd")}
           >
-            <Stack sx={{ minWidth: "15rem", flexGrow: 1 }}>
+            <CardOverflow sx={{ p: 0 }}>
               <Table
                 sx={{
-                  tr: { textAlign: "center" },
+                  "& tr > *": { textAlign: "center" },
                   flexGrow: 1,
                 }}
               >
                 <thead>
                   <tr>
-                    <td colSpan={3}>
-                      <Typography level="title-md">
-                        {date.format("YYYY-MM-DD, ddd")}
-                      </Typography>
-                    </td>
+                    <ThTypo>{date.format("YYYY-MM-DD, ddd")}</ThTypo>
                   </tr>
                 </thead>
                 <tbody>
                   {collectedRosterData &&
                     collectedRosterData[date.format("YYYY-MM-DD")] &&
                     Object.entries(
-                      collectedRosterData[date.format("YYYY-MM-DD")],
+                      collectedRosterData[date.format("YYYY-MM-DD")]
                     ).map(([shiftCuid, shiftCounts]) => {
                       if (!project.shiftDict[shiftCuid]) return null;
 
-                      const { FULL_DAY, FIRST_HALF, SECOND_HALF } = shiftCounts;
+                      const {
+                        FULL_DAY: fullDayCount,
+                        FIRST_HALF: firstHalfCount,
+                        SECOND_HALF: secondHalfCount,
+                      } = shiftCounts;
+
                       const {
                         startTime,
                         endTime,
@@ -99,39 +104,38 @@ export default function CardDisplay({
                       } = project.shiftDict[shiftCuid];
                       return (
                         <Fragment key={shiftCuid}>
-                          <tr>
-                            <td
-                              rowSpan={halfDayStartTime ? 3 : 1}
-                              colSpan={halfDayStartTime ? 1 : 2}
-                            >{`${startTime.format("HHmm")} - ${endTime.format(
-                              "HHmm",
-                            )}`}</td>
-                            {halfDayStartTime && <td>Full</td>}
-                            <td>{FULL_DAY}</td>
-                          </tr>
-                          {halfDayEndTime && (
-                            <Tooltip
-                              title={`${startTime.format(
-                                "HHmm",
-                              )} - ${halfDayEndTime?.format("HHmm")}`}
-                            >
-                              <tr>
-                                <td>1st Half</td>
-                                <td>{FIRST_HALF}</td>
-                              </tr>
-                            </Tooltip>
+                          {fullDayCount != 0 && (
+                            <tr>
+                              <TdTypoNowrap
+                                type="FULL_DAY"
+                                startTime={startTime}
+                                endTime={endTime}
+                              >
+                                {fullDayCount}
+                              </TdTypoNowrap>
+                            </tr>
                           )}
-                          {halfDayStartTime && (
-                            <Tooltip
-                              title={`${halfDayStartTime?.format(
-                                "HHmm",
-                              )} - ${endTime.format("HHmm")}`}
-                            >
-                              <tr>
-                                <td>2nd Half</td>
-                                <td>{SECOND_HALF}</td>
-                              </tr>
-                            </Tooltip>
+                          {halfDayEndTime && firstHalfCount != 0 && (
+                            <tr>
+                              <TdTypoNowrap
+                                type="FIRST_HALF"
+                                startTime={startTime}
+                                endTime={halfDayEndTime}
+                              >
+                                {firstHalfCount}
+                              </TdTypoNowrap>
+                            </tr>
+                          )}
+                          {halfDayStartTime && secondHalfCount != 0 && (
+                            <tr>
+                              <TdTypoNowrap
+                                type="SECOND_HALF"
+                                startTime={halfDayStartTime}
+                                endTime={endTime}
+                              >
+                                {secondHalfCount}
+                              </TdTypoNowrap>
+                            </tr>
                           )}
                         </Fragment>
                       );
@@ -140,15 +144,35 @@ export default function CardDisplay({
                   {collectedRosterData &&
                     !collectedRosterData[date.format("YYYY-MM-DD")] && (
                       <tr>
-                        <td colSpan={3}>No rostered data</td>
+                        <TdTypo>No rostered data</TdTypo>
                       </tr>
                     )}
                 </tbody>
               </Table>
-            </Stack>
+            </CardOverflow>
           </Card>
         );
       })}
     </Stack>
   );
 }
+
+const TdTypoNowrap = ({
+  type,
+  startTime,
+  endTime,
+  children,
+}: {
+  type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+  startTime: Dayjs;
+  endTime: Dayjs;
+  children?: React.ReactNode;
+}) => {
+  return (
+    <TdTypo sx={{ whiteSpace: "nowrap" }}>
+      {getPrefix(type)}{" "}
+      {`${startTime.format("HHmm")} - ${endTime.format("HHmm")}: `}
+      {children}
+    </TdTypo>
+  );
+};

@@ -46,13 +46,21 @@ export default function CandidateDisplay({
 
   return (
     <Grid container>
-      <Grid xs={5} sm={3} md={2} display="flex" justifyContent="flex-start" alignItems="center">
+      <Grid
+        xs={5}
+        sm={3}
+        md={1.5}
+        display="flex"
+        justifyContent="flex-start"
+        alignItems="center"
+      >
         <Typography
           pl={1}
+          level="body-xs"
           sx={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
           }}
         >
           {name}

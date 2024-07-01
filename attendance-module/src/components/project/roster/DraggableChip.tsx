@@ -1,16 +1,30 @@
-import {
-  Chip,
-  Card
-} from "@mui/joy";
+import { Chip } from "@mui/joy";
 import { useDrag } from "react-dnd";
 import { Dayjs } from "dayjs";
 import { DraggableChipProps } from "../../../types";
+
+import {
+  HourglassFullRounded as HourglassFullIcon,
+  HourglassTopRounded as HourglassTopIcon,
+  HourglassBottomRounded as HourglassBottomIcon,
+} from "@mui/icons-material";
 
 export type Shift = {
   cuid: string;
   startTime: Dayjs;
   endTime: Dayjs;
 };
+
+export function getPrefix(type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF") {
+  switch (type) {
+    case "FULL_DAY":
+      return <HourglassFullIcon />;
+    case "FIRST_HALF":
+      return <HourglassTopIcon />;
+    case "SECOND_HALF":
+      return <HourglassBottomIcon />;
+  }
+}
 
 export default function DraggableChip({
   type,
@@ -27,21 +41,16 @@ export default function DraggableChip({
   });
 
   return (
-    <Card
+    <Chip
       ref={drag}
-      sx={{
-        width: '200px',
-        marginBottom: '15px'
-      }}
+      size="sm"
+      startDecorator={getPrefix(type)}
       style={{
         opacity: isDragging ? 0.5 : 1,
         cursor: "move",
       }}
     >
-      <Chip>{type}</Chip>
-      {`${startTime.format("HHmm")} - ${endTime.format(
-        "HHmm"
-      )}`}
-    </Card>
+      {`${startTime.format("HHmm")} - ${endTime.format("HHmm")}`}
+    </Chip>
   );
 }
