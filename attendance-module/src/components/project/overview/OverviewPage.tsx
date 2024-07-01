@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
-import { CustomAdminAttendance } from "../../../types";
-import { useProjectContext } from "../../../providers/projectContextProvider";
 import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
-import AdminProjectAttendanceTable from "../attendance/AdminProjectAttendanceTable";
-import AdminProjectAttendanceList from "../attendance/AdminProjectAttendanceList";
-import LateCount from "./LateCount";
+
 import McCount from "./McCount";
+import OnLeaveCount from "./OnLeaveCount";
+import LateCount from "./LateCount";
 import NoShowCount from "./NoShowCount";
 import OnTimeCount from "./OnTimeCount";
-import OnLeave from "./OnLeave";
+import AttendanceGraph from "./AttendanceGraph";
+import HeadcountSection from "./HeadcountSection";
+import NationalityCount from "./NationalityCount";
+import { CustomAdminAttendance } from "../../../types";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+import AdminProjectAttendanceList from "../attendance/AdminProjectAttendanceList";
+import AdminProjectAttendanceTable from "../attendance/AdminProjectAttendanceTable";
 
 import {
   Grid,
@@ -25,9 +29,6 @@ import {
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
 } from "@mui/icons-material";
-import AttendanceGraph from "./AttendanceGraph";
-import HeadcountSection from "./HeadcountSection";
-import NationalityCount from "./NationalityCount";
 
 type displayData = {
   datasets: {
@@ -64,24 +65,25 @@ const ProjectOverview = () => {
   const [data, setData] = useState<CustomAdminAttendance[]>([]);
   const [plotData, setPlotData] = useState<displayData>();
   const [weekStart, setWeekStart] = useState<Dayjs>(dayjs().startOf("isoWeek"));
-  const context = useProjectContext();
-  const projectCuid = context.project?.cuid;
-  const startDate = dayjs().startOf("day").toISOString();
-  const endDate = dayjs().endOf("day").toISOString();
+  const { project } = useProjectContext();
+
+  const projectCuid = project?.cuid;
 
   useEffect(() => {
-    const fetchUpcomingShifts = async (startDate: string, endDate: string) => {
+    const fetchUpcomingShifts = async () => {
       try {
-        const formattedStartDate = dayjs(startDate).format(
-          "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
-        );
-        const formattedEndDate = dayjs(endDate).format(
-          "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
-        );
-        const url = `/api/admin/project/${projectCuid}/history?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
-        const response = await axios.get(url);
-        const fetchedData = response.data;
-        setData(fetchedData);
+        const formattedStartDate = dayjs()
+          .startOf("day")
+          .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+        const formattedEndDate = dayjs()
+          .endOf("day")
+          .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+
+        axios
+          .get(
+            `/api/admin/project/${projectCuid}/history?startDate=${formattedStartDate}&endDate=${formattedEndDate}`
+          )
+          .then((response) => setData(response.data));
       } catch (error) {
         console.error("Error fetching upcoming shifts: ", error);
       }
@@ -91,15 +93,19 @@ const ProjectOverview = () => {
       const formattedWeekStart = dayjs(weekStart).format(
         "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
       );
-      const url = `/api/admin/project/${projectCuid}/overview?weekStart=${formattedWeekStart}`;
-      const response = await axios.get(url);
-      const fetchedData = response.data;
-      setPlotData(fetchedData);
+
+      axios
+        .get(
+          `/api/admin/project/${projectCuid}/overview?weekStart=${formattedWeekStart}`
+        )
+        .then((response) => {
+          setPlotData(response.data);
+        });
     };
 
     getDisplayData();
-    fetchUpcomingShifts(startDate, endDate);
-  }, [startDate, endDate, projectCuid, weekStart]);
+    fetchUpcomingShifts();
+  }, [projectCuid, weekStart]);
 
   const sumArray = (arr: number[]) => arr.reduce((acc, curr) => acc + curr, 0);
 
@@ -220,7 +226,7 @@ const ProjectOverview = () => {
                 />
               </Grid>
               <Grid xs={12} sm={5} lg={3} xl={2}>
-                <OnLeave
+                <OnLeaveCount
                   count={sumArray(plotData?.datasets.leave.data ?? [])}
                   total={total}
                 />
@@ -335,7 +341,7 @@ const ProjectOverview = () => {
               </Box>
 
               <Typography level="body-sm">
-                Attendance history for {dayjs(startDate).format("DD MMM YYYY")}
+                Attendance history for {dayjs().format("DD MMM YYYY")}
               </Typography>
             </Box>
           </Box>
