@@ -8,8 +8,8 @@ import L from "leaflet";
 import Clock from "./Clock";
 import { CommonLocation, getAttendanceResponse } from "../../types/common";
 import dayjs, { Dayjs } from "dayjs";
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 
 import {
   Box,
@@ -22,7 +22,7 @@ import {
   ModalDialog,
   CircularProgress,
   CardOverflow,
-  CardActions
+  CardActions,
 } from "@mui/joy";
 
 export default function ClockIn() {
@@ -130,9 +130,9 @@ export default function ClockIn() {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(deg2rad(lat1)) *
-        Math.cos(deg2rad(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+          Math.cos(deg2rad(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const d = R * c; // Distance in meters
       return d;
@@ -339,7 +339,7 @@ export default function ClockIn() {
         spacing={4}
         sx={{
           display: "flex",
-          maxWidth: "600px",
+          maxWidth: "800px",
           mx: "auto",
         }}
       >
@@ -355,20 +355,33 @@ export default function ClockIn() {
             <Clock />
           </Stack>
           <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
-            <CardActions sx={{ alignSelf: "flex-start", pt: 2, flexDirection: "column", alignItems: "flex-start" }}>
-              <Typography level="body-sm">Before clocking in or out, ensure that</Typography>
+            <CardActions
+              sx={{
+                alignSelf: "flex-start",
+                pt: 2,
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
+              <Typography level="body-sm">
+                Before clocking in or out, ensure that
+              </Typography>
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <LocationOnIcon />
-                <Typography level="body-sm" sx={{ ml: 1 }}>Location access is enabled</Typography>
+                <Typography level="body-sm" sx={{ ml: 1 }}>
+                  Location access is enabled
+                </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <CameraAltIcon />
-                <Typography level="body-sm" sx={{ ml: 1 }}>Camera access is enabled</Typography>
+                <Typography level="body-sm" sx={{ ml: 1 }}>
+                  Camera access is enabled
+                </Typography>
               </Box>
             </CardActions>
           </CardOverflow>
         </Card>
-      </Stack >
+      </Stack>
       {!currAttendance && (
         <Box
           sx={{
@@ -389,7 +402,7 @@ export default function ClockIn() {
           sx={{
             pt: "15px",
             display: "flex",
-            maxWidth: "600px",
+            maxWidth: "800px",
             mx: "auto",
           }}
         >
@@ -403,7 +416,6 @@ export default function ClockIn() {
               <Typography level="body-sm">
                 {currAttendance.Shift.Project.name}
               </Typography>
-
             </Box>
             <Divider />
             <Stack spacing={2} sx={{ my: 1 }}>
@@ -415,7 +427,9 @@ export default function ClockIn() {
                   </Typography>
                   <Typography level="body-sm">Shift date</Typography>
                   <Typography level="body-md">
-                    {dayjs(currAttendance.shiftDate).format("dddd, MMMM DD YYYY")}
+                    {dayjs(currAttendance.shiftDate).format(
+                      "dddd, MMMM DD YYYY"
+                    )}
                   </Typography>
                 </Box>
 
@@ -449,13 +463,25 @@ export default function ClockIn() {
                 </Box>
               </>
             </Stack>
-            <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
-              <CardActions sx={{ alignSelf: "flex-start", pt: 2, flexDirection: "column", alignItems: "flex-start" }}>
-                <Typography level="body-sm">Clock in / out within {currAttendance.Shift.Project.timeWindow} mins of shift time.</Typography>
+            <CardOverflow
+              sx={{ borderTop: "1px solid", borderColor: "divider" }}
+            >
+              <CardActions
+                sx={{
+                  alignSelf: "flex-start",
+                  pt: 2,
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                }}
+              >
+                <Typography level="body-sm">
+                  Clock in / out within{" "}
+                  {currAttendance.Shift.Project.timeWindow} mins of shift time.
+                </Typography>
               </CardActions>
             </CardOverflow>
           </Card>
-        </Stack >
+        </Stack>
       )}
 
       <Modal
@@ -528,8 +554,9 @@ export default function ClockIn() {
           <Typography level="title-sm">
             {projLocations.length > 0
               ? nearestLocation && distance
-                ? `Nearest location: ${nearestLocation.address}, ${nearestLocation.postalCode
-                } (${distance.toFixed(2)}m away)`
+                ? `Nearest location: ${nearestLocation.address}, ${
+                    nearestLocation.postalCode
+                  } (${distance.toFixed(2)}m away)`
                 : "Fetching location..."
               : "No site locations found"}
           </Typography>

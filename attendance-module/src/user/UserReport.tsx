@@ -43,7 +43,7 @@ export default function UserReport() {
   const currentDate = dayjs();
 
   const [selectedMonth, setSelectedMonth] = useState<number>(
-    currentDate.month(),
+    currentDate.month()
   );
   const [selectedYear, setSelectedYear] = useState<number>(currentDate.year());
 
@@ -86,7 +86,7 @@ export default function UserReport() {
       spacing={2}
       sx={{
         display: "flex",
-        maxWidth: "600px",
+        maxWidth: "800px",
         mx: "auto",
       }}
     >
@@ -150,7 +150,7 @@ export default function UserReport() {
                     {year}
                   </Option>
                 );
-              },
+              }
             )}
           </Select>
         </Stack>
