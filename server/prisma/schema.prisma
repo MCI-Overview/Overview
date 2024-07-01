@@ -56,11 +56,11 @@ model Candidate {
   name             String
   dateOfBirth      DateTime     @db.Date
   hasOnboarded     Boolean      @default(false)
-  createdAt        DateTime     @default(now())
   nationality      String?
   bankDetails      Json?
   address          Json?
   emergencyContact Json?
+  createdAt        DateTime     @default(now())
   Assign           Assign[]
   Attendance       Attendance[]
   User             User?

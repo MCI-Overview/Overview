@@ -4,7 +4,23 @@ import { Dayjs } from "dayjs";
 import { MappedRosterResponse } from "../../../types/common";
 import { Fragment } from "react";
 import { TdTypo, ThTypo } from "../ui/TableTypo";
-import { getPrefix } from "./DraggableChip";
+
+import {
+  HourglassFullRounded as HourglassFullIcon,
+  HourglassTopRounded as HourglassTopIcon,
+  HourglassBottomRounded as HourglassBottomIcon,
+} from "@mui/icons-material";
+
+function getPrefix(type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF") {
+  switch (type) {
+    case "FULL_DAY":
+      return <HourglassFullIcon />;
+    case "FIRST_HALF":
+      return <HourglassTopIcon />;
+    case "SECOND_HALF":
+      return <HourglassBottomIcon />;
+  }
+}
 
 export default function CardDisplay({
   startDate,

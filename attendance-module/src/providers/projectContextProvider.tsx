@@ -38,12 +38,7 @@ export function ProjectContextProvider({
         const data = res.data as GetProjectDataResponse;
         const projectData: CommonProject = {
           ...data,
-          candidates: data.candidates.map((candidate) => ({
-            ...candidate,
-            dateOfBirth: dayjs(candidate.dateOfBirth),
-            startDate: dayjs(candidate.startDate),
-            endDate: dayjs(candidate.endDate),
-          })),
+          candidates: data.candidates,
           shifts: data.shifts.map((shift) => ({
             ...shift,
             startTime: dayjs(shift.startTime),
@@ -79,7 +74,7 @@ export function useProjectContext() {
   const context = useContext(ProjectContext);
   if (context === undefined) {
     throw new Error(
-      "useProjectContext must be used within a ProjectContextProvider",
+      "useProjectContext must be used within a ProjectContextProvider"
     );
   }
   return context;

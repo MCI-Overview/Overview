@@ -15,7 +15,7 @@ export type Shift = {
   endTime: Dayjs;
 };
 
-export function getPrefix(type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF") {
+function getPrefix(type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF") {
   switch (type) {
     case "FULL_DAY":
       return <HourglassFullIcon />;
