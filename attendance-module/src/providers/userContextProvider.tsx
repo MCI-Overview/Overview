@@ -34,7 +34,9 @@ export function UserContextProvider({
           });
         }
       })
-      .catch(() => navigate("/504"))
+      .catch((error) => {
+        if (!error.response) navigate("/504");
+      })
       .finally(finallyFunction);
   }
 
