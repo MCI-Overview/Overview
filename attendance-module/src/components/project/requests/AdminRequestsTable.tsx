@@ -48,7 +48,7 @@ const AdminRequestsTable = () => {
               <ThTypo>Name</ThTypo>
               <ThTypo>Type</ThTypo>
               <ThTypo>Status</ThTypo>
-              <ThTypo> </ThTypo>
+              <ThTypo>Action</ThTypo>
             </tr>
           </thead>
           <tbody>
@@ -67,7 +67,7 @@ const AdminRequestsTable = () => {
                   </TdTypo>
                   <TdTypo>
                     {req.Assign.Candidate && req.Assign.Candidate.name}
-                  </TdTypo>{" "}
+                  </TdTypo>
                   <td>
                     <RequestTypeChip type={req.type} />
                   </td>

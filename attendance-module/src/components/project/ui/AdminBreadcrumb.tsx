@@ -33,6 +33,7 @@ export function AdminBreadcrumb({
       {breadcrumbs &&
         breadcrumbs.map((breadcrumb) => (
           <Typography
+            key={breadcrumb.link}
             color="primary"
             fontWeight={500}
             fontSize={12}
