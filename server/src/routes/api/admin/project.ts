@@ -265,12 +265,12 @@ projectAPIRouter.get(
                 .add(startTime.minute(), "minute"),
               shiftEndTime: startTime.isBefore(endTime)
                 ? startDate
-                  .add(endTime.hour(), "hour")
-                  .add(endTime.minute(), "minute")
+                    .add(endTime.hour(), "hour")
+                    .add(endTime.minute(), "minute")
                 : startDate
-                  .add(endTime.hour(), "hour")
-                  .add(endTime.minute(), "minute")
-                  .add(1, "day"),
+                    .add(endTime.hour(), "hour")
+                    .add(endTime.minute(), "minute")
+                    .add(1, "day"),
               consultantCuid: cr.Shift.Project.Manage.filter(
                 (manage) => manage.role === Role.CLIENT_HOLDER
               ).map((manage) => manage.consultantCuid)[0],
@@ -446,8 +446,8 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
     end && dayjs(end).isAfter(now)
       ? now.startOf("day").toDate()
       : end
-        ? dayjs(end).startOf("day").toDate()
-        : undefined;
+      ? dayjs(end).startOf("day").toDate()
+      : undefined;
 
   try {
     const response = await prisma.attendance.findMany({
@@ -504,7 +504,7 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
   try {
     // Fetch attendance data
     const attendanceResponse = await prisma.attendance.groupBy({
-      by: ['status', 'shiftDate', 'leave'],
+      by: ["status", "shiftDate", "leave"],
       where: {
         Shift: {
           projectCuid: projectCuid,
@@ -528,7 +528,7 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
       LEAVE: Array(7).fill(0),
     };
 
-    attendanceResponse.forEach(item => {
+    attendanceResponse.forEach((item) => {
       if (item.shiftDate && item.status) {
         const dayOfWeek = dayjs(item.shiftDate).day(); // Get the day of the week (0 for Sunday, 6 for Saturday)
         const dayIndex = (dayOfWeek + 6) % 7; // Convert so Monday is 0 and Sunday is 6
@@ -548,14 +548,14 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
 
     // Fetch headcount data
     const nationalityResponse = await prisma.candidate.groupBy({
-      by: ['nationality'],
+      by: ["nationality"],
       _count: {
         nationality: true,
       },
     });
 
     const endDateResponse = await prisma.assign.groupBy({
-      by: ['endDate'],
+      by: ["endDate"],
       where: {
         projectCuid: projectCuid,
       },
@@ -564,24 +564,30 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
       },
     });
 
-    const nationalityData: Record<string, number> = nationalityResponse.reduce((acc: Record<string, number>, item) => {
-      if (item.nationality) {
-        acc[item.nationality.toLowerCase()] = item._count.nationality;
-      }
-      return acc;
-    }, {});
-
-    const endDateData = endDateResponse.reduce((acc, item) => {
-      if (item.endDate) {
-        const isOngoing = item.endDate > new Date();
-        if (isOngoing) {
-          acc.ongoing += item._count.endDate;
-        } else {
-          acc.hasEnded += item._count.endDate;
+    const nationalityData: Record<string, number> = nationalityResponse.reduce(
+      (acc: Record<string, number>, item) => {
+        if (item.nationality) {
+          acc[item.nationality.toLowerCase()] = item._count.nationality;
         }
-      }
-      return acc;
-    }, { ongoing: 0, hasEnded: 0 });
+        return acc;
+      },
+      {}
+    );
+
+    const endDateData = endDateResponse.reduce(
+      (acc, item) => {
+        if (item.endDate) {
+          const isOngoing = item.endDate > new Date();
+          if (isOngoing) {
+            acc.ongoing += item._count.endDate;
+          } else {
+            acc.hasEnded += item._count.endDate;
+          }
+        }
+        return acc;
+      },
+      { ongoing: 0, hasEnded: 0 }
+    );
 
     const datasets = {
       leave: {
@@ -935,14 +941,14 @@ projectAPIRouter.patch("/project", async (req, res) => {
   }
 
   const timeWindowValidity = timeWindow >= 0;
-  if (!timeWindowValidity) {
+  if (timeWindow && !timeWindowValidity) {
     return res.status(400).json({
       message: "timeWindow must be a non-negative number.",
     });
   }
 
   const distanceRadiusValidity = distanceRadius >= 50;
-  if (!distanceRadiusValidity) {
+  if (distanceRadius && !distanceRadiusValidity) {
     return res.status(400).json({
       message: "distanceRadius must be at least 50 meters.",
     });
@@ -983,6 +989,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
         Manage: {
           some: {
             consultantCuid: user.cuid,
+            role: Role.CLIENT_HOLDER,
           },
         },
       },
