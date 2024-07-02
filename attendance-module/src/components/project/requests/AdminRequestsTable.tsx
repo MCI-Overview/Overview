@@ -43,9 +43,9 @@ const AdminRequestsTable = () => {
         >
           <thead>
             <tr>
-              <ThTypo>Submitted at</ThTypo>
               <ThTypo>Nric</ThTypo>
               <ThTypo>Name</ThTypo>
+              <ThTypo>Submitted at</ThTypo>
               <ThTypo>Type</ThTypo>
               <ThTypo>Status</ThTypo>
               <ThTypo>Action</ThTypo>
@@ -60,13 +60,13 @@ const AdminRequestsTable = () => {
               requests.map((req: CustomRequest) => (
                 <tr key={req.cuid}>
                   <TdTypo>
-                    {dayjs(req.createdAt).format("DD/MM/YYYY HH:mm")}
-                  </TdTypo>
-                  <TdTypo>
                     {req.Assign.Candidate && req.Assign.Candidate.nric}
                   </TdTypo>
                   <TdTypo>
                     {req.Assign.Candidate && req.Assign.Candidate.name}
+                  </TdTypo>
+                  <TdTypo>
+                    {dayjs(req.createdAt).format("DD/MM/YYYY HH:mm")}
                   </TdTypo>
                   <td>
                     <RequestTypeChip type={req.type} />

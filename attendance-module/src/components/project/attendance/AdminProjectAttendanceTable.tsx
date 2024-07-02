@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import { Dayjs } from "dayjs";
 import { CustomAdminAttendance } from "../../../types";
 import { TdTypo, ThTypo } from "../ui/TableTypo";
 
@@ -15,7 +15,7 @@ import {
 } from "@mui/joy";
 import { MoreHorizRounded as MoreHorizIcon } from "@mui/icons-material";
 
-type Props = {
+type AdminProjectAttendanceTableProps = {
   data: CustomAdminAttendance[];
 };
 
@@ -35,9 +35,9 @@ function RowMenu() {
   );
 }
 
-const AdminProjectAttendanceTable: React.FC<Props> = ({ data }) => {
-  const attendanceData = data;
-
+const AdminProjectAttendanceTable = ({
+  data,
+}: AdminProjectAttendanceTableProps) => {
   return (
     <Sheet
       variant="outlined"
@@ -65,39 +65,45 @@ const AdminProjectAttendanceTable: React.FC<Props> = ({ data }) => {
       >
         <thead>
           <tr>
-            <ThTypo>Date</ThTypo>
             <ThTypo>Nric</ThTypo>
             <ThTypo>Name</ThTypo>
-            <ThTypo>Status</ThTypo>
+            <ThTypo>Date</ThTypo>
             <ThTypo>Start Time</ThTypo>
             <ThTypo>End Time</ThTypo>
             <ThTypo>Clock In</ThTypo>
             <ThTypo>Clock Out</ThTypo>
+            <ThTypo>Status</ThTypo>
             <ThTypo> </ThTypo>
           </tr>
         </thead>
         <tbody>
-          {attendanceData.length === 0 ? (
+          {data.length === 0 ? (
             <tr>
               <TdTypo colSpan={9}>No candidates found</TdTypo>
             </tr>
           ) : (
-            attendanceData.map((att: CustomAdminAttendance) => (
+            data.map((att: CustomAdminAttendance) => (
               <tr key={att.attendanceCuid}>
-                <TdTypo>{dayjs(att.date).format("DD/MM/YYYY")}</TdTypo>
                 <TdTypo>{att.nric}</TdTypo>
                 <TdTypo>{att.name}</TdTypo>
+                <TdTypo>{att.date.format("DD/MM/YYYY")}</TdTypo>
+                <TdTypo>{att.shiftStart.format("HH:mm")}</TdTypo>
+                <TdTypo>{att.shiftEnd.format("HH:mm")}</TdTypo>
+                <TdTypo color={getStartColor(att.rawStart, att.shiftStart)}>
+                  {att.rawStart ? att.rawStart.format("HH:mm") : "-"}
+                </TdTypo>
+                <TdTypo
+                  color={getEndColor(att.rawStart, att.rawEnd, att.shiftEnd)}
+                >
+                  {att.rawEnd
+                    ? att.rawEnd.format("HH:mm")
+                    : att.rawStart
+                    ? "NIL"
+                    : "-"}
+                </TdTypo>
                 <td style={{ overflow: "clip" }}>
                   <AttendanceStatusChip status={att.status} />
                 </td>
-                <TdTypo>{dayjs(att.shiftStart).format("HH:mm")}</TdTypo>
-                <TdTypo>{dayjs(att.shiftEnd).format("HH:mm")}</TdTypo>
-                <TdTypo>
-                  {att.rawStart ? dayjs(att.rawStart).format("HH:mm") : "-"}
-                </TdTypo>
-                <TdTypo>
-                  {att.rawEnd ? dayjs(att.rawEnd).format("HH:mm") : "-"}
-                </TdTypo>
                 <td>
                   <RowMenu />
                 </td>
@@ -108,6 +114,24 @@ const AdminProjectAttendanceTable: React.FC<Props> = ({ data }) => {
       </Table>
     </Sheet>
   );
+};
+
+const getStartColor = (rawStart: Dayjs | null, shiftStart: Dayjs) => {
+  if (!rawStart) return undefined;
+
+  const diff = rawStart.diff(shiftStart);
+  return diff < 0 ? "success" : "warning";
+};
+
+const getEndColor = (
+  rawStart: Dayjs | null,
+  rawEnd: Dayjs | null,
+  shiftEnd: Dayjs
+) => {
+  if (!rawEnd) return rawStart ? "warning" : undefined;
+
+  const diff = rawEnd.diff(shiftEnd);
+  return diff > 0 ? "success" : "warning";
 };
 
 export default AdminProjectAttendanceTable;

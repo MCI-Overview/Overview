@@ -436,6 +436,7 @@ projectAPIRouter.post("/project/:projectCuid/roster", async (req, res) => {
 });
 
 projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
+  const user = req.user as User;
   const { projectCuid } = req.params;
   const { startDate, endDate } = req.query;
 
@@ -448,6 +449,11 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
       : end
       ? dayjs(end).startOf("day").toDate()
       : undefined;
+
+  const isNricUnmasked = await checkPermission(
+    user.cuid,
+    PermissionList.CAN_READ_CANDIDATE_DETAILS
+  );
 
   try {
     const response = await prisma.attendance.findMany({
@@ -477,7 +483,9 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
       response.map((row) => ({
         attendanceCuid: row.cuid,
         date: row.shiftDate,
-        nric: row.Candidate.nric,
+        nric: isNricUnmasked
+          ? row.Candidate.nric
+          : maskNRIC(row.Candidate.nric),
         name: row.Candidate.name,
         shiftStart: row.Shift.startTime,
         shiftEnd: row.Shift.endTime,

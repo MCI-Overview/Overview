@@ -1,5 +1,5 @@
 import { Typography } from "@mui/joy";
-import { SxProps } from "@mui/joy/styles/types";
+import { ColorPaletteProp, SxProps } from "@mui/joy/styles/types";
 import { ReactNode } from "react";
 
 const ThTypo: React.FC<{
@@ -18,21 +18,21 @@ const TdTypo: React.FC<{
   colSpan?: number;
   rowSpan?: number;
   children: ReactNode;
+  color?: ColorPaletteProp;
   sx?: SxProps;
-}> = ({ colSpan, rowSpan, children, sx }) => {
+}> = ({ colSpan, rowSpan, children, color, sx }) => {
   return (
     <td
       colSpan={colSpan}
       rowSpan={rowSpan}
       style={{
-        // whiteSpace: "nowrap",
         overflow: "auto",
         textOverflow: "ellipsis",
         scrollbarColor: "transparent transparent",
         scrollbarWidth: "none",
       }}
     >
-      <Typography level="body-xs" sx={sx}>
+      <Typography level="body-xs" sx={sx} color={color}>
         {children}
       </Typography>
     </td>

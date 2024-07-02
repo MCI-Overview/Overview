@@ -115,7 +115,7 @@ export type CustomAttendance = {
           latitude: string;
           longitude: string;
           postalCode: string;
-        },
+        }
       ];
     };
   };
@@ -136,12 +136,12 @@ export type AttendanceRecords = {
 
 export type CustomAdminAttendance = {
   attendanceCuid: string;
-  date: Date;
+  date: Dayjs;
   nric: string;
   name: string;
-  shiftStart: Date;
-  shiftEnd: Date;
-  rawStart: Date | null;
-  rawEnd: Date | null;
+  shiftStart: Dayjs;
+  shiftEnd: Dayjs;
+  rawStart: Dayjs | null;
+  rawEnd: Dayjs | null;
   status: "ON_TIME" | "LATE" | "NO_SHOW" | "MEDICAL" | null;
 };
