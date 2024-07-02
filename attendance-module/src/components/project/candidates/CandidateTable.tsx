@@ -292,6 +292,9 @@ const CandidateTable = ({
                               CONTRACT: "warning",
                             }[listItem.employmentType] as ColorPaletteProp
                           }
+                          sx={{
+                            my: "auto",
+                          }}
                         >
                           {readableEnum(listItem.employmentType)}
                         </Chip>

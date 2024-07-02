@@ -21,7 +21,17 @@ const TdTypo: React.FC<{
   sx?: SxProps;
 }> = ({ colSpan, rowSpan, children, sx }) => {
   return (
-    <td colSpan={colSpan} rowSpan={rowSpan}>
+    <td
+      colSpan={colSpan}
+      rowSpan={rowSpan}
+      style={{
+        // whiteSpace: "nowrap",
+        overflow: "auto",
+        textOverflow: "ellipsis",
+        scrollbarColor: "transparent transparent",
+        scrollbarWidth: "none",
+      }}
+    >
       <Typography level="body-xs" sx={sx}>
         {children}
       </Typography>
