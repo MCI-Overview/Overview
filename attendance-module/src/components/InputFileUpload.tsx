@@ -47,7 +47,7 @@ export default function InputFileUpload({
         width: "100%",
       }}
     >
-      {`${!upload ? "Upload" : ""} ${label}`}
+      {`${label}`}
       <VisuallyHiddenInput
         type="file"
         onChange={handleFileChange}
