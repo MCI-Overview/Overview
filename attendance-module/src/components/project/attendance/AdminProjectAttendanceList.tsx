@@ -91,15 +91,13 @@ const AdminProjectAttendanceList = ({
                     </Box>
                     <Typography level="body-xs">Shift</Typography>
                     <Typography level="body-md" gutterBottom>
-                      {dayjs(att.shiftStart).format("HH:mm")} -{" "}
-                      {dayjs(att.shiftEnd).format("HH:mm")}
+                      {att.shiftStart.format("HH:mm")} -{" "}
+                      {att.shiftEnd.format("HH:mm")}
                     </Typography>
                     <Typography level="body-xs">Clock in / out</Typography>
                     <Typography level="body-md" gutterBottom>
-                      {att.rawStart
-                        ? dayjs(att.rawStart).format("HH:mm")
-                        : "N/A"}{" "}
-                      - {att.rawEnd ? dayjs(att.rawEnd).format("HH:mm") : "N/A"}
+                      {att.rawStart ? att.rawStart.format("HH:mm") : "N/A"} -{" "}
+                      {att.rawEnd ? att.rawEnd.format("HH:mm") : "N/A"}
                     </Typography>
                     <Box
                       sx={{

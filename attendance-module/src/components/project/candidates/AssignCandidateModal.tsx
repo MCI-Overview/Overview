@@ -51,8 +51,12 @@ const AssignCandidateModal = ({
   });
 
   useEffect(() => {
-    setValidCddList(data.validData as unknown as CddTableDataType[]);
-    setInvalidCddList(data.invalidData as unknown as CddTableDataType[]);
+    setValidCddList(
+      reformatDates(data.validData as unknown as CddTableDataType[])
+    );
+    setInvalidCddList(
+      reformatDates(data.invalidData as unknown as CddTableDataType[])
+    );
   }, [data]);
 
   if (!project || !user) return null;
@@ -117,21 +121,21 @@ const AssignCandidateModal = ({
         "birthday",
       ]),
       fieldType: { type: "input" },
-      example: "1965-08-09",
+      example: "09/08/1965",
     },
     {
       label: "Start Date",
       key: "startDate",
       alternateMatches: generateCapitalizations(["start date", "start"]),
       fieldType: { type: "input" },
-      example: "2024-05-13",
+      example: "13/05/2024",
     },
     {
       label: "End Date",
       key: "endDate",
       alternateMatches: generateCapitalizations(["end date", "end"]),
       fieldType: { type: "input" },
-      example: "2024-08-02",
+      example: "02/08/2024",
     },
     {
       label: "Job Type",
@@ -197,10 +201,10 @@ const AssignCandidateModal = ({
       });
     } else if (!dateRegex.test(row.dateOfBirth as string)) {
       addError("dateOfBirth", {
-        message: "Invalid format. Please use YYYY-MM-DD",
+        message: "Invalid format. Please use DD/MM/YYYY",
         level: "error",
       });
-    } else if (dayjs().diff(dayjs(row.dateOfBirth as string), "years") < 16) {
+    } else if (dayjs().diff(parseDate(row.dateOfBirth), "years") < 16) {
       addError("dateOfBirth", {
         message: "Candidate below 16 years old",
         level: "error",
@@ -215,19 +219,20 @@ const AssignCandidateModal = ({
       });
     } else if (!dateRegex.test(row.startDate as string)) {
       addError("startDate", {
-        message: "Invalid format. Please use YYYY-MM-DD",
+        message: "Invalid format. Please use DD/MM/YYYY",
         level: "error",
       });
     } else if (
-      new Date(row.endDate as string) < new Date(row.startDate as string)
+      row.endDate &&
+      parseDate(row.endDate).isBefore(parseDate(row.startDate))
     ) {
       addError("startDate", {
         message: "Start date cannot be after end date",
         level: "error",
       });
     } else if (
-      dayjs(row.startDate as string).isBefore(project.startDate) ||
-      dayjs(row.startDate as string).isAfter(project.endDate)
+      parseDate(row.startDate).isBefore(project.startDate) ||
+      parseDate(row.startDate).isAfter(project.endDate)
     ) {
       addError("startDate", {
         message:
@@ -248,19 +253,20 @@ const AssignCandidateModal = ({
       });
     } else if (!dateRegex.test(row.endDate as string)) {
       addError("endDate", {
-        message: "Invalid format. Please use YYYY-MM-DD",
+        message: "Invalid format. Please use DD/MM/YYYY",
         level: "error",
       });
     } else if (
-      new Date(row.endDate as string) < new Date(row.startDate as string)
+      row.startDate &&
+      parseDate(row.endDate).isBefore(parseDate(row.startDate))
     ) {
       addError("endDate", {
         message: "End date cannot be before start date",
         level: "error",
       });
     } else if (
-      dayjs(row.endDate as string).isBefore(project.startDate) ||
-      dayjs(row.endDate as string).isAfter(project.endDate)
+      parseDate(row.endDate).isBefore(project.startDate) ||
+      parseDate(row.endDate).isAfter(project.endDate)
     ) {
       addError("endDate", {
         message:
@@ -375,6 +381,7 @@ const AssignCandidateModal = ({
             rowHook={rowHook}
             customTheme={{}}
             z-index={0}
+            dateFormat="dd/mm/yyyy"
           />
         </ModalDialog>
       </Modal>
@@ -454,5 +461,22 @@ const AssignCandidateModal = ({
     </>
   );
 };
+
+function parseDate(date: string | boolean) {
+  return dayjs(date as string, ["DD/MM/YYYY"]);
+}
+
+function IsoOrInvalid(date: dayjs.Dayjs) {
+  return date.isValid() ? date.toISOString() : "Invalid";
+}
+
+function reformatDates(data: CddTableDataType[]) {
+  return data.map((cdd) => ({
+    ...cdd,
+    startDate: IsoOrInvalid(parseDate(cdd.startDate)),
+    endDate: IsoOrInvalid(parseDate(cdd.endDate)),
+    dateOfBirth: IsoOrInvalid(parseDate(cdd.dateOfBirth)),
+  }));
+}
 
 export default AssignCandidateModal;

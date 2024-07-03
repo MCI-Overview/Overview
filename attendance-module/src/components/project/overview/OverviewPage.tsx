@@ -29,6 +29,7 @@ import {
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
 } from "@mui/icons-material";
+import { correctTimes } from "../../../utils/date-time";
 
 type displayData = {
   datasets: {
@@ -83,7 +84,29 @@ const ProjectOverview = () => {
           .get(
             `/api/admin/project/${projectCuid}/history?startDate=${formattedStartDate}&endDate=${formattedEndDate}`
           )
-          .then((response) => setData(response.data));
+          .then((response) => {
+            const fetchedData = response.data.map(
+              (att: CustomAdminAttendance) => {
+                const { correctStart, correctEnd } = correctTimes(
+                  att.date,
+                  att.shiftStart,
+                  att.shiftEnd
+                );
+
+                // Needed to convert all string to dayjs object
+                return {
+                  ...att,
+                  date: dayjs(att.date),
+                  shiftStart: correctStart,
+                  shiftEnd: correctEnd,
+                  rawStart: att.rawStart ? dayjs(att.rawStart) : null,
+                  rawEnd: att.rawEnd ? dayjs(att.rawEnd) : null,
+                };
+              }
+            );
+
+            setData(fetchedData);
+          });
       } catch (error) {
         console.error("Error fetching upcoming shifts: ", error);
       }
