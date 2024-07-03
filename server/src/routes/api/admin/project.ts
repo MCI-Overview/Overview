@@ -1,12 +1,19 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../../../client";
-import { EmploymentType, Role, ShiftStatus } from "@prisma/client";
+import {
+  EmploymentType,
+  LeaveStatus,
+  Role,
+  ShiftStatus,
+  ShiftType,
+} from "@prisma/client";
 import { PrismaError } from "@/types";
 import {
   GetProjectDataResponse,
   User,
   CommonLocation,
   CommonShiftGroup,
+  CopyAttendanceResponse,
 } from "@/types/common";
 import {
   defaultDate,
@@ -28,6 +35,7 @@ import {
   PermissionList,
 } from "../../../utils/permissions";
 import dayjs from "dayjs";
+import { doesClash } from "../../../utils/clash";
 
 const projectAPIRouter: Router = Router();
 
@@ -265,12 +273,12 @@ projectAPIRouter.get(
                 .add(startTime.minute(), "minute"),
               shiftEndTime: startTime.isBefore(endTime)
                 ? startDate
-                  .add(endTime.hour(), "hour")
-                  .add(endTime.minute(), "minute")
+                    .add(endTime.hour(), "hour")
+                    .add(endTime.minute(), "minute")
                 : startDate
-                  .add(endTime.hour(), "hour")
-                  .add(endTime.minute(), "minute")
-                  .add(1, "day"),
+                    .add(endTime.hour(), "hour")
+                    .add(endTime.minute(), "minute")
+                    .add(1, "day"),
               consultantCuid: cr.Shift.Project.Manage.filter(
                 (manage) => manage.role === Role.CLIENT_HOLDER
               ).map((manage) => manage.consultantCuid)[0],
@@ -436,6 +444,7 @@ projectAPIRouter.post("/project/:projectCuid/roster", async (req, res) => {
 });
 
 projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
+  const user = req.user as User;
   const { projectCuid } = req.params;
   const { startDate, endDate } = req.query;
 
@@ -446,8 +455,13 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
     end && dayjs(end).isAfter(now)
       ? now.startOf("day").toDate()
       : end
-        ? dayjs(end).startOf("day").toDate()
-        : undefined;
+      ? dayjs(end).startOf("day").toDate()
+      : undefined;
+
+  const isNricUnmasked = await checkPermission(
+    user.cuid,
+    PermissionList.CAN_READ_CANDIDATE_DETAILS
+  );
 
   try {
     const response = await prisma.attendance.findMany({
@@ -477,7 +491,9 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
       response.map((row) => ({
         attendanceCuid: row.cuid,
         date: row.shiftDate,
-        nric: row.Candidate.nric,
+        nric: isNricUnmasked
+          ? row.Candidate.nric
+          : maskNRIC(row.Candidate.nric),
         name: row.Candidate.name,
         shiftStart: row.Shift.startTime,
         shiftEnd: row.Shift.endTime,
@@ -504,7 +520,7 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
   try {
     // Fetch attendance data
     const attendanceResponse = await prisma.attendance.groupBy({
-      by: ['status', 'shiftDate', 'leave'],
+      by: ["status", "shiftDate", "leave"],
       where: {
         Shift: {
           projectCuid: projectCuid,
@@ -528,7 +544,7 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
       LEAVE: Array(7).fill(0),
     };
 
-    attendanceResponse.forEach(item => {
+    attendanceResponse.forEach((item) => {
       if (item.shiftDate && item.status) {
         const dayOfWeek = dayjs(item.shiftDate).day(); // Get the day of the week (0 for Sunday, 6 for Saturday)
         const dayIndex = (dayOfWeek + 6) % 7; // Convert so Monday is 0 and Sunday is 6
@@ -548,14 +564,14 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
 
     // Fetch headcount data
     const nationalityResponse = await prisma.candidate.groupBy({
-      by: ['nationality'],
+      by: ["nationality"],
       _count: {
         nationality: true,
       },
     });
 
     const endDateResponse = await prisma.assign.groupBy({
-      by: ['endDate'],
+      by: ["endDate"],
       where: {
         projectCuid: projectCuid,
       },
@@ -564,24 +580,30 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
       },
     });
 
-    const nationalityData: Record<string, number> = nationalityResponse.reduce((acc: Record<string, number>, item) => {
-      if (item.nationality) {
-        acc[item.nationality.toLowerCase()] = item._count.nationality;
-      }
-      return acc;
-    }, {});
-
-    const endDateData = endDateResponse.reduce((acc, item) => {
-      if (item.endDate) {
-        const isOngoing = item.endDate > new Date();
-        if (isOngoing) {
-          acc.ongoing += item._count.endDate;
-        } else {
-          acc.hasEnded += item._count.endDate;
+    const nationalityData: Record<string, number> = nationalityResponse.reduce(
+      (acc: Record<string, number>, item) => {
+        if (item.nationality) {
+          acc[item.nationality.toLowerCase()] = item._count.nationality;
         }
-      }
-      return acc;
-    }, { ongoing: 0, hasEnded: 0 });
+        return acc;
+      },
+      {}
+    );
+
+    const endDateData = endDateResponse.reduce(
+      (acc, item) => {
+        if (item.endDate) {
+          const isOngoing = item.endDate > new Date();
+          if (isOngoing) {
+            acc.ongoing += item._count.endDate;
+          } else {
+            acc.hasEnded += item._count.endDate;
+          }
+        }
+        return acc;
+      },
+      { ongoing: 0, hasEnded: 0 }
+    );
 
     const datasets = {
       leave: {
@@ -935,14 +957,14 @@ projectAPIRouter.patch("/project", async (req, res) => {
   }
 
   const timeWindowValidity = timeWindow >= 0;
-  if (!timeWindowValidity) {
+  if (timeWindow && !timeWindowValidity) {
     return res.status(400).json({
       message: "timeWindow must be a non-negative number.",
     });
   }
 
   const distanceRadiusValidity = distanceRadius >= 50;
-  if (!distanceRadiusValidity) {
+  if (distanceRadius && !distanceRadiusValidity) {
     return res.status(400).json({
       message: "distanceRadius must be at least 50 meters.",
     });
@@ -983,6 +1005,7 @@ projectAPIRouter.patch("/project", async (req, res) => {
         Manage: {
           some: {
             consultantCuid: user.cuid,
+            role: Role.CLIENT_HOLDER,
           },
         },
       },
@@ -1900,5 +1923,218 @@ projectAPIRouter.delete("/project/:projectCuid/manage", async (req, res) => {
     return res.status(500).send({ error: "Internal server error." });
   }
 });
+
+/**
+/project/:projectCuid/attendance/copy
+
+Takes the attendance data for a week and copies it to the next week.
+
+Parameters:
+projectCuid
+startDate
+endDate
+
+Steps:
+1. Retrieve attendance data for that week (include with Manage data for permission check)
+2. Check permissions
+3. For each attendance:
+	a. Check that its shift's status is active
+	b. Check that its copy will be within candidate assign period
+	c. Check that it does not clash with any other attendance (can be from other projects)
+	d. If any of the above checks fail, add to failure list, continue to next attendance
+	e. Create new attendance
+		i. Check LeaveType => if HALF_DAY, adjust ShiftType
+4. Return failure list in response
+ */
+projectAPIRouter.post(
+  "/project/:projectCuid/attendance/copy",
+  async (req, res) => {
+    const user = req.user as User;
+    const { projectCuid } = req.params;
+    const { startDate, endDate } = req.body;
+
+    if (!projectCuid) {
+      return res.status(400).send("projectCuid is required.");
+    }
+
+    if (!startDate || isNaN(Date.parse(startDate))) {
+      return res.status(400).send("valid startDate is required.");
+    }
+
+    if (!endDate || isNaN(Date.parse(endDate))) {
+      return res.status(400).send("valid endDate is required.");
+    }
+
+    let projectData;
+    try {
+      projectData = await prisma.project.findUniqueOrThrow({
+        where: {
+          cuid: projectCuid,
+        },
+        include: {
+          Manage: true,
+          Assign: true,
+        },
+      });
+    } catch (error) {
+      const prismaError = error as PrismaError;
+      if (prismaError.code === "P2025") {
+        return res.status(404).send("Project does not exist.");
+      }
+
+      console.error(error);
+      return res.status(500).send({ error: "Internal server error." });
+    }
+
+    const hasPermission =
+      projectData.Manage.some(
+        (m) => m.role === Role.CLIENT_HOLDER && m.consultantCuid === user.cuid
+      ) ||
+      (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+    if (!hasPermission) {
+      return res
+        .status(401)
+        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+    }
+
+    try {
+      const attendanceList = await prisma.attendance.findMany({
+        where: {
+          shiftDate: {
+            gte: new Date(startDate),
+            lte: new Date(endDate),
+          },
+          Shift: {
+            projectCuid,
+          },
+        },
+        include: {
+          Shift: true,
+        },
+      });
+
+      const failureList: CopyAttendanceResponse[] = [];
+
+      for (const attendance of attendanceList) {
+        const pushFailure = (error: string) => {
+          failureList.push({
+            attendanceCuid: attendance.cuid,
+            date: attendance.shiftDate.toISOString(),
+            startTime: attendance.Shift.startTime.toISOString(),
+            endTime: attendance.Shift.endTime.toISOString(),
+            error,
+          });
+        };
+
+        // Check if shift is active
+        if (attendance.Shift.status === ShiftStatus.ARCHIVED) {
+          pushFailure("Shift has been archived.");
+          continue;
+        }
+
+        // Check if new attendance is within candidate assign period
+        const assignData = projectData.Assign.find(
+          (assign) => assign.candidateCuid === attendance.candidateCuid
+        );
+        if (!assignData) {
+          // This should never happen
+          pushFailure("Candidate is not assigned to project.");
+          continue;
+        }
+        if (
+          dayjs(attendance.shiftDate).add(7, "day").isAfter(assignData.endDate)
+        ) {
+          pushFailure(
+            "New attendance date is not within candidate assign period."
+          );
+          continue;
+        }
+
+        // Check if attendance clashes with any other attendance
+        const attendanceStart =
+          attendance.shiftType === "SECOND_HALF"
+            ? attendance.Shift.halfDayStartTime!
+            : attendance.Shift.startTime;
+        const attendanceEnd =
+          attendance.shiftType === "FIRST_HALF"
+            ? attendance.Shift.halfDayEndTime!
+            : attendance.Shift.endTime;
+        const allExistingAttendances = await prisma.candidate
+          .findMany({
+            where: {
+              cuid: attendance.candidateCuid,
+            },
+            include: {
+              Attendance: {
+                where: {
+                  shiftDate: {
+                    // Includes the day before and the day of the attendance
+                    gte: dayjs(attendance.shiftDate).add(6, "day").toDate(),
+                    lte: dayjs(attendance.shiftDate).add(7, "day").toDate(),
+                  },
+                },
+                include: {
+                  Shift: true,
+                },
+              },
+            },
+          })
+          .then((data) => data[0].Attendance);
+        if (
+          allExistingAttendances.some((exisitingAttendance) => {
+            const existingStart =
+              exisitingAttendance.shiftType === "SECOND_HALF"
+                ? exisitingAttendance.Shift.halfDayStartTime!
+                : exisitingAttendance.Shift.startTime;
+            const existingEnd =
+              exisitingAttendance.shiftType === "FIRST_HALF"
+                ? exisitingAttendance.Shift.halfDayEndTime!
+                : exisitingAttendance.Shift.endTime;
+
+            return doesClash(
+              attendance.shiftDate,
+              attendanceStart,
+              attendanceEnd,
+              exisitingAttendance.shiftDate,
+              existingStart,
+              existingEnd
+            );
+          })
+        ) {
+          pushFailure("New attendance clashes with existing attendance.");
+          continue;
+        }
+
+        // Create new attendance
+        const newAttendanceData = {
+          candidateCuid: attendance.candidateCuid,
+          shiftCuid: attendance.shiftCuid,
+          shiftDate: dayjs(attendance.shiftDate).add(7, "day").toDate(),
+          shiftType:
+            attendance.leave === LeaveStatus.HALFDAY
+              ? ShiftType.FULL_DAY
+              : attendance.shiftType,
+        };
+
+        try {
+          await prisma.attendance.create({
+            data: newAttendanceData,
+          });
+        } catch (error) {
+          console.error(error);
+          pushFailure("ERROR: Unable to create new attendance");
+        }
+      }
+
+      return res.send({
+        failureList,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: "Internal server error." });
+    }
+  }
+);
 
 export default projectAPIRouter;

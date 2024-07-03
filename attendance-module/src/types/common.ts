@@ -264,3 +264,11 @@ export type getAttendanceResponse = {
     };
   };
 };
+
+export type CopyAttendanceResponse = {
+  attendanceCuid: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  error: string;
+};

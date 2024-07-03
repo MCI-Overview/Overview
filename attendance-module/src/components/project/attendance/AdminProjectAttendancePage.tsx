@@ -2,6 +2,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { CustomAdminAttendance } from "../../../types";
+import { correctTimes } from "../../../utils/date-time";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import AdminProjectAttendanceTable from "./AdminProjectAttendanceTable";
@@ -49,8 +50,26 @@ const AdminProjectAttendancePage = () => {
           "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
         );
         const url = `/api/admin/project/${project.cuid}/history?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
+
         const response = await axios.get(url);
-        const fetchedData = response.data;
+        const fetchedData = response.data.map((att: CustomAdminAttendance) => {
+          const { correctStart, correctEnd } = correctTimes(
+            att.date,
+            att.shiftStart,
+            att.shiftEnd
+          );
+
+          // Needed to convert all string to dayjs object
+          return {
+            ...att,
+            date: dayjs(att.date),
+            shiftStart: correctStart,
+            shiftEnd: correctEnd,
+            rawStart: att.rawStart ? dayjs(att.rawStart) : null,
+            rawEnd: att.rawEnd ? dayjs(att.rawEnd) : null,
+          };
+        });
+
         setData(fetchedData);
       } catch (error) {
         console.error("Error fetching upcoming shifts: ", error);

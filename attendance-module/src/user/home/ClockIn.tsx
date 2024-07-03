@@ -1,15 +1,15 @@
 import axios from "axios";
-import toast from "react-hot-toast";
-import { useEffect, useState, useRef } from "react";
-import Webcam from "react-webcam";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import Clock from "./Clock";
-import { CommonLocation, getAttendanceResponse } from "../../types/common";
 import dayjs, { Dayjs } from "dayjs";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import L from "leaflet";
+import toast from "react-hot-toast";
+import "leaflet/dist/leaflet.css";
+import { useEffect, useState, useRef } from "react";
+import { correctTimes } from "../../utils/date-time";
+import { CommonLocation, getAttendanceResponse } from "../../types/common";
+
+import Clock from "./Clock";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import Webcam from "react-webcam";
 
 import {
   Box,
@@ -24,8 +24,12 @@ import {
   CardOverflow,
   CardActions,
 } from "@mui/joy";
+import {
+  CameraAltRounded as CameraAltIcon,
+  LocationOnRounded as LocationOnIcon,
+} from "@mui/icons-material";
 
-export default function ClockIn() {
+const ClockIn = () => {
   const isDarkMode = localStorage.getItem("joy-mode") === "dark";
 
   const [currAttendance, setCurrAttendance] = useState<
@@ -658,7 +662,7 @@ export default function ClockIn() {
       </Modal>
     </>
   );
-}
+};
 
 const getCurrAttendance = (attendanceData: getAttendanceResponse[]) => {
   const currAttendance = attendanceData.find((attendance) => {
@@ -686,27 +690,4 @@ const getCurrAttendance = (attendanceData: getAttendanceResponse[]) => {
   return currAttendance;
 };
 
-function correctTimes(
-  mainDate: Dayjs,
-  startTime: Dayjs,
-  endTime: Dayjs
-): { correctStart: Dayjs; correctEnd: Dayjs } {
-  // Replace the date part of the start and end times with the main date
-  const correctStart = mainDate
-    .hour(startTime.hour())
-    .minute(startTime.minute())
-    .second(startTime.second())
-    .millisecond(startTime.millisecond());
-
-  let correctEnd = mainDate
-    .hour(endTime.hour())
-    .minute(endTime.minute())
-    .second(endTime.second())
-    .millisecond(endTime.millisecond());
-
-  if (correctEnd.isBefore(correctStart)) {
-    correctEnd = correctEnd.add(1, "day");
-  }
-
-  return { correctStart, correctEnd };
-}
+export default ClockIn;
