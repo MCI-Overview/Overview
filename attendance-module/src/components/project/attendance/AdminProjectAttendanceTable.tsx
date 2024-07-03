@@ -4,36 +4,27 @@ import { TdTypo, ThTypo } from "../ui/TableTypo";
 
 import AttendanceStatusChip from "./AttendanceStatusChip";
 
-import {
-  Dropdown,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItem,
-  Sheet,
-  Table,
-} from "@mui/joy";
-import { MoreHorizRounded as MoreHorizIcon } from "@mui/icons-material";
+import { Sheet, Table } from "@mui/joy";
 
 type AdminProjectAttendanceTableProps = {
-  data: CustomAdminAttendance[];
+  data: CustomAdminAttendance[] | null;
 };
 
-function RowMenu() {
-  return (
-    <Dropdown>
-      <MenuButton
-        slots={{ root: IconButton }}
-        slotProps={{ root: { variant: "plain", color: "neutral", size: "sm" } }}
-      >
-        <MoreHorizIcon />
-      </MenuButton>
-      <Menu size="sm" sx={{ minWidth: 140 }}>
-        <MenuItem>Edit</MenuItem>
-      </Menu>
-    </Dropdown>
-  );
-}
+// function RowMenu() {
+//   return (
+//     <Dropdown>
+//       <MenuButton
+//         slots={{ root: IconButton }}
+//         slotProps={{ root: { variant: "plain", color: "neutral", size: "sm" } }}
+//       >
+//         <MoreHorizIcon />
+//       </MenuButton>
+//       <Menu size="sm" sx={{ minWidth: 140 }}>
+//         <MenuItem>Edit</MenuItem>
+//       </Menu>
+//     </Dropdown>
+//   );
+// }
 
 const AdminProjectAttendanceTable = ({
   data,
@@ -73,44 +64,42 @@ const AdminProjectAttendanceTable = ({
             <ThTypo>Clock In</ThTypo>
             <ThTypo>Clock Out</ThTypo>
             <ThTypo>Status</ThTypo>
-            <ThTypo> </ThTypo>
           </tr>
         </thead>
-        <tbody>
-          {data.length === 0 ? (
-            <tr>
-              <TdTypo colSpan={9}>No candidates found</TdTypo>
-            </tr>
-          ) : (
-            data.map((att: CustomAdminAttendance) => (
-              <tr key={att.attendanceCuid}>
-                <TdTypo>{att.nric}</TdTypo>
-                <TdTypo>{att.name}</TdTypo>
-                <TdTypo>{att.date.format("DD/MM/YYYY")}</TdTypo>
-                <TdTypo>{att.shiftStart.format("HH:mm")}</TdTypo>
-                <TdTypo>{att.shiftEnd.format("HH:mm")}</TdTypo>
-                <TdTypo color={getStartColor(att.rawStart, att.shiftStart)}>
-                  {att.rawStart ? att.rawStart.format("HH:mm") : "-"}
-                </TdTypo>
-                <TdTypo
-                  color={getEndColor(att.rawStart, att.rawEnd, att.shiftEnd)}
-                >
-                  {att.rawEnd
-                    ? att.rawEnd.format("HH:mm")
-                    : att.rawStart
-                    ? "NIL"
-                    : "-"}
-                </TdTypo>
-                <td style={{ overflow: "clip" }}>
-                  <AttendanceStatusChip status={att.status} />
-                </td>
-                <td>
-                  <RowMenu />
-                </td>
+        {data && (
+          <tbody>
+            {data.length === 0 ? (
+              <tr>
+                <TdTypo colSpan={8}>No candidates found</TdTypo>
               </tr>
-            ))
-          )}
-        </tbody>
+            ) : (
+              data.map((att: CustomAdminAttendance) => (
+                <tr key={att.attendanceCuid}>
+                  <TdTypo>{att.nric}</TdTypo>
+                  <TdTypo>{att.name}</TdTypo>
+                  <TdTypo>{att.date.format("DD/MM/YYYY")}</TdTypo>
+                  <TdTypo>{att.shiftStart.format("HH:mm")}</TdTypo>
+                  <TdTypo>{att.shiftEnd.format("HH:mm")}</TdTypo>
+                  <TdTypo color={getStartColor(att.rawStart, att.shiftStart)}>
+                    {att.rawStart ? att.rawStart.format("HH:mm") : "-"}
+                  </TdTypo>
+                  <TdTypo
+                    color={getEndColor(att.rawStart, att.rawEnd, att.shiftEnd)}
+                  >
+                    {att.rawEnd
+                      ? att.rawEnd.format("HH:mm")
+                      : att.rawStart
+                      ? "NIL"
+                      : "-"}
+                  </TdTypo>
+                  <TdTypo>
+                    <AttendanceStatusChip status={att.status} />
+                  </TdTypo>
+                </tr>
+              ))
+            )}
+          </tbody>
+        )}
       </Table>
     </Sheet>
   );

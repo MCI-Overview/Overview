@@ -7,7 +7,7 @@ import {
   BreadcrumbPart,
 } from "../components/project/ui/UserBreadcrumb";
 import ViewShifts from "./shifts/UserUpcomingShiftsPage";
-import ViewAttendance from "./shifts/UserAttendanceHistoryPage";
+import UserAttendanceHistoryPage from "./shifts/UserAttendanceHistoryPage";
 
 const UserShifts: FC = () => {
   const location = useLocation();
@@ -21,7 +21,7 @@ const UserShifts: FC = () => {
     },
     {
       label: "History",
-      content: <ViewAttendance />,
+      content: <UserAttendanceHistoryPage />,
     },
   ];
 

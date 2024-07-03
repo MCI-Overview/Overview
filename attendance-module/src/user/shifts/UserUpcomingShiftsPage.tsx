@@ -22,7 +22,7 @@ type Page = {
 };
 
 const ViewShifts = () => {
-  const [data, setData] = useState<CustomAttendance[]>([]);
+  const [data, setData] = useState<CustomAttendance[] | null>(null);
   const [page, setPage] = useState<Page>({
     isFirstPage: true,
     isLastPage: true,
@@ -73,6 +73,17 @@ const ViewShifts = () => {
     fetchUpcomingShifts(page.currentPage);
   }, [page.currentPage]);
 
+  const sortedData =
+    data?.sort((a, b) => {
+      if (dayjs(a.shiftDate).isBefore(dayjs(b.shiftDate))) return -1;
+      if (dayjs(a.shiftDate).isAfter(dayjs(b.shiftDate))) return 1;
+
+      if (a.Shift.startTime < b.Shift.startTime) return -1;
+      if (a.Shift.startTime > b.Shift.startTime) return 1;
+
+      return 0;
+    }) || null;
+
   return (
     <Box
       sx={{
@@ -100,15 +111,20 @@ const ViewShifts = () => {
             placeholder="Search"
             startDecorator={<SearchIcon />}
             onChange={handleDateChange}
-            disabled={data.length === 0}
+            disabled={!data}
+            slotProps={{
+              input: {
+                min: dayjs().format("YYYY-MM-DD"),
+              },
+            }}
           />
         </FormControl>
       </Box>
 
       <SmallScreenDivider />
 
-      <UpcomingShifts data={data} />
-      <UpcomingShiftsM data={data} />
+      <UpcomingShifts data={sortedData} />
+      <UpcomingShiftsM data={sortedData} />
 
       <PaginationFooter
         maxPage={page.pageCount}

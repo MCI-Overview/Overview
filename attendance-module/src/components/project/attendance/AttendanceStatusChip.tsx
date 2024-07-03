@@ -3,6 +3,7 @@ import {
   CheckRounded as CheckIcon,
   QueryBuilderRounded as QueryBuilderIcon,
   MedicalServicesOutlined as MedicalServicesIcon,
+  EventNoteOutlined as EventNoteIcon,
 } from "@mui/icons-material";
 import { Chip, ColorPaletteProp } from "@mui/joy";
 import { readableEnum } from "../../../utils/capitalize";
@@ -12,6 +13,18 @@ interface AttendanceStatusChipProps {
 }
 
 const AttendanceStatusChip = ({ status }: AttendanceStatusChipProps) => {
+  if (!status)
+    return (
+      <Chip
+        variant="outlined"
+        size="sm"
+        color="primary"
+        startDecorator={<EventNoteIcon />}
+      >
+        Upcoming
+      </Chip>
+    );
+
   return (
     <Chip
       variant="soft"
@@ -22,7 +35,7 @@ const AttendanceStatusChip = ({ status }: AttendanceStatusChipProps) => {
           LATE: <QueryBuilderIcon />,
           NO_SHOW: <BlockIcon />,
           MEDICAL: <MedicalServicesIcon />,
-        }[status || "NO_SHOW"]
+        }[status]
       }
       color={
         {
@@ -30,10 +43,10 @@ const AttendanceStatusChip = ({ status }: AttendanceStatusChipProps) => {
           LATE: "warning",
           NO_SHOW: "danger",
           MEDICAL: "neutral",
-        }[status || "NO_SHOW"] as ColorPaletteProp
+        }[status] as ColorPaletteProp
       }
     >
-      {readableEnum(status || "NO_SHOW")}
+      {readableEnum(status)}
     </Chip>
   );
 };

@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { Fragment } from "react";
 import { CustomAttendance } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
+import { correctTimes } from "../../utils/date-time";
 
 import AttendanceStatusChip from "../../components/project/attendance/AttendanceStatusChip";
 
@@ -15,10 +16,12 @@ import {
 } from "@mui/joy";
 
 interface AttendanceHistoryMProps {
-  data: CustomAttendance[];
+  data: CustomAttendance[] | null;
 }
 
 const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
+  if (!data) return null;
+
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
       {data.length === 0 ? (
@@ -32,52 +35,60 @@ const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
             "--ListItem-paddingX": 0,
           }}
         >
-          {data.map((att: CustomAttendance) => (
-            <Fragment key={att.cuid}>
-              <ListItem
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "start",
-                }}
-              >
-                <ListItemContent
-                  sx={{ display: "flex", gap: 2, alignItems: "start" }}
+          {data.map((att: CustomAttendance) => {
+            const { correctStart, correctEnd } = correctTimes(
+              dayjs(att.shiftDate),
+              dayjs(
+                att.shiftType === "SECOND_HALF"
+                  ? att.Shift.halfDayStartTime
+                  : att.Shift.startTime
+              ),
+              dayjs(
+                att.shiftType === "FIRST_HALF"
+                  ? att.Shift.halfDayEndTime
+                  : att.Shift.endTime
+              )
+            );
+
+            return (
+              <Fragment key={att.cuid}>
+                <ListItem
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "start",
+                  }}
                 >
-                  <Box>
-                    <Typography fontWeight={600} gutterBottom>
+                  <ListItemContent>
+                    <Typography fontWeight={600}>
                       {dayjs(att.shiftDate).format("DD/MM/YYYY")}
                     </Typography>
-                    <Typography level="body-xs" gutterBottom>
-                      {dayjs(att.Shift.startTime).format("HH:mm")} to{" "}
-                      {dayjs(att.Shift.endTime).format("HH:mm")}
+                    <Typography level="body-xs">
+                      {att.Shift.Project.name}
                     </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 0.5,
-                        mb: 1,
-                      }}
-                    >
-                      <Typography level="body-xs">
-                        {att.Shift.Project.name}
-                      </Typography>
-                      <Typography level="body-xs">&bull;</Typography>
-                      <Typography level="body-xs">
-                        {readableEnum(att.shiftType)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </ListItemContent>
+                    <Typography level="body-xs">
+                      {"Shift Type: "}
+                      {readableEnum(att.shiftType)}
+                    </Typography>
+                    <Typography level="body-xs">
+                      {"Shift Time: "}
+                      {correctStart.format("HH:mm")} to{" "}
+                      {correctEnd.format("HH:mm")}
+                    </Typography>
+                    <Typography level="body-xs">
+                      {"Clocked In: "}
+                      {dayjs(att.clockInTime).format("HH:mm")} to{" "}
+                      {dayjs(att.clockOutTime).format("HH:mm")}
+                    </Typography>
+                  </ListItemContent>
 
-                <AttendanceStatusChip status={att.status} />
-              </ListItem>
+                  <AttendanceStatusChip status={att.status} />
+                </ListItem>
 
-              <ListDivider />
-            </Fragment>
-          ))}
+                <ListDivider />
+              </Fragment>
+            );
+          })}
         </List>
       )}
     </Box>
