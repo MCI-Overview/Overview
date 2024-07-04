@@ -35,7 +35,12 @@ export function UserContextProvider({
         }
       })
       .catch((error) => {
-        if (!error.response) navigate("/504");
+        if (!error.response) {
+          navigate("/504");
+        } else {
+          setUser(null);
+          if (window.location.pathname !== "/") navigate("/");
+        }
       })
       .finally(finallyFunction);
   }

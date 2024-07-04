@@ -1,7 +1,6 @@
 import { useState, FormEvent } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-// import AuthLayout from "./AuthLayout";
 
 import {
   FormLabel,
