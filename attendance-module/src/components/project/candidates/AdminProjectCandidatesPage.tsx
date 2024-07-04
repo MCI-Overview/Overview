@@ -7,9 +7,11 @@ import { CommonCandidate } from "../../../types/common";
 import DeleteCandidateModal from "./DeleteCandidateModal";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import { Box, Button, Input, FormControl, FormLabel, Stack } from "@mui/joy";
+import { Box, Input, FormControl, FormLabel, Stack, Tooltip, IconButton, Dropdown, MenuButton, Menu, MenuItem } from "@mui/joy";
 import SearchIcon from "@mui/icons-material/Search";
 import SmallScreenDivider from "../ui/SmallScreenDivider";
+import AddIcon from '@mui/icons-material/Add';
+import AddCandidateModal from "./AddCandidateModal";
 
 const AdminProjectCandidatesPage = () => {
   const { project, updateProject } = useProjectContext();
@@ -37,7 +39,9 @@ const AdminProjectCandidatesPage = () => {
   const [searchValue, setSearchValue] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [candidatesToDelete, setCandidatesToDelete] = useState<string[]>([]);
+
 
   // TODO: Fix type
   const matchSearchValue = (c: CommonCandidate) =>
@@ -93,15 +97,34 @@ const AdminProjectCandidatesPage = () => {
           />
         </FormControl>
 
-        <Box sx={{ display: "flex" }}>
-          <Button
+        <Dropdown>
+          <MenuButton
+            variant="solid"
+            color="primary"
             size="sm"
-            onClick={() => setIsUploadOpen(true)}
             sx={{ mt: "auto", display: { xs: "none", sm: "block" } }}
+          >Add candidates</MenuButton>
+          <Menu>
+            <MenuItem onClick={() => setAddModalOpen(true)}>
+              Add a candidate
+            </MenuItem>
+            <MenuItem onClick={() => setIsUploadOpen(true)}>
+              Mass upload
+            </MenuItem>
+          </Menu>
+        </Dropdown>
+
+        <Tooltip title="Add a candidate" placement="top" size="sm">
+          <IconButton
+            size="sm"
+            color="primary"
+            variant="solid"
+            onClick={() => setAddModalOpen(true)}
+            sx={{ mt: "auto", display: { xs: "block", sm: "none" } }}
           >
-            Import candidates
-          </Button>
-        </Box>
+            <AddIcon />
+          </IconButton>
+        </Tooltip>
       </Box>
 
       <SmallScreenDivider />
@@ -123,6 +146,11 @@ const AdminProjectCandidatesPage = () => {
         candidatesData={candidatesData}
         candidatesToDelete={candidatesToDelete}
         handleDeleteCandidates={handleDeleteCandidates}
+      />
+
+      <AddCandidateModal
+        isAddModalOpen={isAddModalOpen}
+        setAddModalOpen={setAddModalOpen}
       />
     </Stack>
   );
