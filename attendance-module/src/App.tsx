@@ -25,9 +25,7 @@ import UserRequests from "./user/UserRequests";
 import CandidateProfile from "./user/Profile";
 import LoadUser from "./components/LoadUser";
 import UserProjects from "./user/UserProjects";
-// import LoginAdmin from "./login/LoginAdmin";
 import AdminHome from "./admin/Home";
-// import LoginUser from "./login/LoginUser";
 import Sidebar from "./components/Sidebar";
 import UserShifts from "./user/UserShifts";
 import Header from "./components/Header";
@@ -124,7 +122,6 @@ function App() {
                     {/* Admin routes */}
 
                     <Route element={<PrivateAdminRoutes />}>
-                      {/* <Route path="/admin" element={<LoginAdmin />} /> */}
                       <Route path="/admin/home" element={<AdminHome />} />
                       <Route
                         path="/admin/project/:projectCuid?"

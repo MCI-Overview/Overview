@@ -60,10 +60,6 @@ export function PrivateAdminRoutes() {
   if (loading) return null;
 
   if (!user) {
-    // if (currentPath === "/") {
-    //   return <Outlet />;
-    // }
-
     return <Navigate to="/" />;
   }
 

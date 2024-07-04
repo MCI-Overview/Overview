@@ -19,7 +19,7 @@ adminAuthRouter.get(
   "/login",
   passport.authenticate("microsoft", {
     prompt: "select_account",
-  }),
+  })
 );
 
 adminAuthRouter.get(
@@ -28,8 +28,8 @@ adminAuthRouter.get(
     failureRedirect: `${SERVER_URL}/#/admin/login`,
   }),
   (_req, res) => {
-    res.redirect(`${CLIENT_URL}/#/admin`);
-  },
+    res.redirect(`${CLIENT_URL}/#/`);
+  }
 );
 
 export default adminAuthRouter;
