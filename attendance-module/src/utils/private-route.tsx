@@ -60,11 +60,11 @@ export function PrivateAdminRoutes() {
   if (loading) return null;
 
   if (!user) {
-    if (currentPath === "/admin") {
-      return <Outlet />;
-    }
+    // if (currentPath === "/") {
+    //   return <Outlet />;
+    // }
 
-    return <Navigate to="/admin" />;
+    return <Navigate to="/" />;
   }
 
   if (user.userType === "User") {

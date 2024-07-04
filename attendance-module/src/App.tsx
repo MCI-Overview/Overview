@@ -25,9 +25,9 @@ import UserRequests from "./user/UserRequests";
 import CandidateProfile from "./user/Profile";
 import LoadUser from "./components/LoadUser";
 import UserProjects from "./user/UserProjects";
-import LoginAdmin from "./login/LoginAdmin";
+// import LoginAdmin from "./login/LoginAdmin";
 import AdminHome from "./admin/Home";
-import LoginUser from "./login/LoginUser";
+// import LoginUser from "./login/LoginUser";
 import Sidebar from "./components/Sidebar";
 import UserShifts from "./user/UserShifts";
 import Header from "./components/Header";
@@ -36,6 +36,7 @@ import Project from "./admin/Project";
 import OnboardingPage from "./user/onboarding/OnboardingPage";
 import NotFound from "./components/NotFound";
 import GatewayTimeout from "./components/GatewayTimeout";
+import Login from "./login/Login";
 
 dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
@@ -108,7 +109,7 @@ function App() {
                 <ProjectContextProvider>
                   <Routes>
                     <Route element={<PrivateUserRoutes />}>
-                      <Route path="/" element={<LoginUser />} />
+                      <Route path="/" element={<Login />} />
                       <Route path="/user/new" element={<OnboardingPage />} />
                       <Route path="/user/home" element={<UserHome />} />
                       <Route path="/user/requests" element={<UserRequests />} />
@@ -123,7 +124,7 @@ function App() {
                     {/* Admin routes */}
 
                     <Route element={<PrivateAdminRoutes />}>
-                      <Route path="/admin" element={<LoginAdmin />} />
+                      {/* <Route path="/admin" element={<LoginAdmin />} /> */}
                       <Route path="/admin/home" element={<AdminHome />} />
                       <Route
                         path="/admin/project/:projectCuid?"
