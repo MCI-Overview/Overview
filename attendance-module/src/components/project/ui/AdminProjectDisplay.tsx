@@ -42,7 +42,9 @@ export function AdminProjectDisplay({
     >
       <Box
         sx={{
-          display: "flex",
+          display: {
+            sm: 'flex'
+          }
         }}
         justifyContent="space-between"
       >

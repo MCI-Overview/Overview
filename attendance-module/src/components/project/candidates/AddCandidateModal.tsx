@@ -149,6 +149,8 @@ const AddCandidateModal = ({ isAddModalOpen, setAddModalOpen }: AddCandidateModa
                     variant="outlined"
                     sx={{
                         maxWidth: 500,
+                        maxHeight: '100vh',
+                        overflow: 'auto',
                         borderRadius: 'md',
                         p: 3,
                         boxShadow: 'lg',
