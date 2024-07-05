@@ -1134,7 +1134,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
     return await prisma.$transaction(async (prisma) => {
       const candidateData = await prisma.candidate.createManyAndReturn({
         data: candidateObjects,
-        // skipDuplicates: true,
+        skipDuplicates: true,
       });
 
       await Promise.all(

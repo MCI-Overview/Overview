@@ -188,7 +188,12 @@ export default function Sidebar() {
         onClick={() => closeSidebar()}
       />
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        <IconButton variant="soft" size="sm">
+        <IconButton
+          size="sm"
+          variant="soft"
+          sx={{ borderRadius: 100 }}
+          disabled
+        >
           <img src="/Images/ovlogo1.svg"></img>
         </IconButton>
         <Typography level="title-lg">Overview</Typography>

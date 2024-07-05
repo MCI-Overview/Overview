@@ -1,11 +1,17 @@
 import axios from "axios";
+import dayjs from "dayjs";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { ReactSpreadsheetImport } from "react-spreadsheet-import";
 import { Result, RowHook } from "react-spreadsheet-import/types/types";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { dateRegex, nricRegex, contactRegex } from "../../../utils/validation";
+import {
+  contactRegex,
+  dateRegex,
+  nricRegex,
+  sanitizeContact,
+} from "../../../utils/validation";
 import { generateCapitalizations } from "../../../utils/capitalize";
 import CandidateTable, {
   CandidateTableProps,
@@ -24,7 +30,6 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
-import dayjs from "dayjs";
 
 interface AssignCandidateModalProps {
   isUploadOpen: boolean;
@@ -178,9 +183,10 @@ const AssignCandidateModal = ({
         message: "Contact number is required",
         level: "error",
       });
-    } else if (!contactRegex.test(row.contact as string)) {
+    } else if (!contactRegex.test(sanitizeContact(row.contact as string))) {
       addError("contact", {
-        message: "Invalid contact number",
+        message:
+          "Invalid contact number. Please provide an 8 digit number starting with 8 or 9.",
         level: "error",
       });
     }
@@ -299,7 +305,9 @@ const AssignCandidateModal = ({
     return {
       nric: row.nric ? (row.nric as string).trim() : row.nric,
       name: row.name ? (row.name as string).trim() : row.name,
-      contact: row.contact ? (row.contact as string).trim() : row.contact,
+      contact: row.contact
+        ? sanitizeContact(row.contact as string)
+        : row.contact,
       dateOfBirth: row.dateOfBirth
         ? (row.dateOfBirth as string).trim()
         : row.dateOfBirth,
