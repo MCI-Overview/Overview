@@ -43,6 +43,7 @@ model Attendance {
   leave         LeaveStatus?
   shiftDate     DateTime
   shiftType     ShiftType         @default(FULL_DAY)
+  postalCode    String?
   Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
   Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
 
