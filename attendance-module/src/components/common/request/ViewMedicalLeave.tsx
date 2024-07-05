@@ -1,7 +1,10 @@
-import { Button, List, ListItem, Stack, Typography } from "@mui/joy";
-import { CustomRequest } from "../../../types";
 import axios from "axios";
+import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+import { CustomRequest } from "../../../types";
+
+import { Box, Button, Stack, Typography } from "@mui/joy";
+import { correctTimes } from "../../../utils/date-time";
 
 export default function ViewMedicalLeave({
   request,
@@ -23,7 +26,26 @@ export default function ViewMedicalLeave({
 
   useEffect(() => {
     axios.get(rosterRequestURL).then((response) => {
-      setAffectedRosters(response.data);
+      setAffectedRosters(
+        response.data.map((roster: any) => {
+          const { correctStart, correctEnd } = correctTimes(
+            dayjs(roster.shiftDate),
+            roster.shiftType === "SECOND_HALF"
+              ? dayjs(roster.Shift.halfDayStartTime)
+              : dayjs(roster.Shift.startTime),
+            roster.shiftType === "FIRST_HALF"
+              ? dayjs(roster.Shift.halfDayEndTime)
+              : dayjs(roster.Shift.endTime)
+          );
+
+          return {
+            cuid: roster.cuid,
+            shiftDate: dayjs(roster.shiftDate).format("DD/MM/YY"),
+            startTime: correctStart.format("HH:mm"),
+            endTime: correctEnd.format("HH:mm"),
+          };
+        })
+      );
     });
   }, [rosterRequestURL]);
 
@@ -48,17 +70,32 @@ export default function ViewMedicalLeave({
       <Typography level="title-md">
         {request.Assign.Candidate?.name}'s Medical Leave
       </Typography>
-      <Typography level="body-md">
-        Start Date: {requestData.startDate}
+      <Typography level="body-sm">
+        Duration: {dayjs(requestData.startDate).format("DD/MM/YY")}
+        {" to "}
+        {dayjs(requestData.startDate)
+          .add(requestData.numberOfDays - 1, "day")
+          .format("DD/MM/YY")}
       </Typography>
-      <Typography level="body-md">
-        Number of Days: {requestData.numberOfDays}
-      </Typography>
-      <List>
-        {affectedRosters.map((roster: { cuid: string; shiftDate: string }) => (
-          <ListItem key={roster.cuid}>Roster: {roster.shiftDate}</ListItem>
-        ))}
-      </List>
+
+      <Box>
+        <Typography level="body-sm">Affected Rosters:</Typography>
+        {affectedRosters.map(
+          (roster: {
+            cuid: string;
+            shiftDate: string;
+            startTime: string;
+            endTime: string;
+          }) => (
+            <Typography key={roster.cuid} level="body-sm">
+              {dayjs(roster.shiftDate).format("DD/MM/YY")}
+              {": "}
+              {roster.startTime} {" - "} {roster.endTime}
+            </Typography>
+          )
+        )}
+      </Box>
+
       {showMc && mcPreview && (
         <img
           src={mcPreview}
