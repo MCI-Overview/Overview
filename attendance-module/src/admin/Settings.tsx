@@ -36,10 +36,7 @@ const sections = [
   {
     title: "Notifications",
     icon: <NotificationsIcon />,
-    children: <div>
-      Notifications
-    </div>
-    ),
+    children: <div>Notifications</div>,
   },
   {
     title: "Advanced",
