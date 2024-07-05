@@ -1,10 +1,11 @@
 import { sha256 } from "js-sha256";
 
-export const MEDICAL_COLOR = "rgba(54, 162, 235, 0.8 )";
+export const MEDICAL_COLOR = "rgba(54, 162, 235, 0.8)";
 export const LATE_COLOR = "rgba(255, 99, 132, 0.8)";
 export const LEAVE_COLOR = "rgba(75, 90, 192, 0.8)";
 export const ON_TIME_COLOR = "rgba(75, 192, 192)";
 export const NO_SHOW_COLOR = "rgba(255, 150, 120, 0.8)";
+export const UPCOMING_COLOR = "grey";
 
 export function seedToColor(seed: string): string {
   // Use SHA-256 to hash the CUID
