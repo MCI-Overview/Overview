@@ -82,7 +82,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ title, subtitle, children, link
                     >
                         <Box sx={{ gap: 2, display: 'flex', alignItems: 'center' }}>
                             <IconButton variant="soft" size="sm">
-                                <img src='/public/Images/ovlogo1.svg' alt="Logo" />
+                                <img src='/Images/ovlogo1.svg' alt="Logo" />
                             </IconButton>
                             <Typography level="title-lg">Overview</Typography>
                         </Box>
