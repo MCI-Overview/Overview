@@ -78,7 +78,10 @@ const UpcomingShifts = ({ data }: UpcomingShiftsProps) => {
                     <TdTypo>{correctStart.format("HH:mm")}</TdTypo>
                     <TdTypo>{correctEnd.format("HH:mm")}</TdTypo>
                     <TdTypo>
-                      <AttendanceStatusChip status={att.status} />
+                      <AttendanceStatusChip
+                        leave={att.leave}
+                        status={att.status}
+                      />
                     </TdTypo>
                   </tr>
                 );

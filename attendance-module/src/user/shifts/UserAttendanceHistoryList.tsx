@@ -82,7 +82,7 @@ const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
                     </Typography>
                   </ListItemContent>
 
-                  <AttendanceStatusChip status={att.status} />
+                  <AttendanceStatusChip leave={att.leave} status={att.status} />
                 </ListItem>
 
                 <ListDivider />

@@ -91,7 +91,7 @@ const AdminProjectAttendanceList = ({
                     {att.rawEnd ? att.rawEnd.format("HH:mm") : "N/A"}
                   </Typography>
                 </ListItemContent>
-                <AttendanceStatusChip status={att.status} />
+                <AttendanceStatusChip leave={att.leave} status={att.status} />
               </ListItem>
               <ListDivider />
             </Fragment>

@@ -77,7 +77,7 @@ const UpcomingShiftsM = ({ data }: UpcomingShiftsMProps) => {
                     </Typography>
                   </ListItemContent>
 
-                  <AttendanceStatusChip status={att.status} />
+                  <AttendanceStatusChip leave={att.leave} status={att.status} />
                 </ListItem>
                 <ListDivider />
               </Fragment>

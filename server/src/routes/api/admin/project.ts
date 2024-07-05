@@ -505,6 +505,7 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
             : row.Shift.endTime,
         rawStart: row.clockInTime,
         rawEnd: row.clockOutTime,
+        leave: row.leave,
         status: row.status,
       }))
     );

@@ -90,7 +90,10 @@ const AttendanceHistory = ({ data }: AttendanceHistoryProps) => {
                         : "-"}
                     </TdTypo>
                     <TdTypo>
-                      <AttendanceStatusChip status={att.status} />
+                      <AttendanceStatusChip
+                        leave={att.leave}
+                        status={att.status}
+                      />
                     </TdTypo>
                   </tr>
                 );

@@ -94,7 +94,7 @@ export type CustomAttendance = {
   shiftDate: Date;
   clockInTime: Date;
   clockOutTime: Date;
-  leave: "FULL_DAY" | "HALD_DAY";
+  leave: "FULLDAY" | "HALFDAY";
   status: "ON_TIME" | "LATE" | "NO_SHOW" | "MEDICAL" | null;
   shiftType: "FULL" | "FIRST_HALF" | "SECOND_HALF";
   Shift: {
@@ -143,5 +143,6 @@ export type CustomAdminAttendance = {
   shiftEnd: Dayjs;
   rawStart: Dayjs | null;
   rawEnd: Dayjs | null;
+  leave: "FULLDAY" | "HALFDAY" | null;
   status: "ON_TIME" | "LATE" | "NO_SHOW" | "MEDICAL" | null;
 };
