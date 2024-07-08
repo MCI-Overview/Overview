@@ -89,9 +89,6 @@ export default function AttendanceSummary() {
         const date = dateRangeStart.add(index, "days");
         const status = statusData[index];
 
-        if (dayjs().diff(date.endOf("day"), "days") < 0)
-          return <th key={date.format("DD-MM-YYYY")}>-</th>;
-
         return (
           <th key={date.format("DD-MM-YYYY")}>
             {status && (
