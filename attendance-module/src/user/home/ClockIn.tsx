@@ -416,7 +416,9 @@ const ClockIn = () => {
               {currAttendance.clockInTime ? (
                 <Typography level="title-md">Current shift</Typography>
               ) : (
-                <Typography level="title-md">Upcoming shift</Typography>
+                <Typography level="title-md">
+                  Upcoming shift {startTime?.fromNow()}
+                </Typography>
               )}
               <Typography level="body-sm">
                 {currAttendance.Shift.Project.name}
