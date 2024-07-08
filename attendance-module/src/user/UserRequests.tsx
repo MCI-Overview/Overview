@@ -29,8 +29,8 @@ const UserClaims: FC = () => {
 
   const breadcrumbs: BreadcrumbPart[] = [
     {
-      label: "Home",
-      link: "/user/home",
+      label: "Requests",
+      link: "/user/requests",
     },
   ];
 
