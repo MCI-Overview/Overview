@@ -42,7 +42,6 @@ const MagicalButton = styled(BaseButton)(
 
       &:hover {
         background-color: ${hoverColor};
-        color: white;
         box-shadow: 0 4px 8px
           ${theme.palette.mode === "dark"
             ? "rgba(0, 0, 0, 0.7)"
@@ -69,7 +68,6 @@ const MagicalButton = styled(BaseButton)(
       ${hover &&
       css`
         background-color: ${hoverColor};
-        color: white;
         box-shadow: 0 4px 8px
           ${theme.palette.mode === "dark"
             ? "rgba(0, 0, 0, 0.7)"
