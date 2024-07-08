@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { CustomAttendance } from "../../types";
 import { readableEnum } from "../../utils/capitalize";
+import { correctTimes } from "../../utils/date-time";
 import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
 
 import AttendanceStatusChip from "../../components/project/attendance/AttendanceStatusChip";
@@ -8,7 +9,7 @@ import AttendanceStatusChip from "../../components/project/attendance/Attendance
 import { Table, Sheet } from "@mui/joy";
 
 interface AttendanceHistoryProps {
-  data: CustomAttendance[];
+  data: CustomAttendance[] | null;
 }
 
 const AttendanceHistory = ({ data }: AttendanceHistoryProps) => {
@@ -39,34 +40,67 @@ const AttendanceHistory = ({ data }: AttendanceHistoryProps) => {
       >
         <thead>
           <tr>
-            <ThTypo>Date</ThTypo>
             <ThTypo>Project</ThTypo>
-            <ThTypo>Status</ThTypo>
             <ThTypo>Type</ThTypo>
+            <ThTypo>Date</ThTypo>
             <ThTypo>Start</ThTypo>
             <ThTypo>End</ThTypo>
+            <ThTypo>Clock In</ThTypo>
+            <ThTypo>Clock Out</ThTypo>
+            <ThTypo>Status</ThTypo>
           </tr>
         </thead>
-        <tbody>
-          {data.length === 0 ? (
-            <tr>
-              <TdTypo colSpan={6}>No attendance history found</TdTypo>
-            </tr>
-          ) : (
-            data.map((att: CustomAttendance) => (
-              <tr key={att.cuid}>
-                <TdTypo>{dayjs(att.shiftDate).format("DD/MM/YYYY")}</TdTypo>
-                <TdTypo>{att.Shift.Project.name}</TdTypo>
-                <td>
-                  <AttendanceStatusChip status={att.status} />
-                </td>
-                <TdTypo>{readableEnum(att.shiftType)}</TdTypo>
-                <TdTypo>{dayjs(att.Shift.startTime).format("HH:mm")}</TdTypo>
-                <TdTypo>{dayjs(att.Shift.endTime).format("HH:mm")}</TdTypo>
+        {data && (
+          <tbody>
+            {data.length === 0 ? (
+              <tr>
+                <TdTypo colSpan={8}>No attendance history found</TdTypo>
               </tr>
-            ))
-          )}
-        </tbody>
+            ) : (
+              data.map((att: CustomAttendance) => {
+                const { correctStart, correctEnd } = correctTimes(
+                  dayjs(att.shiftDate),
+                  dayjs(
+                    att.shiftType === "SECOND_HALF"
+                      ? att.Shift.halfDayStartTime
+                      : att.Shift.startTime
+                  ),
+                  dayjs(
+                    att.shiftType === "FIRST_HALF"
+                      ? att.Shift.halfDayEndTime
+                      : att.Shift.endTime
+                  )
+                );
+
+                return (
+                  <tr key={att.cuid}>
+                    <TdTypo>{att.Shift.Project.name}</TdTypo>
+                    <TdTypo>{readableEnum(att.shiftType)}</TdTypo>
+                    <TdTypo>{dayjs(att.shiftDate).format("DD/MM/YYYY")}</TdTypo>
+                    <TdTypo>{correctStart.format("HH:mm")}</TdTypo>
+                    <TdTypo>{correctEnd.format("HH:mm")}</TdTypo>
+                    <TdTypo>
+                      {att.clockInTime
+                        ? dayjs(att.clockInTime).format("HH:mm")
+                        : "-"}
+                    </TdTypo>
+                    <TdTypo>
+                      {att.clockOutTime
+                        ? dayjs(att.clockOutTime).format("HH:mm")
+                        : "-"}
+                    </TdTypo>
+                    <TdTypo>
+                      <AttendanceStatusChip
+                        leave={att.leave}
+                        status={att.status}
+                      />
+                    </TdTypo>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        )}
       </Table>
     </Sheet>
   );

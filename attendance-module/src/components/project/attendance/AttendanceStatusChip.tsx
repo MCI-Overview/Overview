@@ -1,17 +1,47 @@
+import { readableEnum } from "../../../utils/capitalize";
+
+import { Chip, ColorPaletteProp } from "@mui/joy";
 import {
   BlockRounded as BlockIcon,
   CheckRounded as CheckIcon,
   QueryBuilderRounded as QueryBuilderIcon,
   MedicalServicesOutlined as MedicalServicesIcon,
+  EventNoteOutlined as EventNoteIcon,
+  WorkOffOutlined as WorkOffIcon,
 } from "@mui/icons-material";
-import { Chip, ColorPaletteProp } from "@mui/joy";
-import { readableEnum } from "../../../utils/capitalize";
 
 interface AttendanceStatusChipProps {
+  leave: "FULLDAY" | "HALFDAY" | null;
   status: "ON_TIME" | "LATE" | "NO_SHOW" | "MEDICAL" | null;
 }
 
-const AttendanceStatusChip = ({ status }: AttendanceStatusChipProps) => {
+const AttendanceStatusChip = ({ leave, status }: AttendanceStatusChipProps) => {
+  // Only displays for full day leaves,
+  // since half day leaves still have a status
+  if (leave === "FULLDAY")
+    return (
+      <Chip
+        variant="outlined"
+        size="sm"
+        color="primary"
+        startDecorator={<WorkOffIcon />}
+      >
+        On Leave
+      </Chip>
+    );
+
+  if (!status)
+    return (
+      <Chip
+        variant="outlined"
+        size="sm"
+        color="primary"
+        startDecorator={<EventNoteIcon />}
+      >
+        Upcoming
+      </Chip>
+    );
+
   return (
     <Chip
       variant="soft"
@@ -22,7 +52,7 @@ const AttendanceStatusChip = ({ status }: AttendanceStatusChipProps) => {
           LATE: <QueryBuilderIcon />,
           NO_SHOW: <BlockIcon />,
           MEDICAL: <MedicalServicesIcon />,
-        }[status || "NO_SHOW"]
+        }[status]
       }
       color={
         {
@@ -30,10 +60,10 @@ const AttendanceStatusChip = ({ status }: AttendanceStatusChipProps) => {
           LATE: "warning",
           NO_SHOW: "danger",
           MEDICAL: "neutral",
-        }[status || "NO_SHOW"] as ColorPaletteProp
+        }[status] as ColorPaletteProp
       }
     >
-      {readableEnum(status || "NO_SHOW")}
+      {readableEnum(status)}
     </Chip>
   );
 };

@@ -33,8 +33,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
     if (
       !request.Assign.Project.Manage.some(
         (assign) =>
-          assign.consultantCuid === user.cuid &&
-          assign.role === "CLIENT_HOLDER",
+          assign.consultantCuid === user.cuid && assign.role === "CLIENT_HOLDER"
       )
     ) {
       return res
@@ -49,6 +48,9 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
         prisma.attendance.updateMany({
           where: {
             candidateCuid: request.candidateCuid,
+            NOT: {
+              leave: "FULLDAY",
+            },
             OR: [
               {
                 status: null,
@@ -63,14 +65,14 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
                   request.data as {
                     startDate: string;
                   }
-                ).startDate,
+                ).startDate
               ).toDate(),
               lte: dayjs(
                 (
                   request.data as {
                     startDate: string;
                   }
-                ).startDate,
+                ).startDate
               )
                 .add(
                   parseInt(
@@ -79,9 +81,9 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
                         numberOfDays: string;
                       }
                     ).numberOfDays,
-                    10,
+                    10
                   ) - 1,
-                  "day",
+                  "day"
                 )
                 .endOf("day")
                 .toDate(),
@@ -93,7 +95,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
           data: {
             status: "MEDICAL",
           },
-        }),
+        })
       );
     }
 
@@ -109,7 +111,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
           data: {
             endDate: (request.data as { lastDay: string }).lastDay,
           },
-        }),
+        })
       );
     }
 
@@ -127,7 +129,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
             data: {
               leave: "FULLDAY",
             },
-          }),
+          })
         );
       }
 
@@ -142,7 +144,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
               leave: "HALFDAY",
               shiftType: "SECOND_HALF",
             },
-          }),
+          })
         );
       }
 
@@ -157,7 +159,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
               leave: "HALFDAY",
               shiftType: "FIRST_HALF",
             },
-          }),
+          })
         );
       }
     }
@@ -170,7 +172,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
         data: {
           status: "APPROVED",
         },
-      }),
+      })
     );
 
     await prisma.$transaction(transactionRequests);
@@ -208,8 +210,7 @@ requestAPIRouter.post("/request/:requestCuid/reject", async (req, res) => {
     if (
       !request.Assign.Project.Manage.some(
         (assign) =>
-          assign.consultantCuid === user.cuid &&
-          assign.role === "CLIENT_HOLDER",
+          assign.consultantCuid === user.cuid && assign.role === "CLIENT_HOLDER"
       )
     ) {
       return res
@@ -259,7 +260,7 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
   if (
     !request.Assign.Project.Manage.some(
       (assign) =>
-        assign.consultantCuid === user.cuid && assign.role === "CLIENT_HOLDER",
+        assign.consultantCuid === user.cuid && assign.role === "CLIENT_HOLDER"
     )
   ) {
     return res
@@ -333,8 +334,7 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
     if (
       !request.Assign.Project.Manage.some(
         (assign) =>
-          assign.consultantCuid === user.cuid &&
-          assign.role === "CLIENT_HOLDER",
+          assign.consultantCuid === user.cuid && assign.role === "CLIENT_HOLDER"
       )
     ) {
       return res
@@ -364,14 +364,14 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
                 request.data as {
                   startDate: string;
                 }
-              ).startDate,
+              ).startDate
             ).toDate(),
             lte: dayjs(
               (
                 request.data as {
                   startDate: string;
                 }
-              ).startDate,
+              ).startDate
             )
               .add(
                 parseInt(
@@ -380,9 +380,9 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
                       numberOfDays: string;
                     }
                   ).numberOfDays,
-                  10,
+                  10
                 ) - 1,
-                "day",
+                "day"
               )
               .endOf("day")
               .toDate(),

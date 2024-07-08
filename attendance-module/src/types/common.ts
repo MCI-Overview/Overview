@@ -123,7 +123,7 @@ export type CommonAttendance = {
   shiftDate: Date;
   clockInTime: Date;
   clockOutTime: Date;
-  leave: "FULL_DAY" | "HALD_DAY";
+  leave: "FULLDAY" | "HALFDAY";
   status: "PRESENT" | "NO_SHOW" | "MEDICAL";
   shiftType: "FULL" | "FIRST_HALF" | "SECOND_HALF";
   Shift: CommonShift;

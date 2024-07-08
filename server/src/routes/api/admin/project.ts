@@ -544,10 +544,17 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
           ? row.Candidate.nric
           : maskNRIC(row.Candidate.nric),
         name: row.Candidate.name,
-        shiftStart: row.Shift.startTime,
-        shiftEnd: row.Shift.endTime,
+        shiftStart:
+          row.shiftType === "SECOND_HALF"
+            ? row.Shift.halfDayStartTime
+            : row.Shift.startTime,
+        shiftEnd:
+          row.shiftType === "FIRST_HALF"
+            ? row.Shift.halfDayEndTime
+            : row.Shift.endTime,
         rawStart: row.clockInTime,
         rawEnd: row.clockOutTime,
+        leave: row.leave,
         status: row.status,
       }))
     );

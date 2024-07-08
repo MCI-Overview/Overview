@@ -26,8 +26,30 @@ import {
   SearchRounded as SearchIcon,
 } from "@mui/icons-material/";
 
+const customAdminAttendanceComparator = (
+  a: CustomAdminAttendance,
+  b: CustomAdminAttendance
+) => {
+  // sort by date (most recent first)
+  if (a.date.isAfter(b.date)) return -1;
+  if (a.date.isBefore(b.date)) return 1;
+
+  // sort by shift start time (latest first)
+  if (a.shiftStart.isAfter(b.shiftStart)) return -1;
+  if (a.shiftStart.isBefore(b.shiftStart)) return 1;
+
+  // sort by shift end time (latest first)
+  if (a.shiftEnd.isAfter(b.shiftEnd)) return -1;
+  if (a.shiftEnd.isBefore(b.shiftEnd)) return 1;
+
+  // sort by name
+  if (a.name < b.name) return -1;
+  if (a.name > b.name) return 1;
+  return 0;
+};
+
 const AdminProjectAttendancePage = () => {
-  const [data, setData] = useState<CustomAdminAttendance[]>([]);
+  const [data, setData] = useState<CustomAdminAttendance[] | null>(null);
   const [startDate, setStartDate] = useState<string>(
     dayjs().format("YYYY-MM-DD")
   );
@@ -79,13 +101,19 @@ const AdminProjectAttendancePage = () => {
     fetchUpcomingShifts(startDate, endDate);
   }, [startDate, endDate, project]);
 
-  const filteredData = data.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm) ||
-      item.nric.toLowerCase().includes(searchTerm);
-    const matchesStatus = statusFilter ? item.status === statusFilter : true;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredData = data
+    ? data
+        .filter((item) => {
+          const matchesSearch =
+            item.name.toLowerCase().includes(searchTerm) ||
+            item.nric.toLowerCase().includes(searchTerm);
+          const matchesStatus = statusFilter
+            ? item.status === statusFilter
+            : true;
+          return matchesSearch && matchesStatus;
+        })
+        .sort(customAdminAttendanceComparator)
+    : null;
 
   if (!project) return null;
 
@@ -121,7 +149,7 @@ const AdminProjectAttendancePage = () => {
                   placeholder="Search by name/nric"
                   startDecorator={<SearchIcon />}
                   onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
-                  disabled={data.length === 0}
+                  disabled={!data}
                 />
               </FormControl>
             </Grid>

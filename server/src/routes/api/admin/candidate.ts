@@ -73,6 +73,38 @@ candidateAPIRoutes.get(
   }
 );
 
+candidateAPIRoutes.get("/candidate/nric/:candidateNric", async (req, res) => {
+  const user = req.user as User;
+  const { candidateNric } = req.params;
+
+  if (user.userType !== "Admin") {
+    res.status(401).send("Unauthorized");
+  }
+
+  try {
+    const candidate = await prisma.candidate.findUnique({
+      where: {
+        nric: candidateNric,
+      },
+    });
+
+    if (!candidate) {
+      console.log("Candidate not found.");
+      return res.status(404).send("Candidate not found.");
+    }
+
+    return res.send({
+      nric: candidate.nric,
+      name: candidate.name,
+      cuid: candidate.cuid,
+      contact: candidate.contact,
+      dateOfBirth: candidate.dateOfBirth,
+    });
+  } catch (error) {
+    return res.status(404).send("Candidate not found.");
+  }
+});
+
 candidateAPIRoutes.post("/candidate", async (req, res) => {
   const {
     nric,

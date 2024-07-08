@@ -1,17 +1,34 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
-import AssignCandidateModal from "./AssignCandidateModal";
-import CandidateTable from "./CandidateTable";
 import { CommonCandidate } from "../../../types/common";
-import DeleteCandidateModal from "./DeleteCandidateModal";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import { Box, Input, FormControl, FormLabel, Stack, Tooltip, IconButton, Dropdown, MenuButton, Menu, MenuItem } from "@mui/joy";
-import SearchIcon from "@mui/icons-material/Search";
-import SmallScreenDivider from "../ui/SmallScreenDivider";
-import AddIcon from '@mui/icons-material/Add';
 import AddCandidateModal from "./AddCandidateModal";
+import AssignCandidateModal from "./AssignCandidateModal";
+import DeleteCandidateModal from "./DeleteCandidateModal";
+import SmallScreenDivider from "../ui/SmallScreenDivider";
+import CandidateTable from "./CandidateTable";
+
+import {
+  Box,
+  Input,
+  FormControl,
+  FormLabel,
+  Stack,
+  Tooltip,
+  IconButton,
+  Dropdown,
+  MenuButton,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@mui/joy";
+import {
+  AddRounded as AddIcon,
+  ArrowDropDownRounded as ArrowDropDownIcon,
+  SearchRounded as SearchIcon,
+} from "@mui/icons-material";
 
 const AdminProjectCandidatesPage = () => {
   const { project, updateProject } = useProjectContext();
@@ -38,10 +55,9 @@ const AdminProjectCandidatesPage = () => {
 
   const [searchValue, setSearchValue] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [candidatesToDelete, setCandidatesToDelete] = useState<string[]>([]);
-
 
   // TODO: Fix type
   const matchSearchValue = (c: CommonCandidate) =>
@@ -102,14 +118,29 @@ const AdminProjectCandidatesPage = () => {
             variant="solid"
             color="primary"
             size="sm"
-            sx={{ mt: "auto", display: { xs: "none", sm: "block" } }}
-          >Add candidates</MenuButton>
-          <Menu>
+            sx={{
+              mt: "auto",
+              display: { xs: "none", sm: "flex" },
+              alignContent: "center",
+              pr: 0.5,
+            }}
+          >
+            Add candidates
+            <ArrowDropDownIcon />
+          </MenuButton>
+          <Menu
+            sx={{
+              "& .MuiMenuItem-root": {
+                display: "flex",
+                justifyContent: "center",
+              },
+            }}
+          >
             <MenuItem onClick={() => setAddModalOpen(true)}>
-              Add a candidate
+              <Typography level="body-xs">Individual</Typography>
             </MenuItem>
             <MenuItem onClick={() => setIsUploadOpen(true)}>
-              Mass upload
+              <Typography level="body-xs">Bulk Upload</Typography>
             </MenuItem>
           </Menu>
         </Dropdown>
@@ -120,7 +151,7 @@ const AdminProjectCandidatesPage = () => {
             color="primary"
             variant="solid"
             onClick={() => setAddModalOpen(true)}
-            sx={{ mt: "auto", display: { xs: "block", sm: "none" } }}
+            sx={{ py: "auto", mt: "auto", display: { xs: "flex", sm: "none" } }}
           >
             <AddIcon />
           </IconButton>

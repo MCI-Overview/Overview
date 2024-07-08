@@ -21,8 +21,8 @@ type Page = {
   totalCount: number;
 };
 
-const ViewAttendance = () => {
-  const [data, setData] = useState<CustomAttendance[]>([]);
+const UserAttendanceHistoryPage = () => {
+  const [data, setData] = useState<CustomAttendance[] | null>(null);
   const [page, setPage] = useState<Page>({
     isFirstPage: true,
     isLastPage: true,
@@ -103,7 +103,12 @@ const ViewAttendance = () => {
             placeholder="Search"
             startDecorator={<SearchIcon />}
             onChange={handleDateChange}
-            disabled={data.length === 0}
+            disabled={!data}
+            slotProps={{
+              input: {
+                max: dayjs().format("YYYY-MM-DD"),
+              },
+            }}
           />
         </FormControl>
       </Box>
@@ -122,4 +127,4 @@ const ViewAttendance = () => {
   );
 };
 
-export default ViewAttendance;
+export default UserAttendanceHistoryPage;
