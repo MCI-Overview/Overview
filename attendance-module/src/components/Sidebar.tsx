@@ -28,7 +28,6 @@ import {
   SettingsRounded as SettingsIcon,
   AccountTreeRounded as AccountTreeIcon,
   WorkHistoryRounded as WorkHistoryIcon,
-  BrightnessAutoRounded as BrightnessAutoIcon,
 } from "@mui/icons-material";
 
 interface SideBarListProps {
@@ -189,8 +188,8 @@ export default function Sidebar() {
         onClick={() => closeSidebar()}
       />
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        <IconButton variant="soft" color="primary" size="sm">
-          <BrightnessAutoIcon />
+        <IconButton variant="soft" size="sm">
+          <img src="/Images/ovlogo1.svg"></img>
         </IconButton>
         <Typography level="title-lg">Overview</Typography>
         <ColorSchemeToggle sx={{ ml: "auto" }} />

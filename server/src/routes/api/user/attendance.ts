@@ -54,7 +54,7 @@ attendanceApiRouter.patch(
     const user = req.user as User;
     const candidateCuid = user.cuid;
 
-    const { attendanceCuid, clockInTime, clockOutTime, imageData, startTime } =
+    const { attendanceCuid, clockInTime, clockOutTime, imageData, startTime, postalCode } =
       req.body;
 
     if (!attendanceCuid) {
@@ -81,9 +81,9 @@ attendanceApiRouter.patch(
     if (!clockInTime) {
       body = { clockOutTime };
     } else if (clockInTime < startTime) {
-      body = { clockInTime, status: AttendanceStatus.ON_TIME };
+      body = { clockInTime, status: AttendanceStatus.ON_TIME, postalCode };
     } else {
-      body = { clockInTime, status: AttendanceStatus.LATE };
+      body = { clockInTime, status: AttendanceStatus.LATE, postalCode };
     }
 
     try {
