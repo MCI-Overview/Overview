@@ -3,6 +3,7 @@ import { prisma } from "../../../client";
 import {
   EmploymentType,
   LeaveStatus,
+  RequestStatus,
   Role,
   ShiftStatus,
   ShiftType,
@@ -706,26 +707,12 @@ projectAPIRouter.delete("/roster/:rosterCuid", async (req, res) => {
     await prisma.attendance.delete({
       where: {
         cuid: rosterCuid,
-        // OR: [
-        //   {
-        //     shiftType: ShiftType.SECOND_HALF,
-        //     Shift: {
-        //       halfDayStartTime: {
-        //         gte: dayjs().set("year", 2000).set("month", 0).toDate(),
-        //       },
-        //     },
-        //   },
-        //   {
-        //     shiftType: {
-        //       in: [ShiftType.FIRST_HALF, ShiftType.FULL_DAY],
-        //     },
-        //     Shift: {
-        //       startTime: {
-        //         gte: dayjs().set("year", 2000).set("month", 0).toDate(),
-        //       },
-        //     },
-        //   },
-        // ],
+        Request: {
+          none: {
+            status: RequestStatus.PENDING,
+            rosterCuid: rosterCuid,
+          },
+        },
         Shift: {
           Project: {
             Manage: {
