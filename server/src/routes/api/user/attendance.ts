@@ -2,8 +2,9 @@ import { Request, Response, Router } from "express";
 import { prisma, s3 } from "../../../client";
 import { User } from "@/types/common";
 import { AttendanceStatus } from "@prisma/client";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import dayjs from "dayjs";
+import { Readable } from "stream";
 
 const attendanceApiRouter: Router = Router();
 
@@ -54,8 +55,14 @@ attendanceApiRouter.patch(
     const user = req.user as User;
     const candidateCuid = user.cuid;
 
-    const { attendanceCuid, clockInTime, clockOutTime, imageData, startTime, postalCode } =
-      req.body;
+    const {
+      attendanceCuid,
+      clockInTime,
+      clockOutTime,
+      imageData,
+      startTime,
+      postalCode,
+    } = req.body;
 
     if (!attendanceCuid) {
       return res.status(400).send("attendanceCuid is required");
@@ -108,7 +115,7 @@ attendanceApiRouter.patch(
         await s3.send(
           new PutObjectCommand({
             Bucket: process.env.S3_BUCKET_NAME!,
-            Key: `${candidateCuid}-${attendanceCuid}-clockIn.jpg`,
+            Key: `${candidateCuid}/clock-in/${attendanceCuid}.jpg`,
             Body: buffer,
           })
         );
@@ -122,132 +129,186 @@ attendanceApiRouter.patch(
   }
 );
 
-attendanceApiRouter.get('/upcoming/:page', async (req: Request, res: Response) => {
-  const user = req.user as User;
-  const page = parseInt(req.params.page, 10);
-  const { date } = req.query;
-  const limit = 10;
-  const offset = (page - 1) * limit;
-  const today = dayjs();
+attendanceApiRouter.get(
+  "/upcoming/:page",
+  async (req: Request, res: Response) => {
+    const user = req.user as User;
+    const page = parseInt(req.params.page, 10);
+    const { date } = req.query;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    const today = dayjs();
 
-  try {
-    let whereClause: any = {
-      candidateCuid: user.cuid,
-      shiftDate: {
-        gte: today
-      }
-    };
-
-    if (date) {
-      const selectedDate = dayjs(date as string).startOf("day");
-      whereClause = {
-        ...whereClause,
+    try {
+      let whereClause: any = {
+        candidateCuid: user.cuid,
         shiftDate: {
-          gte: selectedDate > today ? selectedDate : today,
-          lt: dayjs(selectedDate).add(1, "day")
-        }
+          gte: today,
+        },
       };
-    }
 
-    const totalCount = await prisma.attendance.count({
-      where: whereClause,
-    });
-
-    const fetchedData = await prisma.attendance.findMany({
-      where: whereClause,
-      include: {
-        Shift: {
-          include: {
-            Project: true
-          }
-        }
-      },
-      orderBy: {
-        shiftDate: "asc"
-      },
-      skip: offset,
-      take: limit,
-    });
-
-    const paginationData = {
-      isFirstPage: page === 1,
-      isLastPage: page * limit >= totalCount,
-      currentPage: page,
-      previousPage: page > 1 ? page - 1 : null,
-      nextPage: page * limit < totalCount ? page + 1 : null,
-      pageCount: Math.ceil(totalCount / limit),
-      totalCount: totalCount,
-    };
-
-    res.json([fetchedData, paginationData]);
-  } catch (error) {
-    res.status(500).json({ error: 'An error occurred while fetching the upcoming shifts.' });
-  }
-});
-
-attendanceApiRouter.get('/history/:page', async (req: Request, res: Response) => {
-  const user = req.user as User;
-  const page = parseInt(req.params.page, 10);
-  const { date } = req.query;
-  const limit = 10;
-  const offset = (page - 1) * limit;
-  const today = dayjs();
-
-  try {
-    let whereClause: any = {
-      candidateCuid: user.cuid,
-      shiftDate: {
-        lt: today
+      if (date) {
+        const selectedDate = dayjs(date as string).startOf("day");
+        whereClause = {
+          ...whereClause,
+          shiftDate: {
+            gte: selectedDate > today ? selectedDate : today,
+            lt: dayjs(selectedDate).add(1, "day"),
+          },
+        };
       }
-    };
 
-    if (date) {
-      const selectedDate = dayjs(date as string);
-      whereClause = {
-        ...whereClause,
-        shiftDate: {
-          gte: selectedDate.startOf("day"),
-          lt: selectedDate.endOf("day") < today ? selectedDate.endOf("day") : today
-        }
+      const totalCount = await prisma.attendance.count({
+        where: whereClause,
+      });
+
+      const fetchedData = await prisma.attendance.findMany({
+        where: whereClause,
+        include: {
+          Shift: {
+            include: {
+              Project: true,
+            },
+          },
+        },
+        orderBy: {
+          shiftDate: "asc",
+        },
+        skip: offset,
+        take: limit,
+      });
+
+      const paginationData = {
+        isFirstPage: page === 1,
+        isLastPage: page * limit >= totalCount,
+        currentPage: page,
+        previousPage: page > 1 ? page - 1 : null,
+        nextPage: page * limit < totalCount ? page + 1 : null,
+        pageCount: Math.ceil(totalCount / limit),
+        totalCount: totalCount,
       };
+
+      res.json([fetchedData, paginationData]);
+    } catch (error) {
+      res
+        .status(500)
+        .json({
+          error: "An error occurred while fetching the upcoming shifts.",
+        });
     }
-
-    const totalCount = await prisma.attendance.count({
-      where: whereClause,
-    });
-
-    const fetchedData = await prisma.attendance.findMany({
-      where: whereClause,
-      include: {
-        Shift: {
-          include: {
-            Project: true
-          }
-        }
-      },
-      orderBy: {
-        shiftDate: "asc"
-      },
-      skip: offset,
-      take: limit,
-    });
-
-    const paginationData = {
-      isFirstPage: page === 1,
-      isLastPage: page * limit >= totalCount,
-      currentPage: page,
-      previousPage: page > 1 ? page - 1 : null,
-      nextPage: page * limit < totalCount ? page + 1 : null,
-      pageCount: Math.ceil(totalCount / limit),
-      totalCount: totalCount,
-    };
-
-    res.json([fetchedData, paginationData]);
-  } catch (error) {
-    res.status(500).json({ error: 'An error occurred while fetching the upcoming shifts.' });
   }
-});
+);
 
+attendanceApiRouter.get(
+  "/history/:page",
+  async (req: Request, res: Response) => {
+    const user = req.user as User;
+    const page = parseInt(req.params.page, 10);
+    const { date } = req.query;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    const today = dayjs();
 
+    try {
+      let whereClause: any = {
+        candidateCuid: user.cuid,
+        shiftDate: {
+          lt: today,
+        },
+      };
+
+      if (date) {
+        const selectedDate = dayjs(date as string);
+        whereClause = {
+          ...whereClause,
+          shiftDate: {
+            gte: selectedDate.startOf("day"),
+            lt:
+              selectedDate.endOf("day") < today
+                ? selectedDate.endOf("day")
+                : today,
+          },
+        };
+      }
+
+      const totalCount = await prisma.attendance.count({
+        where: whereClause,
+      });
+
+      const fetchedData = await prisma.attendance.findMany({
+        where: whereClause,
+        include: {
+          Shift: {
+            include: {
+              Project: true,
+            },
+          },
+        },
+        orderBy: {
+          shiftDate: "asc",
+        },
+        skip: offset,
+        take: limit,
+      });
+
+      const paginationData = {
+        isFirstPage: page === 1,
+        isLastPage: page * limit >= totalCount,
+        currentPage: page,
+        previousPage: page > 1 ? page - 1 : null,
+        nextPage: page * limit < totalCount ? page + 1 : null,
+        pageCount: Math.ceil(totalCount / limit),
+        totalCount: totalCount,
+      };
+
+      res.json([fetchedData, paginationData]);
+    } catch (error) {
+      res
+        .status(500)
+        .json({
+          error: "An error occurred while fetching the upcoming shifts.",
+        });
+    }
+  }
+);
+
+attendanceApiRouter.get(
+  "/attendance/:attendanceCuid/image",
+  async (req: Request, res: Response) => {
+    const user = req.user as User;
+    const { attendanceCuid } = req.params;
+
+    try {
+      const attendanceData = await prisma.attendance.findUnique({
+        where: {
+          cuid: attendanceCuid,
+        },
+      });
+
+      if (!attendanceData) {
+        return res.status(404).send("Attendance not found");
+      }
+
+      if (attendanceData.candidateCuid !== user.cuid) {
+        return res.status(403).send("Forbidden");
+      }
+
+      const command = new GetObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME!,
+        Key: `${user.cuid}/clock-in/${attendanceCuid}.jpg`,
+      });
+
+      const response = await s3.send(command);
+      if (response.Body instanceof Readable) {
+        return response.Body.pipe(res);
+      } else {
+        return res.status(500).send("Unexpected response body type");
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send("Internal server error");
+    }
+  }
+);
 
 export default attendanceApiRouter;
