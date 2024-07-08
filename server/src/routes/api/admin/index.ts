@@ -5,6 +5,7 @@ import projectAPIRoutes from "./project";
 import requestAPIRoutes from "./request";
 import candidateAPIRoutes from "./candidate";
 import consultantAPIRoutes from "./consultant";
+import attendanceAPIRoutes from "./attendance";
 import { User } from "@/types/common";
 import { prisma } from "../../../client";
 import { PrismaError } from "@/types";
@@ -14,9 +15,10 @@ const adminAPIRouter: Router = Router();
 adminAPIRouter.use("/", shiftAPIRoutes);
 adminAPIRouter.use("/", clientAPIRoutes);
 adminAPIRouter.use("/", projectAPIRoutes);
+adminAPIRouter.use("/", requestAPIRoutes);
 adminAPIRouter.use("/", candidateAPIRoutes);
 adminAPIRouter.use("/", consultantAPIRoutes);
-adminAPIRouter.use("/", requestAPIRoutes);
+adminAPIRouter.use("/", attendanceAPIRoutes);
 
 adminAPIRouter.get("/", async (req, res) => {
   const { cuid } = req.user as User;

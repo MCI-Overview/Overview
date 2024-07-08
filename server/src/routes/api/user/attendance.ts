@@ -2,9 +2,8 @@ import { Request, Response, Router } from "express";
 import { prisma, s3 } from "../../../client";
 import { User } from "@/types/common";
 import { AttendanceStatus } from "@prisma/client";
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import dayjs from "dayjs";
-import { Readable } from "stream";
 
 const attendanceApiRouter: Router = Router();
 
@@ -190,11 +189,9 @@ attendanceApiRouter.get(
 
       res.json([fetchedData, paginationData]);
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          error: "An error occurred while fetching the upcoming shifts.",
-        });
+      res.status(500).json({
+        error: "An error occurred while fetching the upcoming shifts.",
+      });
     }
   }
 );
@@ -263,50 +260,9 @@ attendanceApiRouter.get(
 
       res.json([fetchedData, paginationData]);
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          error: "An error occurred while fetching the upcoming shifts.",
-        });
-    }
-  }
-);
-
-attendanceApiRouter.get(
-  "/attendance/:attendanceCuid/image",
-  async (req: Request, res: Response) => {
-    const user = req.user as User;
-    const { attendanceCuid } = req.params;
-
-    try {
-      const attendanceData = await prisma.attendance.findUnique({
-        where: {
-          cuid: attendanceCuid,
-        },
+      res.status(500).json({
+        error: "An error occurred while fetching the upcoming shifts.",
       });
-
-      if (!attendanceData) {
-        return res.status(404).send("Attendance not found");
-      }
-
-      if (attendanceData.candidateCuid !== user.cuid) {
-        return res.status(403).send("Forbidden");
-      }
-
-      const command = new GetObjectCommand({
-        Bucket: process.env.S3_BUCKET_NAME!,
-        Key: `${user.cuid}/clock-in/${attendanceCuid}.jpg`,
-      });
-
-      const response = await s3.send(command);
-      if (response.Body instanceof Readable) {
-        return response.Body.pipe(res);
-      } else {
-        return res.status(500).send("Unexpected response body type");
-      }
-    } catch (error) {
-      console.error(error);
-      return res.status(500).send("Internal server error");
     }
   }
 );
