@@ -22,7 +22,9 @@ export default function McCount({ count, total }: McCountProps) {
           <MedicalServicesIcon />
         </CircularProgress>
         <CardContent>
-          <Typography level="body-md">Medical</Typography>
+          <Typography level="body-md" textColor="common.white">
+            Medical
+          </Typography>
           <Typography level="h2">{count}</Typography>
         </CardContent>
       </CardContent>

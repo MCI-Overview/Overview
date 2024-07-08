@@ -22,7 +22,9 @@ export default function NoShowCount({ count, total }: NoShowCountProps) {
           <BlockIcon />
         </CircularProgress>
         <CardContent>
-          <Typography level="body-md">Absent</Typography>
+          <Typography level="body-md" textColor="common.white">
+            Absent
+          </Typography>
           <Typography level="h2">{count}</Typography>
         </CardContent>
       </CardContent>

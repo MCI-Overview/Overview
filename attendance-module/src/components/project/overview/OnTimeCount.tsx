@@ -1,7 +1,7 @@
 import { ON_TIME_COLOR } from "../../../utils/colors";
 
 import { Card, CardContent, CircularProgress, Typography } from "@mui/joy";
-import { QueryBuilderRounded as QueryBuilderIcon } from "@mui/icons-material";
+import { WatchLaterRounded as WatchLaterIcon } from "@mui/icons-material";
 
 type OnTimeCountProps = {
   count: number;
@@ -19,10 +19,12 @@ export default function OnTimeCount({ count, total }: OnTimeCountProps) {
     >
       <CardContent orientation="horizontal">
         <CircularProgress size="lg" determinate value={(count / total) * 100}>
-          <QueryBuilderIcon />
+          <WatchLaterIcon />
         </CircularProgress>
         <CardContent>
-          <Typography level="body-md">On time</Typography>
+          <Typography level="body-md" textColor="common.white">
+            On time
+          </Typography>
           <Typography level="h2">{count}</Typography>
         </CardContent>
       </CardContent>
