@@ -118,7 +118,7 @@ export default function RosterTable({ type }: RosterTableProps) {
               <th
                 key={index}
                 style={{
-                  width: "9rem",
+                  width: "8rem",
                 }}
               >
                 {dateRangeStart.add(index, "days").format("ddd DD MMM")}

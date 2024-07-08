@@ -7,15 +7,7 @@ import CreateShiftModal from "./CreateShiftModal";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { useRosterContext } from "../../../providers/rosterContextProvider";
 
-import {
-  Box,
-  Divider,
-  List,
-  ListItem,
-  ListItemButton,
-  Sheet,
-  Typography,
-} from "@mui/joy";
+import { Box, Divider, List, ListItem, ListItemButton, Sheet } from "@mui/joy";
 
 import {
   CopyAllRounded as CopyAllIcon,
@@ -44,8 +36,6 @@ export default function RosterSidebar() {
         borderColor: "divider",
       }}
     >
-      <Typography level="title-lg">Shifts</Typography>
-
       <ShiftDisplay />
       <Box sx={{ mt: "auto", flexGrow: 0, mb: 2 }}>
         <Divider />
@@ -102,7 +92,7 @@ export default function RosterSidebar() {
               }}
             >
               <ClearIcon />
-              Clear all Roster
+              Clear All Future Roster
             </ListItemButton>
           </ListItem>
           <ListItem>
