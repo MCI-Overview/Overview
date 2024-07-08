@@ -1,21 +1,20 @@
-import Card from '@mui/joy/Card';
-import CardContent from '@mui/joy/CardContent';
-import CircularProgress from '@mui/joy/CircularProgress';
-import Typography from '@mui/joy/Typography';
+import { ON_TIME_COLOR } from "../../../utils/colors";
+
+import { Card, CardContent, CircularProgress, Typography } from "@mui/joy";
 import { QueryBuilderRounded as QueryBuilderIcon } from "@mui/icons-material";
 
-type LateCountProps = {
+type OnTimeCountProps = {
   count: number;
-  total: number
+  total: number;
 };
 
-export default function OnTimeCount({ count, total }: LateCountProps) {
+export default function OnTimeCount({ count, total }: OnTimeCountProps) {
   return (
     <Card
       variant="solid"
       invertedColors
       sx={{
-        backgroundColor: 'rgba(75, 192, 192)',
+        backgroundColor: ON_TIME_COLOR,
       }}
     >
       <CardContent orientation="horizontal">
@@ -27,6 +26,6 @@ export default function OnTimeCount({ count, total }: LateCountProps) {
           <Typography level="h2">{count}</Typography>
         </CardContent>
       </CardContent>
-    </Card >
+    </Card>
   );
 }

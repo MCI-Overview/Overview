@@ -212,25 +212,22 @@ export type GetRosterResponse = {
   endDate: string;
   shifts: {
     shiftType: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+    leave: string;
+    status: string;
     rosterCuid: string;
     shiftCuid: string;
+    projectCuid: string;
     shiftStartTime: string;
     shiftEndTime: string;
     consultantCuid: string;
   }[];
 }[];
 
-export type MappedRosterResponse = {
-  cuid: string;
-  name: string;
-  startDate: Dayjs;
-  endDate: Dayjs;
-  roster: Roster[];
-}[];
-
 export type Roster = {
   type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+  candidateCuid: string;
   rosterCuid: string;
+  projectCuid: string;
   shiftCuid: string;
   startTime: Dayjs;
   endTime: Dayjs;
