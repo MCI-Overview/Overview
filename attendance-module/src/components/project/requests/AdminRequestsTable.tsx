@@ -10,8 +10,7 @@ import RequestTypeChip from "./RequestTypeChip";
 import { Table, Sheet } from "@mui/joy";
 
 const AdminRequestsTable = () => {
-  const { requests, updateRequest } = useRequestContext();
-  if (!requests) return null;
+  const { requests, updateRequest, error } = useRequestContext();
 
   return (
     <>
@@ -52,11 +51,23 @@ const AdminRequestsTable = () => {
             </tr>
           </thead>
           <tbody>
-            {requests.length === 0 ? (
+            {error && (
+              <tr>
+                <TdTypo colSpan={6}>Error loading requests</TdTypo>
+              </tr>
+            )}
+            {!error && !requests && (
+              <tr>
+                <TdTypo colSpan={6}>Loading...</TdTypo>
+              </tr>
+            )}
+            {!error && requests && requests.length === 0 ? (
               <tr>
                 <TdTypo colSpan={6}>No requests found</TdTypo>
               </tr>
             ) : (
+              !error &&
+              requests &&
               requests.map((req: CustomRequest) => (
                 <tr key={req.cuid}>
                   <TdTypo>
