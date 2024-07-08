@@ -995,6 +995,8 @@ projectAPIRouter.patch("/project", async (req, res) => {
     distanceRadius,
     candidateHolders,
     shiftGroups,
+    noticePeriodDuration,
+    noticePeriodUnit,
   } = req.body;
 
   if (!projectCuid) return res.status(400).send("projectCuid is required.");
@@ -1034,6 +1036,22 @@ projectAPIRouter.patch("/project", async (req, res) => {
     });
   }
 
+  const noticePeriodDurationValidity = noticePeriodDuration >= 0;
+  if (noticePeriodDuration && !noticePeriodDurationValidity) {
+    return res.status(400).json({
+      message: "noticePeriodDuration must be a non-negative number.",
+    });
+  }
+
+  const noticePeriodUnitValidity = ["DAY", "WEEK", "MONTH"].includes(
+    noticePeriodUnit
+  );
+  if (noticePeriodUnit && !noticePeriodUnitValidity) {
+    return res.status(400).json({
+      message: "noticePeriodUnit must be one of DAY, WEEK, MONTH.",
+    });
+  }
+
   if (candidateHolders && !Array.isArray(candidateHolders)) {
     return res.status(400).send("candidateHolders must be an array.");
   }
@@ -1056,6 +1074,8 @@ projectAPIRouter.patch("/project", async (req, res) => {
       candidateHolders,
     }),
     ...(shiftGroups && { shiftGroups }),
+    ...(noticePeriodDuration && { noticePeriodDuration }),
+    ...(noticePeriodUnit && { noticePeriodUnit }),
   };
 
   if (!hasCanEditAllProjects) {

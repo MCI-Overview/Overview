@@ -1,6 +1,8 @@
+import dayjs from "dayjs";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
+
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { checkPermission } from "../../../utils/permission";
@@ -19,11 +21,20 @@ import {
   FormLabel,
   Grid,
   Input,
+  Select,
+  Option,
   Stack,
   Typography,
 } from "@mui/joy";
 import { InfoOutlined as InfoOutlinedIcon } from "@mui/icons-material";
-import dayjs from "dayjs";
+import { CreateProjectData } from "../../../types";
+import { capitalizeWords } from "../../../utils/capitalize";
+
+const NOTICE_PERIOD_UNITS = ["DAY", "WEEK", "MONTH"];
+
+function addS(value: number, string: string) {
+  return Math.abs(value) <= 1 ? string : `${string}s`;
+}
 
 const THRESHOLD = dayjs("2000-01-01");
 
@@ -43,11 +54,30 @@ const GeneralProjectSettings = () => {
   const [distanceRadius, setDistanceRadius] = useState<number | undefined>(
     project?.distanceRadius
   );
+  const [noticePeriodDuration, setNoticePeriodDuration] = useState<
+    number | undefined
+  >(project?.noticePeriodDuration);
+  const [noticePeriodUnit, setNoticePeriodUnit] = useState<string | undefined>(
+    project?.noticePeriodUnit
+  );
+
+  const [projectDetails, setProjectDetails] = useState<CreateProjectData>({
+    name: null,
+    clientUEN: null,
+    clientName: null,
+    employmentBy: null,
+    startDate: null,
+    endDate: null,
+    noticePeriodDuration: null,
+    noticePeriodUnit: null,
+  });
 
   const [startDateError, setStartDateError] = useState<string>("");
   const [endDateError, setEndDateError] = useState<string>("");
   const [timeWindowError, setTimeWindowError] = useState<string>("");
   const [distanceRadiusError, setDistanceRadiusError] = useState<string>("");
+  const [noticePeriodDurationError, setNoticePeriodDurationError] =
+    useState<string>("");
 
   const [isUpdateButtonDisabled, setIsUpdateButtonDisabled] =
     useState<boolean>(true);
@@ -150,6 +180,27 @@ const GeneralProjectSettings = () => {
     setDistanceRadiusError("");
   };
 
+  const handleNoticePeriodDurationChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const duration = parseInt(e.target.value);
+
+    if (Number.isNaN(duration)) {
+      setNoticePeriodDuration(undefined);
+      setNoticePeriodDurationError("Invalid notice period duration");
+      return;
+    } else {
+      setNoticePeriodDuration(duration);
+    }
+
+    if (duration < 0) {
+      setNoticePeriodDurationError("Notice period duration must be positive");
+      return;
+    }
+
+    setNoticePeriodDurationError("");
+  };
+
   useEffect(() => {
     if (!project) return;
 
@@ -162,15 +213,30 @@ const GeneralProjectSettings = () => {
       Boolean(startDate) &&
       Boolean(endDate) &&
       Boolean(timeWindow) &&
-      Boolean(distanceRadius);
+      Boolean(distanceRadius) &&
+      Boolean(noticePeriodDuration) &&
+      Boolean(noticePeriodUnit);
 
     const areAnyFieldsChanged =
       startDate !== project.startDate.format("YYYY-MM-DD") ||
       endDate !== project.endDate.format("YYYY-MM-DD") ||
       timeWindow !== project.timeWindow ||
-      distanceRadius !== project.distanceRadius;
+      distanceRadius !== project.distanceRadius ||
+      noticePeriodDuration !== project.noticePeriodDuration ||
+      noticePeriodUnit !== project.noticePeriodUnit;
 
-    setIsUpdateButtonDisabled(!areAllFieldsFilled || !areAnyFieldsChanged);
+    console.log(noticePeriodDuration, project.noticePeriodDuration);
+    console.log(noticePeriodUnit, project.noticePeriodUnit);
+
+    setIsUpdateButtonDisabled(
+      !areAllFieldsFilled ||
+        !areAnyFieldsChanged ||
+        !!timeWindowError ||
+        !!distanceRadiusError ||
+        !!startDateError ||
+        !!endDateError ||
+        !!noticePeriodDurationError
+    );
   }, [
     startDate,
     endDate,
@@ -178,6 +244,13 @@ const GeneralProjectSettings = () => {
     distanceRadius,
     hasEditPermission,
     project,
+    noticePeriodDuration,
+    noticePeriodUnit,
+    timeWindowError,
+    distanceRadiusError,
+    startDateError,
+    endDateError,
+    noticePeriodDurationError,
   ]);
 
   const handleUpdateProject = () => {
@@ -211,6 +284,8 @@ const GeneralProjectSettings = () => {
           endDate: endDate,
           timeWindow: timeWindow,
           distanceRadius: distanceRadius,
+          noticePeriodDuration: noticePeriodDuration,
+          noticePeriodUnit: noticePeriodUnit,
         })
         .then(() => {
           updateProject();
@@ -312,6 +387,17 @@ const GeneralProjectSettings = () => {
                   type="number"
                   value={timeWindow}
                   disabled={!hasEditPermission}
+                  slotProps={{
+                    input: {
+                      min: 15,
+                      max: 45,
+                    },
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "e" || e.key === "-") {
+                      e.preventDefault();
+                    }
+                  }}
                   onChange={handleTimeWindowChange}
                 />
                 <FormHelperText>
@@ -335,6 +421,17 @@ const GeneralProjectSettings = () => {
                   defaultValue={distanceRadius}
                   disabled={!hasEditPermission}
                   onChange={handleDistanceRadiusChange}
+                  slotProps={{
+                    input: {
+                      min: 50,
+                      max: 200,
+                    },
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "e" || e.key === "-") {
+                      e.preventDefault();
+                    }
+                  }}
                 />
                 <FormHelperText>
                   {distanceRadiusError && (
@@ -344,6 +441,59 @@ const GeneralProjectSettings = () => {
                     </>
                   )}
                 </FormHelperText>
+              </FormControl>
+            </Grid>
+            <Grid xs={6}>
+              <FormLabel>Notice period duration</FormLabel>
+              <FormControl
+                sx={{ flexGrow: 1 }}
+                error={noticePeriodDurationError !== ""}
+              >
+                <Input
+                  type="number"
+                  value={noticePeriodDuration}
+                  disabled={!hasEditPermission}
+                  slotProps={{
+                    input: {
+                      min: 0,
+                    },
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "e" || e.key === "-") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onChange={handleNoticePeriodDurationChange}
+                />
+                <FormHelperText>
+                  {noticePeriodDurationError && (
+                    <>
+                      <InfoOutlinedIcon />
+                      {noticePeriodDurationError}
+                    </>
+                  )}
+                </FormHelperText>
+              </FormControl>
+            </Grid>
+            <Grid xs={6}>
+              <FormControl required sx={{ flexGrow: 1 }}>
+                <FormLabel>Notice period unit</FormLabel>
+                <Select
+                  placeholder="Select notice period unit"
+                  value={noticePeriodUnit}
+                  onChange={(_e, value) => {
+                    setNoticePeriodUnit(value as string);
+                  }}
+                >
+                  {NOTICE_PERIOD_UNITS.map((unit) => (
+                    <Option key={unit} value={unit}>
+                      {addS(
+                        parseInt(noticePeriodDuration ?? "") || 0,
+                        capitalizeWords(unit)
+                      )}
+                    </Option>
+                  ))}
+                </Select>
               </FormControl>
             </Grid>
           </Grid>
