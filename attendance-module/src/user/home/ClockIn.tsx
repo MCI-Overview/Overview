@@ -134,9 +134,9 @@ const ClockIn = () => {
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(deg2rad(lat1)) *
-        Math.cos(deg2rad(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+          Math.cos(deg2rad(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const d = R * c; // Distance in meters
       return d;
@@ -442,19 +442,15 @@ const ClockIn = () => {
                   <Button
                     fullWidth
                     onClick={() => {
-                      if (!isWithinStartTimeRange()) {
-                        //TODO: Make it time specific
-                        toast.error("Not within clock-in time range.");
-                        return;
-                      }
-
                       if (!currLatitude || !currLongitude) {
                         handleGetLocation();
                       }
                       setIsLocationModalOpen(true);
                     }}
                     disabled={
-                      !currAttendance || Boolean(currAttendance.clockInTime)
+                      !currAttendance ||
+                      Boolean(currAttendance.clockInTime) ||
+                      !isWithinStartTimeRange()
                     }
                   >
                     Clock-In
@@ -560,8 +556,9 @@ const ClockIn = () => {
           <Typography level="title-sm">
             {projLocations.length > 0
               ? nearestLocation && distance
-                ? `Nearest location: ${nearestLocation.address}, ${nearestLocation.postalCode
-                } (${distance.toFixed(2)}m away)`
+                ? `Nearest location: ${nearestLocation.address}, ${
+                    nearestLocation.postalCode
+                  } (${distance.toFixed(2)}m away)`
                 : "Fetching location..."
               : "No site locations found"}
           </Typography>
