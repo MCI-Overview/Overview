@@ -5,8 +5,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import { Tab, TabBar } from "../components/TabBar";
-import { Typography, Box } from "@mui/joy";
+
 import {
   AdminBreadcrumb,
   BreadcrumbPart,
@@ -17,7 +16,10 @@ import { useProjectContext } from "../providers/projectContextProvider";
 import Settings from "./Settings.tsx";
 import AdminRequestsPage from "../components/project/requests/AdminRequestsPage.tsx";
 import AdminProjectAttendancePage from "../components/project/attendance/AdminProjectAttendancePage.tsx";
-import RosterPageHandler from "../components/project/roster/RosterPageHandler.tsx";
+import TimetablePage from "../components/project/roster/TimetablePage.tsx";
+import { Tab, TabBar } from "../components/TabBar";
+
+import { Typography, Box } from "@mui/joy";
 
 const tabs: Tab[] = [
   {
@@ -37,8 +39,8 @@ const tabs: Tab[] = [
     content: <AdminRequestsPage />,
   },
   {
-    label: "Roster",
-    content: <RosterPageHandler />,
+    label: "Timetable",
+    content: <TimetablePage />,
   },
   {
     label: "Settings",

@@ -13,7 +13,6 @@ import {
   ListItemContent,
   ToggleButtonGroup,
   Typography,
-  Box,
 } from "@mui/joy";
 import {
   BuildRounded as BuildIcon,
