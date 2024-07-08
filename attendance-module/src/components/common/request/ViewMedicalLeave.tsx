@@ -27,24 +27,36 @@ export default function ViewMedicalLeave({
   useEffect(() => {
     axios.get(rosterRequestURL).then((response) => {
       setAffectedRosters(
-        response.data.map((roster: any) => {
-          const { correctStart, correctEnd } = correctTimes(
-            dayjs(roster.shiftDate),
-            roster.shiftType === "SECOND_HALF"
-              ? dayjs(roster.Shift.halfDayStartTime)
-              : dayjs(roster.Shift.startTime),
-            roster.shiftType === "FIRST_HALF"
-              ? dayjs(roster.Shift.halfDayEndTime)
-              : dayjs(roster.Shift.endTime)
-          );
+        response.data.map(
+          (roster: {
+            cuid: string;
+            shiftDate: string;
+            shiftType: string;
+            Shift: {
+              halfDayStartTime: string;
+              halfDayEndTime: string;
+              startTime: string;
+              endTime: string;
+            };
+          }) => {
+            const { correctStart, correctEnd } = correctTimes(
+              dayjs(roster.shiftDate),
+              roster.shiftType === "SECOND_HALF"
+                ? dayjs(roster.Shift.halfDayStartTime)
+                : dayjs(roster.Shift.startTime),
+              roster.shiftType === "FIRST_HALF"
+                ? dayjs(roster.Shift.halfDayEndTime)
+                : dayjs(roster.Shift.endTime)
+            );
 
-          return {
-            cuid: roster.cuid,
-            shiftDate: dayjs(roster.shiftDate).format("DD/MM/YY"),
-            startTime: correctStart.format("HH:mm"),
-            endTime: correctEnd.format("HH:mm"),
-          };
-        })
+            return {
+              cuid: roster.cuid,
+              shiftDate: dayjs(roster.shiftDate).format("DD/MM/YY"),
+              startTime: correctStart.format("HH:mm"),
+              endTime: correctEnd.format("HH:mm"),
+            };
+          }
+        )
       );
     });
   }, [rosterRequestURL]);

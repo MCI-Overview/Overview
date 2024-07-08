@@ -119,7 +119,10 @@ const AddCandidateModal = ({
     }));
   };
 
-  const handleSelectChange = (_event: any, value: string | null) => {
+  const handleSelectChange = (
+    _event: React.SyntheticEvent | null,
+    value: string | null
+  ) => {
     setCdd((prevCdd) => ({
       ...prevCdd,
       employmentType: value || "",
@@ -127,7 +130,7 @@ const AddCandidateModal = ({
   };
 
   const validateInput = () => {
-    let newErrors = {
+    const newErrors = {
       nric: "",
       name: "",
       contact: "",
