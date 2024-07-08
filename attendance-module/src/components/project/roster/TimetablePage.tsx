@@ -23,6 +23,12 @@ export default function NewRosterPage() {
               onClick={() => {
                 setEditMode(true);
               }}
+              sx={{
+                display: {
+                  xs: "none",
+                  sm: "block",
+                },
+              }}
             >
               Edit
             </Button>
