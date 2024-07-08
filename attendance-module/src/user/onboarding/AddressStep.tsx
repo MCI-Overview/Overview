@@ -311,16 +311,23 @@ export default function AddressStep() {
               };
 
               if (Object.keys(updateData.address).length > 0) {
-                axios.patch("/api/user", updateData).then(() => {
-                  setOldCandidate({
-                    ...oldCandidate,
+                axios
+                  .patch("/api/user", {
                     address: {
                       ...oldCandidate.address,
                       ...updateData.address,
                     },
+                  })
+                  .then(() => {
+                    setOldCandidate({
+                      ...oldCandidate,
+                      address: {
+                        ...oldCandidate.address,
+                        ...updateData.address,
+                      },
+                    });
+                    handleNext();
                   });
-                  handleNext();
-                });
               } else {
                 handleNext();
               }

@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from "react";
 import { User } from "../types/common";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 
 const UserContext = createContext<{
@@ -35,6 +35,13 @@ export function UserContextProvider({
         }
       })
       .catch((error) => {
+        const axiosError = error as AxiosError;
+
+        if (axiosError.response?.status === 401) {
+          setUser(null);
+          return;
+        }
+
         if (!error.response) navigate("/504");
       })
       .finally(finallyFunction);

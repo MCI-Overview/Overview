@@ -176,13 +176,22 @@ export default function UserDetailsStep() {
             };
 
             if (Object.keys(updateData).length > 0) {
-              axios.patch("/api/user", updateData).then(() => {
-                setOldCandidate({
-                  ...oldCandidate,
+              axios
+                .patch("/api/user", {
+                  name: oldName,
+                  contact: oldContact,
+                  dateOfBirth: oldDateOfBirth,
+                  nationality: oldNationality,
+                  nric: oldNric,
                   ...updateData,
+                })
+                .then(() => {
+                  setOldCandidate({
+                    ...oldCandidate,
+                    ...updateData,
+                  });
+                  handleNext();
                 });
-                handleNext();
-              });
             } else {
               handleNext();
             }

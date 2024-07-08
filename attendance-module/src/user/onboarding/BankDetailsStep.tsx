@@ -219,8 +219,15 @@ export default function BankDetailsStep() {
                 },
               };
 
+              Object.keys(oldCandidate.bankDetails).forEach((key) => {
+                formData.set(
+                  `bankDetails[${key}]`,
+                  (oldCandidate.bankDetails as Record<string, string>)[key]
+                );
+              });
+
               Object.keys(updateData.bankDetails).forEach((key) => {
-                formData.append(
+                formData.set(
                   `bankDetails[${key}]`,
                   (updateData.bankDetails as Record<string, string>)[key]
                 );

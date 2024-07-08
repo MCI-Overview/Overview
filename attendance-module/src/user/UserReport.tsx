@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import axios from "axios";
-import OnLeave from "../components/project/overview/OnLeaveCount";
+import OnLeaveCount from "../components/project/overview/OnLeaveCount";
 import McCount from "../components/project/overview/McCount";
 import HoursWorked from "../components/project/overview/HoursWorked";
 
@@ -184,7 +184,7 @@ export default function UserReport() {
         total={report.scheduledHoursWorked}
       />
       <McCount count={report.mc} total={14} />
-      <OnLeave count={report.leave} total={14} />
+      <OnLeaveCount count={report.leave} total={14} />
     </Stack>
   );
 }

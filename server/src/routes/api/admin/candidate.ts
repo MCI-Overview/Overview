@@ -297,7 +297,8 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
       !address.street ||
       !address.postal ||
       !address.country ||
-      (!address.isLanded && !(address.floor || address.unit)))
+      !address.floor ||
+      !address.unit)
   ) {
     return res.status(400).send("Invalid address JSON.");
   }
