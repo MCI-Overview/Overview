@@ -184,16 +184,23 @@ export default function EmergencyContactStep() {
               };
 
               if (Object.keys(updateData.emergencyContact).length > 0) {
-                axios.patch("/api/user", updateData).then(() => {
-                  setOldCandidate({
-                    ...oldCandidate,
+                axios
+                  .patch("/api/user", {
                     emergencyContact: {
                       ...oldCandidate.emergencyContact,
                       ...updateData.emergencyContact,
                     },
+                  })
+                  .then(() => {
+                    setOldCandidate({
+                      ...oldCandidate,
+                      emergencyContact: {
+                        ...oldCandidate.emergencyContact,
+                        ...updateData.emergencyContact,
+                      },
+                    });
+                    handleNext();
                   });
-                  handleNext();
-                });
                 handleNext();
               } else {
                 handleNext();
