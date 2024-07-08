@@ -481,6 +481,7 @@ const GeneralProjectSettings = () => {
                 <Select
                   placeholder="Select notice period unit"
                   value={noticePeriodUnit}
+                  disabled={!hasEditPermission}
                   onChange={(_e, value) => {
                     setNoticePeriodUnit(value as string);
                   }}
@@ -488,7 +489,7 @@ const GeneralProjectSettings = () => {
                   {NOTICE_PERIOD_UNITS.map((unit) => (
                     <Option key={unit} value={unit}>
                       {addS(
-                        parseInt(noticePeriodDuration ?? "") || 0,
+                        parseInt(noticePeriodDuration?.toString() ?? "") || 0,
                         capitalizeWords(unit)
                       )}
                     </Option>
