@@ -71,7 +71,7 @@ const AdminProjectAttendanceTable = ({
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <TdTypo colSpan={8}>No candidates found</TdTypo>
+                <TdTypo colSpan={9}>No candidates found</TdTypo>
               </tr>
             ) : (
               data.map((att: CustomAdminAttendance) => (
