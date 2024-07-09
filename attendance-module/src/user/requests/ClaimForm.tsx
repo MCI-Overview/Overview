@@ -2,7 +2,9 @@ import axios from "axios";
 import dayjs from "dayjs";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
+import { useRequestContext } from "../../providers/requestContextProvider";
 import LoadingRequestButton from "../../components/LoadingRequestButton";
+import FileUpload from "../../components/InputFileUpload";
 
 import {
   FormControl,
@@ -15,8 +17,8 @@ import {
   Autocomplete,
   Sheet,
 } from "@mui/joy";
-import FileUpload from "../../components/InputFileUpload";
-import { useRequestContext } from "../../providers/requestContextProvider";
+
+const cashAmountRegex = /^(\d+(\.\d{1,2})?)?$/;
 
 export default function ClaimForm({
   setIsOpen,
@@ -103,8 +105,8 @@ export default function ClaimForm({
 
   return (
     <>
-      <Grid container columns={2} spacing={2}>
-        <Grid xs={1}>
+      <Grid container spacing={2}>
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Type</FormLabel>
             <Select
@@ -119,14 +121,17 @@ export default function ClaimForm({
             </Select>
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Amount</FormLabel>
             <Input
               type="number"
-              defaultValue={0}
+              value={amount}
               onChange={(e) => {
-                setAmount(parseFloat(e.target.value));
+                const input = e.target.value;
+                if (!cashAmountRegex.test(input)) return;
+                setAmount(parseFloat(input));
               }}
               onKeyDown={(e) => {
                 if (e.key === "e" || e.key === "-") {
@@ -143,9 +148,8 @@ export default function ClaimForm({
             />
           </FormControl>
         </Grid>
-      </Grid>
-      <Grid container columns={2} spacing={2}>
-        <Grid xs={1}>
+
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Project</FormLabel>
             <Autocomplete
@@ -165,7 +169,8 @@ export default function ClaimForm({
             />
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Shift</FormLabel>
             <Autocomplete

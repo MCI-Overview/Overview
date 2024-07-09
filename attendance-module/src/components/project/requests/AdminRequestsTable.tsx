@@ -8,9 +8,24 @@ import RequestStatusChip from "./RequestStatusChip";
 import RequestTypeChip from "./RequestTypeChip";
 
 import { Table, Sheet } from "@mui/joy";
+import { useState } from "react";
 
 const AdminRequestsTable = () => {
   const { requests, updateRequest } = useRequestContext();
+  const [currentRequestIndex, setCurrentRequestIndex] = useState<number>(0);
+
+  const handleNextRequest = () => {
+    if (!requests) return;
+    setCurrentRequestIndex((prev) => (prev + 1) % requests.length);
+  };
+
+  const handlePreviousRequest = () => {
+    if (!requests) return;
+    setCurrentRequestIndex((prev) =>
+      prev === 0 ? requests?.length - 1 : prev - 1
+    );
+  };
+
   if (!requests) return null;
 
   return (
@@ -57,33 +72,38 @@ const AdminRequestsTable = () => {
                 <TdTypo colSpan={6}>No requests found</TdTypo>
               </tr>
             ) : (
-              requests.map((req: CustomRequest) => (
-                <tr key={req.cuid}>
-                  <TdTypo>
-                    {req.Assign.Candidate && req.Assign.Candidate.nric}
-                  </TdTypo>
-                  <TdTypo>
-                    {req.Assign.Candidate && req.Assign.Candidate.name}
-                  </TdTypo>
-                  <TdTypo>
-                    {dayjs(req.createdAt).format("DD/MM/YYYY HH:mm")}
-                  </TdTypo>
-                  <td>
-                    <RequestTypeChip type={req.type} />
-                  </td>
-                  <td>
-                    <RequestStatusChip status={req.status} />
-                  </td>
-                  <td>
-                    <ViewDetailsModal
-                      request={req}
-                      updateRequest={updateRequest}
-                      type="ADMIN"
-                      variant="DESKTOP"
-                    />
-                  </td>
-                </tr>
-              ))
+              requests.map((req: CustomRequest, index) => {
+                return (
+                  <tr key={req.cuid}>
+                    <TdTypo>
+                      {req.Assign.Candidate && req.Assign.Candidate.nric}
+                    </TdTypo>
+                    <TdTypo>
+                      {req.Assign.Candidate && req.Assign.Candidate.name}
+                    </TdTypo>
+                    <TdTypo>
+                      {dayjs(req.createdAt).format("DD/MM/YYYY HH:mm")}
+                    </TdTypo>
+                    <td>
+                      <RequestTypeChip type={req.type} />
+                    </td>
+                    <td>
+                      <RequestStatusChip status={req.status} />
+                    </td>
+                    <td>
+                      <ViewDetailsModal
+                        onClick={() => setCurrentRequestIndex(index)}
+                        request={requests[currentRequestIndex]}
+                        updateRequest={updateRequest}
+                        handleNextRequest={handleNextRequest}
+                        handlePreviousRequest={handlePreviousRequest}
+                        type="ADMIN"
+                        variant="DESKTOP"
+                      />
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </Table>

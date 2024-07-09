@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { useState } from "react";
 import { CustomRequest } from "../../types";
 import { useRequestContext } from "../../providers/requestContextProvider";
 import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
@@ -11,6 +12,7 @@ import { Table, Sheet } from "@mui/joy";
 
 const UserRequestHistoryTable = () => {
   const { requests, updateRequest } = useRequestContext();
+  const [currentRequestIndex, setCurrentRequestIndex] = useState<number>(0);
   if (!requests) return null;
 
   return (
@@ -53,7 +55,7 @@ const UserRequestHistoryTable = () => {
               <TdTypo colSpan={5}>No requests found</TdTypo>
             </tr>
           ) : (
-            requests.map((req: CustomRequest) => (
+            requests.map((req: CustomRequest, index) => (
               <tr key={req.cuid}>
                 <TdTypo>{dayjs(req.createdAt).format("DD/MM/YY HH:mm")}</TdTypo>
                 <TdTypo>{req.Assign.Project && req.Assign.Project.name}</TdTypo>
@@ -65,7 +67,8 @@ const UserRequestHistoryTable = () => {
                 </td>
                 <td>
                   <ViewDetailsModal
-                    request={req}
+                    onClick={() => setCurrentRequestIndex(index)}
+                    request={requests[currentRequestIndex]}
                     updateRequest={updateRequest}
                     type="USER"
                     variant="DESKTOP"
