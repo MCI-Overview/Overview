@@ -6,45 +6,54 @@ import {
   useParams,
 } from "react-router-dom";
 
+import Settings from "./Settings.tsx";
 import {
   AdminBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
-import ProjectOverview from "../components/project/overview/OverviewPage.tsx";
-import AdminProjectCandidatesPage from "../components/project/candidates/AdminProjectCandidatesPage.tsx";
-import { useProjectContext } from "../providers/projectContextProvider";
-import Settings from "./Settings.tsx";
-import AdminRequestsPage from "../components/project/requests/AdminRequestsPage.tsx";
-import AdminProjectAttendancePage from "../components/project/attendance/AdminProjectAttendancePage.tsx";
-import TimetablePage from "../components/project/roster/TimetablePage.tsx";
 import { Tab, TabBar } from "../components/TabBar";
+import { useProjectContext } from "../providers/projectContextProvider";
+import TimetablePage from "../components/project/roster/TimetablePage.tsx";
+import ProjectOverview from "../components/project/overview/OverviewPage.tsx";
+import AdminRequestsPage from "../components/project/requests/AdminRequestsPage.tsx";
+import AdminProjectCandidatesPage from "../components/project/candidates/AdminProjectCandidatesPage.tsx";
+import AdminProjectAttendancePage from "../components/project/attendance/AdminProjectAttendancePage.tsx";
 
 import { Typography, Box } from "@mui/joy";
+import { useUserContext } from "../providers/userContextProvider.tsx";
 
-const tabs: Tab[] = [
+const tabs: (Tab & {
+  clientHolderOnly: boolean;
+})[] = [
   {
     label: "Overview",
     content: <ProjectOverview />,
+    clientHolderOnly: false,
   },
   {
     label: "Attendance",
     content: <AdminProjectAttendancePage />,
+    clientHolderOnly: false,
   },
   {
     label: "Candidates",
     content: <AdminProjectCandidatesPage />,
+    clientHolderOnly: false,
   },
   {
     label: "Requests",
     content: <AdminRequestsPage />,
+    clientHolderOnly: true,
   },
   {
     label: "Timetable",
     content: <TimetablePage />,
+    clientHolderOnly: false,
   },
   {
     label: "Settings",
     content: <Settings />,
+    clientHolderOnly: false,
   },
 ];
 
@@ -52,9 +61,16 @@ const AdminProjects = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { projectCuid } = useParams();
+  const { user } = useUserContext();
   const { project, updateProject } = useProjectContext();
 
   const [tabValue, setTabValue] = useState<number>(0);
+
+  const filteredTabs = tabs.filter(
+    (tab) =>
+      project?.consultants.find((c) => c.cuid === user?.cuid)?.role ===
+        "CLIENT_HOLDER" || !tab.clientHolderOnly
+  );
 
   useEffect(() => {
     updateProject(projectCuid);
@@ -148,7 +164,7 @@ const AdminProjects = () => {
         <TabBar
           tabValue={tabValue}
           handleTabChange={handleTabChange}
-          tabs={tabs}
+          tabs={filteredTabs}
         />
       </Box>
     </Box>
