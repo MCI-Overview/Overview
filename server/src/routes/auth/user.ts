@@ -23,14 +23,14 @@ userAuthRouter.post("/login", function (req: Request, res: Response, next) {
     }
 
     if (!user) {
-      return res.json({ success: false, message: "Authentication failed" });
+      return res.json({ success: false, message: "Invalid username/password" });
     }
 
     req.login(user, (loginErr) => {
       if (loginErr) {
         return next(loginErr);
       }
-      return res.json({ success: true, message: "Authentication succeeded" });
+      return res.json({ success: true, message: "Successfully logged in" });
     });
   })(req, res, next);
 });
