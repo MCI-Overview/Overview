@@ -476,7 +476,7 @@ const GeneralProjectSettings = () => {
               </FormControl>
             </Grid>
             <Grid xs={6}>
-              <FormControl required sx={{ flexGrow: 1 }}>
+              <FormControl sx={{ flexGrow: 1 }}>
                 <FormLabel>Notice period unit</FormLabel>
                 <Select
                   placeholder="Select notice period unit"
