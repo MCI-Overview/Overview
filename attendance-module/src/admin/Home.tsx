@@ -48,6 +48,10 @@ const AdminProjects = () => {
     }
   }, [location.hash]);
 
+  useEffect(() => {
+    document.title = "Home - Overview";
+  }, []);
+
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
     newValue: string | number | null

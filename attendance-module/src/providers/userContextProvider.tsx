@@ -42,7 +42,7 @@ export function UserContextProvider({
           return;
         }
 
-        if (!error.response) navigate("/504");
+        if (!error.response) navigate("/503");
       })
       .finally(finallyFunction);
   }

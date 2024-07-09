@@ -78,6 +78,10 @@ const AdminProjects = () => {
   }, []);
 
   useEffect(() => {
+    document.title = `${project?.name} - Overview`;
+  }, [project]);
+
+  useEffect(() => {
     const hash = location.hash.replace("#", "");
     switch (hash) {
       case "attendance":
