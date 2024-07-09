@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import GeneralProjectSettings from "../components/project/manage/GeneralProjectSettings";
 import ManageProjectAccess from "../components/project/manage/ManageProjectAccess";
 
@@ -15,9 +16,7 @@ import {
   Typography,
 } from "@mui/joy";
 import {
-  BuildRounded as BuildIcon,
   MenuBookRounded as MenuBookIcon,
-  NotificationsRounded as NotificationsIcon,
   GroupRounded as GroupIcon,
 } from "@mui/icons-material";
 
@@ -31,16 +30,6 @@ const sections = [
     title: "Access",
     icon: <GroupIcon />,
     children: <ManageProjectAccess />,
-  },
-  {
-    title: "Notifications",
-    icon: <NotificationsIcon />,
-    children: <div>Notifications</div>,
-  },
-  {
-    title: "Advanced",
-    icon: <BuildIcon />,
-    children: <div>Advanced</div>,
   },
 ];
 
