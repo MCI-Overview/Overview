@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { useState } from "react";
 import { CustomRequest } from "../../types";
 import { useRequestContext } from "../../providers/requestContextProvider";
 import { TdTypo, ThTypo } from "../../components/project/ui/TableTypo";
@@ -12,6 +13,19 @@ import { Table, Sheet } from "@mui/joy";
 // TODO: Add editing of requests
 const UserCurrentRequestsTable = () => {
   const { requests, updateRequest, error } = useRequestContext();
+  const [currentRequestIndex, setCurrentRequestIndex] = useState<number>(0);
+
+  // const handleNextRequest = () => {
+  //   if (!requests) return;
+  //   setCurrentRequestIndex((prev) => (prev + 1) % requests.length);
+  // };
+
+  // const handlePreviousRequest = () => {
+  //   if (!requests) return;
+  //   setCurrentRequestIndex((prev) =>
+  //     prev === 0 ? requests?.length - 1 : prev - 1
+  //   );
+  // };
 
   return (
     <Sheet
@@ -65,7 +79,7 @@ const UserCurrentRequestsTable = () => {
           ) : (
             !error &&
             requests &&
-            requests.map((req: CustomRequest) => (
+            requests.map((req: CustomRequest, index) => (
               <tr key={req.cuid}>
                 <TdTypo>
                   {dayjs(req.createdAt).format("DD/MM/YYYY HH:mm")}
@@ -79,8 +93,11 @@ const UserCurrentRequestsTable = () => {
                 </td>
                 <td>
                   <ViewDetailsModal
-                    request={req}
+                    onClick={() => setCurrentRequestIndex(index)}
+                    request={requests[currentRequestIndex]}
                     updateRequest={updateRequest}
+                    // handleNextRequest={handleNextRequest}
+                    // handlePreviousRequest={handlePreviousRequest}
                     type="USER"
                     variant="DESKTOP"
                   />
