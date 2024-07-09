@@ -1,6 +1,6 @@
 import axios from "axios";
 import dayjs from "dayjs";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { CustomAttendance } from "../../types";
 
@@ -47,33 +47,38 @@ const AdminUserAttendanceHistoryPage = () => {
     }
   };
 
+  const fetchUpcomingShifts = useCallback(
+    async (page: number, date?: string) => {
+      try {
+        let url = `/api/admin/history/${candidateCuid}/${page}`;
+        if (date) {
+          const formattedDate = dayjs(date).format(
+            "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
+          );
+          url += `?date=${formattedDate}`;
+        }
+        const response = await axios.get(url);
+        const [fetchedData, paginationData] = response.data;
+        setData(fetchedData || []);
+        setPage(paginationData);
+      } catch (error) {
+        console.error("Error fetching upcoming shifts: ", error);
+      }
+    },
+    [candidateCuid]
+  );
+
   useEffect(() => {
     if (selectedDate !== null) {
       fetchUpcomingShifts(1, selectedDate);
     } else {
       fetchUpcomingShifts(1);
     }
-  }, [selectedDate]);
-
-  const fetchUpcomingShifts = async (page: number, date?: string) => {
-    try {
-      let url = `/api/admin/history/${candidateCuid}/${page}`;
-      if (date) {
-        const formattedDate = dayjs(date).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
-        url += `?date=${formattedDate}`;
-      }
-      const response = await axios.get(url);
-      const [fetchedData, paginationData] = response.data;
-      setData(fetchedData || []);
-      setPage(paginationData);
-    } catch (error) {
-      console.error("Error fetching upcoming shifts: ", error);
-    }
-  };
+  }, [fetchUpcomingShifts, selectedDate]);
 
   useEffect(() => {
     fetchUpcomingShifts(page.currentPage);
-  }, [page.currentPage]);
+  }, [fetchUpcomingShifts, page.currentPage]);
 
   return (
     <Box

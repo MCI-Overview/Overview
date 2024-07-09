@@ -27,7 +27,7 @@ import {
 } from "@mui/icons-material";
 
 interface ViewDetailsModalProps {
-  onClick: () => void;
+  onClick?: () => void;
   request: CustomRequest;
   updateRequest: () => void;
   handleNextRequest?: () => void;
@@ -142,7 +142,7 @@ const ViewDetailsModal = ({
         </ModalOverflow>
       </Modal>
 
-      {variant === "DESKTOP" && (
+      {variant === "DESKTOP" && onClick && (
         <Tooltip title="View details">
           <IconButton
             size="sm"
