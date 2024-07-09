@@ -1,5 +1,5 @@
 import { useState, FormEvent } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 
 import { useUserContext } from "../providers/userContextProvider";
@@ -62,17 +62,18 @@ const Login = () => {
         username,
         password,
       })
-      .then((res) => {
-        if (res.status === 200 && res.data.success) {
-          updateUser();
-          toast.success(res.data.message);
-        } else {
-          toast.error(
-            res.data.message || "An error occurred. Please try again."
-          );
-        }
+      .then(() => {
+        updateUser();
+        toast.success("Successfully logged in.");
       })
-      .catch(() => toast.error("An error occurred. Please try again."));
+      .catch((error: AxiosError) => {
+        if (error.response?.status === 400) {
+          toast.error("Invalid username/password.");
+          return;
+        }
+
+        toast.error("An unexpected error occurred. Please try again later.");
+      });
   };
 
   const handleMSLogin = () => {
