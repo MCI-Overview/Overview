@@ -103,7 +103,11 @@ const ManageProjectAccess = () => {
             )}
             <CollaboratorsTable
               consultants={project.consultants.sort((a) =>
-                a.cuid === currentUser.cuid ? -1 : 1
+                a.cuid === currentUser.cuid
+                  ? -1
+                  : a.role === "CLIENT_HOLDER"
+                  ? 0
+                  : 1
               )}
               currentUser={currentUser}
               handleRemoveConsultant={handleRemoveConsultant}
