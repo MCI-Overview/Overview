@@ -1,6 +1,8 @@
 import { useState, FormEvent } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
+
+import { useUserContext } from "../providers/userContextProvider";
 
 import {
   FormLabel,
@@ -51,6 +53,8 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const { updateUser } = useUserContext();
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     axios
@@ -58,12 +62,17 @@ const Login = () => {
         username,
         password,
       })
-      .then((res) => {
-        if (res.status === 200) {
-          window.location.reload();
-        } else {
-          toast.error("Invalid username or password");
+      .then(() => {
+        updateUser();
+        toast.success("Successfully logged in.");
+      })
+      .catch((error: AxiosError) => {
+        if (error.response?.status === 400) {
+          toast.error("Invalid username/password.");
+          return;
         }
+
+        toast.error("An unexpected error occurred. Please try again later.");
       });
   };
 

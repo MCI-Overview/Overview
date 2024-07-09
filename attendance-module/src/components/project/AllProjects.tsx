@@ -67,7 +67,7 @@ const AllProjects: FC = () => {
         return previousProjects;
       case "ongoing":
         return ongoingProjects;
-      case "future":
+      case "upcoming":
         return futureProjects;
     }
   };
@@ -106,7 +106,7 @@ const AllProjects: FC = () => {
               >
                 <Option value="concluded">concluded</Option>
                 <Option value="ongoing">ongoing</Option>
-                <Option value="future">future</Option>
+                <Option value="upcoming">upcoming</Option>
               </Select>
             </Box>
 

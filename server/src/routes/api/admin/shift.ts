@@ -13,11 +13,14 @@ import dayjs from "dayjs";
 
 const projectShiftAPIRouter: Router = Router();
 
-projectShiftAPIRouter.delete("/shift", async (req, res) => {
+projectShiftAPIRouter.delete("/shift/:shiftCuid", async (req, res) => {
   const user = req.user as User;
-  const { shiftCuid } = req.body;
+  const { shiftCuid } = req.params;
 
-  if (!shiftCuid) return res.status(400).send("shiftCuid is required.");
+  if (!shiftCuid)
+    return res.status(400).json({
+      message: "Please specify a shift cuid.",
+    });
 
   let shiftData;
   try {
@@ -68,7 +71,7 @@ projectShiftAPIRouter.delete("/shift", async (req, res) => {
       },
     });
 
-    return res.send("Shift deleted successfully.");
+    return res.json({ message: "Shift deleted successfully." });
   }
 
   // include attendences which end after current time
@@ -84,7 +87,7 @@ projectShiftAPIRouter.delete("/shift", async (req, res) => {
   });
 
   if (futureAttendances.length > 0) {
-    return res.status(400).send("Cannot delete ongoing shifts.");
+    return res.status(400).json({ message: "Cannot delete ongoing shifts." });
   }
 
   await prisma.shift.update({
@@ -96,7 +99,7 @@ projectShiftAPIRouter.delete("/shift", async (req, res) => {
     },
   });
 
-  return res.send("Shift deleted successfully.");
+  return res.json({ message: "Shift deleted successfully." });
 });
 
 // TODO: include commented fields

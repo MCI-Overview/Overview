@@ -13,6 +13,8 @@ import {
 } from "../components/project/ui/AdminBreadcrumb";
 import ProfilePage from "../components/profile/details/ProfilePage";
 import { useUserContext } from "../providers/userContextProvider";
+import AdminUserAttendanceHistoryPage from "./shifts/AdminUserAttendanceHistoryPage";
+import UserReport from "./AdminUserReport";
 
 const CandidateProfile = () => {
   const location = useLocation();
@@ -25,7 +27,10 @@ const CandidateProfile = () => {
   useEffect(() => {
     const hash = location.hash.replace("#", "");
     switch (hash) {
-      case "requests":
+      case "report":
+        setTabValue(2);
+        break;
+      case "shifts":
         setTabValue(1);
         break;
       default:
@@ -49,21 +54,35 @@ const CandidateProfile = () => {
 
   const breadcrumbs: BreadcrumbPart[] = [
     {
+      label: "Candidates",
+      link: "/admin/candidates",
+    },
+    {
       label: "Profile",
       link: path,
     },
   ];
+
 
   const tabs: Tab[] = [
     {
       label: "Details",
       content: <ProfilePage />,
     },
-    {
-      label: "Requests",
-      content: <div>Requests</div>,
-    },
   ];
+
+  if (user.userType == "Admin") {
+    tabs.push(
+      {
+        label: "Shifts",
+        content: <AdminUserAttendanceHistoryPage />,
+      },
+      {
+        label: "Report",
+        content: <UserReport />
+      }
+    );
+  }
 
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
@@ -76,7 +95,10 @@ const CandidateProfile = () => {
         navigate(path);
         break;
       case 1:
-        navigate(`${path}#requests`);
+        navigate(`${path}#shifts`);
+        break;
+      case 2:
+        navigate(`${path}#report`);
         break;
       default:
         break;

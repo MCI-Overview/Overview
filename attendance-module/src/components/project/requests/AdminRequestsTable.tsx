@@ -11,7 +11,7 @@ import { Table, Sheet } from "@mui/joy";
 import { useState } from "react";
 
 const AdminRequestsTable = () => {
-  const { requests, updateRequest } = useRequestContext();
+  const { requests, updateRequest, error } = useRequestContext();
   const [currentRequestIndex, setCurrentRequestIndex] = useState<number>(0);
 
   const handleNextRequest = () => {
@@ -25,8 +25,6 @@ const AdminRequestsTable = () => {
       prev === 0 ? requests?.length - 1 : prev - 1
     );
   };
-
-  if (!requests) return null;
 
   return (
     <>
@@ -67,43 +65,53 @@ const AdminRequestsTable = () => {
             </tr>
           </thead>
           <tbody>
-            {requests.length === 0 ? (
+            {error && (
+              <tr>
+                <TdTypo colSpan={6}>Error loading requests</TdTypo>
+              </tr>
+            )}
+            {!error && !requests && (
+              <tr>
+                <TdTypo colSpan={6}>Loading...</TdTypo>
+              </tr>
+            )}
+            {!error && requests && requests.length === 0 ? (
               <tr>
                 <TdTypo colSpan={6}>No requests found</TdTypo>
               </tr>
             ) : (
-              requests.map((req: CustomRequest, index) => {
-                return (
-                  <tr key={req.cuid}>
-                    <TdTypo>
-                      {req.Assign.Candidate && req.Assign.Candidate.nric}
-                    </TdTypo>
-                    <TdTypo>
-                      {req.Assign.Candidate && req.Assign.Candidate.name}
-                    </TdTypo>
-                    <TdTypo>
-                      {dayjs(req.createdAt).format("DD/MM/YYYY HH:mm")}
-                    </TdTypo>
-                    <td>
-                      <RequestTypeChip type={req.type} />
-                    </td>
-                    <td>
-                      <RequestStatusChip status={req.status} />
-                    </td>
-                    <td>
-                      <ViewDetailsModal
-                        onClick={() => setCurrentRequestIndex(index)}
-                        request={requests[currentRequestIndex]}
-                        updateRequest={updateRequest}
-                        handleNextRequest={handleNextRequest}
-                        handlePreviousRequest={handlePreviousRequest}
-                        type="ADMIN"
-                        variant="DESKTOP"
-                      />
-                    </td>
-                  </tr>
-                );
-              })
+              !error &&
+              requests &&
+              requests.map((req: CustomRequest, index) => (
+                <tr key={req.cuid}>
+                  <TdTypo>
+                    {req.Assign.Candidate && req.Assign.Candidate.nric}
+                  </TdTypo>
+                  <TdTypo>
+                    {req.Assign.Candidate && req.Assign.Candidate.name}
+                  </TdTypo>
+                  <TdTypo>
+                    {dayjs(req.createdAt).format("DD/MM/YYYY HH:mm")}
+                  </TdTypo>
+                  <td>
+                    <RequestTypeChip type={req.type} />
+                  </td>
+                  <td>
+                    <RequestStatusChip status={req.status} />
+                  </td>
+                  <td>
+                    <ViewDetailsModal
+                      onClick={() => setCurrentRequestIndex(index)}
+                      request={requests[currentRequestIndex]}
+                      updateRequest={updateRequest}
+                      handleNextRequest={handleNextRequest}
+                      handlePreviousRequest={handlePreviousRequest}
+                      type="ADMIN"
+                      variant="DESKTOP"
+                    />
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </Table>

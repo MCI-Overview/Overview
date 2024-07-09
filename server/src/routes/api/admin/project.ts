@@ -3,6 +3,7 @@ import { prisma } from "../../../client";
 import {
   EmploymentType,
   LeaveStatus,
+  RequestStatus,
   Role,
   ShiftStatus,
   ShiftType,
@@ -228,6 +229,8 @@ projectAPIRouter.get(
         shiftDate: true,
         candidateCuid: true,
         shiftType: true,
+        leave: true,
+        status: true,
         Shift: {
           select: {
             Project: {
@@ -240,6 +243,7 @@ projectAPIRouter.get(
             halfDayStartTime: true,
             halfDayEndTime: true,
             cuid: true,
+            projectCuid: true,
           },
         },
       },
@@ -265,6 +269,9 @@ projectAPIRouter.get(
                 : dayjs(cr.Shift.endTime);
 
             return {
+              leave: cr.leave,
+              status: cr.status,
+              projectCuid: cr.Shift.projectCuid,
               shiftCuid: cr.Shift.cuid,
               rosterCuid: cr.cuid,
               shiftType: cr.shiftType,
@@ -290,6 +297,49 @@ projectAPIRouter.get(
     return res.json(data);
   }
 );
+
+// TODO: Add Permission check and overlap check
+projectAPIRouter.patch("/roster", async (req, res) => {
+  const { rosterCuid, candidateCuid, rosterDate } = req.body;
+
+  if (!rosterCuid)
+    return res.status(400).json({
+      message: "Please specify a roster cuid.",
+    });
+
+  if (!candidateCuid)
+    return res.status(400).json({
+      message: "Please specify a candidate cuid.",
+    });
+
+  if (!rosterDate)
+    return res.status(400).json({
+      message: "Please specify a roster date.",
+    });
+
+  const rosterDateObject = new Date(rosterDate);
+
+  try {
+    await prisma.attendance.update({
+      where: {
+        cuid: rosterCuid,
+      },
+      data: {
+        candidateCuid: candidateCuid,
+        shiftDate: rosterDateObject,
+      },
+    });
+
+    return res.json({
+      message: "Roster updated successfully.",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal server error.",
+    });
+  }
+});
 
 // TODO: Add root permission check
 projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
@@ -507,6 +557,7 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
         rawEnd: row.clockOutTime,
         leave: row.leave,
         status: row.status,
+        postalCode: row.postalCode,
       }))
     );
   } catch (error) {
@@ -657,6 +708,12 @@ projectAPIRouter.delete("/roster/:rosterCuid", async (req, res) => {
     await prisma.attendance.delete({
       where: {
         cuid: rosterCuid,
+        Request: {
+          none: {
+            status: RequestStatus.PENDING,
+            rosterCuid: rosterCuid,
+          },
+        },
         Shift: {
           Project: {
             Manage: {
@@ -938,6 +995,8 @@ projectAPIRouter.patch("/project", async (req, res) => {
     distanceRadius,
     candidateHolders,
     shiftGroups,
+    noticePeriodDuration,
+    noticePeriodUnit,
   } = req.body;
 
   if (!projectCuid) return res.status(400).send("projectCuid is required.");
@@ -977,6 +1036,22 @@ projectAPIRouter.patch("/project", async (req, res) => {
     });
   }
 
+  const noticePeriodDurationValidity = noticePeriodDuration >= 0;
+  if (noticePeriodDuration && !noticePeriodDurationValidity) {
+    return res.status(400).json({
+      message: "noticePeriodDuration must be a non-negative number.",
+    });
+  }
+
+  const noticePeriodUnitValidity = ["DAY", "WEEK", "MONTH"].includes(
+    noticePeriodUnit
+  );
+  if (noticePeriodUnit && !noticePeriodUnitValidity) {
+    return res.status(400).json({
+      message: "noticePeriodUnit must be one of DAY, WEEK, MONTH.",
+    });
+  }
+
   if (candidateHolders && !Array.isArray(candidateHolders)) {
     return res.status(400).send("candidateHolders must be an array.");
   }
@@ -999,6 +1074,8 @@ projectAPIRouter.patch("/project", async (req, res) => {
       candidateHolders,
     }),
     ...(shiftGroups && { shiftGroups }),
+    ...(noticePeriodDuration && { noticePeriodDuration }),
+    ...(noticePeriodUnit && { noticePeriodUnit }),
   };
 
   if (!hasCanEditAllProjects) {
@@ -1932,7 +2009,7 @@ projectAPIRouter.delete("/project/:projectCuid/manage", async (req, res) => {
 });
 
 /**
-/project/:projectCuid/attendance/copy
+/project/:projectCuid/roster/copy
 
 Takes the attendance data for a week and copies it to the next week.
 
@@ -1953,19 +2030,216 @@ Steps:
 		i. Check LeaveType => if HALF_DAY, adjust ShiftType
 4. Return failure list in response
  */
+projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
+  const user = req.user as User;
+  const { projectCuid } = req.params;
+  const { startDate, endDate } = req.body;
+
+  if (!projectCuid) {
+    return res.status(400).send("projectCuid is required.");
+  }
+
+  if (!startDate || isNaN(Date.parse(startDate))) {
+    return res.status(400).send("valid startDate is required.");
+  }
+
+  if (!endDate || isNaN(Date.parse(endDate))) {
+    return res.status(400).send("valid endDate is required.");
+  }
+
+  let projectData;
+  try {
+    projectData = await prisma.project.findUniqueOrThrow({
+      where: {
+        cuid: projectCuid,
+      },
+      include: {
+        Manage: true,
+        Assign: true,
+      },
+    });
+  } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2025") {
+      return res.status(404).send("Project does not exist.");
+    }
+
+    console.error(error);
+    return res.status(500).send({ error: "Internal server error." });
+  }
+
+  const hasPermission =
+    projectData.Manage.some(
+      (m) => m.role === Role.CLIENT_HOLDER && m.consultantCuid === user.cuid
+    ) ||
+    (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+  if (!hasPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+  }
+
+  try {
+    const attendanceList = await prisma.attendance.findMany({
+      where: {
+        shiftDate: {
+          gte: new Date(startDate),
+          lte: new Date(endDate),
+        },
+        Shift: {
+          projectCuid,
+        },
+      },
+      include: {
+        Shift: true,
+      },
+    });
+
+    const failureList: CopyAttendanceResponse[] = [];
+
+    for (const attendance of attendanceList) {
+      const pushFailure = (error: string) => {
+        failureList.push({
+          attendanceCuid: attendance.cuid,
+          date: attendance.shiftDate.toISOString(),
+          startTime: attendance.Shift.startTime.toISOString(),
+          endTime: attendance.Shift.endTime.toISOString(),
+          error,
+        });
+      };
+
+      // Check if shift is active
+      if (attendance.Shift.status === ShiftStatus.ARCHIVED) {
+        pushFailure("Shift has been archived.");
+        continue;
+      }
+
+      // Check if new attendance is within candidate assign period
+      const assignData = projectData.Assign.find(
+        (assign) => assign.candidateCuid === attendance.candidateCuid
+      );
+      if (!assignData) {
+        // This should never happen
+        pushFailure("Candidate is not assigned to project.");
+        continue;
+      }
+      if (
+        dayjs(attendance.shiftDate).add(7, "day").isAfter(assignData.endDate)
+      ) {
+        pushFailure(
+          "New attendance date is not within candidate assign period."
+        );
+        continue;
+      }
+
+      // Check if attendance clashes with any other attendance
+      const attendanceStart =
+        attendance.shiftType === "SECOND_HALF"
+          ? attendance.Shift.halfDayStartTime!
+          : attendance.Shift.startTime;
+      const attendanceEnd =
+        attendance.shiftType === "FIRST_HALF"
+          ? attendance.Shift.halfDayEndTime!
+          : attendance.Shift.endTime;
+      const allExistingAttendances = await prisma.candidate
+        .findMany({
+          where: {
+            cuid: attendance.candidateCuid,
+          },
+          include: {
+            Attendance: {
+              where: {
+                shiftDate: {
+                  // Includes the day before and the day of the attendance
+                  gte: dayjs(attendance.shiftDate).add(6, "day").toDate(),
+                  lte: dayjs(attendance.shiftDate).add(7, "day").toDate(),
+                },
+              },
+              include: {
+                Shift: true,
+              },
+            },
+          },
+        })
+        .then((data) => data[0].Attendance);
+      if (
+        allExistingAttendances.some((exisitingAttendance) => {
+          const existingStart =
+            exisitingAttendance.shiftType === "SECOND_HALF"
+              ? exisitingAttendance.Shift.halfDayStartTime!
+              : exisitingAttendance.Shift.startTime;
+          const existingEnd =
+            exisitingAttendance.shiftType === "FIRST_HALF"
+              ? exisitingAttendance.Shift.halfDayEndTime!
+              : exisitingAttendance.Shift.endTime;
+
+          return doesClash(
+            attendance.shiftDate,
+            attendanceStart,
+            attendanceEnd,
+            exisitingAttendance.shiftDate,
+            existingStart,
+            existingEnd
+          );
+        })
+      ) {
+        pushFailure("New attendance clashes with existing attendance.");
+        continue;
+      }
+
+      // Create new attendance
+      const newAttendanceData = {
+        candidateCuid: attendance.candidateCuid,
+        shiftCuid: attendance.shiftCuid,
+        shiftDate: dayjs(attendance.shiftDate).add(7, "day").toDate(),
+        shiftType:
+          attendance.leave === LeaveStatus.HALFDAY
+            ? ShiftType.FULL_DAY
+            : attendance.shiftType,
+      };
+
+      try {
+        await prisma.attendance.create({
+          data: newAttendanceData,
+        });
+      } catch (error) {
+        console.error(error);
+        pushFailure("ERROR: Unable to create new attendance");
+      }
+    }
+
+    return res.send({
+      failureList,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ error: "Internal server error." });
+  }
+});
+
+/**
+/project/:projectCuid/roster/clear
+
+Takes the roster data for period specified and deletes it if it has yet to happen.
+
+Parameters:
+projectCuid
+endDate
+
+Steps:
+1. Delete all attendance data for that period with status and leave null for that project and period (ensure that it has yet to passed by checking the start time, the start time will differ for different shift type as it can be second half)
+ */
+
 projectAPIRouter.post(
-  "/project/:projectCuid/attendance/copy",
+  "/project/:projectCuid/roster/clear",
   async (req, res) => {
     const user = req.user as User;
     const { projectCuid } = req.params;
-    const { startDate, endDate } = req.body;
+    const { endDate } = req.body;
 
     if (!projectCuid) {
       return res.status(400).send("projectCuid is required.");
-    }
-
-    if (!startDate || isNaN(Date.parse(startDate))) {
-      return res.status(400).send("valid startDate is required.");
     }
 
     if (!endDate || isNaN(Date.parse(endDate))) {
@@ -1980,7 +2254,6 @@ projectAPIRouter.post(
         },
         include: {
           Manage: true,
-          Assign: true,
         },
       });
     } catch (error) {
@@ -2006,137 +2279,21 @@ projectAPIRouter.post(
     }
 
     try {
-      const attendanceList = await prisma.attendance.findMany({
+      await prisma.attendance.deleteMany({
         where: {
           shiftDate: {
-            gte: new Date(startDate),
+            gte: new Date(),
             lte: new Date(endDate),
           },
           Shift: {
             projectCuid,
           },
-        },
-        include: {
-          Shift: true,
+          status: null,
+          leave: null,
         },
       });
 
-      const failureList: CopyAttendanceResponse[] = [];
-
-      for (const attendance of attendanceList) {
-        const pushFailure = (error: string) => {
-          failureList.push({
-            attendanceCuid: attendance.cuid,
-            date: attendance.shiftDate.toISOString(),
-            startTime: attendance.Shift.startTime.toISOString(),
-            endTime: attendance.Shift.endTime.toISOString(),
-            error,
-          });
-        };
-
-        // Check if shift is active
-        if (attendance.Shift.status === ShiftStatus.ARCHIVED) {
-          pushFailure("Shift has been archived.");
-          continue;
-        }
-
-        // Check if new attendance is within candidate assign period
-        const assignData = projectData.Assign.find(
-          (assign) => assign.candidateCuid === attendance.candidateCuid
-        );
-        if (!assignData) {
-          // This should never happen
-          pushFailure("Candidate is not assigned to project.");
-          continue;
-        }
-        if (
-          dayjs(attendance.shiftDate).add(7, "day").isAfter(assignData.endDate)
-        ) {
-          pushFailure(
-            "New attendance date is not within candidate assign period."
-          );
-          continue;
-        }
-
-        // Check if attendance clashes with any other attendance
-        const attendanceStart =
-          attendance.shiftType === "SECOND_HALF"
-            ? attendance.Shift.halfDayStartTime!
-            : attendance.Shift.startTime;
-        const attendanceEnd =
-          attendance.shiftType === "FIRST_HALF"
-            ? attendance.Shift.halfDayEndTime!
-            : attendance.Shift.endTime;
-        const allExistingAttendances = await prisma.candidate
-          .findMany({
-            where: {
-              cuid: attendance.candidateCuid,
-            },
-            include: {
-              Attendance: {
-                where: {
-                  shiftDate: {
-                    // Includes the day before and the day of the attendance
-                    gte: dayjs(attendance.shiftDate).add(6, "day").toDate(),
-                    lte: dayjs(attendance.shiftDate).add(7, "day").toDate(),
-                  },
-                },
-                include: {
-                  Shift: true,
-                },
-              },
-            },
-          })
-          .then((data) => data[0].Attendance);
-        if (
-          allExistingAttendances.some((exisitingAttendance) => {
-            const existingStart =
-              exisitingAttendance.shiftType === "SECOND_HALF"
-                ? exisitingAttendance.Shift.halfDayStartTime!
-                : exisitingAttendance.Shift.startTime;
-            const existingEnd =
-              exisitingAttendance.shiftType === "FIRST_HALF"
-                ? exisitingAttendance.Shift.halfDayEndTime!
-                : exisitingAttendance.Shift.endTime;
-
-            return doesClash(
-              attendance.shiftDate,
-              attendanceStart,
-              attendanceEnd,
-              exisitingAttendance.shiftDate,
-              existingStart,
-              existingEnd
-            );
-          })
-        ) {
-          pushFailure("New attendance clashes with existing attendance.");
-          continue;
-        }
-
-        // Create new attendance
-        const newAttendanceData = {
-          candidateCuid: attendance.candidateCuid,
-          shiftCuid: attendance.shiftCuid,
-          shiftDate: dayjs(attendance.shiftDate).add(7, "day").toDate(),
-          shiftType:
-            attendance.leave === LeaveStatus.HALFDAY
-              ? ShiftType.FULL_DAY
-              : attendance.shiftType,
-        };
-
-        try {
-          await prisma.attendance.create({
-            data: newAttendanceData,
-          });
-        } catch (error) {
-          console.error(error);
-          pushFailure("ERROR: Unable to create new attendance");
-        }
-      }
-
-      return res.send({
-        failureList,
-      });
+      return res.send("Successfully cleared roster data.");
     } catch (error) {
       console.error(error);
       return res.status(500).send({ error: "Internal server error." });

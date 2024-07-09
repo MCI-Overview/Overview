@@ -1,7 +1,7 @@
 import { useState } from "react";
+
 import GeneralProjectSettings from "../components/project/manage/GeneralProjectSettings";
 import ManageProjectAccess from "../components/project/manage/ManageProjectAccess";
-import { cuidToColor } from "../utils/colors";
 
 import {
   Button,
@@ -14,26 +14,11 @@ import {
   ListItemContent,
   ToggleButtonGroup,
   Typography,
-  Box,
 } from "@mui/joy";
 import {
-  BuildRounded as BuildIcon,
   MenuBookRounded as MenuBookIcon,
-  NotificationsRounded as NotificationsIcon,
   GroupRounded as GroupIcon,
 } from "@mui/icons-material";
-
-const sampleCuids = [
-  "clx8dscw4000111mw1hpp1i16",
-  "clx8dt9zl000311mwqwxcbhkc",
-  "clxb6ka48000hk5vo2niif0by",
-  "clxeg0qil0002kqqxr86w8q31",
-  "clxeg3hi30005kqqxmk7tkx7m",
-  "clxegx8n700056xth68r07n5s",
-  "clxttndyo0002y4lpkyu8sr05",
-  "clxviy0e700026mrga36ikc35",
-  "clxviy0e700026mrga36ikc34",
-];
 
 const sections = [
   {
@@ -45,32 +30,6 @@ const sections = [
     title: "Access",
     icon: <GroupIcon />,
     children: <ManageProjectAccess />,
-  },
-  {
-    title: "Notifications",
-    icon: <NotificationsIcon />,
-    children: (
-      <Box>
-        {sampleCuids.map((cuid) => (
-          <Box
-            key={cuid}
-            style={{
-              backgroundColor: cuidToColor(cuid),
-              padding: "20px",
-              margin: "10px",
-              color: "#fff",
-            }}
-          >
-            {cuid}
-          </Box>
-        ))}
-      </Box>
-    ),
-  },
-  {
-    title: "Advanced",
-    icon: <BuildIcon />,
-    children: <div>Advanced</div>,
   },
 ];
 
@@ -115,7 +74,7 @@ const Settings = () => {
             <Button
               key={section.title}
               value={section.title}
-              sx={{ gap: 1, width: "25%" }}
+              sx={{ gap: 1, width: `${100 / sections.length}%` }}
             >
               <ListItemDecorator>{section.icon}</ListItemDecorator>
               <Typography

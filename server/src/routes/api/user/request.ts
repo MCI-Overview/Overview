@@ -171,17 +171,15 @@ requestAPIRouter.post(
       return res.status(400).send("Claim amount must be positive");
     }
 
-    // TODO: Check if roster cuid is valid
-
     const createData = {
       projectCuid,
       candidateCuid,
+      rosterCuid,
       type: RequestType.CLAIM,
       data: {
         claimType: type,
         claimDescription: description,
         claimAmount: amount,
-        claimRosterCuid: rosterCuid,
       },
     };
 
@@ -261,18 +259,20 @@ requestAPIRouter.post("/request/leave", async (req, res) => {
     return res.status(400).send("Leave reason is required");
   }
 
+  const createData = {
+    projectCuid,
+    candidateCuid,
+    rosterCuid,
+    type,
+    data: {
+      leaveDuration: duration,
+      reason,
+    },
+  };
+
   try {
     await prisma.request.create({
-      data: {
-        projectCuid,
-        candidateCuid,
-        type,
-        data: {
-          leaveRosterCuid: rosterCuid,
-          leaveDuration: duration,
-          reason,
-        },
-      },
+      data: createData,
     });
 
     return res.send("Leave request submitted successfully");
@@ -290,17 +290,30 @@ requestAPIRouter.post("/request/resign", async (req, res) => {
   const candidateCuid = user.cuid;
 
   try {
-    await prisma.request.create({
-      data: {
-        projectCuid,
-        candidateCuid,
-        type: RequestType.RESIGNATION,
-        data: {
-          lastDay,
-          reason,
+    await prisma.$transaction([
+      prisma.request.updateMany({
+        where: {
+          candidateCuid,
+          projectCuid,
+          type: RequestType.RESIGNATION,
+          status: "PENDING",
         },
-      },
-    });
+        data: {
+          status: "CANCELLED",
+        },
+      }),
+      prisma.request.create({
+        data: {
+          projectCuid,
+          candidateCuid,
+          type: RequestType.RESIGNATION,
+          data: {
+            lastDay,
+            reason,
+          },
+        },
+      }),
+    ]);
 
     return res.send("Resignation request submitted successfully");
   } catch (error) {
@@ -461,6 +474,7 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
       select: {
         candidateCuid: true,
         projectCuid: true,
+        rosterCuid: true,
         data: true,
         type: true,
       },
@@ -526,7 +540,7 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
     if (request.type === "CLAIM") {
       const claimRosterData = await prisma.attendance.findUniqueOrThrow({
         where: {
-          cuid: (request.data as { claimRosterCuid: string }).claimRosterCuid,
+          cuid: request.rosterCuid as string,
         },
         include: {
           Shift: true,
@@ -539,7 +553,7 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
     if (request.type === "UNPAID_LEAVE" || request.type === "PAID_LEAVE") {
       const leaveRosterData = await prisma.attendance.findUniqueOrThrow({
         where: {
-          cuid: (request.data as { leaveRosterCuid: string }).leaveRosterCuid,
+          cuid: request.rosterCuid as string,
         },
         include: {
           Shift: true,

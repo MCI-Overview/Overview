@@ -14,6 +14,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
 import isBetween from "dayjs/plugin/isBetween";
+import relativeTime from "dayjs/plugin/relativeTime";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
 import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
@@ -40,6 +41,7 @@ dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
 dayjs.extend(utc);
 dayjs.extend(customParseFormat);
+dayjs.extend(relativeTime);
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 

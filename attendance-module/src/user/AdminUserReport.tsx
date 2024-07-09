@@ -1,5 +1,6 @@
 import { Select, Stack, Option, Card, Typography, Box } from "@mui/joy";
-import { useUserContext } from "../providers/userContextProvider";
+import { useParams } from "react-router-dom";
+import { useProjectContext } from "../providers/projectContextProvider";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
@@ -38,8 +39,9 @@ export default function UserReport() {
     "December",
   ];
 
-  const { user } = useUserContext();
-  const userStartDate = user?.userType === "User" && dayjs(user.createdAt);
+  const { candidateCuid } = useParams();
+  const project = useProjectContext();
+  const userStartDate = dayjs(project.project?.startDate);
   const currentDate = dayjs();
 
   const [selectedMonth, setSelectedMonth] = useState<number>(
@@ -51,7 +53,7 @@ export default function UserReport() {
 
   useEffect(() => {
     axios
-      .get("/api/user/report", {
+      .get(`/api/admin/report/${candidateCuid}`, {
         params: {
           month: selectedMonth,
           year: selectedYear,

@@ -1,32 +1,33 @@
-import Card from '@mui/joy/Card';
-import CardContent from '@mui/joy/CardContent';
-import CircularProgress from '@mui/joy/CircularProgress';
-import Typography from '@mui/joy/Typography';
-import { BlockRounded } from "@mui/icons-material";
+import { NO_SHOW_COLOR } from "../../../utils/colors";
 
-type LateCountProps = {
+import { Card, CardContent, CircularProgress, Typography } from "@mui/joy";
+import { BlockRounded as BlockIcon } from "@mui/icons-material";
+
+type NoShowCountProps = {
   count: number;
-  total: number
+  total: number;
 };
 
-export default function NoShowCount({ count, total }: LateCountProps) {
+export default function NoShowCount({ count, total }: NoShowCountProps) {
   return (
     <Card
       variant="solid"
       invertedColors
       sx={{
-        backgroundColor: 'rgba(255, 150, 120, 0.8)',
+        backgroundColor: NO_SHOW_COLOR,
       }}
     >
       <CardContent orientation="horizontal">
         <CircularProgress size="lg" determinate value={(count / total) * 100}>
-          <BlockRounded />
+          <BlockIcon />
         </CircularProgress>
         <CardContent>
-          <Typography level="body-md">Absent</Typography>
+          <Typography level="body-md" textColor="common.white">
+            Absent
+          </Typography>
           <Typography level="h2">{count}</Typography>
         </CardContent>
       </CardContent>
-    </Card >
+    </Card>
   );
 }

@@ -10,6 +10,13 @@ import {
   Legend,
 } from "chart.js";
 import dayjs from "dayjs";
+import {
+  LATE_COLOR,
+  LEAVE_COLOR,
+  MEDICAL_COLOR,
+  NO_SHOW_COLOR,
+  ON_TIME_COLOR,
+} from "../../../utils/colors";
 
 ChartJS.register(
   CategoryScale,
@@ -92,27 +99,27 @@ const AttendanceGraph: React.FC<AttendanceGraphProps> = ({
       {
         label: "Leave",
         data: datasets.leave.data,
-        backgroundColor: "rgba(75, 90, 192, 0.5)",
+        backgroundColor: LEAVE_COLOR,
       },
       {
         label: "Late",
         data: datasets.late.data,
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
+        backgroundColor: LATE_COLOR,
       },
       {
         label: "Medical",
         data: datasets.medical.data,
-        backgroundColor: "rgba(54, 162, 235, 0.5)",
+        backgroundColor: MEDICAL_COLOR,
       },
       {
         label: "Absent",
         data: datasets.absent.data,
-        backgroundColor: "rgba(255, 150, 120, 0.5)",
+        backgroundColor: NO_SHOW_COLOR,
       },
       {
         label: "On Time",
         data: datasets.ontime.data,
-        backgroundColor: "rgba(75, 192, 192, 0.5)",
+        backgroundColor: ON_TIME_COLOR,
       },
     ],
   };

@@ -9,9 +9,11 @@ import {
 import { CustomRequest } from "../types";
 
 const RequestContext = createContext<{
+  error: boolean;
   requests: CustomRequest[] | null;
   updateRequest: () => void;
 }>({
+  error: false,
   requests: [],
   updateRequest: () => [],
 });
@@ -24,11 +26,17 @@ export function RequestContextProvider({
   updateFunction: () => Promise<CustomRequest[]>;
 }) {
   const [requests, setRequests] = useState<CustomRequest[] | null>(null);
+  const [error, setError] = useState<boolean>(false);
 
   const updateRequest = useCallback(() => {
-    updateFunction().then((data) => {
-      setRequests(data);
-    });
+    updateFunction()
+      .then((data) => {
+        setError(false);
+        setRequests(data);
+      })
+      .catch(() => {
+        setError(true);
+      });
   }, [updateFunction]);
 
   useEffect(() => {
@@ -38,6 +46,7 @@ export function RequestContextProvider({
   return (
     <RequestContext.Provider
       value={{
+        error,
         requests,
         updateRequest,
       }}
@@ -51,7 +60,7 @@ export function useRequestContext() {
   const context = useContext(RequestContext);
   if (context === undefined) {
     throw new Error(
-      "useRequestContext must be used within a RequestContextProvider",
+      "useRequestContext must be used within a RequestContextProvider"
     );
   }
   return context;

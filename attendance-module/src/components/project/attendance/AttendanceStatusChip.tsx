@@ -9,6 +9,14 @@ import {
   EventNoteOutlined as EventNoteIcon,
   WorkOffOutlined as WorkOffIcon,
 } from "@mui/icons-material";
+import {
+  LATE_COLOR,
+  LEAVE_COLOR,
+  MEDICAL_COLOR,
+  NO_SHOW_COLOR,
+  ON_TIME_COLOR,
+  UPCOMING_COLOR,
+} from "../../../utils/colors";
 
 interface AttendanceStatusChipProps {
   leave: "FULLDAY" | "HALFDAY" | null;
@@ -25,6 +33,10 @@ const AttendanceStatusChip = ({ leave, status }: AttendanceStatusChipProps) => {
         size="sm"
         color="primary"
         startDecorator={<WorkOffIcon />}
+        sx={{
+          color: "white",
+          backgroundColor: LEAVE_COLOR,
+        }}
       >
         On Leave
       </Chip>
@@ -35,8 +47,11 @@ const AttendanceStatusChip = ({ leave, status }: AttendanceStatusChipProps) => {
       <Chip
         variant="outlined"
         size="sm"
-        color="primary"
         startDecorator={<EventNoteIcon />}
+        sx={{
+          color: "white",
+          backgroundColor: UPCOMING_COLOR,
+        }}
       >
         Upcoming
       </Chip>
@@ -54,14 +69,15 @@ const AttendanceStatusChip = ({ leave, status }: AttendanceStatusChipProps) => {
           MEDICAL: <MedicalServicesIcon />,
         }[status]
       }
-      color={
-        {
-          ON_TIME: "success",
-          LATE: "warning",
-          NO_SHOW: "danger",
-          MEDICAL: "neutral",
-        }[status] as ColorPaletteProp
-      }
+      sx={{
+        color: "white",
+        backgroundColor: {
+          ON_TIME: ON_TIME_COLOR,
+          LATE: LATE_COLOR,
+          NO_SHOW: NO_SHOW_COLOR,
+          MEDICAL: MEDICAL_COLOR,
+        }[status] as ColorPaletteProp,
+      }}
     >
       {readableEnum(status)}
     </Chip>

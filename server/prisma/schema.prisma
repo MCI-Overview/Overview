@@ -24,26 +24,29 @@ model Assign {
 
 model Request {
   cuid          String        @id @default(cuid())
+  createdAt     DateTime      @default(now())
+  status        RequestStatus @default(PENDING)
   candidateCuid String
   projectCuid   String
   data          Json
   type          RequestType
-  status        RequestStatus @default(PENDING)
-  createdAt     DateTime      @default(now())
+  rosterCuid    String?
   Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
+  Roster        Attendance?   @relation(fields: [rosterCuid], references: [cuid])
 }
 
 model Attendance {
   cuid          String            @id @default(cuid())
+  shiftType     ShiftType         @default(FULL_DAY)
   candidateCuid String
   shiftCuid     String
+  shiftDate     DateTime
+  Request       Request[]
+  postalCode    String?
   clockInTime   DateTime?
   clockOutTime  DateTime?
   status        AttendanceStatus?
   leave         LeaveStatus?
-  shiftDate     DateTime
-  postalCode    String?
-  shiftType     ShiftType         @default(FULL_DAY)
   Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
   Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
 

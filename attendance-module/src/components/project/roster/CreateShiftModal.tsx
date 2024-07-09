@@ -11,7 +11,6 @@ import {
   FormHelperText,
   FormLabel,
   Grid,
-  IconButton,
   Input,
   Modal,
   ModalDialog,
@@ -19,9 +18,10 @@ import {
   Stack,
   Table,
   Typography,
+  ListItemButton,
 } from "@mui/joy";
 
-import AddIcon from "@mui/icons-material/Add";
+import { CreateRounded as CreateIcon } from "@mui/icons-material";
 
 function getShiftDuration(startTime: string | null, endTime: string | null) {
   if (!startTime || !endTime) return 0;
@@ -85,19 +85,14 @@ export default function CreateShiftModal() {
 
   return (
     <>
-      <IconButton
-        onClick={() => setIsOpen(true)}
-        color="primary"
-        variant="outlined"
-        size="sm"
-        sx={{ py: 1, height: "100%" }}
-      >
-        <AddIcon />
-      </IconButton>
+      <ListItemButton onClick={() => setIsOpen(true)}>
+        <CreateIcon />
+        Create Shift
+      </ListItemButton>
 
-      <Modal open={isOpen}>
+      <Modal open={isOpen} onClose={() => setIsOpen(false)}>
         <ModalDialog sx={{ maxWidth: "500px" }}>
-          <ModalClose onClick={() => setIsOpen(false)} />
+          <ModalClose />
           <Box>
             <Typography level="title-lg">Create shifts</Typography>
             <Typography level="body-xs">

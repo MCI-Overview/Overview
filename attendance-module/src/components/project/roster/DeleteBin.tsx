@@ -1,32 +1,76 @@
 import { useDrop } from "react-dnd";
 import axios, { AxiosError } from "axios";
-import { useProjectContext } from "../../../providers/projectContextProvider";
-import { DraggableChipProps } from "../../../types";
 import toast from "react-hot-toast";
+
+import { RosterChipProps } from "./DraggableRosterChip";
+import { DraggableRosterProps } from "./DraggableRoster";
+import { useRosterContext } from "../../../providers/rosterContextProvider";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+
 import { Delete } from "@mui/icons-material";
 import { Card, Tooltip, Typography } from "@mui/joy";
 
-const DeleteBin = () => {
+const NewDeleteBin = () => {
   const { updateProject } = useProjectContext();
+  const { updateRosterData } = useRosterContext();
 
   const [{ isOver }, drop] = useDrop({
-    accept: "shift",
-    drop: (item: DraggableChipProps) => {
-      axios
-        .delete("/api/admin/shift", { data: { shiftCuid: item.cuid } })
-        .then((res) => {
-          toast.success(res.data);
-          updateProject();
-        })
-        .catch((error) => {
-          const axiosError = error as AxiosError;
+    accept: ["shift", "roster"],
+    drop: (item, monitor) => {
+      const itemType = monitor.getItemType();
+      if (itemType === "shift") {
+        const itemData = item as RosterChipProps;
+        axios
+          .delete(`/api/admin/shift/${itemData.cuid}`)
+          .then((res) => {
+            toast.success(res.data.message);
+            updateProject();
+          })
+          .catch((error) => {
+            const axiosError = error as AxiosError;
 
-          if (axiosError.response) {
-            toast.error(axiosError.response.data as string);
-          } else {
-            toast.error("Error while deleting shift. Please try again later.");
-          }
-        });
+            if (axiosError.response) {
+              toast.error(
+                (
+                  axiosError.response.data as {
+                    message: string;
+                  }
+                ).message
+              );
+            } else {
+              toast.error(
+                "Error while deleting shift. Please try again later."
+              );
+            }
+          });
+      }
+
+      if (itemType === "roster") {
+        const itemData = item as DraggableRosterProps;
+        axios
+          .delete(`/api/admin/roster/${itemData.rosterCuid}`)
+          .then((res) => {
+            toast.success(res.data.message);
+            updateRosterData();
+          })
+          .catch((error) => {
+            const axiosError = error as AxiosError;
+
+            if (axiosError.response) {
+              toast.error(
+                (
+                  axiosError.response.data as {
+                    message: string;
+                  }
+                ).message
+              );
+            } else {
+              toast.error(
+                "Error while deleting roster. Please try again later."
+              );
+            }
+          });
+      }
     },
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
@@ -41,14 +85,14 @@ const DeleteBin = () => {
         ref={drop}
         color="danger"
         variant={isOver ? "solid" : "soft"}
-        size="sm"
         sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           border: "2px dashed grey",
           transition: "background-color 0.5s ease",
-          height: "100%",
+          height: "5rem",
+          width: "100%",
         }}
       >
         <Typography level="body-xs" sx={{ color: "inherit" }}>
@@ -59,4 +103,4 @@ const DeleteBin = () => {
   );
 };
 
-export default DeleteBin;
+export default NewDeleteBin;
