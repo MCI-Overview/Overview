@@ -89,7 +89,7 @@ export default function RosterDisplay({
           display: "flex",
           flexDirection: "row",
           justifyContent: "center",
-          minWidth: "8rem",
+          width: "100%",
           cursor: draggable ? "move !important" : "default !important",
         }}
         seed={data.shiftCuid}
@@ -136,13 +136,8 @@ export default function RosterDisplay({
               <AlignHorizontalLeftIcon sx={{ color: "inherit" }} />
             )}
           </Box>
-          <Typography sx={{ width: "1.75rem" }}>
-            {data.startTime.format("HHmm")}
-          </Typography>
-          -
-          <Typography sx={{ width: "1.5rem" }}>
-            {data.endTime.format("HHmm")}
-          </Typography>
+          <Typography>{data.startTime.format("HHmm")}</Typography>-
+          <Typography>{data.endTime.format("HHmm")}</Typography>
         </Typography>
       </MagicalButton>
     </>

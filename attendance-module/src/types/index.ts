@@ -143,6 +143,7 @@ export type CustomAdminAttendance = {
   shiftEnd: Dayjs;
   rawStart: Dayjs | null;
   rawEnd: Dayjs | null;
+  postalCode: string;
   leave: "FULLDAY" | "HALFDAY" | null;
   status: "ON_TIME" | "LATE" | "NO_SHOW" | "MEDICAL" | null;
 };

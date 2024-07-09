@@ -119,8 +119,9 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
   const dateRangeStart = baseDay.add(weekOffset, "weeks");
   const dateRangeEnd = dateRangeStart.endOf("isoWeek");
 
-  const mergedData = Object.keys(rosterData || {}).reduce<MappedRosterResponse>(
-    (acc, cuid) => {
+  const mergedData =
+    rosterData &&
+    Object.keys(rosterData || {}).reduce<MappedRosterResponse>((acc, cuid) => {
       if (!rosterData) return acc;
 
       acc[cuid] = {
@@ -131,9 +132,7 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
             : rosterData[cuid].roster,
       };
       return acc;
-    },
-    {}
-  );
+    }, {});
   return (
     <RosterContext.Provider
       value={{
@@ -141,7 +140,7 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
         dateRangeStart,
         dateRangeEnd,
         hoverCuid,
-        rosterData: mergedData,
+        rosterData: mergedData ? mergedData : null,
         weekOffset,
         setDraggingCuid,
         setHoverCuid,

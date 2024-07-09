@@ -11,8 +11,7 @@ import { Table, Sheet } from "@mui/joy";
 
 // TODO: Add editing of requests
 const UserCurrentRequestsTable = () => {
-  const { requests, updateRequest } = useRequestContext();
-  if (!requests) return null;
+  const { requests, updateRequest, error } = useRequestContext();
 
   return (
     <Sheet
@@ -49,11 +48,23 @@ const UserCurrentRequestsTable = () => {
           </tr>
         </thead>
         <tbody>
-          {requests.length === 0 ? (
+          {error && (
+            <tr>
+              <TdTypo colSpan={5}>Error loading requests</TdTypo>
+            </tr>
+          )}
+          {!error && !requests && (
+            <tr>
+              <TdTypo colSpan={5}>Loading...</TdTypo>
+            </tr>
+          )}
+          {!error && requests && requests.length === 0 ? (
             <tr>
               <TdTypo colSpan={5}>No requests found</TdTypo>
             </tr>
           ) : (
+            !error &&
+            requests &&
             requests.map((req: CustomRequest) => (
               <tr key={req.cuid}>
                 <TdTypo>

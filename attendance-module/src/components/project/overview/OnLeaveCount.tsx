@@ -22,7 +22,9 @@ export default function OnLeaveCount({ count, total }: OnLeaveCountProps) {
           <DirectionsWalkIcon />
         </CircularProgress>
         <CardContent>
-          <Typography level="body-md">On leave</Typography>
+          <Typography level="body-md" textColor="common.white">
+            On leave
+          </Typography>
           <Typography level="h2">{count}</Typography>
         </CardContent>
       </CardContent>

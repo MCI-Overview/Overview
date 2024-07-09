@@ -33,7 +33,7 @@ const MyProjects: FC = () => {
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [futureProjects, setFutureProjects] = useState<Project[]>([]);
   const [value, setValue] = useState<"concluded" | "ongoing" | "future">(
-    "ongoing",
+    "ongoing"
   );
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -43,21 +43,19 @@ const MyProjects: FC = () => {
       const projects = response.data as Project[];
 
       setPreviousProjects(
-        projects.filter((project) => dayjs().isAfter(dayjs(project.endDate))),
+        projects.filter((project) => dayjs().isAfter(dayjs(project.endDate)))
       );
 
       setOngoingProjects(
         projects.filter(
           (project) =>
             dayjs().isAfter(dayjs(project.startDate)) &&
-            dayjs().isBefore(dayjs(project.endDate)),
-        ),
+            dayjs().isBefore(dayjs(project.endDate))
+        )
       );
 
       setFutureProjects(
-        projects.filter((project) =>
-          dayjs().isBefore(dayjs(project.startDate)),
-        ),
+        projects.filter((project) => dayjs().isBefore(dayjs(project.startDate)))
       );
     });
   }, []);
@@ -72,7 +70,7 @@ const MyProjects: FC = () => {
         return previousProjects;
       case "ongoing":
         return ongoingProjects;
-      case "future":
+      case "upcoming":
         return futureProjects;
     }
   };
@@ -112,7 +110,7 @@ const MyProjects: FC = () => {
                 >
                   <Option value="concluded">concluded</Option>
                   <Option value="ongoing">ongoing</Option>
-                  <Option value="future">future</Option>
+                  <Option value="upcoming">upcoming</Option>
                 </Select>
               </Box>
 
@@ -147,10 +145,7 @@ const MyProjects: FC = () => {
               getCurrentProjectList()
                 .sort(projectComparator)
                 .map((project: Project) => (
-                  <AdminProjectDisplay
-                    key={project.cuid}
-                    project={project}
-                  />
+                  <AdminProjectDisplay key={project.cuid} project={project} />
                 ))
             )}
           </Stack>
@@ -170,8 +165,8 @@ const MyProjects: FC = () => {
           sx={{
             width: {
               xs: "100%",
-              sm: "600px"
-            }
+              sm: "600px",
+            },
           }}
         >
           <CreateProjectPage />

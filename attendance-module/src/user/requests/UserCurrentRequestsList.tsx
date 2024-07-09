@@ -18,12 +18,21 @@ import {
 
 // TODO: Add editing of requests
 const UserCurrentRequestsList = () => {
-  const { requests, updateRequest } = useRequestContext();
-  if (!requests) return null;
+  const { requests, error, updateRequest } = useRequestContext();
 
   return (
     <Box sx={{ display: { xs: "block", sm: "none" } }}>
-      {requests.length === 0 ? (
+      {error && (
+        <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
+          Error loading requests
+        </Typography>
+      )}
+      {!error && !requests && (
+        <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
+          Loading...
+        </Typography>
+      )}
+      {!error && requests && requests.length === 0 ? (
         <Typography level="body-xs" sx={{ py: 2, textAlign: "center" }}>
           No requests found
         </Typography>
@@ -34,45 +43,50 @@ const UserCurrentRequestsList = () => {
             "--ListItem-paddingX": 0,
           }}
         >
-          {requests.map((req: CustomRequest) => (
-            <Fragment key={req.cuid}>
-              <ListItem>
-                <ViewDetailsModal
-                  request={req}
-                  updateRequest={updateRequest}
-                  type="USER"
-                  variant="MOBILE"
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "start",
-                  }}
-                >
-                  <ListItemContent>
-                    <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
-                      <RequestTypeChip type={req.type} />
-                      <RequestStatusChip status={req.status} />
-                    </Box>
+          {!error &&
+            requests &&
+            requests.map((req: CustomRequest) => (
+              <Fragment key={req.cuid}>
+                <ListItem>
+                  <ViewDetailsModal
+                    request={req}
+                    updateRequest={updateRequest}
+                    type="USER"
+                    variant="MOBILE"
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "start",
+                    }}
+                  >
+                    <ListItemContent>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <RequestTypeChip type={req.type} />
+                        <RequestStatusChip status={req.status} />
+                      </Box>
 
-                    <Box sx={{ my: 0.5, width: "100%" }}>
-                      <Typography level="body-xs">
-                        Proj name:{" "}
-                        {req.Assign.Project && req.Assign.Project.name}
-                      </Typography>
+                      <Box sx={{ my: 0.5, width: "100%" }}>
+                        <Typography level="body-xs">
+                          Proj name:{" "}
+                          {req.Assign.Project && req.Assign.Project.name}
+                        </Typography>
 
-                      <Typography level="body-xs">
-                        Submitted:{" "}
-                        {dayjs(req.createdAt).format("DD/MM/YY HH:mm")}
-                      </Typography>
-                    </Box>
-                  </ListItemContent>
-                </ViewDetailsModal>
-              </ListItem>
-              <ListDivider />
-            </Fragment>
-          ))}
+                        <Typography level="body-xs">
+                          Submitted:{" "}
+                          {dayjs(req.createdAt).format("DD/MM/YY HH:mm")}
+                        </Typography>
+                      </Box>
+                    </ListItemContent>
+                  </ViewDetailsModal>
+                </ListItem>
+                <ListDivider />
+              </Fragment>
+            ))}
         </List>
       )}
     </Box>

@@ -12,6 +12,7 @@ import { RosterDisplayProps } from "./RosterDisplay";
 import SummaryDisplayItem from "./SummaryDisplayItem";
 import { useRosterContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
+import { Typography } from "@mui/joy";
 
 export default function AttendanceSummary() {
   const { project } = useProjectContext();
@@ -89,56 +90,53 @@ export default function AttendanceSummary() {
         const date = dateRangeStart.add(index, "days");
         const status = statusData[index];
 
-        if (dayjs().diff(date.endOf("day"), "days") < 0)
-          return <th key={date.format("DD-MM-YYYY")}>-</th>;
-
         return (
           <th key={date.format("DD-MM-YYYY")}>
             {status && (
               <div>
-                <div>
-                  {!!status.ON_TIME && (
-                    <SummaryDisplayItem
-                      color={ON_TIME_COLOR}
-                      text="On time"
-                      count={status.ON_TIME}
-                    />
-                  )}
-                  {!!status.LATE && (
-                    <SummaryDisplayItem
-                      color={LATE_COLOR}
-                      text="Late"
-                      count={status.LATE}
-                    />
-                  )}
-                  {!!status.NO_SHOW && (
-                    <SummaryDisplayItem
-                      color={NO_SHOW_COLOR}
-                      text="Absent"
-                      count={status.NO_SHOW}
-                    />
-                  )}
-                  {!!status.MEDICAL && (
-                    <SummaryDisplayItem
-                      color={MEDICAL_COLOR}
-                      text="Medical"
-                      count={status.MEDICAL}
-                    />
-                  )}
-                  {!!status.LEAVE && (
-                    <SummaryDisplayItem
-                      color={LEAVE_COLOR}
-                      text="Leave"
-                      count={status.LEAVE}
-                    />
-                  )}
-                  {!!status.UPCOMING && (
-                    <SummaryDisplayItem
-                      color={UPCOMING_COLOR}
-                      text="Upcoming"
-                      count={status.UPCOMING}
-                    />
-                  )}
+                {!!status.ON_TIME && (
+                  <SummaryDisplayItem
+                    color={ON_TIME_COLOR}
+                    text="On time"
+                    count={status.ON_TIME}
+                  />
+                )}
+                {!!status.LATE && (
+                  <SummaryDisplayItem
+                    color={LATE_COLOR}
+                    text="Late"
+                    count={status.LATE}
+                  />
+                )}
+                {!!status.NO_SHOW && (
+                  <SummaryDisplayItem
+                    color={NO_SHOW_COLOR}
+                    text="Absent"
+                    count={status.NO_SHOW}
+                  />
+                )}
+                {!!status.MEDICAL && (
+                  <SummaryDisplayItem
+                    color={MEDICAL_COLOR}
+                    text="Medical"
+                    count={status.MEDICAL}
+                  />
+                )}
+                {!!status.LEAVE && (
+                  <SummaryDisplayItem
+                    color={LEAVE_COLOR}
+                    text="Leave"
+                    count={status.LEAVE}
+                  />
+                )}
+                {!!status.UPCOMING && (
+                  <SummaryDisplayItem
+                    color={UPCOMING_COLOR}
+                    text="Upcoming"
+                    count={status.UPCOMING}
+                  />
+                )}
+                <Typography textAlign="center">
                   {status.ON_TIME +
                     status.LATE +
                     status.NO_SHOW +
@@ -146,7 +144,7 @@ export default function AttendanceSummary() {
                     status.LEAVE +
                     status.UPCOMING ===
                     0 && "-"}
-                </div>
+                </Typography>
               </div>
             )}
           </th>

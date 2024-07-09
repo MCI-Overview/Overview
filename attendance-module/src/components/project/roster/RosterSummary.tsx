@@ -70,7 +70,7 @@ export default function RosterSummary() {
 
         return (
           <th key={date}>
-            {!rosterData && "-"}
+            {!rosterData && <Typography textAlign="center">-</Typography>}
             <Stack spacing={0.5}>
               {rosterData &&
                 rosterData

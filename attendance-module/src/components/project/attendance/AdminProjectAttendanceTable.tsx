@@ -63,6 +63,7 @@ const AdminProjectAttendanceTable = ({
             <ThTypo>End Time</ThTypo>
             <ThTypo>Clock In</ThTypo>
             <ThTypo>Clock Out</ThTypo>
+            <ThTypo>Location</ThTypo>
             <ThTypo>Status</ThTypo>
           </tr>
         </thead>
@@ -70,7 +71,7 @@ const AdminProjectAttendanceTable = ({
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <TdTypo colSpan={8}>No candidates found</TdTypo>
+                <TdTypo colSpan={9}>No candidates found</TdTypo>
               </tr>
             ) : (
               data.map((att: CustomAdminAttendance) => (
@@ -92,6 +93,7 @@ const AdminProjectAttendanceTable = ({
                       ? "NIL"
                       : "-"}
                   </TdTypo>
+                  <TdTypo>{att.postalCode ? att.postalCode : "-"}</TdTypo>
                   <TdTypo>
                     <AttendanceStatusChip
                       leave={att.leave}

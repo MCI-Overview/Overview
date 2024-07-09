@@ -3,6 +3,7 @@ import { prisma } from "../../../client";
 import {
   EmploymentType,
   LeaveStatus,
+  RequestStatus,
   Role,
   ShiftStatus,
   ShiftType,
@@ -556,6 +557,7 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
         rawEnd: row.clockOutTime,
         leave: row.leave,
         status: row.status,
+        postalCode: row.postalCode,
       }))
     );
   } catch (error) {
@@ -706,26 +708,12 @@ projectAPIRouter.delete("/roster/:rosterCuid", async (req, res) => {
     await prisma.attendance.delete({
       where: {
         cuid: rosterCuid,
-        // OR: [
-        //   {
-        //     shiftType: ShiftType.SECOND_HALF,
-        //     Shift: {
-        //       halfDayStartTime: {
-        //         gte: dayjs().set("year", 2000).set("month", 0).toDate(),
-        //       },
-        //     },
-        //   },
-        //   {
-        //     shiftType: {
-        //       in: [ShiftType.FIRST_HALF, ShiftType.FULL_DAY],
-        //     },
-        //     Shift: {
-        //       startTime: {
-        //         gte: dayjs().set("year", 2000).set("month", 0).toDate(),
-        //       },
-        //     },
-        //   },
-        // ],
+        Request: {
+          none: {
+            status: RequestStatus.PENDING,
+            rosterCuid: rosterCuid,
+          },
+        },
         Shift: {
           Project: {
             Manage: {
@@ -1007,6 +995,8 @@ projectAPIRouter.patch("/project", async (req, res) => {
     distanceRadius,
     candidateHolders,
     shiftGroups,
+    noticePeriodDuration,
+    noticePeriodUnit,
   } = req.body;
 
   if (!projectCuid) return res.status(400).send("projectCuid is required.");
@@ -1046,6 +1036,22 @@ projectAPIRouter.patch("/project", async (req, res) => {
     });
   }
 
+  const noticePeriodDurationValidity = noticePeriodDuration >= 0;
+  if (noticePeriodDuration && !noticePeriodDurationValidity) {
+    return res.status(400).json({
+      message: "noticePeriodDuration must be a non-negative number.",
+    });
+  }
+
+  const noticePeriodUnitValidity = ["DAY", "WEEK", "MONTH"].includes(
+    noticePeriodUnit
+  );
+  if (noticePeriodUnit && !noticePeriodUnitValidity) {
+    return res.status(400).json({
+      message: "noticePeriodUnit must be one of DAY, WEEK, MONTH.",
+    });
+  }
+
   if (candidateHolders && !Array.isArray(candidateHolders)) {
     return res.status(400).send("candidateHolders must be an array.");
   }
@@ -1068,6 +1074,8 @@ projectAPIRouter.patch("/project", async (req, res) => {
       candidateHolders,
     }),
     ...(shiftGroups && { shiftGroups }),
+    ...(noticePeriodDuration && { noticePeriodDuration }),
+    ...(noticePeriodUnit && { noticePeriodUnit }),
   };
 
   if (!hasCanEditAllProjects) {

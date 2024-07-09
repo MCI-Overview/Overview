@@ -57,7 +57,13 @@ export default function DraggableRoster({
       const isSameProject = !projectCuid || projectCuid === project?.cuid;
       const futureRoster = startTime.isAfter(dayjs());
 
-      return isSameProject && futureRoster && !status && !leave;
+      return (
+        isSameProject &&
+        futureRoster &&
+        !status &&
+        !leave &&
+        displayType === "ROSTER"
+      );
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),

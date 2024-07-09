@@ -10,8 +10,7 @@ import RequestTypeChip from "../../components/project/requests/RequestTypeChip";
 import { Table, Sheet } from "@mui/joy";
 
 const UserRequestHistoryTable = () => {
-  const { requests, updateRequest } = useRequestContext();
-  if (!requests) return null;
+  const { requests, updateRequest, error } = useRequestContext();
 
   return (
     <Sheet
@@ -48,11 +47,23 @@ const UserRequestHistoryTable = () => {
           </tr>
         </thead>
         <tbody>
-          {requests.length === 0 ? (
+          {error && (
+            <tr>
+              <TdTypo colSpan={5}>Error loading requests</TdTypo>
+            </tr>
+          )}
+          {!error && !requests && (
+            <tr>
+              <TdTypo colSpan={5}>Loading...</TdTypo>
+            </tr>
+          )}
+          {!error && requests && requests.length === 0 ? (
             <tr>
               <TdTypo colSpan={5}>No requests found</TdTypo>
             </tr>
           ) : (
+            !error &&
+            requests &&
             requests.map((req: CustomRequest) => (
               <tr key={req.cuid}>
                 <TdTypo>{dayjs(req.createdAt).format("DD/MM/YY HH:mm")}</TdTypo>

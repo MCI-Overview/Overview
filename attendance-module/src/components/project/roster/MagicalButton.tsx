@@ -17,7 +17,14 @@ const MagicalButton = styled(BaseButton)(
   ({ theme, seed, blinking, hover, issameproject, opacity, color }) => {
     const generatedColor = seedToColor(seed || "");
     const hoverColor = adjustToLuminance(
-      adjustColorBrightness(color || generatedColor, 20),
+      adjustColorBrightness(
+        !issameproject
+          ? theme.palette.mode === "dark"
+            ? "#DAE2ED"
+            : "#434D5B"
+          : color || generatedColor,
+        20
+      ),
       0.3
     );
 
@@ -42,7 +49,6 @@ const MagicalButton = styled(BaseButton)(
 
       &:hover {
         background-color: ${hoverColor};
-        color: white;
         box-shadow: 0 4px 8px
           ${theme.palette.mode === "dark"
             ? "rgba(0, 0, 0, 0.7)"

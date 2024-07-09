@@ -76,8 +76,12 @@ export default function MedicalLeaveForm({
             <FormLabel>Start Date</FormLabel>
             <Input
               type="date"
-              disabled
               value={startDate}
+              slotProps={{
+                input: {
+                  max: dayjs().add(1, "day").format("YYYY-MM-DD"),
+                },
+              }}
               onChange={(e) => setStartDate(e.target.value)}
             />
           </FormControl>
