@@ -1,5 +1,7 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
+
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { CommonConsultant } from "../../../types/common";
@@ -17,7 +19,6 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
-import toast from "react-hot-toast";
 
 const ManageProjectAccess = () => {
   const [allConsultants, setAllConsultants] = useState<CommonConsultant[]>([]);
@@ -42,12 +43,12 @@ const ManageProjectAccess = () => {
     fetchConsultants();
   }, []);
 
-  if (!user) return null;
-  if (!project) return null;
+  if (!user || !project) return null;
 
   const currentUser = project.consultants.find(
-    (collaborator) => collaborator.cuid === user.cuid,
+    (collaborator) => collaborator.cuid === user.cuid
   );
+
   if (!currentUser) return null;
 
   const handleRemoveConsultant = (consultant: CommonConsultant) => {
@@ -57,22 +58,23 @@ const ManageProjectAccess = () => {
 
   const handleRoleChange = async (
     newRole: "CLIENT_HOLDER" | "CANDIDATE_HOLDER" | null,
-    consultant: CommonConsultant,
+    consultant: CommonConsultant
   ) => {
     if (!newRole) return;
 
-    try {
-      await axios.patch(`/api/admin/project/${project.cuid}/manage`, {
+    await axios
+      .patch(`/api/admin/project/${project.cuid}/manage`, {
         consultantCuid: consultant.cuid,
         role: newRole,
+      })
+      .then(() => {
+        toast.success("Role updated successfully");
+        updateProject();
+      })
+      .catch((error) => {
+        console.error(error);
+        toast.error("Unable to update role.");
       });
-
-      toast.success("Role updated successfully.");
-      updateProject();
-    } catch (error) {
-      console.error(error);
-      toast.error("Unable to update role.");
-    }
   };
 
   return (
@@ -100,7 +102,9 @@ const ManageProjectAccess = () => {
               </>
             )}
             <CollaboratorsTable
-              consultants={project.consultants}
+              consultants={project.consultants.sort((a) =>
+                a.cuid === currentUser.cuid ? -1 : 1
+              )}
               currentUser={currentUser}
               handleRemoveConsultant={handleRemoveConsultant}
               handleRoleChange={handleRoleChange}
