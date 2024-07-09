@@ -74,7 +74,7 @@ const Settings = () => {
             <Button
               key={section.title}
               value={section.title}
-              sx={{ gap: 1, width: "25%" }}
+              sx={{ gap: 1, width: `${100 / sections.length}%` }}
             >
               <ListItemDecorator>{section.icon}</ListItemDecorator>
               <Typography
