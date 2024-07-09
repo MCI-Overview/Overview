@@ -16,7 +16,6 @@ import {
   Modal,
   ModalClose,
   ModalDialog,
-  ModalOverflow,
   Option,
   Select,
   Typography,
@@ -211,164 +210,164 @@ const AddCandidateModal = ({
       open={isAddModalOpen}
       onClose={handleCloseModal}
     >
-      <ModalOverflow
+
+      <ModalDialog
+        variant="outlined"
         sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
+          maxWidth: 500,
+          overflow: "auto",
         }}
       >
-        <ModalDialog variant="outlined" sx={{ maxWidth: 500 }}>
-          <ModalClose variant="plain" sx={{ m: 1 }} />
-          <Typography level="title-lg">Add a candidate</Typography>
-          <Typography level="body-xs">
-            Add a candidate to your project. Select from candidate history, or
-            fill in their details.
-          </Typography>
+        <ModalClose variant="plain" sx={{ m: 1 }} />
+        <Typography level="title-lg">Add a candidate</Typography>
+        <Typography level="body-xs">
+          Add a candidate to your project. Select from candidate history, or
+          fill in their details.
+        </Typography>
 
-          <Grid container spacing={2} py={2}>
-            <Grid xs={10} md={6}>
-              <FormControl required error={!!errors.nric} sx={{ flexGrow: 1 }}>
-                <FormLabel>Nric</FormLabel>
-                <Input name="nric" value={cdd.nric} onChange={handleChange} />
-                {errors.nric && (
-                  <Typography textColor="danger">{errors.nric}</Typography>
-                )}
-              </FormControl>
-            </Grid>
-
-            <Grid xs={2} md={6}>
-              <FormControl>
-                <FormLabel>&nbsp;</FormLabel>
-                <Button
-                  fullWidth
-                  onClick={handleNRICSearch}
-                  disabled={!nricRegex.test(cdd.nric)}
-                  sx={{ display: { xs: "none", md: "block" } }}
-                >
-                  Search NRIC
-                </Button>
-                <IconButton
-                  onClick={handleNRICSearch}
-                  disabled={!nricRegex.test(cdd.nric)}
-                  sx={{ display: { xs: "block", md: "none" } }}
-                  variant="solid"
-                  color="primary"
-                >
-                  <SearchIcon onClick={handleNRICSearch} />
-                </IconButton>
-              </FormControl>
-            </Grid>
-
-            {showFields && (
-              <>
-                <Grid xs={12}>
-                  <FormControl required error={!!errors.name}>
-                    <FormLabel>Name</FormLabel>
-                    <Input
-                      name="name"
-                      value={cdd.name}
-                      onChange={handleChange}
-                    />
-                    {errors.name && (
-                      <Typography textColor="danger">{errors.name}</Typography>
-                    )}
-                  </FormControl>
-                </Grid>
-
-                <Grid xs={12} md={6}>
-                  <FormControl required error={!!errors.dateOfBirth}>
-                    <FormLabel>Date of birth</FormLabel>
-                    <Input
-                      type="date"
-                      name="dateOfBirth"
-                      value={cdd.dateOfBirth}
-                      onChange={handleChange}
-                    />
-                    {errors.dateOfBirth && (
-                      <Typography textColor="danger">
-                        {errors.dateOfBirth}
-                      </Typography>
-                    )}
-                  </FormControl>
-                </Grid>
-
-                <Grid xs={12} md={6}>
-                  <FormControl required error={!!errors.contact}>
-                    <FormLabel>Contact</FormLabel>
-                    <Input
-                      startDecorator={"+65"}
-                      name="contact"
-                      value={cdd.contact}
-                      onChange={handleContactChange}
-                    />
-                    {errors.contact && (
-                      <Typography textColor="danger">
-                        {errors.contact}
-                      </Typography>
-                    )}
-                  </FormControl>
-                </Grid>
-              </>
-            )}
-
-            <Grid xs={12} md={6}>
-              <FormControl required error={!!errors.startDate}>
-                <FormLabel>Start date</FormLabel>
-                <Input
-                  type="date"
-                  name="startDate"
-                  value={cdd.startDate}
-                  onChange={handleChange}
-                />
-                {errors.startDate && (
-                  <Typography textColor="danger">{errors.startDate}</Typography>
-                )}
-              </FormControl>
-            </Grid>
-
-            <Grid xs={12} md={6}>
-              <FormControl required error={!!errors.endDate}>
-                <FormLabel>End date</FormLabel>
-                <Input
-                  type="date"
-                  name="endDate"
-                  value={cdd.endDate}
-                  onChange={handleChange}
-                />
-                {errors.endDate && (
-                  <Typography textColor="danger">{errors.endDate}</Typography>
-                )}
-              </FormControl>
-            </Grid>
-
-            <Grid xs={12}>
-              <FormControl required error={!!errors.employmentType}>
-                <FormLabel>Job type</FormLabel>
-                <Select
-                  value={cdd.employmentType}
-                  name="employmentType"
-                  onChange={handleSelectChange}
-                >
-                  <Option value={"FULL_TIME"}>FULL_TIME</Option>
-                  <Option value={"PART_TIME"}>PART_TIME</Option>
-                  <Option value={"CONTRACT"}>CONTRACT</Option>
-                </Select>
-                {errors.employmentType && (
-                  <Typography textColor="danger">
-                    {errors.employmentType}
-                  </Typography>
-                )}
-              </FormControl>
-            </Grid>
+        <Grid container spacing={2} py={2}>
+          <Grid xs={10} md={6}>
+            <FormControl required error={!!errors.nric} sx={{ flexGrow: 1 }}>
+              <FormLabel>Nric</FormLabel>
+              <Input name="nric" value={cdd.nric} onChange={handleChange} />
+              {errors.nric && (
+                <Typography textColor="danger">{errors.nric}</Typography>
+              )}
+            </FormControl>
           </Grid>
 
-          <Button onClick={handleSubmitData} disabled={!showFields}>
-            Save
-          </Button>
-        </ModalDialog>
-      </ModalOverflow>
-    </Modal>
+          <Grid xs={2} md={6}>
+            <FormControl>
+              <FormLabel>&nbsp;</FormLabel>
+              <Button
+                fullWidth
+                onClick={handleNRICSearch}
+                disabled={!nricRegex.test(cdd.nric)}
+                sx={{ display: { xs: "none", md: "block" } }}
+              >
+                Search NRIC
+              </Button>
+              <IconButton
+                onClick={handleNRICSearch}
+                disabled={!nricRegex.test(cdd.nric)}
+                sx={{ display: { xs: "block", md: "none" } }}
+                variant="solid"
+                color="primary"
+              >
+                <SearchIcon onClick={handleNRICSearch} />
+              </IconButton>
+            </FormControl>
+          </Grid>
+
+          {showFields && (
+            <>
+              <Grid xs={12}>
+                <FormControl required error={!!errors.name}>
+                  <FormLabel>Name</FormLabel>
+                  <Input
+                    name="name"
+                    value={cdd.name}
+                    onChange={handleChange}
+                  />
+                  {errors.name && (
+                    <Typography textColor="danger">{errors.name}</Typography>
+                  )}
+                </FormControl>
+              </Grid>
+
+              <Grid xs={12} md={6}>
+                <FormControl required error={!!errors.dateOfBirth}>
+                  <FormLabel>Date of birth</FormLabel>
+                  <Input
+                    type="date"
+                    name="dateOfBirth"
+                    value={cdd.dateOfBirth}
+                    onChange={handleChange}
+                  />
+                  {errors.dateOfBirth && (
+                    <Typography textColor="danger">
+                      {errors.dateOfBirth}
+                    </Typography>
+                  )}
+                </FormControl>
+              </Grid>
+
+              <Grid xs={12} md={6}>
+                <FormControl required error={!!errors.contact}>
+                  <FormLabel>Contact</FormLabel>
+                  <Input
+                    startDecorator={"+65"}
+                    name="contact"
+                    value={cdd.contact}
+                    onChange={handleContactChange}
+                  />
+                  {errors.contact && (
+                    <Typography textColor="danger">
+                      {errors.contact}
+                    </Typography>
+                  )}
+                </FormControl>
+              </Grid>
+            </>
+          )}
+
+          <Grid xs={12} md={6}>
+            <FormControl required error={!!errors.startDate}>
+              <FormLabel>Start date</FormLabel>
+              <Input
+                type="date"
+                name="startDate"
+                value={cdd.startDate}
+                onChange={handleChange}
+              />
+              {errors.startDate && (
+                <Typography textColor="danger">{errors.startDate}</Typography>
+              )}
+            </FormControl>
+          </Grid>
+
+          <Grid xs={12} md={6}>
+            <FormControl required error={!!errors.endDate}>
+              <FormLabel>End date</FormLabel>
+              <Input
+                type="date"
+                name="endDate"
+                value={cdd.endDate}
+                onChange={handleChange}
+              />
+              {errors.endDate && (
+                <Typography textColor="danger">{errors.endDate}</Typography>
+              )}
+            </FormControl>
+          </Grid>
+
+          <Grid xs={12}>
+            <FormControl required error={!!errors.employmentType}>
+              <FormLabel>Job type</FormLabel>
+              <Select
+                value={cdd.employmentType}
+                name="employmentType"
+                onChange={handleSelectChange}
+              >
+                <Option value={"FULL_TIME"}>FULL_TIME</Option>
+                <Option value={"PART_TIME"}>PART_TIME</Option>
+                <Option value={"CONTRACT"}>CONTRACT</Option>
+              </Select>
+              {errors.employmentType && (
+                <Typography textColor="danger">
+                  {errors.employmentType}
+                </Typography>
+              )}
+            </FormControl>
+          </Grid>
+        </Grid>
+
+        <Button onClick={handleSubmitData} disabled={!showFields}>
+          Save
+        </Button>
+      </ModalDialog>
+
+    </Modal >
   );
 };
 

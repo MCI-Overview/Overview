@@ -8,6 +8,7 @@ import {
   User,
 } from "@/types/common";
 import bcrypt from "bcrypt";
+import dayjs from "dayjs";
 import { maskNRIC } from "../../../utils";
 import {
   PERMISSION_ERROR_TEMPLATE,
@@ -377,6 +378,224 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     console.log(error);
     return res.status(500).send("Internal server error.");
   }
+});
+
+candidateAPIRoutes.get('/history/:candidatecuid/:page', async (req: Request, res: Response) => {
+  const usercuid = req.params.candidatecuid;
+  const page = parseInt(req.params.page, 10);
+  const { date } = req.query;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+  const today = dayjs();
+
+  try {
+    let whereClause: any = {
+      candidateCuid: usercuid,
+      shiftDate: {
+        lt: today
+      }
+    };
+
+    if (date) {
+      const selectedDate = dayjs(date as string);
+      whereClause = {
+        ...whereClause,
+        shiftDate: {
+          gte: selectedDate.startOf("day"),
+          lt: selectedDate.endOf("day") < today ? selectedDate.endOf("day") : today
+        }
+      };
+    }
+
+    const totalCount = await prisma.attendance.count({
+      where: whereClause,
+    });
+
+    const fetchedData = await prisma.attendance.findMany({
+      where: whereClause,
+      include: {
+        Shift: {
+          include: {
+            Project: true
+          }
+        }
+      },
+      orderBy: {
+        shiftDate: "asc"
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    const paginationData = {
+      isFirstPage: page === 1,
+      isLastPage: page * limit >= totalCount,
+      currentPage: page,
+      previousPage: page > 1 ? page - 1 : null,
+      nextPage: page * limit < totalCount ? page + 1 : null,
+      pageCount: Math.ceil(totalCount / limit),
+      totalCount: totalCount,
+    };
+
+    res.json([fetchedData, paginationData]);
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred while fetching the upcoming shifts.' });
+  }
+});
+
+
+candidateAPIRoutes.get("/report/:candidateCuid", async (req, res) => {
+  const { candidateCuid } = req.params;
+
+  const { month, year } = req.query as {
+    month: string;
+    year: string;
+  };
+
+  const providedDate = dayjs()
+    .set("month", parseInt(month))
+    .set("year", parseInt(year));
+
+  const queryDate = providedDate.isValid() ? providedDate : dayjs();
+
+  const attendanceData = await prisma.attendance.findMany({
+    where: {
+      candidateCuid: candidateCuid,
+      shiftDate: {
+        gte: queryDate.startOf("month").toDate(),
+        lte: queryDate.endOf("month").toDate(),
+      },
+    },
+    include: {
+      Shift: true,
+    },
+  });
+
+  const onTime = attendanceData.filter(
+    (attendance) =>
+      attendance.status === "ON_TIME" && attendance.clockOutTime !== null,
+  ).length;
+  const late = attendanceData.filter(
+    (attendance) =>
+      attendance.status === "LATE" && attendance.clockOutTime !== null,
+  ).length;
+  const noShow = attendanceData.filter(
+    (attendance) =>
+      attendance.status === "NO_SHOW" && attendance.leave === null,
+  ).length;
+  const others = attendanceData.filter(
+    (attendance) =>
+      attendance.clockInTime !== null && attendance.clockOutTime === null,
+  ).length;
+
+  const hoursWorked = attendanceData
+    .filter(
+      (attendance) =>
+        attendance.clockOutTime !== null && attendance.status !== "NO_SHOW",
+    )
+    .reduce((acc, attendance) => {
+      if (attendance.shiftType === "FULL_DAY") {
+        const startTime = dayjs(attendance.Shift.startTime);
+        const endTime = dayjs(attendance.Shift.endTime);
+
+        if (endTime.isBefore(startTime)) {
+          return acc + endTime.add(1, "day").diff(startTime, "hour", true);
+        }
+
+        return acc + endTime.diff(startTime, "hour", true);
+      }
+
+      if (attendance.shiftType === "FIRST_HALF") {
+        const startTime = dayjs(attendance.Shift.startTime);
+        const endTime = dayjs(attendance.Shift.halfDayEndTime);
+
+        if (endTime.isBefore(startTime)) {
+          return acc + endTime.add(1, "day").diff(startTime, "hour", true);
+        }
+
+        return acc + endTime.diff(startTime, "hour", true);
+      }
+
+      if (attendance.shiftType === "SECOND_HALF") {
+        const startTime = dayjs(attendance.Shift.halfDayStartTime);
+        const endTime = dayjs(attendance.Shift.endTime);
+
+        if (endTime.isBefore(startTime)) {
+          return acc + endTime.add(1, "day").diff(startTime, "hour", true);
+        }
+
+        return acc + endTime.diff(startTime, "hour", true);
+      }
+
+      return acc;
+    }, 0);
+
+  const scheduledHoursWorked = attendanceData
+    .filter((attendance) => attendance.status !== "MEDICAL")
+    .reduce((acc, attendance) => {
+      if (attendance.shiftType === "FULL_DAY") {
+        const startTime = dayjs(attendance.Shift.startTime);
+        const endTime = dayjs(attendance.Shift.endTime);
+
+        if (endTime.isBefore(startTime)) {
+          return acc + endTime.add(1, "day").diff(startTime, "hour", true);
+        }
+
+        return acc + endTime.diff(startTime, "hour", true);
+      }
+
+      if (attendance.shiftType === "FIRST_HALF") {
+        const startTime = dayjs(attendance.Shift.startTime);
+        const endTime = dayjs(attendance.Shift.halfDayEndTime);
+
+        if (endTime.isBefore(startTime)) {
+          return acc + endTime.add(1, "day").diff(startTime, "hour", true);
+        }
+
+        return acc + endTime.diff(startTime, "hour", true);
+      }
+
+      if (attendance.shiftType === "SECOND_HALF") {
+        const startTime = dayjs(attendance.Shift.halfDayStartTime);
+        const endTime = dayjs(attendance.Shift.endTime);
+
+        if (endTime.isBefore(startTime)) {
+          return acc + endTime.add(1, "day").diff(startTime, "hour", true);
+        }
+
+        return acc + endTime.diff(startTime, "hour", true);
+      }
+
+      return acc;
+    }, 0);
+
+  const mc = attendanceData.filter(
+    (attendance) =>
+      attendance.status === "MEDICAL" && attendance.leave === null,
+  ).length;
+  const leave = attendanceData
+    .filter(
+      (attendance) =>
+        attendance.status !== "MEDICAL" && attendance.leave !== null,
+    )
+    .reduce((acc, attendance) => {
+      if (attendance.leave === "HALFDAY") {
+        return acc + 0.5;
+      }
+
+      return acc + 1;
+    }, 0);
+
+  return res.json({
+    onTime,
+    late,
+    noShow,
+    others,
+    mc,
+    leave,
+    hoursWorked,
+    scheduledHoursWorked,
+  });
 });
 
 export default candidateAPIRoutes;
