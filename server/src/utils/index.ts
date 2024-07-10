@@ -287,13 +287,21 @@ export async function processCandidateData(
 
   if (!hasReadCandidateDetailsPermission) {
     return assignData.map((assign) => {
-      const { cuid, nric, name, contact, dateOfBirth, hasOnboarded } =
-        assign.Candidate;
+      const {
+        cuid,
+        nric,
+        name,
+        contact,
+        residency,
+        dateOfBirth,
+        hasOnboarded,
+      } = assign.Candidate;
       return {
         cuid,
         nric: maskNRIC(nric),
         name,
-        contact: contact,
+        contact,
+        residency,
         dateOfBirth: dateOfBirth.toISOString(),
         consultantCuid: assign.Consultant.cuid,
         startDate: assign.startDate.toISOString(),
@@ -310,6 +318,7 @@ export async function processCandidateData(
       dateOfBirth: assign.Candidate.dateOfBirth.toISOString(),
       startDate: assign.startDate.toISOString(),
       endDate: assign.endDate.toISOString(),
+      residency: assign.Candidate.residency,
       employmentType: assign.employmentType,
       consultantCuid: assign.Consultant.cuid,
       address: assign.Candidate.address as CommonAddress,

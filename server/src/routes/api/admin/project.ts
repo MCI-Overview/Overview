@@ -25,7 +25,7 @@ import {
   checkNoticePeriodValidity,
   checkTimesValidity,
   maskNRIC,
-} from "../../../utils/";
+} from "../../../utils";
 import bcrypt from "bcrypt";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
@@ -1155,11 +1155,11 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
       !cdd.nric ||
       !cdd.name ||
       !cdd.contact ||
+      !cdd.residency ||
       !cdd.dateOfBirth ||
       !cdd.startDate ||
       !cdd.endDate ||
-      !cdd.employmentType ||
-      !cdd.residency
+      !cdd.employmentType
   );
 
   if (invalidCandidates.length > 0) {

@@ -124,7 +124,6 @@ const CandidateTable = ({
     return <ArrowDownwardIcon fontSize="small" />;
   };
 
-  // TODO: Fix styling when in AssignCandidateModal
   return (
     <>
       <Sheet
@@ -171,6 +170,7 @@ const CandidateTable = ({
                   <ThTypo onClick={() => requestSort("age")}>
                     {renderSortIcon("age")} Age
                   </ThTypo>
+                  <ThTypo>Residency</ThTypo>
                   <ThTypo onClick={() => requestSort("startDate")}>
                     {renderSortIcon("startDate")} Start date
                   </ThTypo>
@@ -200,6 +200,7 @@ const CandidateTable = ({
                         {dayjs(row.dateOfBirth).format("DD/MM/YY")}
                       </TdTypo>
                       <TdTypo>{dayjs().diff(row.dateOfBirth, "years")}</TdTypo>
+                      <TdTypo>{readableEnum(row.residency)}</TdTypo>
                       <TdTypo>{dayjs(row.startDate).format("DD/MM/YY")}</TdTypo>
                       <TdTypo>{dayjs(row.endDate).format("DD/MM/YY")}</TdTypo>
                       <TdTypo>{readableEnum(row.employmentType)}</TdTypo>

@@ -34,6 +34,7 @@ candidateAPIRoutes.get(
         name,
         nric,
         contact,
+        residency,
         dateOfBirth,
         emergencyContact,
         ...otherData
@@ -54,6 +55,7 @@ candidateAPIRoutes.get(
           name,
           nric,
           contact,
+          residency,
           dateOfBirth,
           emergencyContact,
           ...otherData,
@@ -65,6 +67,7 @@ candidateAPIRoutes.get(
         name,
         nric: maskNRIC(nric),
         contact,
+        residency,
         dateOfBirth,
         emergencyContact,
       });
@@ -98,8 +101,8 @@ candidateAPIRoutes.get("/candidate/nric/:candidateNric", async (req, res) => {
       name: candidate.name,
       cuid: candidate.cuid,
       contact: candidate.contact,
-      dateOfBirth: candidate.dateOfBirth,
       residency: candidate.residency,
+      dateOfBirth: candidate.dateOfBirth,
     });
   } catch (error) {
     return res.status(404).send("Candidate not found.");
@@ -111,6 +114,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
     nric,
     name,
     contact,
+    residency,
     nationality,
     dateOfBirth,
     bankDetails,
@@ -124,6 +128,9 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
   if (!name) return res.status(400).send("name parameter is required.");
 
   if (!contact) return res.status(400).send("contact parameter is required.");
+
+  if (!residency)
+    return res.status(400).send("residency parameter is required.");
 
   // Validation for dateOfBirth
   if (dateOfBirth && !Date.parse(dateOfBirth)) {
@@ -189,6 +196,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
     nric,
     name,
     contact,
+    residency,
     ...(nationality && { nationality }),
     ...(dateOfBirth && { dateOfBirth }),
     ...(addressObject && { address: { update: addressObject } }),
@@ -219,9 +227,10 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
         return res.status(400).send("Candidate already exists.");
       }
 
-      if (prismaErrorMetaTarget.includes("contact")) {
-        return res.status(400).send("Another candidate has the same contact.");
-      }
+      // contact is no longer unique
+      // if (prismaErrorMetaTarget.includes("contact")) {
+      //   return res.status(400).send("Another candidate has the same contact.");
+      // }
     }
 
     console.log(error);
@@ -271,6 +280,7 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     cuid,
     name,
     contact,
+    residency,
     nationality,
     dateOfBirth,
     bankDetails,
@@ -284,6 +294,7 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   if (
     !name &&
     !contact &&
+    !residency &&
     !nationality &&
     !dateOfBirth &&
     !bankDetails &&
@@ -349,7 +360,8 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   // Build the update data object with only provided fields
   const updateData = {
     ...(name && { name }),
-    ...(contact && { contact: contact }),
+    ...(contact && { contact }),
+    ...(residency && { residency }),
     ...(nationality && { nationality }),
     ...(dateOfBirth && { dateOfBirth }),
     ...(address && { address }),

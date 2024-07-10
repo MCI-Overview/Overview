@@ -26,6 +26,7 @@ export type CandidateDetails = {
   dateOfBirth: string;
   hasOnboarded: boolean;
   nationality?: string | null;
+  residency: string;
 };
 
 export type CommonConsultant = {
