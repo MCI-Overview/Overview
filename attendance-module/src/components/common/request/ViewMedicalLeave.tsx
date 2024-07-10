@@ -92,11 +92,11 @@ export default function ViewMedicalLeave({
       <RequestStatusChip status={request.status} />
 
       <Typography level="body-sm">
-        Duration: {dayjs(requestData.startDate).format("DD/MM/YY")}
-        {" to "}
-        {dayjs(requestData.startDate)
+        {`Duration: ${dayjs(requestData.startDate).format(
+          "DD/MM/YY"
+        )} to ${dayjs(requestData.startDate)
           .add(requestData.numberOfDays - 1, "day")
-          .format("DD/MM/YY")}
+          .format("DD/MM/YY")}`}
       </Typography>
 
       <Box>
@@ -112,9 +112,9 @@ export default function ViewMedicalLeave({
               endTime: string;
             }) => (
               <Typography key={roster.cuid} level="body-sm">
-                • {dayjs(roster.shiftDate).format("DD/MM/YY")}{" "}
-                {roster.startTime}
-                {" - "} {roster.endTime}
+                {`• ${dayjs(roster.shiftDate).format("DD/MM/YY")} ${
+                  roster.startTime
+                } - ${roster.endTime}`}
               </Typography>
             )
           )

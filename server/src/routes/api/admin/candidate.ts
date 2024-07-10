@@ -90,7 +90,6 @@ candidateAPIRoutes.get("/candidate/nric/:candidateNric", async (req, res) => {
     });
 
     if (!candidate) {
-      console.log("Candidate not found.");
       return res.status(404).send("Candidate not found.");
     }
 
@@ -100,6 +99,7 @@ candidateAPIRoutes.get("/candidate/nric/:candidateNric", async (req, res) => {
       cuid: candidate.cuid,
       contact: candidate.contact,
       dateOfBirth: candidate.dateOfBirth,
+      residency: candidate.residency,
     });
   } catch (error) {
     return res.status(404).send("Candidate not found.");
@@ -380,69 +380,76 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   }
 });
 
-candidateAPIRoutes.get('/history/:candidatecuid/:page', async (req: Request, res: Response) => {
-  const usercuid = req.params.candidatecuid;
-  const page = parseInt(req.params.page, 10);
-  const { date } = req.query;
-  const limit = 10;
-  const offset = (page - 1) * limit;
-  const today = dayjs();
+candidateAPIRoutes.get(
+  "/history/:candidatecuid/:page",
+  async (req: Request, res: Response) => {
+    const usercuid = req.params.candidatecuid;
+    const page = parseInt(req.params.page, 10);
+    const { date } = req.query;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    const today = dayjs();
 
-  try {
-    let whereClause: any = {
-      candidateCuid: usercuid,
-      shiftDate: {
-        lt: today
-      }
-    };
-
-    if (date) {
-      const selectedDate = dayjs(date as string);
-      whereClause = {
-        ...whereClause,
+    try {
+      let whereClause: any = {
+        candidateCuid: usercuid,
         shiftDate: {
-          gte: selectedDate.startOf("day"),
-          lt: selectedDate.endOf("day") < today ? selectedDate.endOf("day") : today
-        }
+          lt: today,
+        },
       };
+
+      if (date) {
+        const selectedDate = dayjs(date as string);
+        whereClause = {
+          ...whereClause,
+          shiftDate: {
+            gte: selectedDate.startOf("day"),
+            lt:
+              selectedDate.endOf("day") < today
+                ? selectedDate.endOf("day")
+                : today,
+          },
+        };
+      }
+
+      const totalCount = await prisma.attendance.count({
+        where: whereClause,
+      });
+
+      const fetchedData = await prisma.attendance.findMany({
+        where: whereClause,
+        include: {
+          Shift: {
+            include: {
+              Project: true,
+            },
+          },
+        },
+        orderBy: {
+          shiftDate: "asc",
+        },
+        skip: offset,
+        take: limit,
+      });
+
+      const paginationData = {
+        isFirstPage: page === 1,
+        isLastPage: page * limit >= totalCount,
+        currentPage: page,
+        previousPage: page > 1 ? page - 1 : null,
+        nextPage: page * limit < totalCount ? page + 1 : null,
+        pageCount: Math.ceil(totalCount / limit),
+        totalCount: totalCount,
+      };
+
+      res.json([fetchedData, paginationData]);
+    } catch (error) {
+      res.status(500).json({
+        error: "An error occurred while fetching the upcoming shifts.",
+      });
     }
-
-    const totalCount = await prisma.attendance.count({
-      where: whereClause,
-    });
-
-    const fetchedData = await prisma.attendance.findMany({
-      where: whereClause,
-      include: {
-        Shift: {
-          include: {
-            Project: true
-          }
-        }
-      },
-      orderBy: {
-        shiftDate: "asc"
-      },
-      skip: offset,
-      take: limit,
-    });
-
-    const paginationData = {
-      isFirstPage: page === 1,
-      isLastPage: page * limit >= totalCount,
-      currentPage: page,
-      previousPage: page > 1 ? page - 1 : null,
-      nextPage: page * limit < totalCount ? page + 1 : null,
-      pageCount: Math.ceil(totalCount / limit),
-      totalCount: totalCount,
-    };
-
-    res.json([fetchedData, paginationData]);
-  } catch (error) {
-    res.status(500).json({ error: 'An error occurred while fetching the upcoming shifts.' });
   }
-});
-
+);
 
 candidateAPIRoutes.get("/report/:candidateCuid", async (req, res) => {
   const { candidateCuid } = req.params;
@@ -473,25 +480,24 @@ candidateAPIRoutes.get("/report/:candidateCuid", async (req, res) => {
 
   const onTime = attendanceData.filter(
     (attendance) =>
-      attendance.status === "ON_TIME" && attendance.clockOutTime !== null,
+      attendance.status === "ON_TIME" && attendance.clockOutTime !== null
   ).length;
   const late = attendanceData.filter(
     (attendance) =>
-      attendance.status === "LATE" && attendance.clockOutTime !== null,
+      attendance.status === "LATE" && attendance.clockOutTime !== null
   ).length;
   const noShow = attendanceData.filter(
-    (attendance) =>
-      attendance.status === "NO_SHOW" && attendance.leave === null,
+    (attendance) => attendance.status === "NO_SHOW" && attendance.leave === null
   ).length;
   const others = attendanceData.filter(
     (attendance) =>
-      attendance.clockInTime !== null && attendance.clockOutTime === null,
+      attendance.clockInTime !== null && attendance.clockOutTime === null
   ).length;
 
   const hoursWorked = attendanceData
     .filter(
       (attendance) =>
-        attendance.clockOutTime !== null && attendance.status !== "NO_SHOW",
+        attendance.clockOutTime !== null && attendance.status !== "NO_SHOW"
     )
     .reduce((acc, attendance) => {
       if (attendance.shiftType === "FULL_DAY") {
@@ -570,13 +576,12 @@ candidateAPIRoutes.get("/report/:candidateCuid", async (req, res) => {
     }, 0);
 
   const mc = attendanceData.filter(
-    (attendance) =>
-      attendance.status === "MEDICAL" && attendance.leave === null,
+    (attendance) => attendance.status === "MEDICAL" && attendance.leave === null
   ).length;
   const leave = attendanceData
     .filter(
       (attendance) =>
-        attendance.status !== "MEDICAL" && attendance.leave !== null,
+        attendance.status !== "MEDICAL" && attendance.leave !== null
     )
     .reduce((acc, attendance) => {
       if (attendance.leave === "HALFDAY") {

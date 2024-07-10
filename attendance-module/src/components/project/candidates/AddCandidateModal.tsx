@@ -9,6 +9,7 @@ import { nricRegex, contactRegex } from "../../../utils/validation";
 import {
   Button,
   FormControl,
+  FormHelperText,
   FormLabel,
   Grid,
   IconButton,
@@ -33,48 +34,52 @@ const AddCandidateModal = ({
 }: AddCandidateModalProps) => {
   const { user } = useUserContext();
   const { project, updateProject } = useProjectContext();
-  const [showFields, setShowFields] = useState(false);
-  const [cdd, setCdd] = useState({
-    nric: "",
-    name: "",
-    contact: "",
-    dateOfBirth: "",
-    startDate: "",
-    endDate: "",
-    employmentType: "",
-  });
+  const [isExistingCandidate, setIsExistingCandidate] = useState<
+    boolean | null
+  >(null);
 
-  const [errors, setErrors] = useState({
-    nric: "",
-    name: "",
-    contact: "",
-    dateOfBirth: "",
-    startDate: "",
-    endDate: "",
-    employmentType: "",
-  });
+  const [nric, setNric] = useState("");
+  const [name, setName] = useState("");
+  const [contact, setContact] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [residency, setResidency] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [employmentType, setEmploymentType] = useState("");
+
+  const [nricError, setNricError] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [contactError, setContactError] = useState("");
+  const [dateOfBirthError, setDateOfBirthError] = useState("");
+  const [residencyError, setResidencyError] = useState("");
+  const [startDateError, setStartDateError] = useState("");
+  const [endDateError, setEndDateError] = useState("");
+  const [employmentTypeError, setEmploymentTypeError] = useState("");
+
+  const resetAllFieldsAndErrors = () => {
+    setNric("");
+    setName("");
+    setContact("");
+    setDateOfBirth("");
+    setResidency("");
+    setStartDate("");
+    setEndDate("");
+    setEmploymentType("");
+
+    setNricError("");
+    setNameError("");
+    setContactError("");
+    setDateOfBirthError("");
+    setResidencyError("");
+    setStartDateError("");
+    setEndDateError("");
+    setEmploymentTypeError("");
+  };
 
   const handleCloseModal = () => {
     setAddModalOpen(false);
-    setShowFields(false);
-    setCdd({
-      nric: "",
-      name: "",
-      contact: "",
-      dateOfBirth: "",
-      startDate: "",
-      endDate: "",
-      employmentType: "",
-    });
-    setErrors({
-      nric: "",
-      name: "",
-      contact: "",
-      dateOfBirth: "",
-      startDate: "",
-      endDate: "",
-      employmentType: "",
-    });
+    setIsExistingCandidate(null);
+    resetAllFieldsAndErrors();
   };
 
   if (!project || !user) return null;
@@ -83,113 +88,71 @@ const AddCandidateModal = ({
 
   const handleNRICSearch = async () => {
     try {
-      const response = await axios.get(`/api/admin/candidate/nric/${cdd.nric}`);
+      const response = await axios.get(`/api/admin/candidate/nric/${nric}`);
       const candidate = response.data;
-      setCdd({
-        ...cdd,
-        nric: candidate.nric,
-        name: candidate.name,
-        contact: candidate.contact,
-        dateOfBirth: dayjs(candidate.dateOfBirth).format("YYYY-MM-DD"),
-      });
+
+      setNric(candidate.nric);
+      setName(candidate.name);
+      setContact(candidate.contact);
+      setDateOfBirth(dayjs(candidate.dateOfBirth).format("YYYY-MM-DD"));
+      setResidency(candidate.residency);
+      toast.success("Candidate found");
+      setIsExistingCandidate(true);
     } catch (error) {
+      setName("");
+      setContact("");
+      setDateOfBirth("");
+      setResidency("");
       toast.error("Candidate not found");
-      console.error(error);
-    } finally {
-      setShowFields(true);
+      setIsExistingCandidate(false);
     }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setCdd((prevCdd) => ({
-      ...prevCdd,
-      [name]: value,
-    }));
-  };
-
-  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "").slice(0, 8);
-    setCdd((prevCdd) => ({
-      ...prevCdd,
-      contact: value,
-    }));
-  };
-
-  const handleSelectChange = (
-    _event: React.SyntheticEvent | null,
-    value: string | null
-  ) => {
-    setCdd((prevCdd) => ({
-      ...prevCdd,
-      employmentType: value || "",
-    }));
-  };
-
-  const validateInput = () => {
-    const newErrors = {
-      nric: "",
-      name: "",
-      contact: "",
-      dateOfBirth: "",
-      startDate: "",
-      endDate: "",
-      employmentType: "",
-    };
-
-    if (!nricRegex.test(cdd.nric)) {
-      newErrors.nric = "Invalid NRIC";
-    }
-    if (cdd.name.trim() === "") {
-      newErrors.name = "Name is required";
-    }
-    if (!contactRegex.test(cdd.contact)) {
-      newErrors.contact = "Invalid contact";
-    }
-    if (!cdd.dateOfBirth || !Date.parse(cdd.dateOfBirth)) {
-      newErrors.dateOfBirth = "Invalid date of birth";
-    }
-    if (!cdd.startDate || !Date.parse(cdd.startDate)) {
-      newErrors.startDate = "Invalid start date";
-    }
-    if (!cdd.endDate || !Date.parse(cdd.endDate)) {
-      newErrors.endDate = "Invalid end date";
-    }
-    if (Date.parse(cdd.startDate) > Date.parse(cdd.endDate)) {
-      newErrors.startDate = "Start date cannot be after end date";
-      newErrors.endDate = "End date cannot be before start date";
-    }
-    if (!cdd.employmentType) {
-      newErrors.employmentType = "Employment type is required";
-    }
-
-    setErrors(newErrors);
-
-    return Object.values(newErrors).every((error) => error === "");
   };
 
   const handleSubmitData = async () => {
-    if (!validateInput()) {
-      toast.error("Invalid input fields");
+    if (
+      !nric ||
+      !name ||
+      !contact ||
+      !dateOfBirth ||
+      !residency ||
+      !startDate ||
+      !endDate ||
+      !employmentType
+    ) {
+      toast.error("Please fill in all fields");
       return;
     }
 
-    const formattedCdd = {
-      ...cdd,
-      dateOfBirth: new Date(cdd.dateOfBirth).toISOString(),
-      startDate: new Date(cdd.startDate).toISOString(),
-      endDate: new Date(cdd.endDate).toISOString(),
+    if (
+      nricError ||
+      nameError ||
+      contactError ||
+      dateOfBirthError ||
+      residencyError ||
+      startDateError ||
+      endDateError ||
+      employmentTypeError
+    ) {
+      toast.error("Invalid fields ");
+      return;
+    }
+
+    const candidate = {
+      nric,
+      name,
+      contact,
+      dateOfBirth: new Date(dateOfBirth).toISOString(),
+      residency,
+      startDate: new Date(startDate).toISOString(),
+      endDate: new Date(endDate).toISOString(),
+      employmentType,
     };
 
     axios
-      .post(`/api/admin/project/${projectCuid}/candidates`, [formattedCdd])
+      .post(`/api/admin/project/${projectCuid}/candidates`, [candidate])
       .then((response) => {
-        console.log(response.data);
-
         if (Array.isArray(response.data) && response.data.length === 1) {
-          toast.error("Candidate already exists in project");
+          toast.error("Candidate is already added to project");
           return;
         }
 
@@ -210,7 +173,6 @@ const AddCandidateModal = ({
       open={isAddModalOpen}
       onClose={handleCloseModal}
     >
-
       <ModalDialog
         variant="outlined"
         sx={{
@@ -227,12 +189,25 @@ const AddCandidateModal = ({
 
         <Grid container spacing={2} py={2}>
           <Grid xs={10} md={6}>
-            <FormControl required error={!!errors.nric} sx={{ flexGrow: 1 }}>
+            <FormControl required error={!!nricError} sx={{ flexGrow: 1 }}>
               <FormLabel>Nric</FormLabel>
-              <Input name="nric" value={cdd.nric} onChange={handleChange} />
-              {errors.nric && (
-                <Typography textColor="danger">{errors.nric}</Typography>
-              )}
+              <Input
+                name="nric"
+                value={nric}
+                onChange={(e) => {
+                  const value = e.target.value.trim().toUpperCase();
+                  setNric(value);
+
+                  if (!value) {
+                    setNricError("NRIC is required");
+                  } else if (nricRegex.test(value)) {
+                    setNricError("");
+                  } else {
+                    setNricError("Invalid NRIC");
+                  }
+                }}
+              />
+              <FormHelperText>{nricError}</FormHelperText>
             </FormControl>
           </Grid>
 
@@ -242,14 +217,14 @@ const AddCandidateModal = ({
               <Button
                 fullWidth
                 onClick={handleNRICSearch}
-                disabled={!nricRegex.test(cdd.nric)}
+                disabled={!nricRegex.test(nric)}
                 sx={{ display: { xs: "none", md: "block" } }}
               >
                 Search NRIC
               </Button>
               <IconButton
                 onClick={handleNRICSearch}
-                disabled={!nricRegex.test(cdd.nric)}
+                disabled={!nricRegex.test(nric)}
                 sx={{ display: { xs: "block", md: "none" } }}
                 variant="solid"
                 color="primary"
@@ -259,115 +234,218 @@ const AddCandidateModal = ({
             </FormControl>
           </Grid>
 
-          {showFields && (
+          {isExistingCandidate !== null && (
             <>
-              <Grid xs={12}>
-                <FormControl required error={!!errors.name}>
+              <Grid xs={12} md={6}>
+                <FormControl required error={!!nameError}>
                   <FormLabel>Name</FormLabel>
                   <Input
                     name="name"
-                    value={cdd.name}
-                    onChange={handleChange}
+                    value={name}
+                    onChange={(e) => {
+                      const value = e.target.value.trim();
+                      setName(value);
+
+                      if (!value) {
+                        setNameError("Name is required");
+                      } else {
+                        setNameError("");
+                      }
+                    }}
+                    disabled={isExistingCandidate}
                   />
-                  {errors.name && (
-                    <Typography textColor="danger">{errors.name}</Typography>
-                  )}
+                  <FormHelperText>{nameError}</FormHelperText>
                 </FormControl>
               </Grid>
 
               <Grid xs={12} md={6}>
-                <FormControl required error={!!errors.dateOfBirth}>
+                <FormControl required error={!!residencyError}>
+                  <FormLabel>Residency status</FormLabel>
+                  <Select
+                    value={residency}
+                    name="residency"
+                    onChange={(_e, value) => {
+                      if (!value) {
+                        setResidency("");
+                        setResidencyError("Residency status is required");
+                        return;
+                      }
+
+                      setResidency(value);
+                      setResidencyError("");
+                    }}
+                    disabled={isExistingCandidate}
+                  >
+                    <Option value={"CITIZEN"}>Citizen</Option>
+                    <Option value={"PERMANENT_RESIDENT"}>
+                      Permanent Resident
+                    </Option>
+                    <Option value={"S_PASS"}>S Pass</Option>
+                    <Option value={"WORK_PERMIT"}>Work Permit</Option>
+                  </Select>
+                  <FormHelperText>{residencyError}</FormHelperText>
+                </FormControl>
+              </Grid>
+
+              <Grid xs={12} md={6}>
+                <FormControl required error={!!dateOfBirthError}>
                   <FormLabel>Date of birth</FormLabel>
                   <Input
                     type="date"
                     name="dateOfBirth"
-                    value={cdd.dateOfBirth}
-                    onChange={handleChange}
+                    value={dateOfBirth}
+                    onChange={(e) => {
+                      setDateOfBirth(e.target.value);
+
+                      if (!dateOfBirth || !Date.parse(dateOfBirth)) {
+                        setDateOfBirthError("Invalid date of birth");
+                      } else {
+                        setDateOfBirthError("");
+                      }
+                    }}
+                    disabled={isExistingCandidate}
                   />
-                  {errors.dateOfBirth && (
-                    <Typography textColor="danger">
-                      {errors.dateOfBirth}
-                    </Typography>
-                  )}
+                  <FormHelperText>{dateOfBirthError}</FormHelperText>
                 </FormControl>
               </Grid>
 
               <Grid xs={12} md={6}>
-                <FormControl required error={!!errors.contact}>
+                <FormControl required error={!!contactError}>
                   <FormLabel>Contact</FormLabel>
                   <Input
                     startDecorator={"+65"}
                     name="contact"
-                    value={cdd.contact}
-                    onChange={handleContactChange}
+                    value={contact}
+                    onChange={(e) => {
+                      setContact(e.target.value);
+
+                      if (!contactRegex.test(contact)) {
+                        setContactError("Invalid contact");
+                      } else {
+                        setContactError("");
+                      }
+                    }}
+                    disabled={isExistingCandidate}
                   />
-                  {errors.contact && (
-                    <Typography textColor="danger">
-                      {errors.contact}
-                    </Typography>
-                  )}
+                  <FormHelperText>{contactError}</FormHelperText>
                 </FormControl>
+              </Grid>
+
+              <Grid xs={12}>
+                <Typography level="body-xs" sx={{ mt: -2 }}>
+                  The above details have been pre-filled from existing records.
+                  If needed, you may update them on their profile page later.
+                </Typography>
               </Grid>
             </>
           )}
 
           <Grid xs={12} md={6}>
-            <FormControl required error={!!errors.startDate}>
+            <FormControl required error={!!startDateError}>
               <FormLabel>Start date</FormLabel>
               <Input
                 type="date"
                 name="startDate"
-                value={cdd.startDate}
-                onChange={handleChange}
+                value={startDate}
+                slotProps={{
+                  input: {
+                    min: (dayjs().isAfter(project.startDate)
+                      ? dayjs()
+                      : project.startDate
+                    ).format("YYYY-MM-DD"),
+                    max: project.endDate.format("YYYY-MM-DD"),
+                  },
+                }}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setStartDate(value);
+
+                  if (!value || !Date.parse(value)) {
+                    setStartDateError("Invalid start date");
+                  } else if (
+                    endDate &&
+                    Date.parse(endDate) &&
+                    Date.parse(value) > Date.parse(endDate)
+                  ) {
+                    setStartDateError("Start date cannot be after end date");
+                  } else {
+                    setStartDateError("");
+                  }
+                }}
               />
-              {errors.startDate && (
-                <Typography textColor="danger">{errors.startDate}</Typography>
-              )}
+              <FormHelperText>{startDateError}</FormHelperText>
             </FormControl>
           </Grid>
 
           <Grid xs={12} md={6}>
-            <FormControl required error={!!errors.endDate}>
+            <FormControl required error={!!endDateError}>
               <FormLabel>End date</FormLabel>
               <Input
                 type="date"
                 name="endDate"
-                value={cdd.endDate}
-                onChange={handleChange}
+                value={endDate}
+                slotProps={{
+                  input: {
+                    min: (dayjs().isAfter(project.startDate)
+                      ? dayjs()
+                      : project.startDate
+                    ).format("YYYY-MM-DD"),
+                    max: project.endDate.format("YYYY-MM-DD"),
+                  },
+                }}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setEndDate(value);
+
+                  if (!value || !Date.parse(value)) {
+                    setEndDateError("Invalid end date");
+                  } else if (
+                    startDate &&
+                    Date.parse(startDate) &&
+                    Date.parse(value) < Date.parse(startDate)
+                  ) {
+                    setEndDateError("End date cannot be before start date");
+                    setStartDateError("Start date cannot be after end date");
+                  } else {
+                    setEndDateError("");
+                  }
+                }}
               />
-              {errors.endDate && (
-                <Typography textColor="danger">{errors.endDate}</Typography>
-              )}
+              <FormHelperText>{endDateError}</FormHelperText>
             </FormControl>
           </Grid>
 
           <Grid xs={12}>
-            <FormControl required error={!!errors.employmentType}>
+            <FormControl required error={!!employmentTypeError}>
               <FormLabel>Job type</FormLabel>
               <Select
-                value={cdd.employmentType}
+                value={employmentType}
                 name="employmentType"
-                onChange={handleSelectChange}
+                onChange={(_e, value) => {
+                  if (!value) {
+                    setEmploymentType("");
+                    setEmploymentTypeError("Employment type is required");
+                    return;
+                  }
+
+                  setEmploymentType(value);
+                  setEmploymentTypeError("");
+                }}
               >
-                <Option value={"FULL_TIME"}>FULL_TIME</Option>
-                <Option value={"PART_TIME"}>PART_TIME</Option>
-                <Option value={"CONTRACT"}>CONTRACT</Option>
+                <Option value={"FULL_TIME"}>Full time</Option>
+                <Option value={"PART_TIME"}>Part time</Option>
+                <Option value={"CONTRACT"}>Contract</Option>
               </Select>
-              {errors.employmentType && (
-                <Typography textColor="danger">
-                  {errors.employmentType}
-                </Typography>
-              )}
+              <FormHelperText>{employmentTypeError}</FormHelperText>
             </FormControl>
           </Grid>
         </Grid>
 
-        <Button onClick={handleSubmitData} disabled={!showFields}>
+        <Button onClick={handleSubmitData} disabled={!isExistingCandidate}>
           Save
         </Button>
       </ModalDialog>
-
-    </Modal >
+    </Modal>
   );
 };
 
