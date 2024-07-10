@@ -3,10 +3,12 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 
+import { PermissionList } from "../../../types/common";
+import { checkPermission } from "../../../utils/permission";
+import { capitalizeWords } from "../../../utils/capitalize";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { checkPermission } from "../../../utils/permission";
-import { PermissionList } from "../../../types/common";
+
 import LocationsSection from "./LocationsSection";
 
 import {
@@ -27,8 +29,6 @@ import {
   Typography,
 } from "@mui/joy";
 import { InfoOutlined as InfoOutlinedIcon } from "@mui/icons-material";
-import { CreateProjectData } from "../../../types";
-import { capitalizeWords } from "../../../utils/capitalize";
 
 const NOTICE_PERIOD_UNITS = ["DAY", "WEEK", "MONTH"];
 
@@ -60,17 +60,6 @@ const GeneralProjectSettings = () => {
   const [noticePeriodUnit, setNoticePeriodUnit] = useState<string | undefined>(
     project?.noticePeriodUnit
   );
-
-  const [projectDetails, setProjectDetails] = useState<CreateProjectData>({
-    name: null,
-    clientUEN: null,
-    clientName: null,
-    employmentBy: null,
-    startDate: null,
-    endDate: null,
-    noticePeriodDuration: null,
-    noticePeriodUnit: null,
-  });
 
   const [startDateError, setStartDateError] = useState<string>("");
   const [endDateError, setEndDateError] = useState<string>("");
