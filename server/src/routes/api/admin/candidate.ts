@@ -29,6 +29,28 @@ candidateAPIRoutes.get(
     }
 
     try {
+      const candidateData = await prisma.candidate.findUniqueOrThrow({
+        where: {
+          cuid: candidateCuid,
+        },
+        include: {
+          Assign: {
+            include: {
+              Consultant: true,
+              Project: {
+                include: {
+                  Manage: {
+                    where: {
+                      role: "CLIENT_HOLDER",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
       const {
         cuid,
         name,
@@ -36,12 +58,33 @@ candidateAPIRoutes.get(
         contact,
         residency,
         dateOfBirth,
+        nationality,
         emergencyContact,
         ...otherData
-      } = await prisma.candidate.findUniqueOrThrow({
-        where: {
-          cuid: candidateCuid,
-        },
+      } = candidateData;
+
+      // Initialise editor list (who can edit candidate profile)
+      let assignersAndClientHolders: string[] = [];
+
+      // Add assigners to the editor list
+      candidateData.Assign.forEach((assign) => {
+        // Exclude assigners if they are already in the list
+        if (!assignersAndClientHolders.includes(assign.consultantCuid)) {
+          assignersAndClientHolders.push(assign.consultantCuid);
+        }
+      });
+
+      // Add client holders to the editor list
+      candidateData.Assign.forEach((assign) => {
+        assign.Project.Manage.forEach((manage) => {
+          // Exclude client holders if they are already in the list
+          if (
+            manage.role === "CLIENT_HOLDER" &&
+            !assignersAndClientHolders.includes(manage.consultantCuid)
+          ) {
+            assignersAndClientHolders.push(manage.consultantCuid);
+          }
+        });
       });
 
       const hasReadCandidateDetailsPermission = await checkPermission(
@@ -57,7 +100,9 @@ candidateAPIRoutes.get(
           contact,
           residency,
           dateOfBirth,
+          nationality,
           emergencyContact,
+          assignersAndClientHolders,
           ...otherData,
         });
       }
@@ -68,8 +113,10 @@ candidateAPIRoutes.get(
         nric: maskNRIC(nric),
         contact,
         residency,
+        nationality,
         dateOfBirth,
         emergencyContact,
+        assignersAndClientHolders,
       });
     } catch (error) {
       return res.status(404).send("Candidate not found.");
@@ -103,6 +150,7 @@ candidateAPIRoutes.get("/candidate/nric/:candidateNric", async (req, res) => {
       contact: candidate.contact,
       residency: candidate.residency,
       dateOfBirth: candidate.dateOfBirth,
+      nationality: candidate.nationality,
     });
   } catch (error) {
     return res.status(404).send("Candidate not found.");
@@ -128,6 +176,9 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
   if (!name) return res.status(400).send("name parameter is required.");
 
   if (!contact) return res.status(400).send("contact parameter is required.");
+
+  if (!dateOfBirth)
+    return res.status(400).send("dateOfBirth parameter is required.");
 
   if (!residency)
     return res.status(400).send("residency parameter is required.");
@@ -197,8 +248,8 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
     name,
     contact,
     residency,
+    dateOfBirth,
     ...(nationality && { nationality }),
-    ...(dateOfBirth && { dateOfBirth }),
     ...(addressObject && { address: { update: addressObject } }),
     ...(bankDetailsObject && { bankDetails: { update: bankDetailsObject } }),
     ...(emergencyContactObject && {
@@ -308,15 +359,52 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
       );
   }
 
+  // Check if user has permission to update candidate:
+  // has CAN_UPDATE_CANDIDATES permission / is an assigner / is a client holder
   const hasUpdateCandidatePermission = await checkPermission(
     user.cuid,
     PermissionList.CAN_UPDATE_CANDIDATES
   );
 
   if (!hasUpdateCandidatePermission) {
-    return res
-      .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_UPDATE_CANDIDATES);
+    const data = await prisma.candidate.findUnique({
+      where: {
+        cuid,
+      },
+      include: {
+        Assign: {
+          include: {
+            Project: {
+              include: {
+                Manage: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const assignersAndClientHolders: string[] = [];
+    data?.Assign.forEach((assign) => {
+      if (!assignersAndClientHolders.includes(assign.consultantCuid)) {
+        assignersAndClientHolders.push(assign.consultantCuid);
+      }
+
+      assign.Project.Manage.forEach((manage) => {
+        if (
+          manage.role === "CLIENT_HOLDER" &&
+          !assignersAndClientHolders.includes(manage.consultantCuid)
+        ) {
+          assignersAndClientHolders.push(manage.consultantCuid);
+        }
+      });
+    });
+
+    if (!assignersAndClientHolders.includes(user.cuid)) {
+      return res
+        .status(401)
+        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_UPDATE_CANDIDATES);
+    }
   }
 
   // Validation for dateOfBirth

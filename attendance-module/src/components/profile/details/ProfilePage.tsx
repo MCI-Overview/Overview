@@ -8,7 +8,8 @@ import PersonalInfoForm from "./PersonalInfoForm";
 import AddressForm from "./AddressForm";
 import BankDetailsForm from "./BankDetailsForm";
 import EmergencyContactForm from "./EmergencyContactForm";
-import { CommonCandidate } from "../../../types/common";
+import { CommonCandidate, PermissionList } from "../../../types/common";
+import { checkPermission } from "../../../utils/permission";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -16,6 +17,9 @@ const ProfilePage = () => {
   const { user } = useUserContext();
 
   const [candidate, setCandidate] = useState<CommonCandidate | null>(null);
+  const [assignersAndClientHolders, setAssignersAndClientHolders] = useState<
+    string[]
+  >([]);
 
   useEffect(() => {
     if (!user) return;
@@ -25,6 +29,9 @@ const ProfilePage = () => {
         .get(`/api/admin/candidate/${candidateCuid}`)
         .then((response) => {
           setCandidate(response.data);
+
+          const { assignersAndClientHolders } = response.data;
+          setAssignersAndClientHolders(assignersAndClientHolders);
         })
         .catch(() => navigate("/admin/candidates"));
       return;
@@ -44,6 +51,7 @@ const ProfilePage = () => {
   }, [candidateCuid, navigate, user]);
 
   if (!candidate) return null;
+  if (!user) return null;
 
   const { address, bankDetails, emergencyContact, ...details } = candidate;
 
@@ -64,6 +72,15 @@ const ProfilePage = () => {
       });
   }
 
+  let canEdit = false;
+  if (user.userType === "Admin") {
+    canEdit =
+      checkPermission(user, PermissionList.CAN_UPDATE_CANDIDATES) ||
+      assignersAndClientHolders.includes(user.cuid);
+  } else {
+    canEdit = user.cuid === candidate.cuid;
+  }
+
   return (
     <>
       <Stack
@@ -77,15 +94,25 @@ const ProfilePage = () => {
         <PersonalInfoForm
           candidateDetails={details}
           handleSubmit={handleSubmitHandler}
+          canEdit={canEdit}
         />
-        <AddressForm address={address} handleSubmit={handleSubmitHandler} />
+
+        <AddressForm
+          address={address}
+          handleSubmit={handleSubmitHandler}
+          canEdit={canEdit}
+        />
+
         <BankDetailsForm
           bankDetails={bankDetails}
           handleSubmit={handleSubmitHandler}
+          canEdit={canEdit}
         />
+
         <EmergencyContactForm
           contact={emergencyContact}
           handleSubmit={handleSubmitHandler}
+          canEdit={canEdit}
         />
       </Stack>
     </>

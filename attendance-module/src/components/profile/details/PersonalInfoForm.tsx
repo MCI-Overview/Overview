@@ -1,23 +1,25 @@
-import {
-  Card,
-  Box,
-  Typography,
-  Divider,
-  Grid,
-  FormControl,
-  FormLabel,
-  Input,
-  CardOverflow,
-  CardActions,
-  Button,
-  FormHelperText,
-  Autocomplete,
-} from "@mui/joy";
-import { CandidateDetails } from "../../../types/common";
+import dayjs from "dayjs";
+import toast from "react-hot-toast";
 import { useState } from "react";
 import isEqual from "../../../utils";
-import toast from "react-hot-toast";
-import dayjs from "dayjs";
+import { CandidateDetails } from "../../../types/common";
+
+import {
+  Autocomplete,
+  Button,
+  Card,
+  CardActions,
+  CardOverflow,
+  Divider,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Grid,
+  Input,
+  Option,
+  Select,
+  Typography,
+} from "@mui/joy";
 
 type PersonalInfoFormProps = {
   candidateDetails: CandidateDetails | undefined;
@@ -26,26 +28,28 @@ type PersonalInfoFormProps = {
     successCallback: () => void,
     errorCallback: () => void
   ) => void;
+  canEdit: boolean;
 };
 
 export default function PersonalInfoForm({
   candidateDetails,
   handleSubmit,
+  canEdit,
 }: PersonalInfoFormProps) {
   const [oldCandidateDetails, setOldCandidateDetails] =
-    useState<CandidateDetails>({
-      ...candidateDetails,
-      dateOfBirth: candidateDetails?.dateOfBirth.split("T")[0],
-    } as CandidateDetails) || {
-      name: "",
-      nric: "",
-      nationality: "",
-      contact: "",
-      dateOfBirth: "",
-      cuid: "",
-      createdAt: "",
-      hasOnboarded: false,
-    };
+    useState<CandidateDetails>(
+      candidateDetails || {
+        name: "",
+        nric: "",
+        nationality: "",
+        residency: "",
+        contact: "",
+        dateOfBirth: "",
+        cuid: "",
+        createdAt: "",
+        hasOnboarded: false,
+      }
+    );
   const [newCandidateDetails, setNewCandidateDetails] =
     useState<CandidateDetails>(oldCandidateDetails);
 
@@ -59,13 +63,10 @@ export default function PersonalInfoForm({
 
   return (
     <Card>
-      <Box sx={{ mb: 1 }}>
-        <Typography level="title-md">Personal details</Typography>
-        <Typography level="body-sm">
-          Update your personal details here.
-        </Typography>
-      </Box>
+      <Typography level="title-md">Personal details</Typography>
+
       <Divider />
+
       <Grid container columns={2} spacing={2}>
         <Grid xs={2} sm={1}>
           <FormControl error={!isNameValid}>
@@ -79,12 +80,14 @@ export default function PersonalInfoForm({
                   name: e.target.value,
                 })
               }
+              disabled={!canEdit}
             />
             <FormHelperText>
               {isNameValid ? "" : "Name cannot be empty."}
             </FormHelperText>
           </FormControl>
         </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl disabled>
             <FormLabel>NRIC</FormLabel>
@@ -94,9 +97,11 @@ export default function PersonalInfoForm({
                 newCandidateDetails.nric ||
                 "An error occured while loading the NRIC"
               }
+              disabled={!canEdit}
             />
           </FormControl>
         </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl>
             <FormLabel>Contact</FormLabel>
@@ -114,9 +119,11 @@ export default function PersonalInfoForm({
                   e.preventDefault();
                 }
               }}
+              disabled={!canEdit}
             />
           </FormControl>
         </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl error={!isDateValid}>
             <FormLabel>Date of Birth</FormLabel>
@@ -132,17 +139,21 @@ export default function PersonalInfoForm({
                   dateOfBirth: e.target.value,
                 })
               }
+              disabled={!canEdit}
               slotProps={{
                 input: {
                   max: dayjs().subtract(13, "years").format("YYYY-MM-DD"),
                 },
               }}
             />
-            <FormHelperText>
-              {isDateValid ? "" : "Must be at least 13 years old."}
-            </FormHelperText>
+            {canEdit && (
+              <FormHelperText>
+                {isDateValid ? "" : "Must be at least 13 years old."}
+              </FormHelperText>
+            )}
           </FormControl>
         </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl>
             <FormLabel>Nationality</FormLabel>
@@ -160,42 +171,67 @@ export default function PersonalInfoForm({
                   e.preventDefault();
                 }
               }}
+              disabled={!canEdit}
             />
           </FormControl>
         </Grid>
+
+        <Grid xs={2} sm={1}>
+          <FormControl>
+            <FormLabel>Residency</FormLabel>
+            <Select
+              value={newCandidateDetails.residency || ""}
+              onChange={(_e, value) =>
+                setNewCandidateDetails({
+                  ...newCandidateDetails,
+                  residency: value ?? "",
+                })
+              }
+              disabled={!canEdit}
+            >
+              <Option value="CITIZEN">Citizen</Option>
+              <Option value="PERMANENT_RESIDENT">Permanent Resident</Option>
+              <Option value="S_PASS">S Pass</Option>
+              <Option value="WORK_PERMIT">Work Permit</Option>
+            </Select>
+          </FormControl>
+        </Grid>
       </Grid>
-      <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
-        <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
-          <Button
-            size="sm"
-            variant="outlined"
-            color="neutral"
-            onClick={() => setNewCandidateDetails(oldCandidateDetails)}
-            disabled={isSame}
-          >
-            Reset
-          </Button>
-          <Button
-            size="sm"
-            variant="solid"
-            onClick={() =>
-              handleSubmit(
-                { ...newCandidateDetails },
-                () => {
-                  setOldCandidateDetails(newCandidateDetails);
-                  toast.success("Details updated successfully.");
-                },
-                () => {
-                  toast.error("Failed to update details.");
-                }
-              )
-            }
-            disabled={isSame || !isNameValid || !isDateValid}
-          >
-            Save
-          </Button>
-        </CardActions>
-      </CardOverflow>
+
+      {canEdit && (
+        <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
+          <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
+            <Button
+              size="sm"
+              variant="outlined"
+              color="neutral"
+              onClick={() => setNewCandidateDetails(oldCandidateDetails)}
+              disabled={isSame}
+            >
+              Reset
+            </Button>
+            <Button
+              size="sm"
+              variant="solid"
+              onClick={() =>
+                handleSubmit(
+                  { ...newCandidateDetails },
+                  () => {
+                    setOldCandidateDetails(newCandidateDetails);
+                    toast.success("Details updated successfully.");
+                  },
+                  () => {
+                    toast.error("Failed to update details.");
+                  }
+                )
+              }
+              disabled={isSame || !isNameValid || !isDateValid}
+            >
+              Save
+            </Button>
+          </CardActions>
+        </CardOverflow>
+      )}
     </Card>
   );
 }
