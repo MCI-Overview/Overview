@@ -10,19 +10,20 @@ import { ThTypo, TdTypo } from "../ui/TableTypo";
 import {
   Box,
   Card,
+  CardOverflow,
   Chip,
   ColorPaletteProp,
   IconButton,
+  Link,
   List,
+  ListDivider,
   ListItem,
   ListItemContent,
-  ListDivider,
   Sheet,
   Table,
   TableProps,
   Tooltip,
   Typography,
-  CardOverflow,
 } from "@mui/joy";
 import {
   DeleteRounded as DeleteIcon,
@@ -192,9 +193,18 @@ const CandidateTable = ({
                   </tr>
                 ) : (
                   sortedData.map((row) => (
-                    <tr key={row.cuid}>
+                    <tr key={row.nric}>
                       <TdTypo>{row.nric}</TdTypo>
-                      <TdTypo>{row.name}</TdTypo>
+                      <TdTypo>
+                        {row.cuid ? (
+                          <Link href={`#/admin/candidate/${row.cuid}`}>
+                            {row.name}
+                          </Link>
+                        ) : (
+                          // Should not link during candidates assigning
+                          row.name
+                        )}
+                      </TdTypo>
                       <TdTypo>{row.contact}</TdTypo>
                       <TdTypo>
                         {dayjs(row.dateOfBirth).format("DD/MM/YY")}
