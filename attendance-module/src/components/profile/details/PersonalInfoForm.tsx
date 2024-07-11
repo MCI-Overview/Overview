@@ -6,6 +6,7 @@ import { CandidateDetails } from "../../../types/common";
 
 import {
   Autocomplete,
+  Box,
   Button,
   Card,
   CardActions,
@@ -15,11 +16,15 @@ import {
   FormHelperText,
   FormLabel,
   Grid,
+  IconButton,
   Input,
   Option,
   Select,
+  Tooltip,
   Typography,
 } from "@mui/joy";
+import { CreditCard as CreditCardIcon } from "@mui/icons-material";
+import NricImagesModal from "./NricImagesModal";
 
 type PersonalInfoFormProps = {
   candidateDetails: CandidateDetails | undefined;
@@ -53,6 +58,8 @@ export default function PersonalInfoForm({
   const [newCandidateDetails, setNewCandidateDetails] =
     useState<CandidateDetails>(oldCandidateDetails);
 
+  const [isNricModalOpen, setIsNricModalOpen] = useState(false);
+
   const isSame = isEqual(oldCandidateDetails, newCandidateDetails);
 
   const isNameValid =
@@ -63,7 +70,27 @@ export default function PersonalInfoForm({
 
   return (
     <Card>
-      <Typography level="title-md">Personal details</Typography>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography level="title-md">Personal details</Typography>
+
+        <Tooltip title="View NRIC" placement="left">
+          <IconButton onClick={() => setIsNricModalOpen(true)}>
+            <CreditCardIcon />
+          </IconButton>
+        </Tooltip>
+
+        <NricImagesModal
+          isOpen={isNricModalOpen}
+          setIsOpen={() => setIsNricModalOpen(false)}
+          candidateCuid={oldCandidateDetails.cuid}
+        />
+      </Box>
 
       <Divider />
 
@@ -89,7 +116,7 @@ export default function PersonalInfoForm({
         </Grid>
 
         <Grid xs={2} sm={1}>
-          <FormControl disabled>
+          <FormControl>
             <FormLabel>NRIC</FormLabel>
             <Input
               type="text"
@@ -97,7 +124,7 @@ export default function PersonalInfoForm({
                 newCandidateDetails.nric ||
                 "An error occured while loading the NRIC"
               }
-              disabled={!canEdit}
+              disabled
             />
           </FormControl>
         </Grid>

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { prisma } from "../../../client";
+import { prisma, s3 } from "../../../client";
 import { PrismaError } from "@/types";
 import {
   CommonAddress,
@@ -15,6 +15,8 @@ import {
   checkPermission,
   PermissionList,
 } from "../../../utils/permissions";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { Readable } from "stream";
 
 const candidateAPIRoutes: Router = Router();
 
@@ -59,6 +61,7 @@ candidateAPIRoutes.get(
         residency,
         dateOfBirth,
         nationality,
+        hasOnboarded,
         emergencyContact,
         ...otherData
       } = candidateData;
@@ -101,6 +104,7 @@ candidateAPIRoutes.get(
           residency,
           dateOfBirth,
           nationality,
+          hasOnboarded,
           emergencyContact,
           assignersAndClientHolders,
           ...otherData,
@@ -115,6 +119,7 @@ candidateAPIRoutes.get(
         residency,
         nationality,
         dateOfBirth,
+        hasOnboarded,
         emergencyContact,
         assignersAndClientHolders,
       });
@@ -702,5 +707,159 @@ candidateAPIRoutes.get("/report/:candidateCuid", async (req, res) => {
     scheduledHoursWorked,
   });
 });
+
+candidateAPIRoutes.get(
+  "/candidate/:candidateCuid/nric/front",
+  async (req, res) => {
+    const user = req.user as User;
+    const candidateCuid = req.params.candidateCuid;
+
+    console.log("triggers");
+
+    const hasReadCandidateDetailsPermission = await checkPermission(
+      user.cuid,
+      PermissionList.CAN_READ_CANDIDATE_DETAILS
+    );
+
+    if (!hasReadCandidateDetailsPermission) {
+      const data = await prisma.candidate.findUnique({
+        where: {
+          cuid: candidateCuid,
+        },
+        include: {
+          Assign: {
+            include: {
+              Project: {
+                include: {
+                  Manage: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const assignersAndClientHolders: string[] = [];
+      data?.Assign.forEach((assign) => {
+        if (!assignersAndClientHolders.includes(assign.consultantCuid)) {
+          assignersAndClientHolders.push(assign.consultantCuid);
+        }
+
+        assign.Project.Manage.forEach((manage) => {
+          if (
+            manage.role === "CLIENT_HOLDER" &&
+            !assignersAndClientHolders.includes(manage.consultantCuid)
+          ) {
+            assignersAndClientHolders.push(manage.consultantCuid);
+          }
+        });
+      });
+
+      if (!assignersAndClientHolders.includes(user.cuid)) {
+        return res
+          .status(401)
+          .send(
+            PERMISSION_ERROR_TEMPLATE +
+              PermissionList.CAN_READ_CANDIDATE_DETAILS
+          );
+      }
+    }
+
+    try {
+      const command = new GetObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME!,
+        Key: `${candidateCuid}/nric/front`,
+      });
+
+      console.log("----\n", command, "\n----");
+
+      console.log("yes");
+      const response = await s3.send(command);
+      console.log("no");
+      if (response.Body instanceof Readable) {
+        return response.Body.pipe(res);
+      } else {
+        return res.status(500).send("Unexpected response body type");
+      }
+    } catch (error) {
+      console.error("Error while downloading file:", error);
+      return res.status(500).send("Internal server error");
+    }
+  }
+);
+
+candidateAPIRoutes.get(
+  "/candidate/:candidateCuid/nric/back",
+  async (req, res) => {
+    const user = req.user as User;
+    const candidateCuid = req.params.candidateCuid;
+
+    const hasReadCandidateDetailsPermission = await checkPermission(
+      user.cuid,
+      PermissionList.CAN_READ_CANDIDATE_DETAILS
+    );
+
+    if (!hasReadCandidateDetailsPermission) {
+      const data = await prisma.candidate.findUnique({
+        where: {
+          cuid: candidateCuid,
+        },
+        include: {
+          Assign: {
+            include: {
+              Project: {
+                include: {
+                  Manage: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const assignersAndClientHolders: string[] = [];
+      data?.Assign.forEach((assign) => {
+        if (!assignersAndClientHolders.includes(assign.consultantCuid)) {
+          assignersAndClientHolders.push(assign.consultantCuid);
+        }
+
+        assign.Project.Manage.forEach((manage) => {
+          if (
+            manage.role === "CLIENT_HOLDER" &&
+            !assignersAndClientHolders.includes(manage.consultantCuid)
+          ) {
+            assignersAndClientHolders.push(manage.consultantCuid);
+          }
+        });
+      });
+
+      if (!assignersAndClientHolders.includes(user.cuid)) {
+        return res
+          .status(401)
+          .send(
+            PERMISSION_ERROR_TEMPLATE +
+              PermissionList.CAN_READ_CANDIDATE_DETAILS
+          );
+      }
+    }
+
+    try {
+      const command = new GetObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME!,
+        Key: `${candidateCuid}/nric/back`,
+      });
+
+      const response = await s3.send(command);
+      if (response.Body instanceof Readable) {
+        return response.Body.pipe(res);
+      } else {
+        return res.status(500).send("Unexpected response body type");
+      }
+    } catch (error) {
+      console.error("Error while downloading file:", error);
+      return res.status(500).send("Internal server error");
+    }
+  }
+);
 
 export default candidateAPIRoutes;
