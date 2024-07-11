@@ -194,6 +194,7 @@ export type GetCandidateResponse = {
   name: string;
   contact: string;
   dateOfBirth: string;
+  residency: string;
   consultantCuid: string;
   createdAt: string;
   startDate: string;

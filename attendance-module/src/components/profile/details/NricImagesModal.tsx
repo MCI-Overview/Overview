@@ -78,7 +78,7 @@ const NricImagesModal = ({
     if (isOpen) {
       handleGetNricData();
     }
-  }, [isOpen]);
+  });
 
   return (
     <Modal open={isOpen} onClose={() => setIsOpen(false)}>
