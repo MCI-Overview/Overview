@@ -124,7 +124,7 @@ candidateAPIRoutes.get(
   }
 );
 
-candidateAPIRoutes.get("/candidate/nric/:candidateNric", async (req, res) => {
+candidateAPIRoutes.get("/candidate/bynric/:candidateNric", async (req, res) => {
   const user = req.user as User;
   const { candidateNric } = req.params;
 

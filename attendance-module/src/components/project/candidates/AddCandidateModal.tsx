@@ -88,7 +88,7 @@ const AddCandidateModal = ({
 
   const handleNRICSearch = async () => {
     try {
-      const response = await axios.get(`/api/admin/candidate/nric/${nric}`);
+      const response = await axios.get(`/api/admin/candidate/bynric/${nric}`);
       const candidate = response.data;
 
       setNric(candidate.nric);
