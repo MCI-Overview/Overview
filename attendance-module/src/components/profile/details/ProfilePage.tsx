@@ -1,15 +1,20 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { checkPermission } from "../../../utils/permission";
+import { CommonCandidate, PermissionList } from "../../../types/common";
 import { useUserContext } from "../../../providers/userContextProvider";
 
-import { Stack } from "@mui/joy";
-import PersonalInfoForm from "./PersonalInfoForm";
 import AddressForm from "./AddressForm";
 import BankDetailsForm from "./BankDetailsForm";
 import EmergencyContactForm from "./EmergencyContactForm";
-import { CommonCandidate, PermissionList } from "../../../types/common";
-import { checkPermission } from "../../../utils/permission";
+import PersonalInfoForm from "./PersonalInfoForm";
+
+import { Box, Stack, Typography } from "@mui/joy";
+import {
+  EditOffOutlined as EditOffIcon,
+  ReportGmailerrorredOutlined as WarningIcon,
+} from "@mui/icons-material";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -81,6 +86,11 @@ const ProfilePage = () => {
     canEdit = user.cuid === candidate.cuid;
   }
 
+  const hasReadCandidateDetailsPermission = checkPermission(
+    user,
+    PermissionList.CAN_READ_CANDIDATE_DETAILS
+  );
+
   return (
     <>
       <Stack
@@ -89,25 +99,70 @@ const ProfilePage = () => {
           display: "flex",
           maxWidth: "800px",
           mx: "auto",
+          my: 1,
         }}
       >
+        <Box
+          sx={{
+            gap: 1,
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+          }}
+        >
+          {!canEdit && (
+            <Typography
+              variant="soft"
+              color="warning"
+              level="title-sm"
+              sx={{
+                py: 1,
+                borderRadius: 7,
+                textAlign: "center",
+              }}
+            >
+              <EditOffIcon /> You do not have permission to edit this profile.
+            </Typography>
+          )}
+
+          {user.userType === "Admin" && !details.hasOnboarded && (
+            <Typography
+              variant="soft"
+              color="danger"
+              level="title-sm"
+              sx={{
+                textAlign: "center",
+                py: 1,
+                borderRadius: 7,
+              }}
+            >
+              <WarningIcon /> Candidate has yet to complete the onboarding
+              process. There may be missing information.
+            </Typography>
+          )}
+        </Box>
+
         <PersonalInfoForm
           candidateDetails={details}
           handleSubmit={handleSubmitHandler}
           canEdit={canEdit}
         />
 
-        <AddressForm
-          address={address}
-          handleSubmit={handleSubmitHandler}
-          canEdit={canEdit}
-        />
+        {hasReadCandidateDetailsPermission && (
+          <>
+            <AddressForm
+              address={address}
+              handleSubmit={handleSubmitHandler}
+              canEdit={canEdit}
+            />
 
-        <BankDetailsForm
-          bankDetails={bankDetails}
-          handleSubmit={handleSubmitHandler}
-          canEdit={canEdit}
-        />
+            <BankDetailsForm
+              bankDetails={bankDetails}
+              handleSubmit={handleSubmitHandler}
+              canEdit={canEdit}
+            />
+          </>
+        )}
 
         <EmergencyContactForm
           contact={emergencyContact}
