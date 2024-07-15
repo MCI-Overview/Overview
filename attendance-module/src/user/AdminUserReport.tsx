@@ -62,7 +62,7 @@ export default function UserReport() {
       .then((response) => {
         setReport(response.data);
       });
-  }, [selectedMonth, selectedYear]);
+  }, [candidateCuid, selectedMonth, selectedYear]);
 
   if (!userStartDate) return null;
 

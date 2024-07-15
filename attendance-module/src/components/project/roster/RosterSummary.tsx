@@ -47,6 +47,8 @@ export default function RosterSummary() {
         };
       }
 
+      if (roster.state === "PREVIEW") return acc;
+
       acc[roster.shiftCuid][roster.type] =
         (acc[roster.shiftCuid][roster.type] || 0) + 1;
       acc[roster.shiftCuid]["TOTAL"] =

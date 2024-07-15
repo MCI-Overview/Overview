@@ -1,5 +1,3 @@
-import dayjs from "dayjs";
-
 import {
   LATE_COLOR,
   LEAVE_COLOR,

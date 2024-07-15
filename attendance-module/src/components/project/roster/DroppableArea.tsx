@@ -1,21 +1,22 @@
-import axios from "axios";
 import dayjs from "dayjs";
 import { useDrop } from "react-dnd";
 import { useState, useEffect } from "react";
 
-import { RosterChipProps } from "./DraggableRosterChip";
-import DraggableRoster, { DraggableRosterProps } from "./DraggableRoster";
 import { useRosterContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import { Typography, Stack, Tooltip } from "@mui/joy";
+import DraggableRoster from "./DraggableRoster";
 import { RosterDisplayProps } from "./RosterDisplay";
 
-type Candidate = {
+import { Typography, Stack, Tooltip } from "@mui/joy";
+
+export type Candidate = {
   cuid: string;
+  name: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
   roster: RosterDisplayProps["data"][];
+  possibleDates?: dayjs.Dayjs[];
 };
 
 export default function DroppableArea({
@@ -28,167 +29,15 @@ export default function DroppableArea({
   date: dayjs.Dayjs;
 }) {
   const { project } = useProjectContext();
-  const { updateRosterData } = useRosterContext();
+  const { setHoverDate, setCandidateHoverCuid, item } = useRosterContext();
   const [tooltip, setTooltip] = useState<React.ReactElement | null>(null);
 
-  const [{ canDrop, item, itemType }, drop] = useDrop({
+  const [, drop] = useDrop({
     accept: ["shift", "roster"],
-    canDrop: (item: RosterChipProps | DraggableRosterProps) => {
-      if (itemType === "shift") {
-        const itemData = item as RosterChipProps;
-        const itemStartTime = date
-          .set("hour", itemData.startTime.hour())
-          .set("minute", itemData.startTime.minute());
-        let itemEndTime = date
-          .set("hour", itemData.endTime.hour())
-          .set("minute", itemData.endTime.minute());
-
-        if (itemStartTime.isAfter(itemEndTime)) {
-          itemEndTime = itemEndTime.add(1, "day");
-        }
-
-        if (itemStartTime.isBefore(dayjs())) return false;
-
-        if (date.isAfter(candidate.endDate, "day")) return false;
-
-        return candidate.roster.every(
-          (roster) =>
-            !(
-              itemStartTime.isBetween(roster.startTime, roster.endTime) ||
-              itemEndTime.isBetween(roster.startTime, roster.endTime) ||
-              roster.startTime.isBetween(itemStartTime, itemEndTime) ||
-              roster.endTime.isBetween(itemStartTime, itemEndTime) ||
-              (itemStartTime.isSame(roster.startTime) &&
-                itemEndTime.isSame(roster.endTime))
-            ) &&
-            candidate.roster.filter(
-              (roster) =>
-                (roster.startTime.isSame(date, "day") ||
-                  roster.startTime.isSame(date.subtract(1, "day"), "day")) &&
-                roster.shiftCuid === itemData.cuid &&
-                roster.type !== "FULL_DAY" &&
-                itemData.type !== "FULL_DAY"
-            ).length === 0
-        );
-      }
-
-      if (itemType === "roster") {
-        const itemData = item as DraggableRosterProps;
-        let itemStartTime = date
-          .set("hour", itemData.originalStartTime.hour())
-          .set("minute", itemData.originalStartTime.minute());
-        let itemEndTime = date
-          .set("hour", itemData.originalEndTime.hour())
-          .set("minute", itemData.originalEndTime.minute());
-
-        if (itemStartTime.isAfter(itemEndTime)) {
-          itemEndTime = itemEndTime.add(1, "day");
-        }
-
-        if (itemData.type === "OVERLAP") {
-          itemStartTime = itemStartTime.subtract(1, "day");
-          itemEndTime = itemEndTime.subtract(1, "day");
-        }
-
-        if (itemStartTime.isBefore(dayjs())) return false;
-
-        if (date.isAfter(candidate.endDate, "day")) return false;
-
-        if (
-          itemData.candidateCuid === candidate.cuid &&
-          date.isSame(itemData.startTime, "day")
-        ) {
-          return false;
-        }
-
-        return candidate.roster
-          .filter((roster) => roster.rosterCuid != itemData.rosterCuid)
-          .every(
-            (roster) =>
-              !(
-                itemStartTime.isBetween(roster.startTime, roster.endTime) ||
-                itemEndTime.isBetween(roster.startTime, roster.endTime) ||
-                roster.startTime.isBetween(itemStartTime, itemEndTime) ||
-                roster.endTime.isBetween(itemStartTime, itemEndTime) ||
-                (itemStartTime.isSame(roster.startTime) &&
-                  itemEndTime.isSame(roster.endTime))
-              ) &&
-              candidate.roster.filter(
-                (roster) =>
-                  (roster.startTime.isSame(date, "day") ||
-                    roster.startTime.isSame(date.subtract(1, "day"), "day")) &&
-                  roster.shiftCuid === itemData.shiftCuid &&
-                  roster.type !== "FULL_DAY" &&
-                  itemData.type !== "FULL_DAY"
-              ).length === 0
-          );
-      }
-
-      return false;
+    hover: () => {
+      setHoverDate(date);
+      setCandidateHoverCuid(candidate.cuid);
     },
-    drop: (item: RosterChipProps | DraggableRosterProps) => {
-      if (!project) return;
-
-      if (itemType === "shift") {
-        const itemData = item as RosterChipProps;
-
-        const itemStartTime = date
-          .set("hour", itemData.startTime.hour())
-          .set("minute", itemData.startTime.minute());
-        let itemEndTime = date
-          .set("hour", itemData.endTime.hour())
-          .set("minute", itemData.endTime.minute());
-
-        if (itemStartTime.isAfter(itemEndTime)) {
-          itemEndTime = itemEndTime.add(1, "day");
-        }
-
-        axios
-          .post(`/api/admin/project/${project?.cuid}/roster`, {
-            candidateCuid: candidate.cuid,
-            newShifts: [
-              {
-                type: item.type,
-                shiftDate: date.toISOString(),
-                shiftCuid: itemData.cuid,
-              },
-            ],
-          })
-          .then(updateRosterData);
-      }
-
-      if (itemType === "roster") {
-        const itemData = item as DraggableRosterProps;
-
-        const itemStartTime = date
-          .set("hour", itemData.startTime.hour())
-          .set("minute", itemData.startTime.minute());
-        let itemEndTime = date
-          .set("hour", itemData.endTime.hour())
-          .set("minute", itemData.endTime.minute());
-
-        if (itemStartTime.isAfter(itemEndTime)) {
-          itemEndTime = itemEndTime.add(1, "day");
-        }
-
-        axios
-          .patch(`/api/admin/roster`, {
-            rosterCuid: itemData.rosterCuid,
-            candidateCuid: candidate.cuid,
-            rosterDate:
-              itemData.type === "OVERLAP"
-                ? date.subtract(1, "day").toISOString()
-                : date.toISOString(),
-          })
-          .then(updateRosterData);
-      }
-    },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-      canDrop: !!monitor.canDrop(),
-      item: monitor.getItem(),
-      itemType: monitor.getItemType(),
-    }),
   });
 
   useEffect(() => {
@@ -201,29 +50,38 @@ export default function DroppableArea({
     }
 
     if (
-      date.isBefore(candidate.startDate) &&
-      !date.isSame(candidate.startDate, "day")
+      date.isBefore(candidate && candidate.startDate) &&
+      !date.isSame(candidate && candidate.startDate, "day")
     ) {
       return setTooltip(
         <Typography>
-          Candidate start date is {candidate.startDate.format("DD MMM")}
+          Candidate start date is{" "}
+          {candidate && candidate.startDate.format("DD MMM")}
         </Typography>
       );
     }
 
     if (
-      date.isAfter(candidate.endDate) &&
-      !date.isSame(candidate.endDate, "day")
+      date.isAfter(candidate && candidate.endDate) &&
+      !date.isSame(candidate && candidate.endDate, "day")
     ) {
       return setTooltip(
         <Typography>
-          Candidate last day is {candidate.endDate.format("DD MMM")}
+          {`Candidate last day is ${
+            candidate && candidate.endDate.format("DD MMM")
+          }`}
         </Typography>
       );
     }
 
     setTooltip(null);
   }, [date, project, candidate]);
+
+  if (!candidate) return null;
+
+  const isPossible = candidate.possibleDates?.some((validDate) =>
+    validDate.isSame(date, "day")
+  );
 
   const outOfDateRange =
     date.isBefore(project?.startDate) ||
@@ -241,22 +99,23 @@ export default function DroppableArea({
       <td
         ref={drop}
         style={{
-          background: item
-            ? canDrop
+          background: greyBackground
+            ? "rgba(0, 0, 0, 0.08)"
+            : item && candidate.possibleDates
+            ? isPossible
               ? "rgba(0, 128, 0, 0.08)"
               : "rgba(255, 0, 0, 0.08)"
-            : greyBackground
-            ? "rgba(0, 0, 0, 0.08)"
             : "inherit",
         }}
       >
         <Stack spacing={1}>
           {(candidate.roster || [])
+            .filter((roster) => roster.startTime.isSame(date, "day"))
             .sort((a, b) => (a.startTime.isBefore(b.startTime) ? -1 : 1))
             .map((roster) => (
               <DraggableRoster
                 displayType={type}
-                key={roster.rosterCuid + roster.type}
+                key={`${roster.rosterCuid} ${roster.type} ${roster.status} ${roster.shiftCuid} ${roster.originalStartTime} ${roster.originalEndTime} ${roster.startTime} ${roster.endTime}`}
                 status={roster.status}
                 leave={roster.leave}
                 state={roster.state}
@@ -266,6 +125,7 @@ export default function DroppableArea({
                 projectCuid={roster.projectCuid || ""}
                 startTime={roster.startTime}
                 endTime={roster.endTime}
+                isPartial={roster.isPartial}
                 originalStartTime={roster.originalStartTime}
                 originalEndTime={roster.originalEndTime}
                 candidateCuid={candidate.cuid}

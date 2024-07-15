@@ -32,7 +32,7 @@ const MyProjects: FC = () => {
   const [previousProjects, setPreviousProjects] = useState<Project[]>([]);
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [futureProjects, setFutureProjects] = useState<Project[]>([]);
-  const [value, setValue] = useState<"concluded" | "ongoing" | "future">(
+  const [value, setValue] = useState<"concluded" | "ongoing" | "upcoming">(
     "ongoing"
   );
 
@@ -137,11 +137,13 @@ const MyProjects: FC = () => {
               <Typography level="body-sm" textAlign="center">
                 Loading...
               </Typography>
-            ) : getCurrentProjectList().length === 0 ? (
+            ) : getCurrentProjectList() &&
+              getCurrentProjectList().length === 0 ? (
               <Typography level="body-sm" textAlign="center">
                 {`No ${value} projects found`}
               </Typography>
             ) : (
+              getCurrentProjectList() &&
               getCurrentProjectList()
                 .sort(projectComparator)
                 .map((project: Project) => (

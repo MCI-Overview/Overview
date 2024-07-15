@@ -1,50 +1,67 @@
-import { DragPreviewImage, useDrag } from "react-dnd";
 import dayjs from "dayjs";
+import { useDrag } from "react-dnd";
+
+import { useRosterContext } from "../../../providers/rosterContextProvider";
 
 import RosterDisplay from "./RosterDisplay";
 
-export type RosterChipProps = {
+export type DraggableRosterChipProps = {
   type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
-  cuid: string;
+  shiftCuid: string;
   startTime: dayjs.Dayjs;
   endTime: dayjs.Dayjs;
 };
 
-export default function RosterChip({
+export default function DraggableRosterChip({
   type,
-  cuid,
+  shiftCuid,
   startTime,
   endTime,
-}: RosterChipProps) {
-  const [{ isDragging }, drag, preview] = useDrag({
+}: DraggableRosterChipProps) {
+  const { setHoverDate, setCandidateHoverCuid, setItem, setItemType } =
+    useRosterContext();
+  const [{ isDragging }, drag] = useDrag({
     type: "shift",
-    item: { type, cuid, startTime, endTime },
+    item: () => {
+      const item = {
+        type,
+        shiftCuid,
+        startTime,
+        endTime,
+      };
+
+      setItem(item);
+      setItemType("shift");
+
+      return item;
+    },
+    end: () => {
+      setItem(null);
+      setItemType(null);
+      setHoverDate(null);
+      setCandidateHoverCuid(null);
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
   });
 
   return (
-    <>
-      <DragPreviewImage
-        connect={preview}
-        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+    <span ref={drag}>
+      <RosterDisplay
+        data={{
+          isPartial: false,
+          type,
+          shiftCuid,
+          startTime,
+          originalStartTime: startTime,
+          originalEndTime: endTime,
+          endTime,
+          displayType: "ROSTER",
+        }}
+        draggable
+        opacity={isDragging ? 0.5 : 1}
       />
-      <span ref={drag}>
-        <RosterDisplay
-          data={{
-            type,
-            shiftCuid: cuid,
-            startTime,
-            originalStartTime: startTime,
-            originalEndTime: endTime,
-            endTime,
-            displayType: "ROSTER",
-          }}
-          draggable
-          opacity={isDragging ? 0.5 : 1}
-        />
-      </span>
-    </>
+    </span>
   );
 }

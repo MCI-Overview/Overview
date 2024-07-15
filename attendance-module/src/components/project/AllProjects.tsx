@@ -25,7 +25,7 @@ const AllProjects: FC = () => {
   const [previousProjects, setPreviousProjects] = useState<Project[]>([]);
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [futureProjects, setFutureProjects] = useState<Project[]>([]);
-  const [value, setValue] = useState<"concluded" | "ongoing" | "future">(
+  const [value, setValue] = useState<"concluded" | "ongoing" | "upcoming">(
     "ongoing"
   );
 

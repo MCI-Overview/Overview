@@ -187,8 +187,8 @@ projectAPIRouter.get(
       });
     }
 
-    const startDateObject = new Date(startDate);
-    const endDateObject = new Date(endDate);
+    const startDateObject = dayjs(startDate);
+    const endDateObject = dayjs(endDate);
 
     const candidateCuids = await prisma.assign.findMany({
       where: {
@@ -196,10 +196,10 @@ projectAPIRouter.get(
           cuid: projectCuid,
         },
         startDate: {
-          lte: endDateObject,
+          lte: endDateObject.toDate(),
         },
         endDate: {
-          gte: startDateObject,
+          gte: startDateObject.toDate(),
         },
       },
       select: {
@@ -217,8 +217,8 @@ projectAPIRouter.get(
     const candidateRoster = await prisma.attendance.findMany({
       where: {
         shiftDate: {
-          gte: startDateObject,
-          lte: endDateObject,
+          gte: startDateObject.subtract(1, "day").toDate(),
+          lte: endDateObject.add(1, "day").toDate(),
         },
         candidateCuid: {
           in: candidateCuids.map((c) => c.candidateCuid),
@@ -262,11 +262,23 @@ projectAPIRouter.get(
             const startTime =
               cr.shiftType === "SECOND_HALF"
                 ? dayjs(cr.Shift.halfDayStartTime)
-                : dayjs(cr.Shift.startTime);
+                    .set("date", startDate.date())
+                    .set("month", startDate.month())
+                    .set("year", startDate.year())
+                : dayjs(cr.Shift.startTime)
+                    .set("date", startDate.date())
+                    .set("month", startDate.month())
+                    .set("year", startDate.year());
             const endTime =
               cr.shiftType === "FIRST_HALF"
                 ? dayjs(cr.Shift.halfDayEndTime)
-                : dayjs(cr.Shift.endTime);
+                    .set("date", startDate.date())
+                    .set("month", startDate.month())
+                    .set("year", startDate.year())
+                : dayjs(cr.Shift.endTime)
+                    .set("date", startDate.date())
+                    .set("month", startDate.month())
+                    .set("year", startDate.year());
 
             return {
               leave: cr.leave,
@@ -275,17 +287,10 @@ projectAPIRouter.get(
               shiftCuid: cr.Shift.cuid,
               rosterCuid: cr.cuid,
               shiftType: cr.shiftType,
-              shiftStartTime: startDate
-                .add(startTime.hour(), "hour")
-                .add(startTime.minute(), "minute"),
+              shiftStartTime: startTime,
               shiftEndTime: startTime.isBefore(endTime)
-                ? startDate
-                    .add(endTime.hour(), "hour")
-                    .add(endTime.minute(), "minute")
-                : startDate
-                    .add(endTime.hour(), "hour")
-                    .add(endTime.minute(), "minute")
-                    .add(1, "day"),
+                ? endTime
+                : endTime.add(1, "day"),
               consultantCuid: cr.Shift.Project.Manage.filter(
                 (manage) => manage.role === Role.CLIENT_HOLDER
               ).map((manage) => manage.consultantCuid)[0],
@@ -448,37 +453,25 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
   }
 });
 
+// TODO: Add permission check
 projectAPIRouter.post("/project/:projectCuid/roster", async (req, res) => {
   // const user = req.user as User;
   const { projectCuid } = req.params;
-  const { candidateCuid, newShifts } = req.body;
+  const { newRoster } = req.body;
 
   if (!projectCuid)
     return res.status(400).json({
       message: "Please specify a project cuid.",
     });
-  if (!candidateCuid)
-    return res.status(400).json({
-      message: "Please specify a candidate cuid.",
-    });
 
-  if (!newShifts || !Array.isArray(newShifts) || newShifts.length === 0)
+  if (!newRoster)
     return res.status(400).json({
-      message: "Please specify new shifts.",
+      message: "Please specify new roster data.",
     });
-
-  const createData = newShifts.map((shift) => {
-    return {
-      candidateCuid,
-      shiftType: shift.type,
-      shiftDate: new Date(shift.shiftDate),
-      shiftCuid: shift.shiftCuid,
-    };
-  });
 
   try {
     await prisma.attendance.createMany({
-      data: createData,
+      data: newRoster,
       skipDuplicates: true,
     });
 
@@ -2033,7 +2026,7 @@ Steps:
 projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
-  const { startDate, endDate } = req.body;
+  const { startDate, endDate, candidateCuids } = req.body;
 
   if (!projectCuid) {
     return res.status(400).send("projectCuid is required.");
@@ -2081,20 +2074,41 @@ projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
   }
 
   try {
-    const attendanceList = await prisma.attendance.findMany({
-      where: {
-        shiftDate: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
+    let attendanceList;
+    if (!candidateCuids || candidateCuids.length === 0) {
+      attendanceList = await prisma.attendance.findMany({
+        where: {
+          shiftDate: {
+            gte: new Date(startDate),
+            lte: new Date(endDate),
+          },
+          Shift: {
+            projectCuid,
+          },
         },
-        Shift: {
-          projectCuid,
+        include: {
+          Shift: true,
         },
-      },
-      include: {
-        Shift: true,
-      },
-    });
+      });
+    } else {
+      attendanceList = await prisma.attendance.findMany({
+        where: {
+          candidateCuid: {
+            in: candidateCuids,
+          },
+          shiftDate: {
+            gte: new Date(startDate),
+            lte: new Date(endDate),
+          },
+          Shift: {
+            projectCuid,
+          },
+        },
+        include: {
+          Shift: true,
+        },
+      });
+    }
 
     const failureList: CopyAttendanceResponse[] = [];
 
@@ -2125,7 +2139,9 @@ projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
         continue;
       }
       if (
-        dayjs(attendance.shiftDate).add(7, "day").isAfter(assignData.endDate)
+        dayjs(attendance.shiftDate)
+          .add(7, "day")
+          .isAfter(assignData.endDate, "day")
       ) {
         pushFailure(
           "New attendance date is not within candidate assign period."
@@ -2236,10 +2252,14 @@ projectAPIRouter.post(
   async (req, res) => {
     const user = req.user as User;
     const { projectCuid } = req.params;
-    const { endDate } = req.body;
+    const { startDate, endDate, candidateCuids } = req.body;
 
     if (!projectCuid) {
       return res.status(400).send("projectCuid is required.");
+    }
+
+    if (!startDate || isNaN(Date.parse(startDate))) {
+      return res.status(400).send("valid startDate is required.");
     }
 
     if (!endDate || isNaN(Date.parse(endDate))) {
@@ -2279,19 +2299,38 @@ projectAPIRouter.post(
     }
 
     try {
-      await prisma.attendance.deleteMany({
-        where: {
-          shiftDate: {
-            gte: new Date(),
-            lte: new Date(endDate),
+      if (!candidateCuids || candidateCuids.length === 0) {
+        await prisma.attendance.deleteMany({
+          where: {
+            shiftDate: {
+              gte: new Date(startDate),
+              lte: new Date(endDate),
+            },
+            Shift: {
+              projectCuid,
+            },
+            status: null,
+            leave: null,
           },
-          Shift: {
-            projectCuid,
+        });
+      } else {
+        await prisma.attendance.deleteMany({
+          where: {
+            candidateCuid: {
+              in: candidateCuids,
+            },
+            shiftDate: {
+              gte: new Date(startDate),
+              lte: new Date(endDate),
+            },
+            Shift: {
+              projectCuid,
+            },
+            status: null,
+            leave: null,
           },
-          status: null,
-          leave: null,
-        },
-      });
+        });
+      }
 
       return res.send("Successfully cleared roster data.");
     } catch (error) {

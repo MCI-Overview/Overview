@@ -6,7 +6,7 @@ import dayjs = require("dayjs");
 async function updateAttendanceStatus() {
   try {
     const now = dayjs();
-    
+
     const attendances = await prisma.attendance.findMany({
       where: {
         status: null,

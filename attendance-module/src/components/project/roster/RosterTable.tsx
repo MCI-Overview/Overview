@@ -1,3 +1,6 @@
+import axios from "axios";
+import { useDrop } from "react-dnd";
+
 import DroppableArea from "./DroppableArea";
 import RosterSummary from "./RosterSummary";
 import AttendanceSummary from "./AttendanceSummary";
@@ -5,7 +8,7 @@ import { RosterDisplayProps } from "./RosterDisplay";
 import { useRosterContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import { Sheet, Table, Typography } from "@mui/joy";
+import { Checkbox, Sheet, Stack, Table, Typography } from "@mui/joy";
 
 type RosterTableProps = {
   type: "ATTENDANCE" | "ROSTER";
@@ -13,15 +16,112 @@ type RosterTableProps = {
 
 export default function RosterTable({ type }: RosterTableProps) {
   const { project } = useProjectContext();
-  const { rosterData, dateRangeStart, dateRangeEnd } = useRosterContext();
+  const {
+    rosterData,
+    dateRangeStart,
+    dateRangeEnd,
+    selectedCandidates,
+    hoverDate,
+    candidateHoverCuid,
+    dates,
+    sortOrder,
+    sortOrderBy,
+    updateRosterData,
+    setDates,
+    setHoverDate,
+    setSelectedCandidates,
+    setCandidateHoverCuid,
+  } = useRosterContext();
+
+  const [{ item, itemType }, drop] = useDrop({
+    accept: ["shift", "roster", "candidate"],
+    drop: () => {
+      if (!rosterData || !project) return;
+
+      if (itemType === "shift") {
+        const newRoster = Object.keys(rosterData).reduce(
+          (acc, cuid) => [
+            ...acc,
+            ...rosterData[cuid].newRoster.map((roster) => ({
+              shiftType: roster.type,
+              shiftDate: roster.startTime.toDate(),
+              shiftCuid: roster.shiftCuid,
+              candidateCuid: cuid,
+            })),
+          ],
+          [] as {
+            shiftDate: Date;
+            shiftType: string;
+            shiftCuid: string;
+            candidateCuid: string;
+          }[]
+        );
+
+        axios
+          .post(`/api/admin/project/${project.cuid}/roster`, {
+            newRoster,
+          })
+          .then(() => {
+            updateRosterData();
+          });
+      }
+
+      if (itemType === "roster") {
+        axios
+          .patch(`/api/admin/roster`, {
+            rosterCuid: (item as RosterDisplayProps["data"]).rosterCuid,
+            candidateCuid: candidateHoverCuid,
+            rosterDate: hoverDate,
+          })
+          .then(() => {
+            updateRosterData();
+          });
+      }
+    },
+    hover: () => {
+      setHoverDate(null);
+      setCandidateHoverCuid(null);
+    },
+    collect: (monitor) => ({
+      item: monitor.getItem(),
+      itemType: monitor.getItemType(),
+    }),
+  });
 
   if (!dateRangeStart || !dateRangeEnd || !project || !rosterData) {
     return null;
   }
 
-  const sortedCandidates = Object.keys(rosterData).sort((a, b) =>
-    rosterData[a].name.localeCompare(rosterData[b].name)
-  );
+  let sortedCandidates = Object.keys(rosterData);
+
+  if (sortOrderBy === "name") {
+    sortedCandidates = Object.keys(rosterData).sort((a, b) =>
+      rosterData[a].name.localeCompare(rosterData[b].name)
+    );
+  }
+
+  if (sortOrder === "desc") {
+    sortedCandidates = sortedCandidates.reverse();
+  }
+
+  if (sortOrderBy === "assign") {
+    sortedCandidates = Object.keys(rosterData).sort((a, b) => {
+      if (
+        rosterData[a].rosterLength === 0 &&
+        rosterData[b].rosterLength === 0
+      ) {
+        return a.localeCompare(b);
+      }
+      if (rosterData[a].rosterLength === 0) {
+        return sortOrder === "asc" ? 1 : -1;
+      }
+      if (rosterData[b].rosterLength === 0) {
+        return sortOrder === "asc" ? -1 : 1;
+      }
+
+      return a.localeCompare(b);
+    });
+  }
 
   const processedRoster = sortedCandidates.reduce((acc, cuid) => {
     const candidate = rosterData[cuid];
@@ -47,7 +147,7 @@ export default function RosterTable({ type }: RosterTableProps) {
           {
             ...roster,
             startTime: roster.endTime.startOf("day"),
-            type: "OVERLAP",
+            isPartial: true,
           },
         ];
       })
@@ -67,18 +167,16 @@ export default function RosterTable({ type }: RosterTableProps) {
 
   const numberOfDays = dateRangeEnd.diff(dateRangeStart, "days") + 1;
 
-  console.log(rosterData);
-  console.log(processedRoster);
-
   return (
     <Sheet
+      ref={drop}
       variant="outlined"
       className="roster-table"
       sx={{
         "--TableCell-height": "3rem",
         "--Table-firstColumnWidth": "200px",
         overflow: "auto",
-        maxHeight: type === "ATTENDANCE" ? "65dvh" : "8 7dvh",
+        maxHeight: type === "ATTENDANCE" ? "65dvh" : "87dvh",
       }}
     >
       <Table
@@ -111,19 +209,69 @@ export default function RosterTable({ type }: RosterTableProps) {
       >
         <thead>
           <tr>
-            <th style={{ width: "var(--Table-firstColumnWidth)" }}>Name</th>
+            <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+              <Stack direction="row" gap={1}>
+                <Checkbox
+                  overlay
+                  sx={{
+                    display: type === "ATTENDANCE" ? "none" : "block",
+                  }}
+                  defaultChecked={
+                    selectedCandidates.length === sortedCandidates.length
+                  }
+                  checked={
+                    selectedCandidates.length === sortedCandidates.length
+                  }
+                  indeterminate={
+                    selectedCandidates.length > 0 &&
+                    selectedCandidates.length !== sortedCandidates.length
+                  }
+                  onChange={(e) => {
+                    setSelectedCandidates(
+                      e.target.checked ? sortedCandidates : []
+                    );
+                  }}
+                />
+                Name
+              </Stack>
+            </th>
+
             {Array.from({
               length: numberOfDays,
-            }).map((_, index) => (
-              <th
-                key={index}
-                style={{
-                  width: "8rem",
-                }}
-              >
-                {dateRangeStart.add(index, "days").format("ddd DD MMM")}
-              </th>
-            ))}
+            }).map((_, index) => {
+              const date = dateRangeStart.add(index, "days");
+              return (
+                <th
+                  key={index}
+                  style={{
+                    width: "9rem",
+                  }}
+                >
+                  <Stack direction="row" gap={1}>
+                    <Checkbox
+                      overlay
+                      sx={{
+                        display: type === "ATTENDANCE" ? "none" : "block",
+                      }}
+                      defaultChecked={dates.some((otherDate) =>
+                        otherDate.isSame(date, "day")
+                      )}
+                      checked={dates.some((otherDate) =>
+                        otherDate.isSame(date, "day")
+                      )}
+                      onChange={(e) => {
+                        setDates(
+                          e.target.checked
+                            ? [...dates, date]
+                            : dates.filter((d) => !d.isSame(date, "day"))
+                        );
+                      }}
+                    />
+                    {date.format("ddd DD MMM")}
+                  </Stack>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody
@@ -142,8 +290,27 @@ export default function RosterTable({ type }: RosterTableProps) {
           {sortedCandidates.map((cuid) => {
             const candidate = rosterData[cuid];
             return (
-              <tr key={cuid}>
-                <td>{candidate.name}</td>
+              <tr key={cuid} onPointerEnter={() => setCandidateHoverCuid}>
+                <td>
+                  <Stack direction="row" gap={1}>
+                    <Checkbox
+                      overlay
+                      sx={{
+                        display: type === "ATTENDANCE" ? "none" : "block",
+                      }}
+                      defaultChecked={selectedCandidates.includes(cuid)}
+                      checked={selectedCandidates.includes(cuid)}
+                      onChange={(e) => {
+                        setSelectedCandidates(
+                          e.target.checked
+                            ? [...selectedCandidates, cuid]
+                            : selectedCandidates.filter((c) => c !== cuid)
+                        );
+                      }}
+                    />
+                    {candidate.name}
+                  </Stack>
+                </td>
                 {Array.from({
                   length: numberOfDays,
                 }).map((_, index) => {
