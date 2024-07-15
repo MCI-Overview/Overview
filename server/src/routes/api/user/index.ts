@@ -219,6 +219,7 @@ userAPIRouter.patch(
     const {
       name,
       contact,
+      residency,
       nationality,
       dateOfBirth,
       bankDetails,
@@ -229,6 +230,7 @@ userAPIRouter.patch(
     if (
       !name &&
       !contact &&
+      !residency &&
       !nationality &&
       !dateOfBirth &&
       !bankDetails &&
@@ -241,7 +243,7 @@ userAPIRouter.patch(
       return res
         .status(400)
         .send(
-          "At least one field (name, contact, nationality, dateOfBirth, bankDetails, address, emergencyContact, bankStatement, nricFront, nricBack) is required."
+          "At least one field (name, contact, residency, nationality, dateOfBirth, bankDetails, address, emergencyContact, bankStatement, nricFront, nricBack) is required."
         );
     }
 
@@ -291,7 +293,8 @@ userAPIRouter.patch(
     // Build the update data object with only provided fields
     const updateData = {
       ...(name && { name }),
-      ...(contact && { contact: contact }),
+      ...(contact && { contact }),
+      ...(residency && { residency }),
       ...(nationality && { nationality }),
       ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
       ...(address && { address }),

@@ -213,9 +213,6 @@ const GeneralProjectSettings = () => {
       noticePeriodDuration !== project.noticePeriodDuration ||
       noticePeriodUnit !== project.noticePeriodUnit;
 
-    console.log(noticePeriodDuration, project.noticePeriodDuration);
-    console.log(noticePeriodUnit, project.noticePeriodUnit);
-
     setIsUpdateButtonDisabled(
       !areAllFieldsFilled ||
         !areAnyFieldsChanged ||

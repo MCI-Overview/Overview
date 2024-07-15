@@ -133,7 +133,7 @@ const Login = () => {
               disabled
               sx={{ borderRadius: 100 }}
             >
-              <img src="/public/Images/ovlogo1.svg" alt="Logo" />
+              <img src="/Images/ovlogo1.svg" alt="Logo" />
             </IconButton>
             <Typography level="title-lg">Overview</Typography>
           </Box>
@@ -233,7 +233,7 @@ const Login = () => {
           overflow: "hidden",
         }}
       >
-        <img src="/public/Images/login_bg.png" alt="Background" height="100%" />
+        <img src="/Images/login_bg.png" alt="Background" height="100%" />
       </Box>
     </>
   );

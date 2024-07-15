@@ -1,28 +1,29 @@
+import NRICStep from "./NRICStep";
+import AddressStep from "./AddressStep";
+import UserOnboarded from "./UserOnboarded";
+import BankDetailsStep from "./BankDetailsStep";
+import UserDetailsStep from "./UserDetailsStep";
+import EmergencyContactStep from "./EmergencyContactStep";
+import { useOnboardingContext } from "../../providers/onboardingContextProvider";
+
 import {
-  Stepper,
+  Divider,
+  Stack,
   Step,
+  Stepper,
   StepIndicator,
   stepIndicatorClasses,
   stepClasses,
-  Divider,
-  Stack,
   Typography,
 } from "@mui/joy";
 import {
   AccountBalanceRounded as AccountBalanceIcon,
-  ContactEmergencyRounded as ContactEmergencyIcon,
   BadgeRounded as BadgeIcon,
-  WavingHandRounded as WavingHandIcon,
-  HomeRounded as HomeIcon,
   CheckCircleRounded as CheckCircleIcon,
+  ContactEmergencyRounded as ContactEmergencyIcon,
+  HomeRounded as HomeIcon,
+  WavingHandRounded as WavingHandIcon,
 } from "@mui/icons-material";
-import { useOnboardingContext } from "../../providers/onboardingContextProvider";
-import UserDetailsStep from "./UserDetailsStep";
-import NRICStep from "./NRICStep";
-import EmergencyContactStep from "./EmergencyContactStep";
-import AddressStep from "./AddressStep";
-import UserOnboarded from "./UserOnboarded";
-import BankDetailsStep from "./BankDetailsStep";
 
 export default function OnboardingUI() {
   const { currentStepNumber } = useOnboardingContext();

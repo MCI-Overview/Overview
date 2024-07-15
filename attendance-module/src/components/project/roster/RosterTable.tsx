@@ -67,9 +67,6 @@ export default function RosterTable({ type }: RosterTableProps) {
 
   const numberOfDays = dateRangeEnd.diff(dateRangeStart, "days") + 1;
 
-  console.log(rosterData);
-  console.log(processedRoster);
-
   return (
     <Sheet
       variant="outlined"

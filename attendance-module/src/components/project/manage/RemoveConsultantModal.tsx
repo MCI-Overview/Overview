@@ -44,22 +44,24 @@ const RemoveConsultantModal = ({
 
     setAffectedCdds(
       project.candidates.filter(
-        (candidate) => candidate.consultantCuid === consultantToRemove.cuid,
-      ),
+        (candidate) => candidate.consultantCuid === consultantToRemove.cuid
+      )
     );
+  }, [project, consultantToRemove]);
 
+  useEffect(() => {
     setRowSelections(
       affectedCdds.map((candidate) => ({
         consultantCuid: null,
         candidateCuid: candidate.cuid,
-      })),
+      }))
     );
-  }, [project, consultantToRemove, affectedCdds]);
+  }, [affectedCdds]);
 
   useEffect(() => {
     setIsSubmitDisabled(
       emailConfirmation !== consultantToRemove.email ||
-        !rowSelections.every((selection) => selection.consultantCuid !== null),
+        !rowSelections.every((selection) => selection.consultantCuid !== null)
     );
   }, [emailConfirmation, consultantToRemove.email, rowSelections]);
 
@@ -67,7 +69,7 @@ const RemoveConsultantModal = ({
   if (!user) return null;
 
   const availableCollaborators = project.consultants.filter(
-    (consultant) => consultant.cuid !== consultantToRemove.cuid,
+    (consultant) => consultant.cuid !== consultantToRemove.cuid
   );
 
   const handleApplyToAll = (value: CommonConsultant | null) => {
@@ -76,13 +78,13 @@ const RemoveConsultantModal = ({
       affectedCdds.map((candidate) => ({
         consultantCuid,
         candidateCuid: candidate.cuid,
-      })),
+      }))
     );
   };
 
   const handleRowSelectionChange = (
     index: number,
-    value: CommonConsultant | null,
+    value: CommonConsultant | null
   ) => {
     const updatedSelections = [...rowSelections];
     updatedSelections[index] = {
@@ -97,7 +99,7 @@ const RemoveConsultantModal = ({
 
     try {
       const reassignments = rowSelections.filter(
-        (rowSelection) => rowSelection.consultantCuid !== null,
+        (rowSelection) => rowSelection.consultantCuid !== null
       );
 
       await axios.delete(`/api/admin/project/${project.cuid}/manage`, {
@@ -191,7 +193,7 @@ const RemoveConsultantModal = ({
                             availableCollaborators.find(
                               (consultant) =>
                                 consultant.cuid ===
-                                rowSelections[index]?.consultantCuid,
+                                rowSelections[index]?.consultantCuid
                             ) || null
                           }
                           getOptionLabel={(option) => option.email}

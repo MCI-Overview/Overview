@@ -26,6 +26,7 @@ export type CandidateDetails = {
   dateOfBirth: string;
   hasOnboarded: boolean;
   nationality?: string | null;
+  residency: string;
 };
 
 export type CommonConsultant = {
@@ -193,6 +194,7 @@ export type GetCandidateResponse = {
   name: string;
   contact: string;
   dateOfBirth: string;
+  residency: string;
   consultantCuid: string;
   createdAt: string;
   startDate: string;
