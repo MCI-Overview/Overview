@@ -570,8 +570,6 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
   const formattedWeekEnd = dayjs(end).endOf('day').toDate();
   const difference = dayjs(formattedWeekEnd).diff(dayjs(formattedWeekStart), 'day'); // Including the end day
 
-  console.log("start:", formattedWeekStart, "end:", formattedWeekEnd, "difference:", difference);
-
   try {
     // Fetch attendance data
     const attendanceResponse = await prisma.attendance.groupBy({
@@ -638,8 +636,6 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
       }
     });
 
-    console.log("Claims response:", claimsResponse);
-
     const expenses = {
       medical: 0,
       transport: 0,
@@ -658,8 +654,6 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
       acc[claimTypeKey] = (acc[claimTypeKey] || 0) + parseFloat(claimAmount);
       return acc;
     }, expenses);
-
-    console.log("THIS IS TOTAL CLAIM AMOUNTS:", expenses);
 
     const endDateResponse = await prisma.assign.groupBy({
       by: ["endDate"],
