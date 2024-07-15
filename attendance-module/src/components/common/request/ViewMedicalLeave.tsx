@@ -111,11 +111,11 @@ export default function ViewMedicalLeave({
               startTime: string;
               endTime: string;
             }) => (
-              <Typography key={roster.cuid} level="body-sm">
-                {`• ${dayjs(roster.shiftDate).format("DD/MM/YY")} ${
-                  roster.startTime
-                } - ${roster.endTime}`}
-              </Typography>
+              <>
+                <Typography key={roster.cuid} level="body-sm">
+                  {`• ${roster.shiftDate} ${roster.startTime} - ${roster.endTime}`}
+                </Typography>
+              </>
             )
           )
         )}
