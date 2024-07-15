@@ -1,10 +1,18 @@
-import { FormControl, FormLabel, Input, Grid, Autocomplete } from "@mui/joy";
-import { useEffect, useState } from "react";
-import LoadingRequestButton from "../../components/LoadingRequestButton";
 import axios from "axios";
-import toast from "react-hot-toast";
 import dayjs, { ManipulateType } from "dayjs";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { useRequestContext } from "../../providers/requestContextProvider";
+import LoadingRequestButton from "../../components/LoadingRequestButton";
+
+import {
+  FormControl,
+  FormLabel,
+  Input,
+  Grid,
+  Autocomplete,
+  Typography,
+} from "@mui/joy";
 
 export default function ResignationForm({
   setIsOpen,
@@ -44,12 +52,12 @@ export default function ResignationForm({
             const endDate = dayjs(project.endDate);
             const noticePeriodEndDate = endDate.subtract(
               project.noticePeriodDuration,
-              project.noticePeriodUnit as ManipulateType,
+              project.noticePeriodUnit as ManipulateType
             );
 
             return dayjs().isBefore(noticePeriodEndDate);
-          },
-        ),
+          }
+        )
       );
     });
   }, []);
@@ -75,28 +83,39 @@ export default function ResignationForm({
 
   return (
     <>
-      <Grid container columns={2} spacing={2}>
-        <Grid xs={1}>
+      <Grid container spacing={2}>
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Project</FormLabel>
             <Autocomplete
               options={projects}
               getOptionLabel={(project) => project.name}
               onChange={(_e, value) => {
+                if (!value) {
+                  setProject({
+                    cuid: "",
+                    endDate: "",
+                    noticePeriodDuration: 0,
+                    noticePeriodUnit: "",
+                  });
+                  return;
+                }
+
                 setProject(
                   value as {
                     cuid: string;
                     endDate: string;
                     noticePeriodDuration: number;
                     noticePeriodUnit: string;
-                  },
+                  }
                 );
                 setLastDay(dayjs().format("YYYY-MM-DD"));
               }}
             />
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Last Day</FormLabel>
             <Input
@@ -106,19 +125,29 @@ export default function ResignationForm({
               onChange={(e) => setLastDay(e.target.value)}
               slotProps={{
                 input: {
-                  min: dayjs().format("YYYY-MM-DD"),
-                  max: dayjs(project.endDate)
-                    .subtract(
+                  min: dayjs()
+                    .add(
                       project.noticePeriodDuration,
-                      project.noticePeriodUnit as ManipulateType,
+                      project.noticePeriodUnit as ManipulateType
                     )
                     .format("YYYY-MM-DD"),
+                  max: dayjs(project.endDate).format("YYYY-MM-DD"),
                 },
               }}
             />
           </FormControl>
         </Grid>
+
+        {project.cuid && (
+          <Grid sx={{ pt: 0 }}>
+            <Typography level="body-xs">
+              Notice period of this project: {project.noticePeriodDuration}{" "}
+              {project.noticePeriodUnit.toLowerCase()}.
+            </Typography>
+          </Grid>
+        )}
       </Grid>
+
       <FormControl>
         <FormLabel>Reason</FormLabel>
         <Input type="text" onChange={(e) => setReason(e.target.value)} />

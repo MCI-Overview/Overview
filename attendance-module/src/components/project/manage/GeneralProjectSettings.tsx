@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
+import { capitalizeWords } from "../../../utils/capitalize";
 
 import { PermissionList } from "../../../types/common";
 import { checkPermission } from "../../../utils/permission";

@@ -1,8 +1,10 @@
 import axios from "axios";
 import dayjs from "dayjs";
-import toast from "react-hot-toast";
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { useRequestContext } from "../../providers/requestContextProvider";
 import LoadingRequestButton from "../../components/LoadingRequestButton";
+import FileUpload from "../../components/InputFileUpload";
 
 import {
   Typography,
@@ -12,8 +14,6 @@ import {
   Input,
   Sheet,
 } from "@mui/joy";
-import FileUpload from "../../components/InputFileUpload";
-import { useRequestContext } from "../../providers/requestContextProvider";
 
 export default function MedicalLeaveForm({
   setIsOpen,
@@ -70,8 +70,8 @@ export default function MedicalLeaveForm({
 
   return (
     <>
-      <Grid container columns={2} spacing={2}>
-        <Grid xs={1}>
+      <Grid container spacing={2}>
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Start Date</FormLabel>
             <Input
@@ -86,7 +86,8 @@ export default function MedicalLeaveForm({
             />
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Number of days</FormLabel>
             <Input
