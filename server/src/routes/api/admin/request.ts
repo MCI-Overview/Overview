@@ -348,7 +348,11 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
     }
 
     if (request.type === "MEDICAL_LEAVE") {
-      console.log("THIS IS med CUID: ", (request.data as { claimRosterCuid: string }));
+      const reqData = request.data as {
+        startDate: string;
+        numberOfDays: string;
+      };
+
       const affectedRosterData = await prisma.attendance.findMany({
         where: {
           candidateCuid: request.candidateCuid,
@@ -361,31 +365,9 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
             },
           ],
           shiftDate: {
-            gte: dayjs(
-              (
-                request.data as {
-                  startDate: string;
-                }
-              ).startDate
-            ).toDate(),
-            lte: dayjs(
-              (
-                request.data as {
-                  startDate: string;
-                }
-              ).startDate
-            )
-              .add(
-                parseInt(
-                  (
-                    request.data as {
-                      numberOfDays: string;
-                    }
-                  ).numberOfDays,
-                  10
-                ) - 1,
-                "day"
-              )
+            gte: dayjs(reqData.startDate).toDate(),
+            lte: dayjs(reqData.startDate)
+              .add(parseInt(reqData.numberOfDays, 10) - 1, "day")
               .endOf("day")
               .toDate(),
           },

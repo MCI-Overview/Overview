@@ -25,7 +25,7 @@ const AllProjects: FC = () => {
   const [previousProjects, setPreviousProjects] = useState<Project[]>([]);
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [futureProjects, setFutureProjects] = useState<Project[]>([]);
-  const [value, setValue] = useState<"concluded" | "ongoing" | "future">(
+  const [value, setValue] = useState<"concluded" | "ongoing" | "upcoming">(
     "ongoing"
   );
 
@@ -61,16 +61,12 @@ const AllProjects: FC = () => {
 
   if (!user) return null;
 
-  const getCurrentProjectList = () => {
-    switch (value) {
-      case "concluded":
-        return previousProjects;
-      case "ongoing":
-        return ongoingProjects;
-      case "upcoming":
-        return futureProjects;
-    }
-  };
+  const currentProjectList =
+    value === "concluded"
+      ? previousProjects
+      : value === "ongoing"
+      ? ongoingProjects
+      : futureProjects;
 
   return (
     <>
@@ -118,16 +114,16 @@ const AllProjects: FC = () => {
           <Divider />
 
           <Stack spacing={2} sx={{ my: 1 }}>
-            {!getCurrentProjectList() ? (
+            {!currentProjectList ? (
               <Typography level="body-sm" textAlign="center">
                 Loading...
               </Typography>
-            ) : getCurrentProjectList().length === 0 ? (
+            ) : currentProjectList.length === 0 ? (
               <Typography level="body-sm" textAlign="center">
                 {`No ${value} projects found`}
               </Typography>
             ) : (
-              getCurrentProjectList()
+              currentProjectList
                 .sort(projectComparator)
                 .map((project: Project) => (
                   <AdminProjectDisplay

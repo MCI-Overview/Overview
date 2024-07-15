@@ -1,3 +1,10 @@
+import axios from "axios";
+import dayjs from "dayjs";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useRequestContext } from "../../providers/requestContextProvider";
+import LoadingRequestButton from "../../components/LoadingRequestButton";
+
 import {
   FormControl,
   FormLabel,
@@ -7,12 +14,6 @@ import {
   Textarea,
   Autocomplete,
 } from "@mui/joy";
-import { useEffect, useState } from "react";
-import LoadingRequestButton from "../../components/LoadingRequestButton";
-import axios from "axios";
-import toast from "react-hot-toast";
-import dayjs from "dayjs";
-import { useRequestContext } from "../../providers/requestContextProvider";
 
 export default function RequestLeaveForm({
   setIsOpen,
@@ -73,8 +74,8 @@ export default function RequestLeaveForm({
 
   return (
     <>
-      <Grid container columns={2} spacing={2}>
-        <Grid xs={1}>
+      <Grid container spacing={2}>
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Project</FormLabel>
             <Autocomplete
@@ -94,7 +95,8 @@ export default function RequestLeaveForm({
             />
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Shift</FormLabel>
             <Autocomplete
@@ -112,17 +114,17 @@ export default function RequestLeaveForm({
                       shiftStartTime: dayjs(
                         shift.shiftType === "SECOND_HALF"
                           ? shift.Shift.halfDayStartTime
-                          : shift.Shift.startTime,
+                          : shift.Shift.startTime
                       ),
                     };
                   })
                   .sort((a, b) =>
-                    a.shiftDate.isBefore(b.shiftDate) ? -1 : 1,
+                    a.shiftDate.isBefore(b.shiftDate) ? -1 : 1
                   ) || []
               }
               getOptionLabel={(option) =>
                 `${option.shiftDate.format(
-                  "DD MMM YYYY",
+                  "DD MMM YYYY"
                 )} - ${option.shiftStartTime.format("HHmm")}`
               }
               onChange={(_e, value) => {
@@ -132,9 +134,8 @@ export default function RequestLeaveForm({
             />
           </FormControl>
         </Grid>
-      </Grid>
-      <Grid container columns={2} spacing={2}>
-        <Grid xs={1}>
+
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Type</FormLabel>
             <Select
@@ -148,7 +149,8 @@ export default function RequestLeaveForm({
             </Select>
           </FormControl>
         </Grid>
-        <Grid xs={1}>
+
+        <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Duration</FormLabel>
             <Select

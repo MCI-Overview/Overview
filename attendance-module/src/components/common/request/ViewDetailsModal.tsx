@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 import { ReactNode, useState } from "react";
 import { CustomRequest } from "../../../types";
 import { SxProps } from "@mui/joy/styles/types";
@@ -16,14 +17,21 @@ import {
   ListItemButton,
   Modal,
   ModalDialog,
+  ModalOverflow,
   Tooltip,
 } from "@mui/joy";
-import { InfoOutlined as InfoIcon } from "@mui/icons-material";
-import toast from "react-hot-toast";
+import {
+  ChevronLeftRounded as ChevronLeftIcon,
+  ChevronRightRounded as ChevronRightIcon,
+  InfoOutlined as InfoIcon,
+} from "@mui/icons-material";
 
 interface ViewDetailsModalProps {
+  onClick?: () => void;
   request: CustomRequest;
   updateRequest: () => void;
+  handleNextRequest?: () => void;
+  handlePreviousRequest?: () => void;
   type: "USER" | "ADMIN";
   variant: "MOBILE" | "DESKTOP";
   sx?: SxProps;
@@ -31,8 +39,11 @@ interface ViewDetailsModalProps {
 }
 
 const ViewDetailsModal = ({
+  onClick,
   request,
   updateRequest,
+  handleNextRequest,
+  handlePreviousRequest,
   type,
   variant,
   sx,
@@ -72,22 +83,75 @@ const ViewDetailsModal = ({
   return (
     <>
       <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-        <ModalDialog>
-          {componentMap[request.type] || null}
+        <ModalOverflow>
+          <ModalDialog
+            sx={{
+              maxWidth: "40vw",
+            }}
+          >
+            {componentMap[request.type] || null}
 
-          {request.status === "PENDING" && <Divider />}
+            {request.status === "PENDING" && <Divider />}
 
-          <ViewDetailsModalActions
-            request={request}
-            updateRequest={updateRequest}
-            userType={type}
-          />
-        </ModalDialog>
+            <ViewDetailsModalActions
+              request={request}
+              updateRequest={updateRequest}
+              userType={type}
+            />
+
+            {variant === "DESKTOP" &&
+              handleNextRequest &&
+              handlePreviousRequest && (
+                <>
+                  <IconButton
+                    onClick={handlePreviousRequest}
+                    sx={{
+                      position: "absolute",
+                      left: -43,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      height: "100%",
+                      px: 1,
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.5)",
+                      },
+                    }}
+                  >
+                    <ChevronLeftIcon />
+                  </IconButton>
+
+                  <IconButton
+                    onClick={handleNextRequest}
+                    sx={{
+                      position: "absolute",
+                      right: -43,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      height: "100%",
+                      px: 1,
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.5)",
+                      },
+                    }}
+                  >
+                    <ChevronRightIcon />
+                  </IconButton>
+                </>
+              )}
+          </ModalDialog>
+        </ModalOverflow>
       </Modal>
 
-      {variant === "DESKTOP" && (
+      {variant === "DESKTOP" && onClick && (
         <Tooltip title="View details">
-          <IconButton size="sm" color="primary" onClick={() => setIsOpen(true)}>
+          <IconButton
+            size="sm"
+            color="primary"
+            onClick={() => {
+              onClick();
+              setIsOpen(true);
+            }}
+          >
             <InfoIcon />
           </IconButton>
         </Tooltip>
