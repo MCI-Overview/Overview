@@ -1,10 +1,15 @@
 import { Stack, Button, Typography } from "@mui/joy";
 import { useUserContext } from "../providers/userContextProvider";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function NotFound() {
   const { user } = useUserContext();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "404 Not Found - Overview";
+  }, []);
 
   function handleReturnToHome() {
     if (user?.userType === "Admin") {

@@ -7,8 +7,6 @@ async function updateAttendanceStatus() {
   try {
     const now = dayjs();
 
-    console.log(dayjs());
-
     const attendances = await prisma.attendance.findMany({
       where: {
         status: null,

@@ -2,12 +2,13 @@ import dayjs from "dayjs";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
-import { capitalizeWords } from "../../../utils/capitalize";
 
+import { PermissionList } from "../../../types/common";
+import { checkPermission } from "../../../utils/permission";
+import { capitalizeWords } from "../../../utils/capitalize";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { checkPermission } from "../../../utils/permission";
-import { PermissionList } from "../../../types/common";
+
 import LocationsSection from "./LocationsSection";
 
 import {

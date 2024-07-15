@@ -1,5 +1,7 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
+
 import { Assign } from "../../../types";
 import { CommonConsultant, CommonCandidate } from "../../../types/common";
 import { useProjectContext } from "../../../providers/projectContextProvider";
@@ -17,7 +19,6 @@ import {
   Table,
   Typography,
 } from "@mui/joy";
-import toast from "react-hot-toast";
 
 interface RemoveConsultantModalProps {
   isOpen: boolean;

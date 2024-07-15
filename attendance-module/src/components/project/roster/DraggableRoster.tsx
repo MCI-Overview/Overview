@@ -1,9 +1,11 @@
-import { DragPreviewImage, useDrag } from "react-dnd";
-import RosterDisplay from "./RosterDisplay";
-import { useProjectContext } from "../../../providers/projectContextProvider";
 import dayjs from "dayjs";
-import { useRosterContext } from "../../../providers/rosterContextProvider";
 import { useEffect } from "react";
+import { useDrag } from "react-dnd";
+
+import { useRosterContext } from "../../../providers/rosterContextProvider";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+
+import RosterDisplay from "./RosterDisplay";
 
 export type DraggableRosterProps = {
   displayType: "ATTENDANCE" | "ROSTER";
@@ -17,7 +19,8 @@ export type DraggableRosterProps = {
   originalEndTime: dayjs.Dayjs;
   status: string | undefined;
   leave: string | undefined;
-  type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF" | "OVERLAP";
+  type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+  isPartial: boolean;
   state?: "PREVIEW" | "LOADING";
 };
 
@@ -31,27 +34,50 @@ export default function DraggableRoster({
   endTime,
   originalStartTime,
   originalEndTime,
+  isPartial,
   type,
   state,
   status,
   leave,
 }: DraggableRosterProps) {
   const { project } = useProjectContext();
-  const { setDraggingCuid, draggingCuid } = useRosterContext();
+  const {
+    setHoverDate,
+    setDraggingCuid,
+    setCandidateHoverCuid,
+    setItem,
+    setItemType,
+    draggingCuid,
+  } = useRosterContext();
 
-  const [{ isDragging, canDrag }, drag, preview] = useDrag({
+  const [{ isDragging, canDrag }, drag] = useDrag({
     type: "roster",
-    item: {
-      shiftCuid,
-      rosterCuid,
-      projectCuid,
-      candidateCuid,
-      startTime,
-      endTime,
-      originalStartTime,
-      originalEndTime,
-      type,
-      state,
+    item: () => {
+      const item = {
+        shiftCuid,
+        rosterCuid,
+        projectCuid,
+        candidateCuid,
+        startTime,
+        endTime,
+        originalStartTime,
+        originalEndTime,
+        isPartial,
+        type,
+        state,
+      };
+
+      setItem(item);
+      setItemType("roster");
+
+      return item;
+    },
+    end: () => {
+      setDraggingCuid(null);
+      setHoverDate(null);
+      setCandidateHoverCuid(null);
+      setItem(null);
+      setItemType(null);
     },
     canDrag: () => {
       const isSameProject = !projectCuid || projectCuid === project?.cuid;
@@ -78,37 +104,30 @@ export default function DraggableRoster({
       setDraggingCuid(rosterCuid || null);
       return;
     }
-
-    setDraggingCuid(null);
   }, [isDragging, rosterCuid, setDraggingCuid, canDrag]);
 
   return (
-    <>
-      <DragPreviewImage
-        connect={preview}
-        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+    <span ref={drag}>
+      <RosterDisplay
+        data={{
+          displayType,
+          shiftCuid,
+          rosterCuid,
+          projectCuid,
+          candidateCuid,
+          startTime,
+          endTime,
+          type,
+          status,
+          leave,
+          state,
+          isPartial,
+          originalStartTime,
+          originalEndTime,
+        }}
+        draggable={canDrag}
+        opacity={draggingCuid === rosterCuid ? 0.5 : 1}
       />
-      <span ref={drag}>
-        <RosterDisplay
-          data={{
-            displayType,
-            shiftCuid,
-            rosterCuid,
-            projectCuid,
-            candidateCuid,
-            startTime,
-            endTime,
-            type,
-            status,
-            leave,
-            state,
-            originalStartTime,
-            originalEndTime,
-          }}
-          draggable={canDrag}
-          opacity={draggingCuid === rosterCuid ? 0.5 : 1}
-        />
-      </span>
-    </>
+    </span>
   );
 }

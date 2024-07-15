@@ -32,7 +32,7 @@ model Request {
   createdAt     DateTime      @default(now())
   rosterCuid    String?
   Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
-  Roster        Attendance?   @relation(fields: [rosterCuid], references: [cuid])
+  Attendance    Attendance?   @relation(fields: [rosterCuid], references: [cuid])
 }
 
 model Attendance {

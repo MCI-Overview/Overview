@@ -1,6 +1,12 @@
+import { useEffect } from "react";
+
 import { Stack, Button, Typography } from "@mui/joy";
 
-export default function GatewayTimeout() {
+export default function ServiceUnavailable() {
+  useEffect(() => {
+    document.title = "503 Service Unavailable - Overview";
+  }, []);
+
   return (
     <Stack
       sx={{
@@ -13,7 +19,7 @@ export default function GatewayTimeout() {
       }}
       spacing={2}
     >
-      <Typography level="h1">504 Gateway Timeout</Typography>
+      <Typography level="h1">503 Service Unavailable</Typography>
       <Typography level="body-lg">
         An unexpected error occurred. Please click the button to try again.
       </Typography>

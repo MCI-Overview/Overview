@@ -21,7 +21,7 @@ import {
 
 export type RosterDisplayProps = {
   data: {
-    type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF" | "OVERLAP";
+    type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
     startTime: dayjs.Dayjs;
     endTime: dayjs.Dayjs;
     shiftCuid: string;
@@ -32,6 +32,7 @@ export type RosterDisplayProps = {
     candidateCuid?: string;
     originalStartTime: dayjs.Dayjs;
     originalEndTime: dayjs.Dayjs;
+    isPartial: boolean;
     state?: "LOADING" | "PREVIEW";
     displayType?: "ATTENDANCE" | "ROSTER";
   };
@@ -114,6 +115,7 @@ export default function RosterDisplay({
           sx={{
             color: isSameProject ? "white" : "text.disabled",
             display: "flex",
+            flexWrap: "wrap",
             gap: 1,
           }}
         >
@@ -123,16 +125,16 @@ export default function RosterDisplay({
                 <CircularProgress color="neutral" size="sm" />
               </Box>
             )}
-            {!loading && data.type === "FULL_DAY" && (
+            {!loading && !data.isPartial && data.type === "FULL_DAY" && (
               <HourglassIcon sx={{ color: "inherit" }} />
             )}
-            {!loading && data.type === "FIRST_HALF" && (
+            {!loading && !data.isPartial && data.type === "FIRST_HALF" && (
               <HourglassTopIcon sx={{ color: "inherit" }} />
             )}
-            {!loading && data.type === "SECOND_HALF" && (
+            {!loading && !data.isPartial && data.type === "SECOND_HALF" && (
               <HourglassBottomIcon sx={{ color: "inherit" }} />
             )}
-            {!loading && data.type === "OVERLAP" && (
+            {!loading && data.isPartial && (
               <AlignHorizontalLeftIcon sx={{ color: "inherit" }} />
             )}
           </Box>
