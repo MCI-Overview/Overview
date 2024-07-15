@@ -8,6 +8,7 @@ import {
   LEAVE_COLOR,
   MEDICAL_COLOR,
   NO_SHOW_COLOR,
+  ON_TIME_COLOR,
   UPCOMING_COLOR,
 } from "../../../utils/colors";
 
@@ -48,6 +49,10 @@ function getAttendanceColor(
     return MEDICAL_COLOR;
   }
 
+  if (leave) {
+    return LEAVE_COLOR;
+  }
+
   if (status === "NO_SHOW") {
     return NO_SHOW_COLOR;
   }
@@ -56,8 +61,8 @@ function getAttendanceColor(
     return LATE_COLOR;
   }
 
-  if (leave) {
-    return LEAVE_COLOR;
+  if (status === "ON_TIME") {
+    return ON_TIME_COLOR;
   }
 
   return UPCOMING_COLOR;
