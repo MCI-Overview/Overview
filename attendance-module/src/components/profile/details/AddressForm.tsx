@@ -1,25 +1,25 @@
-import {
-  Card,
-  Box,
-  Typography,
-  Divider,
-  Grid,
-  FormControl,
-  FormLabel,
-  Input,
-  Checkbox,
-  FormHelperText,
-  CardOverflow,
-  CardActions,
-  Button,
-  Autocomplete,
-} from "@mui/joy";
-import { CommonAddress } from "../../../types/common";
+import axios from "axios";
+import toast from "react-hot-toast";
 import { useState } from "react";
 import isEqual from "../../../utils";
-import toast from "react-hot-toast";
-import axios from "axios";
+import { CommonAddress } from "../../../types/common";
 import { readableEnum } from "../../../utils/capitalize";
+
+import {
+  Autocomplete,
+  Button,
+  Card,
+  CardActions,
+  CardOverflow,
+  Checkbox,
+  Divider,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Grid,
+  Input,
+  Typography,
+} from "@mui/joy";
 
 type AugmentedAddress = CommonAddress & { isLanded: boolean };
 
@@ -30,11 +30,13 @@ type AddressFormProps = {
     successCallback: () => void,
     errorCallback: () => void
   ) => void;
+  canEdit: boolean;
 };
 
 export default function AddressForm({
   address,
   handleSubmit,
+  canEdit,
 }: AddressFormProps) {
   const [oldAddress, setOldAddress] = useState<AugmentedAddress>({
     ...address,
@@ -83,11 +85,10 @@ export default function AddressForm({
 
   return (
     <Card>
-      <Box sx={{ mb: 1 }}>
-        <Typography level="title-md">Address</Typography>
-        <Typography level="body-sm">Update your address here.</Typography>
-      </Box>
+      <Typography level="title-md">Address</Typography>
+
       <Divider />
+
       <Grid container spacing={2} columns={2}>
         <Grid xs={1} sm={1}>
           <FormControl error={!isPostalValid}>
@@ -105,12 +106,16 @@ export default function AddressForm({
                   loadAddress();
                 }
               }}
+              disabled={!canEdit}
             />
-            <FormHelperText>
-              {isPostalValid ? "" : "Postal code cannot be empty."}
-            </FormHelperText>
+            {canEdit && (
+              <FormHelperText>
+                {isPostalValid ? "" : "Postal code cannot be empty."}
+              </FormHelperText>
+            )}
           </FormControl>
         </Grid>
+
         <Grid xs={1} sm={1}>
           <FormControl>
             <FormLabel>⠀</FormLabel>
@@ -130,6 +135,7 @@ export default function AddressForm({
             </Button>
           </FormControl>
         </Grid>
+
         <Grid xs={1}>
           <FormControl error={!isBlockValid}>
             <FormLabel>Block</FormLabel>
@@ -141,12 +147,16 @@ export default function AddressForm({
                   block: e.target.value.replace(/[^0-9]/g, ""),
                 })
               }
+              disabled={!canEdit}
             />
-            <FormHelperText>
-              {isBlockValid ? "" : "Block cannot be empty."}
-            </FormHelperText>
+            {canEdit && (
+              <FormHelperText>
+                {isBlockValid ? "" : "Block cannot be empty."}
+              </FormHelperText>
+            )}
           </FormControl>
         </Grid>
+
         <Grid xs={1}>
           <FormControl error={!isCountryValid}>
             <FormLabel>Country</FormLabel>
@@ -159,12 +169,16 @@ export default function AddressForm({
                   country: value || "",
                 })
               }
+              disabled={!canEdit}
             />
-            <FormHelperText>
-              {isCountryValid ? "" : "Country cannot be empty."}
-            </FormHelperText>
+            {canEdit && (
+              <FormHelperText>
+                {isCountryValid ? "" : "Country cannot be empty."}
+              </FormHelperText>
+            )}
           </FormControl>
         </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl error={!isBuildingValid}>
             <FormLabel>Building</FormLabel>
@@ -173,12 +187,16 @@ export default function AddressForm({
               onChange={(e) =>
                 setNewAddress({ ...newAddress, building: e.target.value })
               }
+              disabled={!canEdit}
             />
-            <FormHelperText>
-              {isBuildingValid ? "" : "Building cannot be empty."}
-            </FormHelperText>
+            {canEdit && (
+              <FormHelperText>
+                {isBuildingValid ? "" : "Building cannot be empty."}
+              </FormHelperText>
+            )}
           </FormControl>
         </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl error={!isStreetValid}>
             <FormLabel>Street</FormLabel>
@@ -187,19 +205,23 @@ export default function AddressForm({
               onChange={(e) =>
                 setNewAddress({ ...newAddress, street: e.target.value })
               }
+              disabled={!canEdit}
             />
-            <FormHelperText>
-              {isStreetValid ? "" : "Street cannot be empty."}
-            </FormHelperText>
+            {canEdit && (
+              <FormHelperText>
+                {isStreetValid ? "" : "Street cannot be empty."}
+              </FormHelperText>
+            )}
           </FormControl>
         </Grid>
+
         <Grid container xs={2}>
           <Grid xs={1}>
             <FormControl error={!isFloorValid}>
               <FormLabel>Floor</FormLabel>
               <Input
                 value={newAddress.floor || ""}
-                disabled={newAddress.isLanded}
+                disabled={!canEdit || newAddress.isLanded}
                 onChange={(e) =>
                   setNewAddress({
                     ...newAddress,
@@ -207,17 +229,20 @@ export default function AddressForm({
                   })
                 }
               />
-              <FormHelperText>
-                {isFloorValid ? "" : "Floor cannot be empty."}
-              </FormHelperText>
+              {canEdit && (
+                <FormHelperText>
+                  {isFloorValid ? "" : "Floor cannot be empty."}
+                </FormHelperText>
+              )}
             </FormControl>
           </Grid>
+
           <Grid xs={1}>
             <FormControl error={!isUnitValid}>
               <FormLabel>Unit</FormLabel>
               <Input
                 value={newAddress.unit || ""}
-                disabled={newAddress.isLanded}
+                disabled={!canEdit || newAddress.isLanded}
                 onChange={(e) =>
                   setNewAddress({
                     ...newAddress,
@@ -225,11 +250,14 @@ export default function AddressForm({
                   })
                 }
               />
-              <FormHelperText>
-                {isUnitValid ? "" : "Unit cannot be empty."}
-              </FormHelperText>
+              {canEdit && (
+                <FormHelperText>
+                  {isUnitValid ? "" : "Unit cannot be empty."}
+                </FormHelperText>
+              )}
             </FormControl>
           </Grid>
+
           <Grid xs={2} sm={1}>
             <FormControl>
               <Checkbox
@@ -243,57 +271,64 @@ export default function AddressForm({
                     isLanded: !newAddress.isLanded,
                   });
                 }}
+                disabled={!canEdit}
               />
-              <FormHelperText>
-                Check this if you are living in a landed property.
-              </FormHelperText>
+              {canEdit && (
+                <FormHelperText>
+                  Check this if you are living in a landed property.
+                </FormHelperText>
+              )}
             </FormControl>
           </Grid>
         </Grid>
       </Grid>
-      <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
-        <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
-          <Button
-            size="sm"
-            variant="outlined"
-            color="neutral"
-            onClick={() => setNewAddress(oldAddress)}
-            disabled={isSame}
-          >
-            Reset
-          </Button>
-          <Button
-            size="sm"
-            variant="solid"
-            onClick={async () => {
-              handleSubmit(
-                {
-                  address: newAddress,
-                },
-                () => {
-                  setOldAddress(newAddress);
-                  toast.success("Address updated successfully.");
-                },
-                () => {
-                  toast.error("Failed to update address. Please try again.");
-                }
-              );
-            }}
-            disabled={
-              isSame ||
-              !isPostalValid ||
-              !isBlockValid ||
-              !isStreetValid ||
-              !isBuildingValid ||
-              !isCountryValid ||
-              !isFloorValid ||
-              !isUnitValid
-            }
-          >
-            Save
-          </Button>
-        </CardActions>
-      </CardOverflow>
+
+      {canEdit && (
+        <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
+          <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
+            <Button
+              size="sm"
+              variant="outlined"
+              color="neutral"
+              onClick={() => setNewAddress(oldAddress)}
+              disabled={isSame}
+            >
+              Reset
+            </Button>
+
+            <Button
+              size="sm"
+              variant="solid"
+              onClick={async () => {
+                handleSubmit(
+                  {
+                    address: newAddress,
+                  },
+                  () => {
+                    setOldAddress(newAddress);
+                    toast.success("Address updated successfully.");
+                  },
+                  () => {
+                    toast.error("Failed to update address. Please try again.");
+                  }
+                );
+              }}
+              disabled={
+                isSame ||
+                !isPostalValid ||
+                !isBlockValid ||
+                !isStreetValid ||
+                !isBuildingValid ||
+                !isCountryValid ||
+                !isFloorValid ||
+                !isUnitValid
+              }
+            >
+              Save
+            </Button>
+          </CardActions>
+        </CardOverflow>
+      )}
     </Card>
   );
 }

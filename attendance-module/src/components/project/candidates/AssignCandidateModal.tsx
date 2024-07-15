@@ -129,6 +129,24 @@ const AssignCandidateModal = ({
       example: "09/08/1965",
     },
     {
+      label: "Residency Status",
+      key: "residency",
+      alternateMatches: generateCapitalizations([
+        "residency status",
+        "residency",
+      ]),
+      fieldType: {
+        type: "select",
+        options: [
+          { label: "Citizen", value: "CITIZEN" },
+          { label: "Permanent Resident", value: "PERMANENT_RESIDENT" },
+          { label: "S Pass", value: "S_PASS" },
+          { label: "Work Permit", value: "WORK_PERMIT" },
+        ],
+      },
+      example: "Permanent Resident",
+    },
+    {
       label: "Start Date",
       key: "startDate",
       alternateMatches: generateCapitalizations(["start date", "start"]),
@@ -311,12 +329,13 @@ const AssignCandidateModal = ({
       dateOfBirth: row.dateOfBirth
         ? (row.dateOfBirth as string).trim()
         : row.dateOfBirth,
+      residency: row.residency,
       startDate: row.startDate
         ? (row.startDate as string).trim()
         : row.startDate,
       endDate: row.endDate ? (row.endDate as string).trim() : row.endDate,
-      employmentType: row.type
-        ? (row.type as string).trim()
+      employmentType: row.employmentType
+        ? (row.employmentType as string).trim()
         : row.employmentType,
     };
   };

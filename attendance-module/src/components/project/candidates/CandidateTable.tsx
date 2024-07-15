@@ -10,19 +10,20 @@ import { ThTypo, TdTypo } from "../ui/TableTypo";
 import {
   Box,
   Card,
+  CardOverflow,
   Chip,
   ColorPaletteProp,
   IconButton,
+  Link,
   List,
+  ListDivider,
   ListItem,
   ListItemContent,
-  ListDivider,
   Sheet,
   Table,
   TableProps,
   Tooltip,
   Typography,
-  CardOverflow,
 } from "@mui/joy";
 import {
   DeleteRounded as DeleteIcon,
@@ -124,7 +125,6 @@ const CandidateTable = ({
     return <ArrowDownwardIcon fontSize="small" />;
   };
 
-  // TODO: Fix styling when in AssignCandidateModal
   return (
     <>
       <Sheet
@@ -171,6 +171,7 @@ const CandidateTable = ({
                   <ThTypo onClick={() => requestSort("age")}>
                     {renderSortIcon("age")} Age
                   </ThTypo>
+                  <ThTypo>Residency</ThTypo>
                   <ThTypo onClick={() => requestSort("startDate")}>
                     {renderSortIcon("startDate")} Start date
                   </ThTypo>
@@ -192,14 +193,24 @@ const CandidateTable = ({
                   </tr>
                 ) : (
                   sortedData.map((row) => (
-                    <tr key={row.cuid}>
+                    <tr key={row.nric}>
                       <TdTypo>{row.nric}</TdTypo>
-                      <TdTypo>{row.name}</TdTypo>
+                      <TdTypo>
+                        {row.cuid ? (
+                          <Link href={`#/admin/candidate/${row.cuid}`}>
+                            {row.name}
+                          </Link>
+                        ) : (
+                          // Should not link during candidates assigning
+                          row.name
+                        )}
+                      </TdTypo>
                       <TdTypo>{row.contact}</TdTypo>
                       <TdTypo>
                         {dayjs(row.dateOfBirth).format("DD/MM/YY")}
                       </TdTypo>
                       <TdTypo>{dayjs().diff(row.dateOfBirth, "years")}</TdTypo>
+                      <TdTypo>{readableEnum(row.residency)}</TdTypo>
                       <TdTypo>{dayjs(row.startDate).format("DD/MM/YY")}</TdTypo>
                       <TdTypo>{dayjs(row.endDate).format("DD/MM/YY")}</TdTypo>
                       <TdTypo>{readableEnum(row.employmentType)}</TdTypo>

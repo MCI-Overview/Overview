@@ -1,22 +1,22 @@
-import {
-  Card,
-  Box,
-  Typography,
-  Divider,
-  Grid,
-  FormControl,
-  FormLabel,
-  Input,
-  CardOverflow,
-  CardActions,
-  Button,
-  FormHelperText,
-  Autocomplete,
-} from "@mui/joy";
-import { BankDetails } from "../../../types/common";
+import toast from "react-hot-toast";
 import { useState } from "react";
 import isEqual from "../../../utils";
-import toast from "react-hot-toast";
+import { BankDetails } from "../../../types/common";
+
+import {
+  Autocomplete,
+  Button,
+  Card,
+  CardActions,
+  CardOverflow,
+  Divider,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Grid,
+  Input,
+  Typography,
+} from "@mui/joy";
 
 type BankDetailsFormProps = {
   bankDetails: BankDetails | undefined;
@@ -25,11 +25,13 @@ type BankDetailsFormProps = {
     successCallback: () => void,
     errorCallback: () => void
   ) => void;
+  canEdit: boolean;
 };
 
 export default function BankDetailsForm({
   bankDetails,
   handleSubmit,
+  canEdit,
 }: BankDetailsFormProps) {
   const [oldBankDetails, setOldBankDetails] = useState<BankDetails>(
     bankDetails || {
@@ -52,11 +54,10 @@ export default function BankDetailsForm({
 
   return (
     <Card>
-      <Box sx={{ mb: 1 }}>
-        <Typography level="title-md">Bank details</Typography>
-        <Typography level="body-sm">Update your bank details here.</Typography>
-      </Box>
+      <Typography level="title-md">Bank details</Typography>
+
       <Divider />
+
       <Grid container columns={2} spacing={2}>
         <Grid xs={2} sm={1}>
           <FormControl error={!isBankHolderNameValid}>
@@ -69,12 +70,18 @@ export default function BankDetailsForm({
                   bankHolderName: e.target.value,
                 })
               }
+              disabled={!canEdit}
             />
-            <FormHelperText>
-              {isBankHolderNameValid ? "" : "Bank holder name cannot be empty."}
-            </FormHelperText>
+            {canEdit && (
+              <FormHelperText>
+                {isBankHolderNameValid
+                  ? ""
+                  : "Bank holder name cannot be empty."}
+              </FormHelperText>
+            )}
           </FormControl>
         </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl error={!isBankNameValid}>
             <FormLabel>Bank Name</FormLabel>
@@ -95,12 +102,16 @@ export default function BankDetailsForm({
                   bankName: value || "",
                 })
               }
+              disabled={!canEdit}
             />
-            <FormHelperText>
-              {isBankNameValid ? "" : "Bank name cannot be empty."}
-            </FormHelperText>
+            {canEdit && (
+              <FormHelperText>
+                {isBankNameValid ? "" : "Bank name cannot be empty."}
+              </FormHelperText>
+            )}
           </FormControl>
         </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl error={!isBankNumberValid}>
             <FormLabel>Bank Account Number</FormLabel>
@@ -112,54 +123,62 @@ export default function BankDetailsForm({
                   bankNumber: e.target.value.replace(/[^0-9]/g, ""),
                 });
               }}
+              disabled={!canEdit}
             />
-            <FormHelperText>
-              {isBankNumberValid ? "" : "Bank account number cannot be empty."}
-            </FormHelperText>
+            {canEdit && (
+              <FormHelperText>
+                {isBankNumberValid
+                  ? ""
+                  : "Bank account number cannot be empty."}
+              </FormHelperText>
+            )}
           </FormControl>
         </Grid>
       </Grid>
-      <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
-        <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
-          <Button
-            size="sm"
-            variant="outlined"
-            color="neutral"
-            onClick={() => setNewBankDetails(oldBankDetails)}
-            disabled={isSame}
-          >
-            Reset
-          </Button>
-          <Button
-            size="sm"
-            variant="solid"
-            onClick={() =>
-              handleSubmit(
-                {
-                  bankDetails: newBankDetails,
-                },
-                () => {
-                  setOldBankDetails(newBankDetails);
-                  toast.success("Bank details updated successfully.");
-                },
-                () => {
-                  toast.error(
-                    "Failed to update bank details. Please try again."
-                  );
-                }
-              )
-            }
-            disabled={
-              isSame ||
-              !isBankHolderNameValid ||
-              !isBankNameValid ||
-              !isBankNumberValid
-            }
-          >
-            Save
-          </Button>
-        </CardActions>
-      </CardOverflow>
+
+      {canEdit && (
+        <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
+          <CardActions sx={{ alignSelf: "flex-end", pt: 2 }}>
+            <Button
+              size="sm"
+              variant="outlined"
+              color="neutral"
+              onClick={() => setNewBankDetails(oldBankDetails)}
+              disabled={isSame}
+            >
+              Reset
+            </Button>
+            <Button
+              size="sm"
+              variant="solid"
+              onClick={() =>
+                handleSubmit(
+                  {
+                    bankDetails: newBankDetails,
+                  },
+                  () => {
+                    setOldBankDetails(newBankDetails);
+                    toast.success("Bank details updated successfully.");
+                  },
+                  () => {
+                    toast.error(
+                      "Failed to update bank details. Please try again."
+                    );
+                  }
+                )
+              }
+              disabled={
+                isSame ||
+                !isBankHolderNameValid ||
+                !isBankNameValid ||
+                !isBankNumberValid
+              }
+            >
+              Save
+            </Button>
+          </CardActions>
+        </CardOverflow>
+      )}
     </Card>
   );
 }

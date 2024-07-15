@@ -1,6 +1,9 @@
+import axios from "axios";
+import dayjs from "dayjs";
+import { useOnboardingContext } from "../../providers/onboardingContextProvider";
+
 import {
   Box,
-  Typography,
   Button,
   Autocomplete,
   FormControl,
@@ -9,10 +12,10 @@ import {
   Grid,
   Input,
   Stack,
+  Typography,
+  Select,
+  Option,
 } from "@mui/joy";
-import { useOnboardingContext } from "../../providers/onboardingContextProvider";
-import dayjs from "dayjs";
-import axios from "axios";
 
 export default function UserDetailsStep() {
   const {
@@ -32,6 +35,7 @@ export default function UserDetailsStep() {
     contact: oldContact,
     dateOfBirth: oldDateOfBirth,
     nationality: oldNationality,
+    residency: oldResidency,
     nric: oldNric,
   } = oldCandidate;
   const {
@@ -39,6 +43,7 @@ export default function UserDetailsStep() {
     contact: newContact,
     dateOfBirth: newDateOfBirth,
     nationality: newNationality,
+    residency: newResidency,
     nric: newNric,
   } = newCandidate;
 
@@ -53,11 +58,10 @@ export default function UserDetailsStep() {
       }}
       gap={1}
     >
-      <Box>
-        <Typography level="body-sm">
-          We’re glad you’re here. We just need a few details to get started.
-        </Typography>
-      </Box>
+      <Typography level="body-sm">
+        We’re glad you’re here. We just need a few details to get started.
+      </Typography>
+
       <Grid container columns={2} spacing={2}>
         <Grid xs={2} sm={1}>
           <FormControl disabled>
@@ -65,6 +69,7 @@ export default function UserDetailsStep() {
             <Input type="text" value={newNric || "Error loading NRIC"} />
           </FormControl>
         </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl error={!isNameValid}>
             <FormLabel>Name</FormLabel>
@@ -83,6 +88,7 @@ export default function UserDetailsStep() {
             </FormHelperText>
           </FormControl>
         </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl>
             <FormLabel>Contact</FormLabel>
@@ -103,6 +109,7 @@ export default function UserDetailsStep() {
             />
           </FormControl>
         </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl error={!isDateValid}>
             <FormLabel>Date of Birth</FormLabel>
@@ -128,6 +135,29 @@ export default function UserDetailsStep() {
             </FormHelperText>
           </FormControl>
         </Grid>
+
+        <Grid xs={2} sm={1}>
+          <FormControl>
+            <FormLabel>Residency</FormLabel>
+            <Select
+              value={newResidency || ""}
+              onChange={(_e, value) => {
+                if (!value) return;
+
+                setNewCandidate({
+                  ...newCandidate,
+                  residency: value,
+                });
+              }}
+            >
+              <Option value={"CITIZEN"}>Citizen</Option>
+              <Option value={"PERMANENT_RESIDENT"}>Permanent Resident</Option>
+              <Option value={"S_PASS"}>S Pass</Option>
+              <Option value={"WORK_PERMIT"}>Work Permit</Option>
+            </Select>
+          </FormControl>
+        </Grid>
+
         <Grid xs={2} sm={1}>
           <FormControl>
             <FormLabel>Nationality</FormLabel>
@@ -149,6 +179,7 @@ export default function UserDetailsStep() {
           </FormControl>
         </Grid>
       </Grid>
+
       <Box
         sx={{
           position: "fixed",
@@ -170,6 +201,7 @@ export default function UserDetailsStep() {
               ...(oldDateOfBirth !== newDateOfBirth && {
                 dateOfBirth: newDateOfBirth,
               }),
+              ...(oldResidency !== newResidency && { residency: newResidency }),
               ...(oldNationality !== newNationality && {
                 nationality: newNationality,
               }),
@@ -181,6 +213,7 @@ export default function UserDetailsStep() {
                   name: oldName,
                   contact: oldContact,
                   dateOfBirth: oldDateOfBirth,
+                  residency: oldResidency,
                   nationality: oldNationality,
                   nric: oldNric,
                   ...updateData,

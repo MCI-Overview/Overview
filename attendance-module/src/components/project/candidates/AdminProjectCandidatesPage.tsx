@@ -40,6 +40,7 @@ const AdminProjectCandidatesPage = () => {
         nric: cdd.nric,
         name: cdd.name,
         contact: cdd.contact,
+        residency: cdd.residency,
         dateOfBirth: cdd.dateOfBirth,
         createdAt: cdd.createdAt,
         startDate: cdd.startDate,

@@ -24,12 +24,12 @@ model Assign {
 
 model Request {
   cuid          String        @id @default(cuid())
-  createdAt     DateTime      @default(now())
-  status        RequestStatus @default(PENDING)
   candidateCuid String
   projectCuid   String
   data          Json
   type          RequestType
+  status        RequestStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
   rosterCuid    String?
   Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
   Roster        Attendance?   @relation(fields: [rosterCuid], references: [cuid])
@@ -37,34 +37,35 @@ model Request {
 
 model Attendance {
   cuid          String            @id @default(cuid())
-  shiftType     ShiftType         @default(FULL_DAY)
   candidateCuid String
   shiftCuid     String
-  shiftDate     DateTime
-  Request       Request[]
-  postalCode    String?
   clockInTime   DateTime?
   clockOutTime  DateTime?
   status        AttendanceStatus?
   leave         LeaveStatus?
+  shiftDate     DateTime
+  shiftType     ShiftType         @default(FULL_DAY)
+  postalCode    String?
   Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
   Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
+  Request       Request[]
 
   @@unique([candidateCuid, shiftCuid, shiftDate])
 }
 
 model Candidate {
-  cuid             String       @id @default(cuid())
-  nric             String       @unique @db.VarChar(9)
+  cuid             String          @id @default(cuid())
+  nric             String          @unique @db.VarChar(9)
   contact          String
   name             String
-  dateOfBirth      DateTime     @db.Date
-  hasOnboarded     Boolean      @default(false)
+  dateOfBirth      DateTime        @db.Date
+  hasOnboarded     Boolean         @default(false)
   nationality      String?
+  residency        ResidencyStatus @default(CITIZEN)
   bankDetails      Json?
   address          Json?
   emergencyContact Json?
-  createdAt        DateTime     @default(now())
+  createdAt        DateTime        @default(now())
   Assign           Assign[]
   Attendance       Attendance[]
   User             User?
@@ -215,4 +216,11 @@ enum RequestStatus {
   REJECTED
   PENDING
   CANCELLED
+}
+
+enum ResidencyStatus {
+  CITIZEN
+  PERMANENT_RESIDENT
+  WORK_PERMIT
+  S_PASS
 }
