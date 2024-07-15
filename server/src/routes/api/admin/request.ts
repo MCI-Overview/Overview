@@ -285,13 +285,12 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
   if (request.type === "MEDICAL_LEAVE") {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `mc/${
-        (
-          request.data as {
-            imageUUID: string;
-          }
-        ).imageUUID
-      }`,
+      Key: `mc/${(
+        request.data as {
+          imageUUID: string;
+        }
+      ).imageUUID
+        }`,
     });
 
     const response = await s3.send(command);
@@ -319,6 +318,8 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
         projectCuid: true,
         data: true,
         type: true,
+        rosterCuid: true,
+        Roster: true,
         Assign: {
           select: {
             Project: {
@@ -347,6 +348,7 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
     }
 
     if (request.type === "MEDICAL_LEAVE") {
+      console.log("THIS IS med CUID: ", (request.data as { claimRosterCuid: string }));
       const affectedRosterData = await prisma.attendance.findMany({
         where: {
           candidateCuid: request.candidateCuid,
@@ -400,9 +402,13 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
     }
 
     if (request.type === "CLAIM") {
+      if (!request.rosterCuid) {
+        return res.status(404).send("No roster for this request")
+      }
+
       const claimRosterData = await prisma.attendance.findUniqueOrThrow({
         where: {
-          cuid: (request.data as { claimRosterCuid: string }).claimRosterCuid,
+          cuid: request.rosterCuid,
         },
         include: {
           Shift: true,
@@ -413,9 +419,13 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
     }
 
     if (request.type === "UNPAID_LEAVE" || request.type === "PAID_LEAVE") {
+      if (!request.rosterCuid) {
+        return res.status(404).send("No roster for this request")
+      }
+
       const leaveRosterData = await prisma.attendance.findUniqueOrThrow({
         where: {
-          cuid: (request.data as { leaveRosterCuid: string }).leaveRosterCuid,
+          cuid: request.rosterCuid,
         },
         include: {
           Shift: true,

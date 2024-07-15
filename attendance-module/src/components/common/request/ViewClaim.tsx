@@ -26,7 +26,6 @@ export default function ViewClaim({
   const requestData = request.data as {
     claimType: string;
     claimAmount: number;
-    claimRosterCuid: string;
     claimDescription: string;
   };
 
@@ -61,8 +60,7 @@ export default function ViewClaim({
         Claim
       </Typography>
       <Typography level="body-md">
-        Date/Time:
-        {`${dayjs(affectedRoster.shiftDate).format("DD/MM/YYYY")} -
+        Date/Time: {`${dayjs(affectedRoster.shiftDate).format("DD/MM/YYYY")} -
           ${dayjs(affectedRoster.Shift.startTime).format("HHmm")}`}
       </Typography>
       <Typography level="body-md">
