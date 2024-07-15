@@ -18,7 +18,11 @@ export default function OnLeaveCount({ count, total }: OnLeaveCountProps) {
       }}
     >
       <CardContent orientation="horizontal">
-        <CircularProgress size="lg" determinate value={(count / total) * 100}>
+        <CircularProgress
+          size="lg"
+          determinate
+          value={total > 0 ? (count / total) * 100 : 0}
+        >
           <DirectionsWalkIcon />
         </CircularProgress>
         <CardContent>

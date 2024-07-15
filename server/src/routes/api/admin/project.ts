@@ -280,12 +280,12 @@ projectAPIRouter.get(
                 .add(startTime.minute(), "minute"),
               shiftEndTime: startTime.isBefore(endTime)
                 ? startDate
-                    .add(endTime.hour(), "hour")
-                    .add(endTime.minute(), "minute")
+                  .add(endTime.hour(), "hour")
+                  .add(endTime.minute(), "minute")
                 : startDate
-                    .add(endTime.hour(), "hour")
-                    .add(endTime.minute(), "minute")
-                    .add(1, "day"),
+                  .add(endTime.hour(), "hour")
+                  .add(endTime.minute(), "minute")
+                  .add(1, "day"),
               consultantCuid: cr.Shift.Project.Manage.filter(
                 (manage) => manage.role === Role.CLIENT_HOLDER
               ).map((manage) => manage.consultantCuid)[0],
@@ -500,13 +500,6 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
 
   const start = typeof startDate === "string" ? startDate : undefined;
   const end = typeof endDate === "string" ? endDate : undefined;
-  const now = dayjs();
-  const adjustedEnd =
-    end && dayjs(end).isAfter(now)
-      ? now.startOf("day").toDate()
-      : end
-      ? dayjs(end).startOf("day").toDate()
-      : undefined;
 
   const isNricUnmasked = await checkPermission(
     user.cuid,
@@ -518,7 +511,7 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
       where: {
         shiftDate: {
           gte: start ? dayjs(start).startOf("day").toDate() : undefined,
-          lte: adjustedEnd,
+          lte: end ? dayjs(end).endOf("day").toDate() : undefined,
         },
         Shift: {
           projectCuid: projectCuid,
@@ -569,11 +562,15 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
 
 projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
   const { projectCuid } = req.params;
-  const { weekStart } = req.query;
+  const { weekStart, endDate } = req.query;
 
   const start = typeof weekStart === "string" ? weekStart : undefined;
-  const formattedWeekStart = dayjs(start).startOf("week").toDate();
-  const formattedWeekEnd = dayjs(start).endOf("week").toDate();
+  const end = typeof endDate === "string" ? endDate : undefined;
+  const formattedWeekStart = dayjs(start).startOf('day').toDate();
+  const formattedWeekEnd = dayjs(end).endOf('day').toDate();
+  const difference = dayjs(formattedWeekEnd).diff(dayjs(formattedWeekStart), 'day'); // Including the end day
+
+  console.log("start:", formattedWeekStart, "end:", formattedWeekEnd, "difference:", difference);
 
   try {
     // Fetch attendance data
@@ -595,27 +592,25 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
 
     // Initialize an object to hold the data arrays for each status
     const totals: Record<string, number[]> = {
-      LATE: Array(7).fill(0),
-      MEDICAL: Array(7).fill(0),
-      NO_SHOW: Array(7).fill(0),
-      ON_TIME: Array(7).fill(0),
-      LEAVE: Array(7).fill(0),
+      LATE: Array(difference).fill(0),
+      MEDICAL: Array(difference).fill(0),
+      NO_SHOW: Array(difference).fill(0),
+      ON_TIME: Array(difference).fill(0),
+      LEAVE: Array(difference).fill(0),
     };
 
     attendanceResponse.forEach((item) => {
       if (item.shiftDate && item.status) {
-        const dayOfWeek = dayjs(item.shiftDate).day(); // Get the day of the week (0 for Sunday, 6 for Saturday)
-        const dayIndex = (dayOfWeek + 6) % 7; // Convert so Monday is 0 and Sunday is 6
-
+        const dayOfWeek = dayjs(item.shiftDate).diff(dayjs(formattedWeekStart), 'day'); // Get the day index from week start
         if (item.status === "MEDICAL") {
-          totals.MEDICAL[dayIndex] += item._count.status;
+          totals.MEDICAL[dayOfWeek] += item._count.status;
         } else if (item.leave === "FULLDAY") {
-          totals.LEAVE[dayIndex] += item._count.status;
+          totals.LEAVE[dayOfWeek] += item._count.status;
         } else if (item.leave === "HALFDAY") {
-          totals.LEAVE[dayIndex] += item._count.status * 0.5;
-          totals[item.status][dayIndex] += item._count.status;
+          totals.LEAVE[dayOfWeek] += item._count.status * 0.5;
+          totals[item.status][dayOfWeek] += item._count.status;
         } else {
-          totals[item.status][dayIndex] += item._count.status;
+          totals[item.status][dayOfWeek] += item._count.status;
         }
       }
     });
@@ -627,6 +622,44 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
         nationality: true,
       },
     });
+
+    // Fetch claims amt
+    const claimsResponse = await prisma.request.findMany({
+      where: {
+        projectCuid,
+        type: "CLAIM",
+        status: "APPROVED",
+        Roster: {
+          shiftDate: {
+            gt: formattedWeekStart,
+            lte: formattedWeekEnd,
+          }
+        }
+      }
+    });
+
+    console.log("Claims response:", claimsResponse);
+
+    const expenses = {
+      medical: 0,
+      transport: 0,
+      others: 0
+    };
+
+    claimsResponse.reduce<{ [key: string]: number }>((acc, claim) => {
+      // Parse the data JSON
+      const data = claim.data as { claimType: string, claimAmount: string };
+
+      // Extract claimType and claimAmount
+      const { claimType, claimAmount } = data;
+
+      // Sum the claim amounts
+      const claimTypeKey = claimType.toLowerCase();
+      acc[claimTypeKey] = (acc[claimTypeKey] || 0) + parseFloat(claimAmount);
+      return acc;
+    }, expenses);
+
+    console.log("THIS IS TOTAL CLAIM AMOUNTS:", expenses);
 
     const endDateResponse = await prisma.assign.groupBy({
       by: ["endDate"],
@@ -686,7 +719,7 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
       endDate: endDateData,
     };
 
-    return res.json({ datasets, headcount });
+    return res.json({ datasets, headcount, expenses });
   } catch (error) {
     console.error("Error fetching overview:", error);
     return res.status(500).json({
@@ -1269,6 +1302,8 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
         .map((cdd) => cdd.cuid);
 
       return res.send(alreadyAssignedCandidates);
+    }, {
+      timeout: candidates.length * 2000
     });
   } catch (error) {
     const err = error as PrismaError;
@@ -2022,12 +2057,12 @@ Steps:
 1. Retrieve attendance data for that week (include with Manage data for permission check)
 2. Check permissions
 3. For each attendance:
-	a. Check that its shift's status is active
-	b. Check that its copy will be within candidate assign period
-	c. Check that it does not clash with any other attendance (can be from other projects)
-	d. If any of the above checks fail, add to failure list, continue to next attendance
-	e. Create new attendance
-		i. Check LeaveType => if HALF_DAY, adjust ShiftType
+  a. Check that its shift's status is active
+  b. Check that its copy will be within candidate assign period
+  c. Check that it does not clash with any other attendance (can be from other projects)
+  d. If any of the above checks fail, add to failure list, continue to next attendance
+  e. Create new attendance
+    i. Check LeaveType => if HALF_DAY, adjust ShiftType
 4. Return failure list in response
  */
 projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
