@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { CustomRequest } from "../../../types";
 import RequestStatusChip from "../../project/requests/RequestStatusChip";
 
@@ -22,7 +23,9 @@ export default function ViewResignation({
       <RequestStatusChip status={request.status} />
 
       <Box>
-        <Typography level="body-sm">Last Day: {requestData.lastDay}</Typography>
+        <Typography level="body-sm">
+          Last Day: {dayjs(requestData.lastDay).format("DD/MM/YY")}
+        </Typography>
         <Typography level="body-sm">Reason: {requestData.reason}</Typography>
       </Box>
     </Stack>

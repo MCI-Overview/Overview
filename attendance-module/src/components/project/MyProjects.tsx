@@ -3,15 +3,13 @@ import dayjs from "dayjs";
 import { FC, useState, useEffect } from "react";
 import { Project } from "../../types/index";
 import AdminProjectDisplay from "./ui/AdminProjectDisplay";
-import CreateProjectPage from "./create/CreatePage";
+import CreateProjectModal from "./create/CreateProjectModal";
 
 import {
   Box,
   Card,
   Divider,
   IconButton,
-  Modal,
-  ModalDialog,
   Option,
   Select,
   Stack,
@@ -59,10 +57,6 @@ const MyProjects: FC = () => {
       );
     });
   }, []);
-
-  const handleCreateProjectClick = () => {
-    setIsCreateModalOpen(true);
-  };
 
   const currentProjectList =
     value === "concluded"
@@ -118,7 +112,7 @@ const MyProjects: FC = () => {
             <Tooltip title="Create new project" placement="right">
               <IconButton
                 size="lg"
-                onClick={handleCreateProjectClick}
+                onClick={() => setIsCreateModalOpen(true)}
                 sx={{ my: "auto" }}
               >
                 <ControlPointIcon />
@@ -148,26 +142,10 @@ const MyProjects: FC = () => {
         </Card>
       </Stack>
 
-      <Modal
-        open={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <ModalDialog
-          sx={{
-            width: {
-              xs: "100%",
-              sm: "600px",
-            },
-          }}
-        >
-          <CreateProjectPage />
-        </ModalDialog>
-      </Modal>
+      <CreateProjectModal
+        isOpen={isCreateModalOpen}
+        setIsOpen={setIsCreateModalOpen}
+      />
     </>
   );
 };

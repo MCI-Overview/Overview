@@ -8,14 +8,27 @@ import ProjectDetailsSection from "./DetailsSection";
 import ProjectLocationsSection from "./LocationsSection";
 import ProjectCandidateHoldersSection from "./CandidateHoldersSection";
 
-import { Box, Button, Divider, Stack } from "@mui/joy";
+import {
+  Box,
+  Button,
+  Divider,
+  Modal,
+  ModalClose,
+  ModalDialog,
+  ModalOverflow,
+} from "@mui/joy";
 
 // Define the interface for the error response data
 interface ErrorResponseData {
   message: string;
 }
 
-const CreateProjectPage = () => {
+interface CreateProjectModalProps {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+}
+
+const CreateProjectModal = ({ isOpen, setIsOpen }: CreateProjectModalProps) => {
   const [projectDetails, setProjectDetails] = useState<CreateProjectData>({
     name: null,
     clientUEN: null,
@@ -52,49 +65,47 @@ const CreateProjectPage = () => {
       const axiosError = error as AxiosError<ErrorResponseData>;
       toast.error(
         axiosError.response?.data.message ||
-        "Error while creating project. Please try again later."
+          "Error while creating project. Please try again later."
       );
     }
   };
 
   return (
-    <Stack
-      spacing={2}
-      sx={{
-        display: "flex",
-        maxHeight: "100%",
-        overflow: "auto",
-        scrollbarWidth: "none",
-      }}
-    >
-      <ProjectDetailsSection
-        projectDetails={projectDetails}
-        setProjectDetails={setProjectDetails}
-      />
+    <Modal open={isOpen} onClose={() => setIsOpen(false)}>
+      <ModalOverflow sx={{ height: "100vh", width: "100vw" }}>
+        <ModalDialog sx={{ width: { xs: "100%", sm: "600px" } }}>
+          <ModalClose onClick={() => setIsOpen(false)} />
 
-      <Divider />
+          <ProjectDetailsSection
+            projectDetails={projectDetails}
+            setProjectDetails={setProjectDetails}
+          />
 
-      <ProjectLocationsSection
-        locations={locations}
-        setLocations={setLocations}
-      />
+          <Divider />
 
-      <Divider />
+          <ProjectLocationsSection
+            locations={locations}
+            setLocations={setLocations}
+          />
 
-      <ProjectCandidateHoldersSection
-        candidateHolders={candidateHolders}
-        setCandidateHolders={setCandidateHolders}
-      />
+          <Divider />
 
-      <Divider />
+          <ProjectCandidateHoldersSection
+            candidateHolders={candidateHolders}
+            setCandidateHolders={setCandidateHolders}
+          />
 
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <Button size="sm" variant="solid" onClick={handleSaveProject}>
-          Create Project
-        </Button>
-      </Box>
-    </Stack>
+          <Divider />
+
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Button size="sm" variant="solid" onClick={handleSaveProject}>
+              Create Project
+            </Button>
+          </Box>
+        </ModalDialog>
+      </ModalOverflow>
+    </Modal>
   );
 };
 
-export default CreateProjectPage;
+export default CreateProjectModal;

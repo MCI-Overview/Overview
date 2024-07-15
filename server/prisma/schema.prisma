@@ -54,17 +54,18 @@ model Attendance {
 }
 
 model Candidate {
-  cuid             String       @id @default(cuid())
-  nric             String       @unique @db.VarChar(9)
+  cuid             String          @id @default(cuid())
+  nric             String          @unique @db.VarChar(9)
   contact          String
   name             String
-  dateOfBirth      DateTime     @db.Date
-  hasOnboarded     Boolean      @default(false)
+  dateOfBirth      DateTime        @db.Date
+  hasOnboarded     Boolean         @default(false)
   nationality      String?
+  residency        ResidencyStatus @default(CITIZEN)
   bankDetails      Json?
   address          Json?
   emergencyContact Json?
-  createdAt        DateTime     @default(now())
+  createdAt        DateTime        @default(now())
   Assign           Assign[]
   Attendance       Attendance[]
   User             User?
@@ -215,4 +216,11 @@ enum RequestStatus {
   REJECTED
   PENDING
   CANCELLED
+}
+
+enum ResidencyStatus {
+  CITIZEN
+  PERMANENT_RESIDENT
+  WORK_PERMIT
+  S_PASS
 }

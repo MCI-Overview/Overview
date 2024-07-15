@@ -25,7 +25,7 @@ import {
   checkNoticePeriodValidity,
   checkTimesValidity,
   maskNRIC,
-} from "../../../utils/";
+} from "../../../utils";
 import bcrypt from "bcrypt";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
@@ -1142,12 +1142,13 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
     return res.status(400).send("Nonempty candidates array is required.");
   }
 
-  // verify all candidates have nric, name, contact, dateOfBirth, startDate, endDate, employmentType
+  // verify all candidates have nric, name, contact, dateOfBirth, startDate, endDate, employmentType, residency
   const invalidCandidates = candidates.filter(
     (cdd: any) =>
       !cdd.nric ||
       !cdd.name ||
       !cdd.contact ||
+      !cdd.residency ||
       !cdd.dateOfBirth ||
       !cdd.startDate ||
       !cdd.endDate ||
@@ -1188,9 +1189,10 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
         nric: cdd.nric,
         contact: cdd.contact,
         name: cdd.name,
+        dateOfBirth: new Date(Date.parse(cdd.dateOfBirth)),
+        residency: cdd.residency,
         hasOnboarded: false,
         nationality: null,
-        dateOfBirth: new Date(Date.parse(cdd.dateOfBirth)),
         bankDetails: undefined,
         address: undefined,
         emergencyContact: undefined,

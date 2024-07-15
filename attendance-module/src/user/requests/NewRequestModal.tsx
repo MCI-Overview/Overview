@@ -23,10 +23,21 @@ const NewRequestModal = () => {
   const [type, setType] = useState("MC");
 
   return (
-    <Sheet sx={{ display: "flex", height: "100%" }}>
+    <>
+      <Sheet sx={{ display: "flex", height: "100%" }}>
+        <Button
+          onClick={() => setIsOpen(true)}
+          sx={{ mt: "auto" }}
+          fullWidth
+          size="sm"
+        >
+          New Request
+        </Button>
+      </Sheet>
+
       <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-        <ModalOverflow>
-          <ModalDialog sx={{ maxWidth: "600px" }}>
+        <ModalOverflow sx={{ height: "100vh", width: "100vw" }}>
+          <ModalDialog sx={{ maxWidth: { sm: "600px" } }}>
             <Typography level="title-lg">New Request</Typography>
             <ModalClose onClick={() => setIsOpen(false)} />
             <FormControl>
@@ -48,16 +59,7 @@ const NewRequestModal = () => {
           </ModalDialog>
         </ModalOverflow>
       </Modal>
-
-      <Button
-        onClick={() => setIsOpen(true)}
-        sx={{ mt: "auto" }}
-        fullWidth
-        size="sm"
-      >
-        New Request
-      </Button>
-    </Sheet>
+    </>
   );
 };
 

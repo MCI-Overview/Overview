@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { prisma } from "../../../client";
+import { prisma, s3 } from "../../../client";
 import { PrismaError } from "@/types";
 import {
   CommonAddress,
@@ -15,6 +15,8 @@ import {
   checkPermission,
   PermissionList,
 } from "../../../utils/permissions";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { Readable } from "stream";
 
 const candidateAPIRoutes: Router = Router();
 
@@ -29,18 +31,63 @@ candidateAPIRoutes.get(
     }
 
     try {
+      const candidateData = await prisma.candidate.findUniqueOrThrow({
+        where: {
+          cuid: candidateCuid,
+        },
+        include: {
+          Assign: {
+            include: {
+              Consultant: true,
+              Project: {
+                include: {
+                  Manage: {
+                    where: {
+                      role: "CLIENT_HOLDER",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
       const {
         cuid,
         name,
         nric,
         contact,
+        residency,
         dateOfBirth,
+        nationality,
+        hasOnboarded,
         emergencyContact,
         ...otherData
-      } = await prisma.candidate.findUniqueOrThrow({
-        where: {
-          cuid: candidateCuid,
-        },
+      } = candidateData;
+
+      // Initialise editor list (who can edit candidate profile)
+      let assignersAndClientHolders: string[] = [];
+
+      // Add assigners to the editor list
+      candidateData.Assign.forEach((assign) => {
+        // Exclude assigners if they are already in the list
+        if (!assignersAndClientHolders.includes(assign.consultantCuid)) {
+          assignersAndClientHolders.push(assign.consultantCuid);
+        }
+      });
+
+      // Add client holders to the editor list
+      candidateData.Assign.forEach((assign) => {
+        assign.Project.Manage.forEach((manage) => {
+          // Exclude client holders if they are already in the list
+          if (
+            manage.role === "CLIENT_HOLDER" &&
+            !assignersAndClientHolders.includes(manage.consultantCuid)
+          ) {
+            assignersAndClientHolders.push(manage.consultantCuid);
+          }
+        });
       });
 
       const hasReadCandidateDetailsPermission = await checkPermission(
@@ -54,8 +101,12 @@ candidateAPIRoutes.get(
           name,
           nric,
           contact,
+          residency,
           dateOfBirth,
+          nationality,
+          hasOnboarded,
           emergencyContact,
+          assignersAndClientHolders,
           ...otherData,
         });
       }
@@ -65,8 +116,12 @@ candidateAPIRoutes.get(
         name,
         nric: maskNRIC(nric),
         contact,
+        residency,
+        nationality,
         dateOfBirth,
+        hasOnboarded,
         emergencyContact,
+        assignersAndClientHolders,
       });
     } catch (error) {
       return res.status(404).send("Candidate not found.");
@@ -74,7 +129,7 @@ candidateAPIRoutes.get(
   }
 );
 
-candidateAPIRoutes.get("/candidate/nric/:candidateNric", async (req, res) => {
+candidateAPIRoutes.get("/candidate/bynric/:candidateNric", async (req, res) => {
   const user = req.user as User;
   const { candidateNric } = req.params;
 
@@ -98,7 +153,9 @@ candidateAPIRoutes.get("/candidate/nric/:candidateNric", async (req, res) => {
       name: candidate.name,
       cuid: candidate.cuid,
       contact: candidate.contact,
+      residency: candidate.residency,
       dateOfBirth: candidate.dateOfBirth,
+      nationality: candidate.nationality,
     });
   } catch (error) {
     return res.status(404).send("Candidate not found.");
@@ -110,6 +167,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
     nric,
     name,
     contact,
+    residency,
     nationality,
     dateOfBirth,
     bankDetails,
@@ -123,6 +181,12 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
   if (!name) return res.status(400).send("name parameter is required.");
 
   if (!contact) return res.status(400).send("contact parameter is required.");
+
+  if (!dateOfBirth)
+    return res.status(400).send("dateOfBirth parameter is required.");
+
+  if (!residency)
+    return res.status(400).send("residency parameter is required.");
 
   // Validation for dateOfBirth
   if (dateOfBirth && !Date.parse(dateOfBirth)) {
@@ -188,8 +252,9 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
     nric,
     name,
     contact,
+    residency,
+    dateOfBirth,
     ...(nationality && { nationality }),
-    ...(dateOfBirth && { dateOfBirth }),
     ...(addressObject && { address: { update: addressObject } }),
     ...(bankDetailsObject && { bankDetails: { update: bankDetailsObject } }),
     ...(emergencyContactObject && {
@@ -218,9 +283,10 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
         return res.status(400).send("Candidate already exists.");
       }
 
-      if (prismaErrorMetaTarget.includes("contact")) {
-        return res.status(400).send("Another candidate has the same contact.");
-      }
+      // contact is no longer unique
+      // if (prismaErrorMetaTarget.includes("contact")) {
+      //   return res.status(400).send("Another candidate has the same contact.");
+      // }
     }
 
     console.log(error);
@@ -270,6 +336,7 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
     cuid,
     name,
     contact,
+    residency,
     nationality,
     dateOfBirth,
     bankDetails,
@@ -283,6 +350,7 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   if (
     !name &&
     !contact &&
+    !residency &&
     !nationality &&
     !dateOfBirth &&
     !bankDetails &&
@@ -296,15 +364,52 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
       );
   }
 
+  // Check if user has permission to update candidate:
+  // has CAN_UPDATE_CANDIDATES permission / is an assigner / is a client holder
   const hasUpdateCandidatePermission = await checkPermission(
     user.cuid,
     PermissionList.CAN_UPDATE_CANDIDATES
   );
 
   if (!hasUpdateCandidatePermission) {
-    return res
-      .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_UPDATE_CANDIDATES);
+    const data = await prisma.candidate.findUnique({
+      where: {
+        cuid,
+      },
+      include: {
+        Assign: {
+          include: {
+            Project: {
+              include: {
+                Manage: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const assignersAndClientHolders: string[] = [];
+    data?.Assign.forEach((assign) => {
+      if (!assignersAndClientHolders.includes(assign.consultantCuid)) {
+        assignersAndClientHolders.push(assign.consultantCuid);
+      }
+
+      assign.Project.Manage.forEach((manage) => {
+        if (
+          manage.role === "CLIENT_HOLDER" &&
+          !assignersAndClientHolders.includes(manage.consultantCuid)
+        ) {
+          assignersAndClientHolders.push(manage.consultantCuid);
+        }
+      });
+    });
+
+    if (!assignersAndClientHolders.includes(user.cuid)) {
+      return res
+        .status(401)
+        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_UPDATE_CANDIDATES);
+    }
   }
 
   // Validation for dateOfBirth
@@ -348,7 +453,8 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   // Build the update data object with only provided fields
   const updateData = {
     ...(name && { name }),
-    ...(contact && { contact: contact }),
+    ...(contact && { contact }),
+    ...(residency && { residency }),
     ...(nationality && { nationality }),
     ...(dateOfBirth && { dateOfBirth }),
     ...(address && { address }),
@@ -443,11 +549,9 @@ candidateAPIRoutes.get(
 
       res.json([fetchedData, paginationData]);
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          error: "An error occurred while fetching the upcoming shifts.",
-        });
+      res.status(500).json({
+        error: "An error occurred while fetching the upcoming shifts.",
+      });
     }
   }
 );
@@ -603,5 +707,159 @@ candidateAPIRoutes.get("/report/:candidateCuid", async (req, res) => {
     scheduledHoursWorked,
   });
 });
+
+candidateAPIRoutes.get(
+  "/candidate/:candidateCuid/nric/front",
+  async (req, res) => {
+    const user = req.user as User;
+    const candidateCuid = req.params.candidateCuid;
+
+    console.log("triggers");
+
+    const hasReadCandidateDetailsPermission = await checkPermission(
+      user.cuid,
+      PermissionList.CAN_READ_CANDIDATE_DETAILS
+    );
+
+    if (!hasReadCandidateDetailsPermission) {
+      const data = await prisma.candidate.findUnique({
+        where: {
+          cuid: candidateCuid,
+        },
+        include: {
+          Assign: {
+            include: {
+              Project: {
+                include: {
+                  Manage: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const assignersAndClientHolders: string[] = [];
+      data?.Assign.forEach((assign) => {
+        if (!assignersAndClientHolders.includes(assign.consultantCuid)) {
+          assignersAndClientHolders.push(assign.consultantCuid);
+        }
+
+        assign.Project.Manage.forEach((manage) => {
+          if (
+            manage.role === "CLIENT_HOLDER" &&
+            !assignersAndClientHolders.includes(manage.consultantCuid)
+          ) {
+            assignersAndClientHolders.push(manage.consultantCuid);
+          }
+        });
+      });
+
+      if (!assignersAndClientHolders.includes(user.cuid)) {
+        return res
+          .status(401)
+          .send(
+            PERMISSION_ERROR_TEMPLATE +
+              PermissionList.CAN_READ_CANDIDATE_DETAILS
+          );
+      }
+    }
+
+    try {
+      const command = new GetObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME!,
+        Key: `${candidateCuid}/nric/front`,
+      });
+
+      console.log("----\n", command, "\n----");
+
+      console.log("yes");
+      const response = await s3.send(command);
+      console.log("no");
+      if (response.Body instanceof Readable) {
+        return response.Body.pipe(res);
+      } else {
+        return res.status(500).send("Unexpected response body type");
+      }
+    } catch (error) {
+      console.error("Error while downloading file:", error);
+      return res.status(500).send("Internal server error");
+    }
+  }
+);
+
+candidateAPIRoutes.get(
+  "/candidate/:candidateCuid/nric/back",
+  async (req, res) => {
+    const user = req.user as User;
+    const candidateCuid = req.params.candidateCuid;
+
+    const hasReadCandidateDetailsPermission = await checkPermission(
+      user.cuid,
+      PermissionList.CAN_READ_CANDIDATE_DETAILS
+    );
+
+    if (!hasReadCandidateDetailsPermission) {
+      const data = await prisma.candidate.findUnique({
+        where: {
+          cuid: candidateCuid,
+        },
+        include: {
+          Assign: {
+            include: {
+              Project: {
+                include: {
+                  Manage: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const assignersAndClientHolders: string[] = [];
+      data?.Assign.forEach((assign) => {
+        if (!assignersAndClientHolders.includes(assign.consultantCuid)) {
+          assignersAndClientHolders.push(assign.consultantCuid);
+        }
+
+        assign.Project.Manage.forEach((manage) => {
+          if (
+            manage.role === "CLIENT_HOLDER" &&
+            !assignersAndClientHolders.includes(manage.consultantCuid)
+          ) {
+            assignersAndClientHolders.push(manage.consultantCuid);
+          }
+        });
+      });
+
+      if (!assignersAndClientHolders.includes(user.cuid)) {
+        return res
+          .status(401)
+          .send(
+            PERMISSION_ERROR_TEMPLATE +
+              PermissionList.CAN_READ_CANDIDATE_DETAILS
+          );
+      }
+    }
+
+    try {
+      const command = new GetObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME!,
+        Key: `${candidateCuid}/nric/back`,
+      });
+
+      const response = await s3.send(command);
+      if (response.Body instanceof Readable) {
+        return response.Body.pipe(res);
+      } else {
+        return res.status(500).send("Unexpected response body type");
+      }
+    } catch (error) {
+      console.error("Error while downloading file:", error);
+      return res.status(500).send("Internal server error");
+    }
+  }
+);
 
 export default candidateAPIRoutes;
