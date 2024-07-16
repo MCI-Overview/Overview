@@ -82,7 +82,7 @@ export default function WeekPicker() {
         alignItems="center"
         spacing={1}
       >
-        <Button size="sm" variant="outlined" color="neutral">
+        <Button variant="outlined" color="neutral">
           {`${dateRangeStart?.format("DD/MM/YY")} -
         ${dateRangeEnd?.format("DD/MM/YY")}`}
         </Button>
