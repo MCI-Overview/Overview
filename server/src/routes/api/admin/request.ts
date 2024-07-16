@@ -1,11 +1,12 @@
+import dayjs from "dayjs";
+import { Router } from "express";
+import { Readable } from "stream";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+
 import { User } from "@/types/common";
 import { prisma, s3 } from "../../../client";
-import { Router } from "express";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { Readable } from "stream";
-import dayjs from "dayjs";
 
-const requestAPIRouter = Router();
+const requestAPIRouter: Router = Router();
 
 requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
   const user = req.user as User;

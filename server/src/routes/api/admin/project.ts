@@ -2342,4 +2342,84 @@ projectAPIRouter.post(
   }
 );
 
+projectAPIRouter.post(
+  "/project/:projectCuid/shifts/archive",
+  async (req, res) => {
+    const user = req.user as User;
+    const { projectCuid } = req.params;
+    const { startDate } = req.body;
+
+    if (!projectCuid) {
+      return res.status(400).send("projectCuid is required.");
+    }
+
+    if (!startDate || isNaN(Date.parse(startDate))) {
+      return res.status(400).send("valid startDate is required.");
+    }
+
+    let projectData;
+    try {
+      projectData = await prisma.project.findUniqueOrThrow({
+        where: {
+          cuid: projectCuid,
+        },
+        include: {
+          Manage: true,
+        },
+      });
+    } catch (error) {
+      const prismaError = error as PrismaError;
+      if (prismaError.code === "P2025") {
+        return res.status(404).send("Project does not exist.");
+      }
+
+      console.error(error);
+      return res.status(500).send({ error: "Internal server error." });
+    }
+
+    const hasPermission =
+      projectData.Manage.some(
+        (m) => m.role === Role.CLIENT_HOLDER && m.consultantCuid === user.cuid
+      ) ||
+      (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+    if (!hasPermission) {
+      return res
+        .status(401)
+        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+    }
+
+    try {
+      const rosteredShifts = await prisma.attendance.findMany({
+        where: {
+          shiftDate: {
+            gte: new Date(startDate),
+          },
+          Shift: {
+            projectCuid,
+          },
+        },
+        distinct: ["shiftCuid"],
+      });
+
+      await prisma.shift.updateMany({
+        where: {
+          projectCuid,
+          cuid: {
+            notIn: rosteredShifts.map((shift) => shift.shiftCuid),
+          },
+        },
+        data: {
+          status: ShiftStatus.ARCHIVED,
+        },
+      });
+
+      return res.send("Successfully archived shifts.");
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: "Internal server error." });
+    }
+  }
+);
+
 export default projectAPIRouter;
