@@ -3,10 +3,18 @@ import dayjs from "dayjs";
 import { useRosterContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import { Box, iconButtonClasses, Button, Select, Option } from "@mui/joy";
+import {
+  Box,
+  iconButtonClasses,
+  Button,
+  Select,
+  Option,
+  IconButton,
+} from "@mui/joy";
 import {
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
+  RefreshRounded as RefreshIcon,
 } from "@mui/icons-material";
 
 export default function WeekPicker() {
@@ -19,6 +27,7 @@ export default function WeekPicker() {
     setSortOrderBy,
     setWeekOffset,
     setDates,
+    updateRosterData,
   } = useRosterContext();
   const projectStartDate = dayjs(project?.startDate);
   const projectEndDate = dayjs(project?.endDate);
@@ -103,6 +112,13 @@ export default function WeekPicker() {
         <Option value="unassign">Unassigned</Option>
         <Option value="assign">Assigned</Option>
       </Select>
+      <IconButton
+        onClick={() => {
+          updateRosterData();
+        }}
+      >
+        <RefreshIcon />
+      </IconButton>
       <Box sx={{ flex: 1 }} />
 
       <Button
