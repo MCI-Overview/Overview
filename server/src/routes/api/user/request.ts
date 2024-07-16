@@ -441,13 +441,7 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
   if (request.type === "MEDICAL_LEAVE") {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `mc/${
-        (
-          request.data as {
-            imageUUID: string;
-          }
-        ).imageUUID
-      }`,
+      Key: `mc/${(request.data as { imageUUID: string }).imageUUID}`,
     });
 
     const response = await s3.send(command);
@@ -498,26 +492,12 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
           ],
           shiftDate: {
             gte: dayjs(
-              (
-                request.data as {
-                  startDate: string;
-                }
-              ).startDate
+              (request.data as { startDate: string }).startDate
             ).toDate(),
-            lte: dayjs(
-              (
-                request.data as {
-                  startDate: string;
-                }
-              ).startDate
-            )
+            lte: dayjs((request.data as { startDate: string }).startDate)
               .add(
                 parseInt(
-                  (
-                    request.data as {
-                      numberOfDays: string;
-                    }
-                  ).numberOfDays,
+                  (request.data as { numberOfDays: string }).numberOfDays,
                   10
                 ) - 1,
                 "day"

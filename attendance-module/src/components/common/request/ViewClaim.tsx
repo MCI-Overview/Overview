@@ -28,7 +28,6 @@ export default function ViewClaim({
   const requestData = request.data as {
     claimType: string;
     claimAmount: number;
-    claimRosterCuid: string;
     claimDescription: string;
   };
 
@@ -73,7 +72,7 @@ export default function ViewClaim({
   const handleDownloadReceipt = () => {
     const link = document.createElement("a");
     link.href = receiptPreview;
-    link.download = `${requestData.claimRosterCuid}.jpg`;
+    link.download = `${request.rosterCuid}.jpg`;
     link.click();
   };
 
