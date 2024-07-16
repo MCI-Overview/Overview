@@ -16,9 +16,13 @@ jobs:
         with:
           node-version: 20
       - name: Install Dependencies
-        run: npm install
+        run: |
+          cd server
+          npm install
       - name: Generate Deployment Package
-        run: zip -r overview-server-build.zip .
+        run: |
+          cd server
+          zip -r ../overview-server-build.zip .
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v22
         with:
