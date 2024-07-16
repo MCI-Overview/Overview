@@ -1,10 +1,20 @@
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useEffect, useState } from "react";
-import { useProjectContext } from "../../../providers/projectContextProvider";
-import { CommonLocation } from "../../../types/common";
 
-import { Modal, ModalDialog, Typography, Input, Stack, Button } from "@mui/joy";
+import ResponsiveDialog from "../../ResponsiveDialog";
+import { CommonLocation } from "../../../types/common";
+import { readableEnum } from "../../../utils/capitalize";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+
+import {
+  Input,
+  Stack,
+  Button,
+  FormControl,
+  FormLabel,
+  FormHelperText,
+} from "@mui/joy";
 
 interface AddLocationsModalProps {
   isOpen: boolean;
@@ -31,7 +41,7 @@ const AddLocationsModal = ({
     axios
       .get(
         `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${newPostalCode}&returnGeom=Y&getAddrDetails=N`,
-        { withCredentials: false },
+        { withCredentials: false }
       )
       .then((res) => {
         if (res.data.found === 0) {
@@ -70,38 +80,22 @@ const AddLocationsModal = ({
 
   if (!project) return null;
 
+  const error =
+    !newLocation ||
+    locations.some((location) => location.postalCode === newPostalCode);
+
   return (
-    <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-      <ModalDialog sx={{ maxWidth: "525px" }}>
-        <Typography level="title-md">Add new site locations</Typography>
-
-        <Input
-          type="text"
-          placeholder="Postal code"
-          fullWidth
-          value={newPostalCode}
-          onChange={(e) => {
-            setNewPostalCode(e.target.value);
-          }}
-        />
-
-        <Typography level="body-md">
-          {!newLocation
-            ? "Please enter a valid postal code"
-            : locations.some(
-                (location) => location.postalCode === newPostalCode,
-              )
-            ? "Location already added"
-            : newLocation.address}
-        </Typography>
-
-        <Stack direction="row" spacing={1}>
-          <Button onClick={() => setIsOpen(false)} fullWidth>
+    <ResponsiveDialog
+      title="Add new site locations"
+      open={isOpen}
+      handleClose={() => setIsOpen(false)}
+      actions={
+        <Stack direction="row" spacing={1} width="100%">
+          <Button variant="outlined" onClick={() => setIsOpen(false)} fullWidth>
             Cancel
           </Button>
           <Button
             onClick={handleAddLocation}
-            color="danger"
             fullWidth
             disabled={
               newLocation
@@ -112,8 +106,28 @@ const AddLocationsModal = ({
             Confirm
           </Button>
         </Stack>
-      </ModalDialog>
-    </Modal>
+      }
+    >
+      <FormControl error={error}>
+        <FormLabel>Postal Code</FormLabel>
+        <Input
+          type="text"
+          value={newPostalCode}
+          onChange={(e) => {
+            setNewPostalCode(e.target.value);
+          }}
+        />
+        <FormHelperText>
+          {!newLocation
+            ? "Please enter a valid postal code"
+            : locations.some(
+                (location) => location.postalCode === newPostalCode
+              )
+            ? "Location already added"
+            : readableEnum(newLocation.address)}
+        </FormHelperText>
+      </FormControl>
+    </ResponsiveDialog>
   );
 };
 
