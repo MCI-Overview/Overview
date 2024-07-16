@@ -31,5 +31,5 @@ jobs:
           application_name: Overview-server
           environment_name: Overview-server-env
           version_label: ${{ github.sha }}
-          region: us-west-2
+          region: us-east-1
           deployment_package: overview-server-build.zip
