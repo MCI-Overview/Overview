@@ -33,3 +33,5 @@ jobs:
           version_label: ${{ github.sha }}
           region: us-east-1
           deployment_package: overview-server-build.zip
+        env:
+          DEBUG: true
