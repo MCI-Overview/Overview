@@ -107,9 +107,7 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
     null
   );
   const [weekOffset, setWeekOffset] = useState<number>(
-    Math.floor(
-      dayjs().diff(project?.startDate.startOf("isoWeek"), "weeks") || 0
-    )
+    Math.floor(dayjs().diff(project.startDate.startOf("isoWeek"), "weeks")) || 0
   );
 
   const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
@@ -119,8 +117,12 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [sortOrderBy, setSortOrderBy] = useState<"name" | "assign">("name");
 
+  const baseDay = project?.startDate.startOf("isoWeek");
+  const dateRangeStart = baseDay?.add(weekOffset, "weeks");
+  const dateRangeEnd = dateRangeStart?.endOf("isoWeek");
+
   const updateRosterData = useCallback(() => {
-    if (!weekOffset || !project) return;
+    if (!project || !dateRangeStart || !dateRangeEnd) return;
 
     axios
       .get(`/api/admin/project/${project?.cuid}/roster`, {
@@ -176,13 +178,9 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rosterData]);
 
-  if (!project) {
+  if (!project || !dateRangeStart || !dateRangeEnd) {
     return null;
   }
-
-  const baseDay = project.startDate.startOf("isoWeek");
-  const dateRangeStart = baseDay.add(weekOffset, "weeks");
-  const dateRangeEnd = dateRangeStart.endOf("isoWeek");
 
   const mergedData =
     rosterData &&
