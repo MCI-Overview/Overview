@@ -28,6 +28,7 @@ export default function NewRosterPage() {
                   xs: "none",
                   sm: "block",
                 },
+                width: "5rem",
               }}
             >
               Edit
