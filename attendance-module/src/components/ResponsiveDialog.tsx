@@ -6,17 +6,20 @@ import {
   Modal,
   ModalClose,
   ModalDialog,
+  Typography,
 } from "@mui/joy";
 
 export default function ResponsiveDialog({
   open,
   title,
+  subtitle,
   actions,
   children,
   handleClose,
 }: {
   open: boolean;
   title: string;
+  subtitle?: string;
   actions?: React.ReactNode;
   children: React.ReactNode;
   handleClose: () => void;
@@ -42,12 +45,22 @@ export default function ResponsiveDialog({
           }}
         >
           <ModalClose />
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Typography level="title-lg">{title}</Typography>
+            {subtitle && <Typography level="body-sm">{subtitle}</Typography>}
+          </DialogTitle>
           <DialogContent
             sx={{
               minWidth: "30rem",
-              // Prevent overflow on X-axis
-              padding: 0.01,
+              overflow: "auto",
+              textOverflow: "ellipsis",
+              scrollbarColor: "transparent transparent",
+              scrollbarWidth: "none",
             }}
           >
             {children}
@@ -56,7 +69,6 @@ export default function ResponsiveDialog({
         </ModalDialog>
       </Modal>
       <Drawer
-        size="sm"
         open={open}
         onClose={handleClose}
         anchor="bottom"
@@ -79,7 +91,15 @@ export default function ResponsiveDialog({
             p: 2,
           }}
         />
-        <DialogTitle>{title}</DialogTitle>
+        <DialogTitle
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Typography level="title-lg">{title}</Typography>
+          {subtitle && <Typography level="body-sm">{subtitle}</Typography>}
+        </DialogTitle>
         <DialogContent
           sx={{
             p: 1.5,

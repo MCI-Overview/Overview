@@ -2,9 +2,11 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { useState } from "react";
 import toast from "react-hot-toast";
+
+import ResponsiveDialog from "../../ResponsiveDialog";
+import { nricRegex, contactRegex } from "../../../utils/validation";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { nricRegex, contactRegex } from "../../../utils/validation";
 
 import {
   Button,
@@ -14,9 +16,6 @@ import {
   Grid,
   IconButton,
   Input,
-  Modal,
-  ModalClose,
-  ModalDialog,
   Option,
   Select,
   Typography,
@@ -167,285 +166,272 @@ const AddCandidateModal = ({
   };
 
   return (
-    <Modal
-      aria-labelledby="modal-title"
-      aria-describedby="modal-desc"
+    <ResponsiveDialog
       open={isAddModalOpen}
-      onClose={handleCloseModal}
-    >
-      <ModalDialog
-        variant="outlined"
-        sx={{
-          maxWidth: 500,
-          overflow: "auto",
-        }}
-      >
-        <ModalClose variant="plain" sx={{ m: 1 }} />
-        <Typography level="title-lg">Add a candidate</Typography>
-        <Typography level="body-xs">
-          Add a candidate to your project. Select from candidate history, or
-          fill in their details.
-        </Typography>
-
-        <Grid container spacing={2} py={2}>
-          <Grid xs={10} md={6}>
-            <FormControl required error={!!nricError} sx={{ flexGrow: 1 }}>
-              <FormLabel>Nric</FormLabel>
-              <Input
-                name="nric"
-                value={nric}
-                onChange={(e) => {
-                  const value = e.target.value.trim().toUpperCase();
-                  setNric(value);
-
-                  if (!value) {
-                    setNricError("NRIC is required");
-                  } else if (nricRegex.test(value)) {
-                    setNricError("");
-                  } else {
-                    setNricError("Invalid NRIC");
-                  }
-                }}
-              />
-              <FormHelperText>{nricError}</FormHelperText>
-            </FormControl>
-          </Grid>
-
-          <Grid xs={2} md={6}>
-            <FormControl>
-              <FormLabel>&nbsp;</FormLabel>
-              <Button
-                fullWidth
-                onClick={handleNRICSearch}
-                disabled={!nricRegex.test(nric)}
-                sx={{ display: { xs: "none", md: "block" } }}
-              >
-                Search NRIC
-              </Button>
-              <IconButton
-                onClick={handleNRICSearch}
-                disabled={!nricRegex.test(nric)}
-                sx={{ display: { xs: "block", md: "none" } }}
-                variant="solid"
-                color="primary"
-              >
-                <SearchIcon onClick={handleNRICSearch} />
-              </IconButton>
-            </FormControl>
-          </Grid>
-
-          {isExistingCandidate !== null && (
-            <>
-              <Grid xs={12} md={6}>
-                <FormControl required error={!!nameError}>
-                  <FormLabel>Name</FormLabel>
-                  <Input
-                    name="name"
-                    value={name}
-                    onChange={(e) => {
-                      const value = e.target.value.trim();
-                      setName(value);
-
-                      if (!value) {
-                        setNameError("Name is required");
-                      } else {
-                        setNameError("");
-                      }
-                    }}
-                    disabled={isExistingCandidate}
-                  />
-                  <FormHelperText>{nameError}</FormHelperText>
-                </FormControl>
-              </Grid>
-
-              <Grid xs={12} md={6}>
-                <FormControl required error={!!residencyError}>
-                  <FormLabel>Residency status</FormLabel>
-                  <Select
-                    value={residency}
-                    name="residency"
-                    onChange={(_e, value) => {
-                      if (!value) {
-                        setResidency("");
-                        setResidencyError("Residency status is required");
-                        return;
-                      }
-
-                      setResidency(value);
-                      setResidencyError("");
-                    }}
-                    disabled={isExistingCandidate}
-                  >
-                    <Option value={"CITIZEN"}>Citizen</Option>
-                    <Option value={"PERMANENT_RESIDENT"}>
-                      Permanent Resident
-                    </Option>
-                    <Option value={"S_PASS"}>S Pass</Option>
-                    <Option value={"WORK_PERMIT"}>Work Permit</Option>
-                  </Select>
-                  <FormHelperText>{residencyError}</FormHelperText>
-                </FormControl>
-              </Grid>
-
-              <Grid xs={12} md={6}>
-                <FormControl required error={!!dateOfBirthError}>
-                  <FormLabel>Date of birth</FormLabel>
-                  <Input
-                    type="date"
-                    name="dateOfBirth"
-                    value={dateOfBirth}
-                    onChange={(e) => {
-                      setDateOfBirth(e.target.value);
-
-                      if (!dateOfBirth || !Date.parse(dateOfBirth)) {
-                        setDateOfBirthError("Invalid date of birth");
-                      } else {
-                        setDateOfBirthError("");
-                      }
-                    }}
-                    disabled={isExistingCandidate}
-                  />
-                  <FormHelperText>{dateOfBirthError}</FormHelperText>
-                </FormControl>
-              </Grid>
-
-              <Grid xs={12} md={6}>
-                <FormControl required error={!!contactError}>
-                  <FormLabel>Contact</FormLabel>
-                  <Input
-                    startDecorator={"+65"}
-                    name="contact"
-                    value={contact}
-                    onChange={(e) => {
-                      setContact(e.target.value);
-
-                      if (!contactRegex.test(contact)) {
-                        setContactError("Invalid contact");
-                      } else {
-                        setContactError("");
-                      }
-                    }}
-                    disabled={isExistingCandidate}
-                  />
-                  <FormHelperText>{contactError}</FormHelperText>
-                </FormControl>
-              </Grid>
-
-              <Grid xs={12}>
-                <Typography level="body-xs" sx={{ mt: -2 }}>
-                  The above details have been pre-filled from existing records.
-                  If needed, you may update them on their profile page later.
-                </Typography>
-              </Grid>
-            </>
-          )}
-
-          <Grid xs={12} md={6}>
-            <FormControl required error={!!startDateError}>
-              <FormLabel>Start date</FormLabel>
-              <Input
-                type="date"
-                name="startDate"
-                value={startDate}
-                slotProps={{
-                  input: {
-                    min: (dayjs().isAfter(project.startDate)
-                      ? dayjs()
-                      : project.startDate
-                    ).format("YYYY-MM-DD"),
-                    max: project.endDate.format("YYYY-MM-DD"),
-                  },
-                }}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setStartDate(value);
-
-                  if (!value || !Date.parse(value)) {
-                    setStartDateError("Invalid start date");
-                  } else if (
-                    endDate &&
-                    Date.parse(endDate) &&
-                    Date.parse(value) > Date.parse(endDate)
-                  ) {
-                    setStartDateError("Start date cannot be after end date");
-                  } else {
-                    setStartDateError("");
-                  }
-                }}
-              />
-              <FormHelperText>{startDateError}</FormHelperText>
-            </FormControl>
-          </Grid>
-
-          <Grid xs={12} md={6}>
-            <FormControl required error={!!endDateError}>
-              <FormLabel>End date</FormLabel>
-              <Input
-                type="date"
-                name="endDate"
-                value={endDate}
-                slotProps={{
-                  input: {
-                    min: (dayjs().isAfter(project.startDate)
-                      ? dayjs()
-                      : project.startDate
-                    ).format("YYYY-MM-DD"),
-                    max: project.endDate.format("YYYY-MM-DD"),
-                  },
-                }}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setEndDate(value);
-
-                  if (!value || !Date.parse(value)) {
-                    setEndDateError("Invalid end date");
-                  } else if (
-                    startDate &&
-                    Date.parse(startDate) &&
-                    Date.parse(value) < Date.parse(startDate)
-                  ) {
-                    setEndDateError("End date cannot be before start date");
-                    setStartDateError("Start date cannot be after end date");
-                  } else {
-                    setEndDateError("");
-                  }
-                }}
-              />
-              <FormHelperText>{endDateError}</FormHelperText>
-            </FormControl>
-          </Grid>
-
-          <Grid xs={12}>
-            <FormControl required error={!!employmentTypeError}>
-              <FormLabel>Job type</FormLabel>
-              <Select
-                value={employmentType}
-                name="employmentType"
-                onChange={(_e, value) => {
-                  if (!value) {
-                    setEmploymentType("");
-                    setEmploymentTypeError("Employment type is required");
-                    return;
-                  }
-
-                  setEmploymentType(value);
-                  setEmploymentTypeError("");
-                }}
-              >
-                <Option value={"FULL_TIME"}>Full time</Option>
-                <Option value={"PART_TIME"}>Part time</Option>
-                <Option value={"CONTRACT"}>Contract</Option>
-              </Select>
-              <FormHelperText>{employmentTypeError}</FormHelperText>
-            </FormControl>
-          </Grid>
-        </Grid>
-
+      handleClose={handleCloseModal}
+      title="Add a candidate"
+      subtitle="Add a candidate to your project. Select from candidate history, or fill
+        in their details."
+      actions={
         <Button onClick={handleSubmitData} disabled={!isExistingCandidate}>
           Save
         </Button>
-      </ModalDialog>
-    </Modal>
+      }
+    >
+      <Grid container spacing={2} py={2}>
+        <Grid xs={10} md={6}>
+          <FormControl required error={!!nricError}>
+            <FormLabel>Nric</FormLabel>
+            <Input
+              name="nric"
+              value={nric}
+              onChange={(e) => {
+                const value = e.target.value.trim().toUpperCase();
+                setNric(value);
+
+                if (!value) {
+                  setNricError("NRIC is required");
+                } else if (nricRegex.test(value)) {
+                  setNricError("");
+                } else {
+                  setNricError("Invalid NRIC");
+                }
+              }}
+            />
+            <FormHelperText>{nricError}</FormHelperText>
+          </FormControl>
+        </Grid>
+
+        <Grid xs={2} md={6}>
+          <FormControl>
+            <FormLabel>&nbsp;</FormLabel>
+            <Button
+              fullWidth
+              onClick={handleNRICSearch}
+              disabled={!nricRegex.test(nric)}
+              sx={{ display: { xs: "none", md: "block" } }}
+            >
+              Search NRIC
+            </Button>
+            <IconButton
+              onClick={handleNRICSearch}
+              disabled={!nricRegex.test(nric)}
+              sx={{ display: { xs: "block", md: "none" } }}
+              variant="solid"
+              color="primary"
+            >
+              <SearchIcon onClick={handleNRICSearch} />
+            </IconButton>
+          </FormControl>
+        </Grid>
+
+        {isExistingCandidate !== null && (
+          <>
+            <Grid xs={12} md={6}>
+              <FormControl required error={!!nameError}>
+                <FormLabel>Name</FormLabel>
+                <Input
+                  name="name"
+                  value={name}
+                  onChange={(e) => {
+                    const value = e.target.value.trim();
+                    setName(value);
+
+                    if (!value) {
+                      setNameError("Name is required");
+                    } else {
+                      setNameError("");
+                    }
+                  }}
+                  disabled={isExistingCandidate}
+                />
+                <FormHelperText>{nameError}</FormHelperText>
+              </FormControl>
+            </Grid>
+
+            <Grid xs={12} md={6}>
+              <FormControl required error={!!residencyError}>
+                <FormLabel>Residency status</FormLabel>
+                <Select
+                  value={residency}
+                  name="residency"
+                  onChange={(_e, value) => {
+                    if (!value) {
+                      setResidency("");
+                      setResidencyError("Residency status is required");
+                      return;
+                    }
+
+                    setResidency(value);
+                    setResidencyError("");
+                  }}
+                  disabled={isExistingCandidate}
+                >
+                  <Option value={"CITIZEN"}>Citizen</Option>
+                  <Option value={"PERMANENT_RESIDENT"}>
+                    Permanent Resident
+                  </Option>
+                  <Option value={"S_PASS"}>S Pass</Option>
+                  <Option value={"WORK_PERMIT"}>Work Permit</Option>
+                </Select>
+                <FormHelperText>{residencyError}</FormHelperText>
+              </FormControl>
+            </Grid>
+
+            <Grid xs={12} md={6}>
+              <FormControl required error={!!dateOfBirthError}>
+                <FormLabel>Date of birth</FormLabel>
+                <Input
+                  type="date"
+                  name="dateOfBirth"
+                  value={dateOfBirth}
+                  onChange={(e) => {
+                    setDateOfBirth(e.target.value);
+
+                    if (!dateOfBirth || !Date.parse(dateOfBirth)) {
+                      setDateOfBirthError("Invalid date of birth");
+                    } else {
+                      setDateOfBirthError("");
+                    }
+                  }}
+                  disabled={isExistingCandidate}
+                />
+                <FormHelperText>{dateOfBirthError}</FormHelperText>
+              </FormControl>
+            </Grid>
+
+            <Grid xs={12} md={6}>
+              <FormControl required error={!!contactError}>
+                <FormLabel>Contact</FormLabel>
+                <Input
+                  startDecorator={"+65"}
+                  name="contact"
+                  value={contact}
+                  onChange={(e) => {
+                    setContact(e.target.value);
+
+                    if (!contactRegex.test(contact)) {
+                      setContactError("Invalid contact");
+                    } else {
+                      setContactError("");
+                    }
+                  }}
+                  disabled={isExistingCandidate}
+                />
+                <FormHelperText>{contactError}</FormHelperText>
+              </FormControl>
+            </Grid>
+
+            <Grid xs={12}>
+              <Typography level="body-xs" sx={{ mt: -2 }}>
+                The above details have been pre-filled from existing records. If
+                needed, you may update them on their profile page later.
+              </Typography>
+            </Grid>
+          </>
+        )}
+
+        <Grid xs={12} md={6}>
+          <FormControl required error={!!startDateError}>
+            <FormLabel>Start date</FormLabel>
+            <Input
+              type="date"
+              name="startDate"
+              value={startDate}
+              slotProps={{
+                input: {
+                  min: (dayjs().isAfter(project.startDate)
+                    ? dayjs()
+                    : project.startDate
+                  ).format("YYYY-MM-DD"),
+                  max: project.endDate.format("YYYY-MM-DD"),
+                },
+              }}
+              onChange={(e) => {
+                const value = e.target.value;
+                setStartDate(value);
+
+                if (!value || !Date.parse(value)) {
+                  setStartDateError("Invalid start date");
+                } else if (
+                  endDate &&
+                  Date.parse(endDate) &&
+                  Date.parse(value) > Date.parse(endDate)
+                ) {
+                  setStartDateError("Start date cannot be after end date");
+                } else {
+                  setStartDateError("");
+                }
+              }}
+            />
+            <FormHelperText>{startDateError}</FormHelperText>
+          </FormControl>
+        </Grid>
+
+        <Grid xs={12} md={6}>
+          <FormControl required error={!!endDateError}>
+            <FormLabel>End date</FormLabel>
+            <Input
+              type="date"
+              name="endDate"
+              value={endDate}
+              slotProps={{
+                input: {
+                  min: (dayjs().isAfter(project.startDate)
+                    ? dayjs()
+                    : project.startDate
+                  ).format("YYYY-MM-DD"),
+                  max: project.endDate.format("YYYY-MM-DD"),
+                },
+              }}
+              onChange={(e) => {
+                const value = e.target.value;
+                setEndDate(value);
+
+                if (!value || !Date.parse(value)) {
+                  setEndDateError("Invalid end date");
+                } else if (
+                  startDate &&
+                  Date.parse(startDate) &&
+                  Date.parse(value) < Date.parse(startDate)
+                ) {
+                  setEndDateError("End date cannot be before start date");
+                  setStartDateError("Start date cannot be after end date");
+                } else {
+                  setEndDateError("");
+                }
+              }}
+            />
+            <FormHelperText>{endDateError}</FormHelperText>
+          </FormControl>
+        </Grid>
+
+        <Grid xs={12}>
+          <FormControl required error={!!employmentTypeError}>
+            <FormLabel>Job type</FormLabel>
+            <Select
+              value={employmentType}
+              name="employmentType"
+              onChange={(_e, value) => {
+                if (!value) {
+                  setEmploymentType("");
+                  setEmploymentTypeError("Employment type is required");
+                  return;
+                }
+
+                setEmploymentType(value);
+                setEmploymentTypeError("");
+              }}
+            >
+              <Option value={"FULL_TIME"}>Full time</Option>
+              <Option value={"PART_TIME"}>Part time</Option>
+              <Option value={"CONTRACT"}>Contract</Option>
+            </Select>
+            <FormHelperText>{employmentTypeError}</FormHelperText>
+          </FormControl>
+        </Grid>
+      </Grid>
+    </ResponsiveDialog>
   );
 };
 
