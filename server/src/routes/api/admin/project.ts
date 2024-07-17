@@ -493,13 +493,6 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
 
   const start = typeof startDate === "string" ? startDate : undefined;
   const end = typeof endDate === "string" ? endDate : undefined;
-  const now = dayjs();
-  const adjustedEnd =
-    end && dayjs(end).isAfter(now)
-      ? now.startOf("day").toDate()
-      : end
-      ? dayjs(end).startOf("day").toDate()
-      : undefined;
 
   const isNricUnmasked = await checkPermission(
     user.cuid,
@@ -511,7 +504,7 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
       where: {
         shiftDate: {
           gte: start ? dayjs(start).startOf("day").toDate() : undefined,
-          lte: adjustedEnd,
+          lte: end ? dayjs(end).endOf("day").toDate() : undefined,
         },
         Shift: {
           projectCuid: projectCuid,

@@ -5,30 +5,30 @@ import { TdTypo, ThTypo } from "../ui/TableTypo";
 import AttendanceStatusChip from "./AttendanceStatusChip";
 
 import { Sheet, Table } from "@mui/joy";
+import ViewAttendanceDetailsModal from "./ViewAttendanceDetailsModal";
+import { useState } from "react";
 
 type AdminProjectAttendanceTableProps = {
   data: CustomAdminAttendance[] | null;
 };
 
-// function RowMenu() {
-//   return (
-//     <Dropdown>
-//       <MenuButton
-//         slots={{ root: IconButton }}
-//         slotProps={{ root: { variant: "plain", color: "neutral", size: "sm" } }}
-//       >
-//         <MoreHorizIcon />
-//       </MenuButton>
-//       <Menu size="sm" sx={{ minWidth: 140 }}>
-//         <MenuItem>Edit</MenuItem>
-//       </Menu>
-//     </Dropdown>
-//   );
-// }
-
 const AdminProjectAttendanceTable = ({
   data,
 }: AdminProjectAttendanceTableProps) => {
+  const [currentAttendanceIndex, setCurrentAttendanceIndex] =
+    useState<number>(0);
+
+  const handleNextAttendance = () => {
+    if (!data) return;
+    setCurrentAttendanceIndex((prev) => (prev + 1) % data.length);
+  };
+
+  const handlePreviousAttendance = () => {
+    if (!data) return;
+    setCurrentAttendanceIndex((prev) =>
+      prev === 0 ? data?.length - 1 : prev - 1
+    );
+  };
   return (
     <Sheet
       variant="outlined"
@@ -63,8 +63,8 @@ const AdminProjectAttendanceTable = ({
             <ThTypo>End Time</ThTypo>
             <ThTypo>Clock In</ThTypo>
             <ThTypo>Clock Out</ThTypo>
-            <ThTypo>Location</ThTypo>
             <ThTypo>Status</ThTypo>
+            <ThTypo>Details</ThTypo>
           </tr>
         </thead>
         {data && (
@@ -74,7 +74,7 @@ const AdminProjectAttendanceTable = ({
                 <TdTypo colSpan={9}>No candidates found</TdTypo>
               </tr>
             ) : (
-              data.map((att: CustomAdminAttendance) => (
+              data.map((att: CustomAdminAttendance, index) => (
                 <tr key={att.attendanceCuid}>
                   <TdTypo>{att.nric}</TdTypo>
                   <TdTypo>{att.name}</TdTypo>
@@ -93,11 +93,19 @@ const AdminProjectAttendanceTable = ({
                       ? "NIL"
                       : "-"}
                   </TdTypo>
-                  <TdTypo>{att.postalCode ? att.postalCode : "-"}</TdTypo>
                   <TdTypo>
                     <AttendanceStatusChip
                       leave={att.leave}
                       status={att.status}
+                    />
+                  </TdTypo>
+                  <TdTypo>
+                    <ViewAttendanceDetailsModal
+                      variant="DESKTOP"
+                      onClick={() => setCurrentAttendanceIndex(index)}
+                      handleNextAttendance={handleNextAttendance}
+                      handlePreviousAttendance={handlePreviousAttendance}
+                      attendance={data[currentAttendanceIndex]}
                     />
                   </TdTypo>
                 </tr>
