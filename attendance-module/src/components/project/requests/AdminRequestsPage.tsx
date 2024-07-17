@@ -22,13 +22,13 @@ import {
 } from "@mui/joy";
 
 function buildUrl(
-  projectCuid: string,
+  baseURL: string,
   currentPage: number,
   searchValue: string,
   typeFilter: string,
   statusFilter: string
 ): string {
-  let url = `/api/admin/project/${projectCuid}/requests/${currentPage}`;
+  let url = `${baseURL}/${currentPage}`;
 
   const queryParams = [];
   if (searchValue) {
@@ -47,7 +47,7 @@ function buildUrl(
   return url;
 }
 
-const AdminRequestsPage = () => {
+const AdminRequestsPage = ({ baseURL }: { baseURL: string }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [maxPage, setMaxPage] = useState(1);
   const [searchValue, setSearchValue] = useState<string>("");
@@ -60,7 +60,7 @@ const AdminRequestsPage = () => {
 
     try {
       const url = buildUrl(
-        project?.cuid,
+        baseURL,
         currentPage,
         searchValue,
         typeFilter,
@@ -75,7 +75,7 @@ const AdminRequestsPage = () => {
       console.error("Error fetching upcoming shifts: ", error);
       return [];
     }
-  }, [project, currentPage, searchValue, typeFilter, statusFilter]);
+  }, [project, baseURL, currentPage, searchValue, typeFilter, statusFilter]);
 
   return (
     <Box sx={{ display: "flex" }}>

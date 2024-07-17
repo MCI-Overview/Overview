@@ -36,6 +36,7 @@ import OnboardingPage from "./user/onboarding/OnboardingPage";
 import NotFound from "./components/NotFound";
 import ServiceUnavailable from "./components/ServiceUnavailable";
 import Login from "./login/Login";
+import AdminRequests from "./admin/Requests";
 
 dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
@@ -132,6 +133,10 @@ function App() {
                       <Route
                         path="/admin/candidates"
                         element={<AdminCandidates />}
+                      />
+                      <Route
+                        path="/admin/requests"
+                        element={<AdminRequests />}
                       />
                       <Route
                         path="/admin/candidate/:candidateCuid"
