@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { CircularProgress, CssBaseline, Box, CssVarsProvider } from "@mui/joy";
 import { useEffect, useState } from "react";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import axiosRetry from "axios-retry";
 import dayjs from "dayjs";
@@ -54,6 +54,22 @@ function App() {
 
   useEffect(() => {
     document.title = "Overview";
+
+    window.addEventListener("offline", () => {
+      toast.dismiss("network-status");
+      toast.error("You are offline. Please check your internet connection.", {
+        duration: Infinity,
+        id: "network-status",
+      });
+    });
+
+    window.addEventListener("online", () => {
+      toast.dismiss("network-status");
+      toast.success("You are back online!", {
+        id: "network-status",
+        duration: 2000,
+      });
+    });
   }, []);
 
   axios.defaults.baseURL = SERVER_URL;
