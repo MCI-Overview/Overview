@@ -116,6 +116,7 @@ export default function DroppableArea({
               <DraggableRoster
                 displayType={type}
                 key={`${roster.rosterCuid} ${roster.type} ${roster.status} ${roster.shiftCuid} ${roster.originalStartTime} ${roster.originalEndTime} ${roster.startTime} ${roster.endTime}`}
+                clientHolderCuids={roster.clientHolderCuids}
                 status={roster.status}
                 leave={roster.leave}
                 state={roster.state}
@@ -128,7 +129,9 @@ export default function DroppableArea({
                 isPartial={roster.isPartial}
                 originalStartTime={roster.originalStartTime}
                 originalEndTime={roster.originalEndTime}
-                candidateCuid={candidate.cuid}
+                clockInTime={roster.clockInTime}
+                clockOutTime={roster.clockOutTime}
+                breakDuration={roster.breakDuration}
               />
             ))}
         </Stack>

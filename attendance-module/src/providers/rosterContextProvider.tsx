@@ -107,7 +107,8 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
     null
   );
   const [weekOffset, setWeekOffset] = useState<number>(
-    Math.floor(dayjs().diff(project.startDate.startOf("isoWeek"), "weeks")) || 0
+    Math.floor(dayjs().diff(project?.startDate.startOf("isoWeek"), "weeks")) ||
+      0
   );
 
   const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
@@ -139,23 +140,26 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
               name: candidate.name,
               startDate: dayjs(candidate.startDate),
               endDate: dayjs(candidate.endDate),
-              roster: candidate.shifts.map((shift) => ({
-                rosterCuid: shift.rosterCuid,
-                shiftCuid: shift.shiftCuid,
-                consultantCuid: shift.consultantCuid,
+              roster: candidate.rosters.map((roster) => ({
+                rosterCuid: roster.rosterCuid,
+                shiftCuid: roster.shiftCuid,
+                clientHolderCuids: roster.clientHolderCuids,
                 candidateCuid: candidate.cuid,
-                projectCuid: shift.projectCuid,
-                type: shift.shiftType,
-                status: shift.status,
-                leave: shift.leave,
+                projectCuid: roster.projectCuid,
+                type: roster.type,
+                breakDuration: roster.breakDuration,
+                status: roster.status,
+                leave: roster.leave,
                 isPartial: false,
-                startTime: dayjs(shift.shiftStartTime),
-                endTime: dayjs(shift.shiftEndTime),
-                originalStartTime: dayjs(shift.shiftStartTime),
-                originalEndTime: dayjs(shift.shiftEndTime),
+                startTime: dayjs(roster.startTime),
+                endTime: dayjs(roster.endTime),
+                originalStartTime: dayjs(roster.startTime),
+                originalEndTime: dayjs(roster.endTime),
+                clockInTime: dayjs(roster.clockInTime),
+                clockOutTime: dayjs(roster.clockOutTime),
               })),
               newRoster: [],
-              rosterLength: candidate.shifts.length,
+              rosterLength: candidate.rosters.length,
             };
             return acc;
           },

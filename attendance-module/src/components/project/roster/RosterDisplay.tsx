@@ -1,6 +1,9 @@
 import dayjs from "dayjs";
+import { useState } from "react";
 
 import MagicalButton from "./MagicalButton";
+import ConsultantDisplay from "../ui/ConsultantDisplay";
+import AttendanceStatusChip from "../attendance/AttendanceStatusChip";
 import { useRosterContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import {
@@ -12,12 +15,25 @@ import {
   UPCOMING_COLOR,
 } from "../../../utils/colors";
 
-import { Box, CircularProgress, Typography } from "@mui/joy";
+import {
+  Box,
+  Card,
+  Chip,
+  CircularProgress,
+  DialogContent,
+  Divider,
+  Drawer,
+  ModalClose,
+  Stack,
+  Typography,
+} from "@mui/joy";
 import {
   HourglassFullRounded as HourglassIcon,
   HourglassTopRounded as HourglassTopIcon,
   HourglassBottomRounded as HourglassBottomIcon,
   AlignHorizontalLeftRounded as AlignHorizontalLeftIcon,
+  FreeBreakfastRounded as BreakIcon,
+  PunchClockRounded as PunchClockIcon,
 } from "@mui/icons-material";
 
 export type RosterDisplayProps = {
@@ -29,10 +45,13 @@ export type RosterDisplayProps = {
     status?: string;
     leave?: string;
     rosterCuid?: string;
+    breakDuration?: number;
     projectCuid?: string;
-    candidateCuid?: string;
+    clientHolderCuids?: string[];
     originalStartTime: dayjs.Dayjs;
     originalEndTime: dayjs.Dayjs;
+    clockInTime?: dayjs.Dayjs;
+    clockOutTime?: dayjs.Dayjs;
     isPartial: boolean;
     state?: "LOADING" | "PREVIEW";
     displayType?: "ATTENDANCE" | "ROSTER";
@@ -68,6 +87,24 @@ function getAttendanceColor(
   return UPCOMING_COLOR;
 }
 
+function getRosterIcon(type: string) {
+  if (type === "FULL_DAY") {
+    return <HourglassIcon sx={{ color: "inherit" }} />;
+  }
+
+  if (type === "FIRST_HALF") {
+    return <HourglassTopIcon sx={{ color: "inherit" }} />;
+  }
+
+  if (type === "SECOND_HALF") {
+    return <HourglassBottomIcon sx={{ color: "inherit" }} />;
+  }
+}
+
+function addS(value: number, string: string) {
+  return Math.abs(value) <= 1 ? string : `${string}s`;
+}
+
 export default function RosterDisplay({
   data,
   draggable,
@@ -75,6 +112,8 @@ export default function RosterDisplay({
 }: RosterDisplayProps) {
   const { project } = useProjectContext();
   const { setHoverCuid, hoverCuid } = useRosterContext();
+
+  const [open, setOpen] = useState(false);
 
   if (!data) {
     return null;
@@ -87,6 +126,68 @@ export default function RosterDisplay({
 
   return (
     <>
+      <Drawer
+        open={open}
+        onClose={() => setOpen(false)}
+        anchor="right"
+        size="sm"
+      >
+        <ModalClose />
+        <DialogContent
+          sx={{
+            marginTop: 4,
+            padding: 2,
+          }}
+        >
+          <Stack spacing={2}>
+            <Card>
+              <Typography level="title-md">Roster Details</Typography>
+              <Stack direction="row" spacing={0.5}>
+                <Chip startDecorator={getRosterIcon(data.type)} variant="plain">
+                  {`${data.startTime.format("HHmm")} - ${data.endTime.format(
+                    "HHmm"
+                  )}`}
+                </Chip>
+                {data.rosterCuid && (
+                  <AttendanceStatusChip
+                    status={
+                      (data.status as
+                        | "MEDICAL"
+                        | "NO_SHOW"
+                        | "LATE"
+                        | "ON_TIME") || null
+                    }
+                    leave={(data.leave as "FULLDAY" | "HALFDAY") || null}
+                  />
+                )}
+              </Stack>
+              {data.clockInTime?.isValid() && (
+                <Chip startDecorator={<PunchClockIcon />} variant="plain">
+                  {`${data.clockInTime.format("HHmm")} / ${
+                    data.clockOutTime?.isValid()
+                      ? data.clockOutTime?.format("HHmm")
+                      : "" || "-"
+                  }`}
+                </Chip>
+              )}
+              <Chip startDecorator={<BreakIcon />} variant="plain">
+                {`${data.breakDuration}m`}
+              </Chip>
+            </Card>
+            <Divider />
+            {data.clientHolderCuids && data.clientHolderCuids.length !== 0 && (
+              <Card>
+                <Typography level="title-md">
+                  {addS(data.clientHolderCuids.length, "Client Holder")}
+                </Typography>
+                {data.clientHolderCuids.map((cuid) => (
+                  <ConsultantDisplay key={cuid} cuid={cuid} variant="SMALL" />
+                ))}
+              </Card>
+            )}
+          </Stack>
+        </DialogContent>
+      </Drawer>
       <MagicalButton
         key={data.shiftCuid + data.rosterCuid}
         className={data.shiftCuid}
@@ -96,7 +197,7 @@ export default function RosterDisplay({
           flexDirection: "row",
           justifyContent: "center",
           width: "100%",
-          cursor: draggable ? "move !important" : "default !important",
+          cursor: draggable ? "move !important" : "pointer !important",
         }}
         seed={data.shiftCuid}
         color={
@@ -115,6 +216,7 @@ export default function RosterDisplay({
         onMouseLeave={() => {
           setHoverCuid(null);
         }}
+        onClick={() => setOpen(true)}
       >
         <Typography
           sx={{
@@ -130,15 +232,7 @@ export default function RosterDisplay({
                 <CircularProgress color="neutral" size="sm" />
               </Box>
             )}
-            {!loading && !data.isPartial && data.type === "FULL_DAY" && (
-              <HourglassIcon sx={{ color: "inherit" }} />
-            )}
-            {!loading && !data.isPartial && data.type === "FIRST_HALF" && (
-              <HourglassTopIcon sx={{ color: "inherit" }} />
-            )}
-            {!loading && !data.isPartial && data.type === "SECOND_HALF" && (
-              <HourglassBottomIcon sx={{ color: "inherit" }} />
-            )}
+            {!loading && !data.isPartial && getRosterIcon(data.type)}
             {!loading && data.isPartial && (
               <AlignHorizontalLeftIcon sx={{ color: "inherit" }} />
             )}
