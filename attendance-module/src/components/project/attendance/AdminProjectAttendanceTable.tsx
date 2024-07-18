@@ -52,12 +52,18 @@ const AdminProjectAttendanceTable = ({
     setIsOpen(true);
   };
 
-  const handleOpenViewModal = (att: CustomAdminAttendance) => {
-    setSelectedAtt(att);
+  const handleOpenViewModal = (index: number) => {
+    setCurrentAttendanceIndex(index);
     setIsViewDetailsModalOpen(true);
   };
 
-  function RowMenu({ att }: { att: CustomAdminAttendance }) {
+  function RowMenu({
+    att,
+    index,
+  }: {
+    att: CustomAdminAttendance;
+    index: number;
+  }) {
     return (
       <Dropdown>
         <MenuButton
@@ -69,7 +75,7 @@ const AdminProjectAttendanceTable = ({
           <MoreHorizRoundedIcon />
         </MenuButton>
         <Menu size="sm" sx={{ minWidth: 140 }}>
-          <MenuItem onClick={() => handleOpenViewModal(att)}>
+          <MenuItem onClick={() => handleOpenViewModal(index)}>
             View Details
           </MenuItem>
           <Divider />
@@ -130,7 +136,7 @@ const AdminProjectAttendanceTable = ({
                   <TdTypo colSpan={9}>No candidates found</TdTypo>
                 </tr>
               ) : (
-                data.map((att: CustomAdminAttendance) => (
+                data.map((att: CustomAdminAttendance, index: number) => (
                   <tr key={att.attendanceCuid}>
                     <TdTypo>{att.nric}</TdTypo>
                     <TdTypo>{att.name}</TdTypo>
@@ -161,7 +167,7 @@ const AdminProjectAttendanceTable = ({
                       />
                     </TdTypo>
                     <td>
-                      <RowMenu att={att} />
+                      <RowMenu att={att} index={index} />
                     </td>
                   </tr>
                 ))
