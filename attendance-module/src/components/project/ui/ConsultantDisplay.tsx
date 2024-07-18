@@ -58,18 +58,18 @@ export default function ConsultantDisplay({
       <Stack>
         <Typography level="title-sm">{isUser ? "You" : name}</Typography>
         <Typography level="body-xs">{consultant?.designation}</Typography>
+        {!isUser && (
+          <Stack direction="row" gap={1}>
+            <Typography level="body-xs">{email}</Typography>
+            {contact && (
+              <Stack direction="row" gap={1}>
+                <Typography level="body-xs">•</Typography>
+                <Typography level="body-xs">{contact}</Typography>
+              </Stack>
+            )}
+          </Stack>
+        )}
       </Stack>
-      {!isUser && (
-        <Stack direction="row" gap={1}>
-          <Typography level="body-xs">{email}</Typography>
-          {contact && (
-            <Stack direction="row" gap={1}>
-              <Typography level="body-xs">•</Typography>
-              <Typography level="body-xs">{contact}</Typography>
-            </Stack>
-          )}
-        </Stack>
-      )}
     </Stack>
   );
 }
