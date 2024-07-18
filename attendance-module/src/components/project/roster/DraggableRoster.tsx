@@ -5,40 +5,28 @@ import { useDrag } from "react-dnd";
 import { useRosterContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import RosterDisplay from "./RosterDisplay";
+import RosterDisplay, { RosterDisplayProps } from "./RosterDisplay";
 
-export type DraggableRosterProps = {
-  displayType: "ATTENDANCE" | "ROSTER";
-  shiftCuid: string;
-  rosterCuid: string;
-  projectCuid: string;
-  candidateCuid: string;
-  startTime: dayjs.Dayjs;
-  endTime: dayjs.Dayjs;
-  originalStartTime: dayjs.Dayjs;
-  originalEndTime: dayjs.Dayjs;
-  status: string | undefined;
-  leave: string | undefined;
-  type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
-  isPartial: boolean;
-  state?: "PREVIEW" | "LOADING";
-};
+export type DraggableRosterProps = RosterDisplayProps["data"];
 
 export default function DraggableRoster({
+  breakDuration,
   displayType,
   shiftCuid,
   rosterCuid,
   projectCuid,
-  candidateCuid,
   startTime,
   endTime,
   originalStartTime,
   originalEndTime,
+  clockInTime,
+  clockOutTime,
   isPartial,
   type,
   state,
   status,
   leave,
+  clientHolderCuids,
 }: DraggableRosterProps) {
   const { project } = useProjectContext();
   const {
@@ -57,7 +45,6 @@ export default function DraggableRoster({
         shiftCuid,
         rosterCuid,
         projectCuid,
-        candidateCuid,
         startTime,
         endTime,
         originalStartTime,
@@ -114,7 +101,6 @@ export default function DraggableRoster({
           shiftCuid,
           rosterCuid,
           projectCuid,
-          candidateCuid,
           startTime,
           endTime,
           type,
@@ -124,6 +110,10 @@ export default function DraggableRoster({
           isPartial,
           originalStartTime,
           originalEndTime,
+          clientHolderCuids,
+          clockInTime,
+          clockOutTime,
+          breakDuration,
         }}
         draggable={canDrag}
         opacity={draggingCuid === rosterCuid ? 0.5 : 1}

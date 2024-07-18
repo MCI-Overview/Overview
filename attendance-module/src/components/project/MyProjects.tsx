@@ -1,7 +1,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import { FC, useState, useEffect } from "react";
-import { Project } from "../../types/index";
+import { BasicProject } from "../../types/index";
 import AdminProjectDisplay from "./ui/AdminProjectDisplay";
 import CreateProjectModal from "./create/CreateProjectModal";
 
@@ -22,14 +22,14 @@ import {
 } from "@mui/icons-material";
 
 // sort by createdAt (most recent first)
-const projectComparator = (a: Project, b: Project) => {
+const projectComparator = (a: BasicProject, b: BasicProject) => {
   return dayjs(b.createdAt).diff(dayjs(a.createdAt));
 };
 
 const MyProjects: FC = () => {
-  const [previousProjects, setPreviousProjects] = useState<Project[]>([]);
-  const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
-  const [futureProjects, setFutureProjects] = useState<Project[]>([]);
+  const [previousProjects, setPreviousProjects] = useState<BasicProject[]>([]);
+  const [ongoingProjects, setOngoingProjects] = useState<BasicProject[]>([]);
+  const [futureProjects, setFutureProjects] = useState<BasicProject[]>([]);
   const [value, setValue] = useState<"concluded" | "ongoing" | "upcoming">(
     "ongoing"
   );
@@ -38,7 +38,7 @@ const MyProjects: FC = () => {
 
   useEffect(() => {
     axios.get("/api/admin/projects").then((response) => {
-      const projects = response.data as Project[];
+      const projects = response.data as BasicProject[];
 
       setPreviousProjects(
         projects.filter((project) => dayjs().isAfter(dayjs(project.endDate)))
@@ -134,7 +134,7 @@ const MyProjects: FC = () => {
             ) : (
               currentProjectList
                 .sort(projectComparator)
-                .map((project: Project) => (
+                .map((project: BasicProject) => (
                   <AdminProjectDisplay key={project.cuid} project={project} />
                 ))
             )}

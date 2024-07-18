@@ -21,8 +21,10 @@ attendanceApiRouter.get("/attendance/:attendanceCuid/image",
           },
         },
         select: {
+          candidateCuid: true,
           Shift: {
             select: {
+              projectCuid: true,
               Project: {
                 select: {
                   Manage: true,
@@ -44,10 +46,9 @@ attendanceApiRouter.get("/attendance/:attendanceCuid/image",
       ) {
         return res.status(403).send("Forbidden");
       }
-
       const command = new GetObjectCommand({
         Bucket: process.env.S3_BUCKET_NAME!,
-        Key: `${user.cuid}/clock-in/${attendanceCuid}.jpg`,
+        Key: `projects/${attendanceData.Shift.projectCuid}/clock-in/${attendanceData.candidateCuid}/${attendanceCuid}.jpg`,
       });
 
       const response = await s3.send(command);

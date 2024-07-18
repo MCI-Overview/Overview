@@ -75,6 +75,10 @@ consultantAPIRoutes.get("/consultants", async (_req, res) => {
       cuid: true,
       name: true,
       email: true,
+      contact: true,
+      department: true,
+      designation: true,
+      registration: true,
     },
   });
 

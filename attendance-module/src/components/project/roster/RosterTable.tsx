@@ -220,6 +220,7 @@ export default function RosterTable({ type }: RosterTableProps) {
                     selectedCandidates.length === sortedCandidates.length
                   }
                   checked={
+                    selectedCandidates.length > 0 &&
                     selectedCandidates.length === sortedCandidates.length
                   }
                   indeterminate={
@@ -282,8 +283,10 @@ export default function RosterTable({ type }: RosterTableProps) {
         >
           {rosterData && Object.keys(rosterData).length === 0 && (
             <tr>
-              <td>
-                <Typography>No candidates available</Typography>
+              <td colSpan={8}>
+                <Typography textAlign="center">
+                  No candidates available
+                </Typography>
               </td>
             </tr>
           )}

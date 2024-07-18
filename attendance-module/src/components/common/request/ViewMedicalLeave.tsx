@@ -63,6 +63,8 @@ export default function ViewMedicalLeave({
   }, [rosterRequestURL]);
 
   useEffect(() => {
+    setMcPreview("");
+
     axios
       .get(imageRequestURL, {
         responseType: "blob",
@@ -130,7 +132,7 @@ export default function ViewMedicalLeave({
       >
         <img
           src={mcPreview}
-          alt="Receipt"
+          alt="MC Image"
           style={{
             width: "100%",
             maxHeight: "300px",

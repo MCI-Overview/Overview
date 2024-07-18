@@ -3,6 +3,9 @@ import { Dayjs } from "dayjs";
 import { CustomAdminAttendance } from "../../../types";
 import { TdTypo, ThTypo } from "../ui/TableTypo";
 import AttendanceStatusChip from "./AttendanceStatusChip";
+
+import ViewAttendanceDetailsModal from "./ViewAttendanceDetailsModal";
+import AdminProjectAttendanceEditModal from "./AdminProjectAttendanceEditModal";
 import {
   Sheet,
   Table,
@@ -11,10 +14,10 @@ import {
   Menu,
   MenuItem,
   Divider,
-  MenuButton
+  MenuButton,
 } from "@mui/joy";
+
 import { MoreHorizRounded as MoreHorizRoundedIcon } from "@mui/icons-material";
-import AdminProjectAttendanceEditModal from "./AdminProjectAttendanceEditModal";
 
 type AdminProjectAttendanceTableProps = {
   data: CustomAdminAttendance[] | null;
@@ -24,26 +27,55 @@ const AdminProjectAttendanceTable = ({
   data,
 }: AdminProjectAttendanceTableProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedAtt, setSelectedAtt] = useState<CustomAdminAttendance | null>(null);
+  const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
+  const [selectedAtt, setSelectedAtt] = useState<CustomAdminAttendance | null>(
+    null
+  );
+
+  const [currentAttendanceIndex, setCurrentAttendanceIndex] =
+    useState<number>(0);
+
+  const handleNextAttendance = () => {
+    if (!data) return;
+    setCurrentAttendanceIndex((prev) => (prev + 1) % data.length);
+  };
+
+  const handlePreviousAttendance = () => {
+    if (!data) return;
+    setCurrentAttendanceIndex((prev) =>
+      prev === 0 ? data?.length - 1 : prev - 1
+    );
+  };
 
   const handleOpenEditModal = (att: CustomAdminAttendance) => {
     setSelectedAtt(att);
     setIsOpen(true);
-  }
+  };
+
+  const handleOpenViewModal = (att: CustomAdminAttendance) => {
+    setSelectedAtt(att);
+    setIsViewDetailsModalOpen(true);
+  };
 
   function RowMenu({ att }: { att: CustomAdminAttendance }) {
     return (
       <Dropdown>
         <MenuButton
           slots={{ root: IconButton }}
-          slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
+          slotProps={{
+            root: { variant: "plain", color: "neutral", size: "sm" },
+          }}
         >
           <MoreHorizRoundedIcon />
         </MenuButton>
         <Menu size="sm" sx={{ minWidth: 140 }}>
-          <MenuItem>View photo</MenuItem>
+          <MenuItem onClick={() => handleOpenViewModal(att)}>
+            View Details
+          </MenuItem>
           <Divider />
-          <MenuItem onClick={() => handleOpenEditModal(att)} color="danger">Edit</MenuItem>
+          <MenuItem onClick={() => handleOpenEditModal(att)} color="danger">
+            Edit
+          </MenuItem>
         </Menu>
       </Dropdown>
     );
@@ -67,9 +99,11 @@ const AdminProjectAttendanceTable = ({
           stickyHeader
           hoverRow
           sx={{
-            "--TableCell-headBackground": "var(--joy-palette-background-level1)",
+            "--TableCell-headBackground":
+              "var(--joy-palette-background-level1)",
             "--Table-headerUnderlineThickness": "1px",
-            "--TableRow-hoverBackground": "var(--joy-palette-background-level1)",
+            "--TableRow-hoverBackground":
+              "var(--joy-palette-background-level1)",
             "--TableCell-paddingY": "4px",
             "--TableCell-paddingX": "8px",
             "& tr > *": { textAlign: "center" },
@@ -107,13 +141,17 @@ const AdminProjectAttendanceTable = ({
                       {att.rawStart ? att.rawStart.format("HH:mm") : "-"}
                     </TdTypo>
                     <TdTypo
-                      color={getEndColor(att.rawStart, att.rawEnd, att.shiftEnd)}
+                      color={getEndColor(
+                        att.rawStart,
+                        att.rawEnd,
+                        att.shiftEnd
+                      )}
                     >
                       {att.rawEnd
                         ? att.rawEnd.format("HH:mm")
                         : att.rawStart
-                          ? "NIL"
-                          : "-"}
+                        ? "NIL"
+                        : "-"}
                     </TdTypo>
                     <TdTypo>{att.postalCode ? att.postalCode : "-"}</TdTypo>
                     <TdTypo>
@@ -132,8 +170,22 @@ const AdminProjectAttendanceTable = ({
           )}
         </Table>
       </Sheet>
-      {selectedAtt && (
-        <AdminProjectAttendanceEditModal isOpen={isOpen} setIsOpen={setIsOpen} selectedAtt={selectedAtt} />
+      {selectedAtt && data && (
+        <>
+          <AdminProjectAttendanceEditModal
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+            selectedAtt={selectedAtt}
+          />
+          <ViewAttendanceDetailsModal
+            isOpen={isViewDetailsModalOpen}
+            setIsOpen={setIsViewDetailsModalOpen}
+            attendance={data[currentAttendanceIndex]}
+            handleNextAttendance={handleNextAttendance}
+            handlePreviousAttendance={handlePreviousAttendance}
+            variant="DESKTOP"
+          />
+        </>
       )}
     </>
   );

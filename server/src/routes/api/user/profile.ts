@@ -13,7 +13,7 @@ profileAPIRouter.get("/bankStatement", async (req, res) => {
   try {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `${cuid}/bank-statement`,
+      Key: `users/${cuid}/bank-statement`,
     });
 
     const response = await s3.send(command);
@@ -35,7 +35,7 @@ profileAPIRouter.get("/nric/front", async (req, res) => {
   try {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `${cuid}/nric/front`,
+      Key: `users/${cuid}/nric/front`,
     });
 
     const response = await s3.send(command);
@@ -57,7 +57,7 @@ profileAPIRouter.get("/nric/back", async (req, res) => {
   try {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `${cuid}/nric/back`,
+      Key: `users/${cuid}/nric/back`,
     });
 
     const response = await s3.send(command);

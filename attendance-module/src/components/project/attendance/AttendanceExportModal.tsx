@@ -1,20 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
-import * as XLSX from "xlsx";
 import dayjs from "dayjs";
+import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 
-import {
-  Modal,
-  ModalDialog,
-  Typography,
-  Grid,
-  Input,
-  FormControl,
-  FormLabel,
-  ModalClose,
-  Button,
-} from "@mui/joy";
+import ResponsiveDialog from "../../ResponsiveDialog";
+
+import { Grid, Input, FormControl, FormLabel, Button } from "@mui/joy";
 
 interface ModalProps {
   show: boolean;
@@ -88,37 +80,35 @@ const AttendanceExportModal: React.FC<ModalProps> = ({
   };
 
   return (
-    <>
-      <Modal open={show} onClose={onClose}>
-        <ModalDialog>
-          <ModalClose />
-          <Typography level="title-md">Export attendance</Typography>
-          <Grid container columnGap={2} rowGap={2}>
-            <Grid xs={12}>
-              <FormControl>
-                <FormLabel>Start date</FormLabel>
-                <Input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-              </FormControl>
-            </Grid>
-            <Grid xs={12}>
-              <FormControl>
-                <FormLabel>End date</FormLabel>
-                <Input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
-              </FormControl>
-            </Grid>
-          </Grid>
-          <Button onClick={handleExport}>Export</Button>
-        </ModalDialog>
-      </Modal>
-    </>
+    <ResponsiveDialog
+      open={show}
+      handleClose={onClose}
+      title="Export attendance"
+      actions={<Button onClick={handleExport}>Export</Button>}
+    >
+      <Grid container columnGap={2} rowGap={2}>
+        <Grid xs={12}>
+          <FormControl>
+            <FormLabel>Start date</FormLabel>
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </FormControl>
+        </Grid>
+        <Grid xs={12}>
+          <FormControl>
+            <FormLabel>End date</FormLabel>
+            <Input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </FormControl>
+        </Grid>
+      </Grid>
+    </ResponsiveDialog>
   );
 };
 
