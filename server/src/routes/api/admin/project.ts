@@ -609,10 +609,33 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
     // Fetch headcount data
     const nationalityResponse = await prisma.candidate.groupBy({
       by: ["nationality"],
+      where: {
+        Assign: {
+          some: {
+            projectCuid: projectCuid
+          }
+        }
+      },
       _count: {
-        nationality: true,
+        _all: true,
       },
     });
+
+    const passTypeResponse = await prisma.candidate.groupBy({
+      by: ["residency"],
+      where: {
+        Assign: {
+          some: {
+            projectCuid: projectCuid
+          }
+        }
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    console.log(passTypeResponse);
 
     // Fetch claims amt
     const claimsResponse = await prisma.request.findMany({
@@ -660,9 +683,17 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
 
     const nationalityData: Record<string, number> = nationalityResponse.reduce(
       (acc: Record<string, number>, item) => {
-        if (item.nationality) {
-          acc[item.nationality.toLowerCase()] = item._count.nationality;
-        }
+        const nationalityKey = item.nationality ? item.nationality.toLowerCase() : "not_set";
+        acc[nationalityKey] = item._count._all;
+        return acc;
+      },
+      {}
+    );
+
+    const passTypeData: Record<string, number> = passTypeResponse.reduce(
+      (acc: Record<string, number>, item) => {
+        const nationalityKey = item.residency ? item.residency.toLowerCase() : "not_set";
+        acc[nationalityKey] = item._count._all;
         return acc;
       },
       {}
@@ -704,6 +735,7 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
     const headcount = {
       nationality: nationalityData,
       endDate: endDateData,
+      residency: passTypeData
     };
 
     return res.json({ datasets, headcount, expenses });

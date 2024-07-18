@@ -13,7 +13,7 @@ interface BarChartProps {
   headcount: Headcount;
 }
 
-const NationalityCount: React.FC<BarChartProps> = ({ headcount }) => {
+const PassTypeCount: React.FC<BarChartProps> = ({ headcount }) => {
   const labels = Object.keys(headcount).map(nationality => nationality.charAt(0).toUpperCase() + nationality.slice(1));
   const dataValues = Object.values(headcount);
 
@@ -47,7 +47,7 @@ const NationalityCount: React.FC<BarChartProps> = ({ headcount }) => {
     <Card>
       <Box sx={{ mb: 1 }}>
         <Typography level="title-md">Headcount</Typography>
-        <Typography level="body-sm">Nationality</Typography>
+        <Typography level="body-sm">Pass types</Typography>
       </Box>
       <Divider />
       <Stack
@@ -66,4 +66,4 @@ const NationalityCount: React.FC<BarChartProps> = ({ headcount }) => {
   );
 };
 
-export default NationalityCount;
+export default PassTypeCount;

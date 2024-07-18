@@ -61,7 +61,7 @@ model Candidate {
   dateOfBirth      DateTime        @db.Date
   hasOnboarded     Boolean         @default(false)
   nationality      String?
-  residency        ResidencyStatus @default(CITIZEN)
+  residency        ResidencyStatus
   bankDetails      Json?
   address          Json?
   emergencyContact Json?
