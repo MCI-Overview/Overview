@@ -32,13 +32,6 @@ export type Manage = {
   };
 };
 
-export type DraggableChipProps = {
-  type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
-  cuid: string;
-  startTime: Dayjs;
-  endTime: Dayjs;
-};
-
 export type Assign = {
   consultantCuid: string | null;
   candidateCuid: string;
@@ -67,6 +60,7 @@ export type CustomRequest = {
   candidateCuid: string;
   createdAt: string;
   cuid: string;
+  rosterCuid: string;
   projectCuid: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   type:

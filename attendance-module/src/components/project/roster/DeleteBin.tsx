@@ -2,7 +2,7 @@ import { useDrop } from "react-dnd";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 
-import { RosterChipProps } from "./DraggableRosterChip";
+import { DraggableRosterChipProps } from "./DraggableRosterChip";
 import { DraggableRosterProps } from "./DraggableRoster";
 import { useRosterContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
@@ -19,9 +19,9 @@ const NewDeleteBin = () => {
     drop: (item, monitor) => {
       const itemType = monitor.getItemType();
       if (itemType === "shift") {
-        const itemData = item as RosterChipProps;
+        const itemData = item as DraggableRosterChipProps;
         axios
-          .delete(`/api/admin/shift/${itemData.cuid}`)
+          .delete(`/api/admin/shift/${itemData.shiftCuid}`)
           .then((res) => {
             toast.success(res.data.message);
             updateProject();

@@ -40,6 +40,10 @@ const AdminCandidates = () => {
     }
   }, [location.hash]);
 
+  useEffect(() => {
+    document.title = "Candidates - Overview";
+  }, []);
+
   const handleTabChange = (
     _event: React.SyntheticEvent<Element, Event> | null,
     newValue: string | number | null

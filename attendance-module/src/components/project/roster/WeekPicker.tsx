@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { useRosterContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import { Box, iconButtonClasses, Button } from "@mui/joy";
+import { Box, iconButtonClasses, Button, Select, Option } from "@mui/joy";
 import {
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
@@ -11,8 +11,15 @@ import {
 
 export default function WeekPicker() {
   const { project } = useProjectContext();
-  const { dateRangeStart, dateRangeEnd, weekOffset, setWeekOffset } =
-    useRosterContext();
+  const {
+    dateRangeStart,
+    dateRangeEnd,
+    weekOffset,
+    setSortOrder,
+    setSortOrderBy,
+    setWeekOffset,
+    setDates,
+  } = useRosterContext();
   const projectStartDate = dayjs(project?.startDate);
   const projectEndDate = dayjs(project?.endDate);
 
@@ -22,10 +29,12 @@ export default function WeekPicker() {
 
   const handlePrevious = () => {
     setWeekOffset(Math.max(weekOffset - 1, 0));
+    setDates([]);
   };
 
   const handleNext = () => {
     setWeekOffset(weekOffset + 1);
+    setDates([]);
   };
 
   if (!project) {
@@ -61,6 +70,39 @@ export default function WeekPicker() {
         {`${dateRangeStart?.format("DD/MM/YY")} -
         ${dateRangeEnd?.format("DD/MM/YY")}`}
       </Button>
+      <Select
+        defaultValue="name-asc"
+        sx={{
+          width: "9rem",
+        }}
+        onChange={(_, value) => {
+          switch (value) {
+            case "name-asc":
+              setSortOrder("asc");
+              setSortOrderBy("name");
+              break;
+            case "name-desc":
+              setSortOrder("desc");
+              setSortOrderBy("name");
+              break;
+            case "unassign":
+              setSortOrder("desc");
+              setSortOrderBy("assign");
+              break;
+            case "assign":
+              setSortOrder("asc");
+              setSortOrderBy("assign");
+              break;
+            default:
+              break;
+          }
+        }}
+      >
+        <Option value="name-asc">Name (Asc)</Option>
+        <Option value="name-desc">Name (Desc)</Option>
+        <Option value="unassign">Unassigned</Option>
+        <Option value="assign">Assigned</Option>
+      </Select>
       <Box sx={{ flex: 1 }} />
 
       <Button
