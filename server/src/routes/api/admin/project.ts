@@ -620,7 +620,7 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
         projectCuid,
         type: "CLAIM",
         status: "APPROVED",
-        Roster: {
+        Attendance: {
           shiftDate: {
             gt: formattedWeekStart,
             lte: formattedWeekEnd,
