@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import ResponsiveDialog from "../../ResponsiveDialog";
 import { nricRegex, contactRegex } from "../../../utils/validation";
 import { useUserContext } from "../../../providers/userContextProvider";
+import { readableEnum } from "../../../utils/capitalize";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import {
@@ -83,7 +84,11 @@ const AddCandidateModal = ({
 
   if (!project || !user) return null;
 
-  const projectCuid = project.cuid;
+  const {
+    cuid: projectCuid,
+    startDate: projectStartDate,
+    endDate: projectEndDate,
+  } = project;
 
   const handleNRICSearch = async () => {
     try {
@@ -138,7 +143,7 @@ const AddCandidateModal = ({
 
     const candidate = {
       nric,
-      name,
+      name: readableEnum(name.trim()),
       contact,
       dateOfBirth: new Date(dateOfBirth).toISOString(),
       residency,
@@ -172,11 +177,7 @@ const AddCandidateModal = ({
       title="Add a candidate"
       subtitle="Add a candidate to your project. Select from candidate history, or fill
         in their details."
-      actions={
-        <Button onClick={handleSubmitData} disabled={!isExistingCandidate}>
-          Save
-        </Button>
-      }
+      actions={<Button onClick={handleSubmitData}>Save</Button>}
     >
       <Grid container spacing={2} py={2}>
         <Grid xs={10} md={6}>
@@ -234,10 +235,9 @@ const AddCandidateModal = ({
                   name="name"
                   value={name}
                   onChange={(e) => {
-                    const value = e.target.value.trim();
-                    setName(value);
+                    setName(e.target.value);
 
-                    if (!value) {
+                    if (!e.target.value) {
                       setNameError("Name is required");
                     } else {
                       setNameError("");
@@ -354,13 +354,23 @@ const AddCandidateModal = ({
                 if (!value || !Date.parse(value)) {
                   setStartDateError("Invalid start date");
                 } else if (
+                  Date.parse(value) < Date.parse(projectStartDate.toString())
+                ) {
+                  setStartDateError(
+                    `Start date cannot be before project start date (${projectStartDate.format(
+                      "DD MMM YYYY"
+                    )})`
+                  );
+                } else if (
                   endDate &&
                   Date.parse(endDate) &&
                   Date.parse(value) > Date.parse(endDate)
                 ) {
                   setStartDateError("Start date cannot be after end date");
+                  setEndDateError("End date cannot be before start date");
                 } else {
                   setStartDateError("");
+                  setEndDateError("");
                 }
               }}
             />
@@ -391,6 +401,14 @@ const AddCandidateModal = ({
                 if (!value || !Date.parse(value)) {
                   setEndDateError("Invalid end date");
                 } else if (
+                  Date.parse(value) > Date.parse(projectEndDate.toString())
+                ) {
+                  setEndDateError(
+                    `End date cannot be after project end date (${projectEndDate.format(
+                      "DD MMM YYYY"
+                    )})`
+                  );
+                } else if (
                   startDate &&
                   Date.parse(startDate) &&
                   Date.parse(value) < Date.parse(startDate)
@@ -398,6 +416,7 @@ const AddCandidateModal = ({
                   setEndDateError("End date cannot be before start date");
                   setStartDateError("Start date cannot be after end date");
                 } else {
+                  setStartDateError("");
                   setEndDateError("");
                 }
               }}

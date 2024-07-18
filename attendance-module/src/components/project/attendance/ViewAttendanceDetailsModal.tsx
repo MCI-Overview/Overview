@@ -138,37 +138,41 @@ const ViewAttendanceDetailsModal = ({
                 </Typography>
               </Typography>
 
-              <Typography level="body-sm">{`Location: ${attendance.postalCode}`}</Typography>
+              {attendance.rawStart && (
+                <>
+                  <Typography level="body-sm">{`Location: ${attendance.postalCode}`}</Typography>
 
-              <Box
-                sx={{
-                  position: "relative",
-                  display: "inline-block",
-                  maxWidth: "500px",
-                }}
-              >
-                <img
-                  src={imagePreview}
-                  alt="Clock In Image"
-                  style={{
-                    width: "100%",
-                    maxHeight: "300px",
-                  }}
-                />
-                <IconButton
-                  onClick={handleDownloadPreviewImage}
-                  sx={{
-                    position: "absolute",
-                    bottom: 8,
-                    right: 8,
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.5)",
-                    },
-                  }}
-                >
-                  <DownloadIcon />
-                </IconButton>
-              </Box>
+                  <Box
+                    sx={{
+                      position: "relative",
+                      display: "inline-block",
+                      maxWidth: "500px",
+                    }}
+                  >
+                    <img
+                      src={imagePreview}
+                      alt="Clock In Image"
+                      style={{
+                        width: "100%",
+                        maxHeight: "300px",
+                      }}
+                    />
+                    <IconButton
+                      onClick={handleDownloadPreviewImage}
+                      sx={{
+                        position: "absolute",
+                        bottom: 8,
+                        right: 8,
+                        "&:hover": {
+                          backgroundColor: "rgba(255, 255, 255, 0.5)",
+                        },
+                      }}
+                    >
+                      <DownloadIcon />
+                    </IconButton>
+                  </Box>
+                </>
+              )}
             </Stack>
 
             {variant === "DESKTOP" &&
