@@ -95,14 +95,14 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
         navigate("/admin/candidates");
       },
     },
-    // {
-    //   name: "Requests",
-    //   icon: <MailIcon />,
-    //   onClick: () => {
-    //     closeSidebar();
-    //     navigate("/admin/requests");
-    //   },
-    // },
+    {
+      name: "Requests",
+      icon: <MailIcon />,
+      onClick: () => {
+        closeSidebar();
+        navigate("/admin/requests");
+      },
+    },
   ];
 
   const fields = isAdmin ? adminSideBarFields : userSideBarFields;
