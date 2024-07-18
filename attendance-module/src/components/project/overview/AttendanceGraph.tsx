@@ -46,6 +46,7 @@ type AttendanceGraphProps = {
     };
   };
   weekStart: Date;
+  endDate: Date;
 };
 
 const options = {
@@ -77,22 +78,18 @@ const options = {
 const AttendanceGraph: React.FC<AttendanceGraphProps> = ({
   datasets,
   weekStart,
+  endDate,
 }) => {
-  const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-  const labels = days.map(
-    (day, index) =>
-      `${day.substring(0, 3)} ${dayjs(weekStart)
-        .add(index, "days")
-        .format("DD/MM")}`
+  console.log("received dates:", weekStart, "end date", endDate);
+  console.log("datasets:", datasets)
+  const start = dayjs(weekStart).startOf('day');
+  const end = dayjs(endDate).endOf('day');
+  const days = end.diff(start, "day") + 1;
+  console.log('days count:', days);
+  const labels = Array.from({ length: days }, (_, index) =>
+    start.add(index - 1, "day").add(1, "day").format("ddd DD/MM")
   );
+
   const data = {
     labels,
     datasets: [

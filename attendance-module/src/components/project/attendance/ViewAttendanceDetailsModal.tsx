@@ -10,13 +10,11 @@ import {
   ModalDialog,
   ModalOverflow,
   Stack,
-  Tooltip,
   Typography,
 } from "@mui/joy";
 import {
   ChevronLeftRounded as ChevronLeftIcon,
   ChevronRightRounded as ChevronRightIcon,
-  InfoOutlined as InfoIcon,
   DownloadOutlined as DownloadIcon,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
@@ -45,7 +43,8 @@ const getEndColor = (
 };
 
 interface ViewDetailsModalProps {
-  onClick?: () => void;
+  isOpen: boolean;
+  setIsOpen: (value: boolean) => void;
   attendance: CustomAdminAttendance;
   handleNextAttendance?: () => void;
   handlePreviousAttendance?: () => void;
@@ -55,7 +54,8 @@ interface ViewDetailsModalProps {
 }
 
 const ViewAttendanceDetailsModal = ({
-  onClick,
+  isOpen,
+  setIsOpen,
   attendance,
   handleNextAttendance,
   handlePreviousAttendance,
@@ -63,7 +63,6 @@ const ViewAttendanceDetailsModal = ({
   sx,
   children,
 }: ViewDetailsModalProps) => {
-  const [isOpen, setIsOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
 
   const handleDownloadPreviewImage = () => {
@@ -94,143 +93,134 @@ const ViewAttendanceDetailsModal = ({
 
   return (
     <>
-      <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-        <ModalOverflow>
-          <ModalDialog
-            sx={{
-              maxWidth: "40vw",
-            }}
-          >
-            <Stack gap={1}>
-              <Typography level="title-md">
-                {`${attendance.name} - ${attendance.date.format("DD/MM/YYYY")}`}
-              </Typography>
-
-              <AttendanceStatusChip
-                leave={attendance.leave}
-                status={attendance.status}
-              />
-
-              <Typography level="body-sm">
-                {`Clock in: ${attendance.shiftStart.format("HH:mm")} / `}
-                <Typography
-                  color={getStartColor(
-                    attendance.rawStart,
-                    attendance.shiftStart
-                  )}
-                >
-                  {attendance.rawStart
-                    ? attendance.rawStart.format("HH:mm")
-                    : "-"}
+      {variant === "DESKTOP" && (
+        <Modal open={isOpen} onClose={() => setIsOpen(false)}>
+          <ModalOverflow>
+            <ModalDialog
+              sx={{
+                maxWidth: "40vw",
+              }}
+            >
+              <Stack gap={1}>
+                <Typography level="title-md">
+                  {`${attendance.name} - ${attendance.date.format(
+                    "DD/MM/YYYY"
+                  )}`}
                 </Typography>
-              </Typography>
 
-              <Typography level="body-sm">
-                {`Clock out: ${attendance.shiftEnd.format("HH:mm")} / `}
-                <Typography
-                  color={getEndColor(
-                    attendance.rawStart,
-                    attendance.rawEnd,
-                    attendance.shiftEnd
-                  )}
-                >
-                  {attendance.rawEnd ? attendance.rawEnd.format("HH:mm") : "-"}
-                </Typography>
-              </Typography>
+                <AttendanceStatusChip
+                  leave={attendance.leave}
+                  status={attendance.status}
+                />
 
-              {attendance.rawStart && (
-                <>
-                  <Typography level="body-sm">{`Location: ${attendance.postalCode}`}</Typography>
-
-                  <Box
-                    sx={{
-                      position: "relative",
-                      display: "inline-block",
-                      maxWidth: "500px",
-                    }}
+                <Typography level="body-sm">
+                  {`Clock in: ${attendance.shiftStart.format("HH:mm")} / `}
+                  <Typography
+                    color={getStartColor(
+                      attendance.rawStart,
+                      attendance.shiftStart
+                    )}
                   >
-                    <img
-                      src={imagePreview}
-                      alt="Clock In Image"
-                      style={{
-                        width: "100%",
-                        maxHeight: "300px",
+                    {attendance.rawStart
+                      ? attendance.rawStart.format("HH:mm")
+                      : "-"}
+                  </Typography>
+                </Typography>
+
+                <Typography level="body-sm">
+                  {`Clock out: ${attendance.shiftEnd.format("HH:mm")} / `}
+                  <Typography
+                    color={getEndColor(
+                      attendance.rawStart,
+                      attendance.rawEnd,
+                      attendance.shiftEnd
+                    )}
+                  >
+                    {attendance.rawEnd
+                      ? attendance.rawEnd.format("HH:mm")
+                      : "-"}
+                  </Typography>
+                </Typography>
+
+                {attendance.rawStart && (
+                  <>
+                    <Typography level="body-sm">{`Location: ${attendance.postalCode}`}</Typography>
+
+                    <Box
+                      sx={{
+                        position: "relative",
+                        display: "inline-block",
+                        maxWidth: "500px",
                       }}
-                    />
+                    >
+                      <img
+                        src={imagePreview}
+                        alt="Clock In Image"
+                        style={{
+                          width: "100%",
+                          maxHeight: "300px",
+                        }}
+                      />
+                      <IconButton
+                        onClick={handleDownloadPreviewImage}
+                        sx={{
+                          position: "absolute",
+                          bottom: 8,
+                          right: 8,
+                          "&:hover": {
+                            backgroundColor: "rgba(255, 255, 255, 0.5)",
+                          },
+                        }}
+                      >
+                        <DownloadIcon />
+                      </IconButton>
+                    </Box>
+                  </>
+                )}
+              </Stack>
+
+              {variant === "DESKTOP" &&
+                handleNextAttendance &&
+                handlePreviousAttendance && (
+                  <>
                     <IconButton
-                      onClick={handleDownloadPreviewImage}
+                      onClick={handlePreviousAttendance}
                       sx={{
                         position: "absolute",
-                        bottom: 8,
-                        right: 8,
+                        left: -43,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        height: "100%",
+                        px: 1,
                         "&:hover": {
                           backgroundColor: "rgba(255, 255, 255, 0.5)",
                         },
                       }}
                     >
-                      <DownloadIcon />
+                      <ChevronLeftIcon />
                     </IconButton>
-                  </Box>
-                </>
-              )}
-            </Stack>
 
-            {variant === "DESKTOP" &&
-              handleNextAttendance &&
-              handlePreviousAttendance && (
-                <>
-                  <IconButton
-                    onClick={handlePreviousAttendance}
-                    sx={{
-                      position: "absolute",
-                      left: -43,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      height: "100%",
-                      px: 1,
-                      "&:hover": {
-                        backgroundColor: "rgba(255, 255, 255, 0.5)",
-                      },
-                    }}
-                  >
-                    <ChevronLeftIcon />
-                  </IconButton>
-
-                  <IconButton
-                    onClick={handleNextAttendance}
-                    sx={{
-                      position: "absolute",
-                      right: -43,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      height: "100%",
-                      px: 1,
-                      "&:hover": {
-                        backgroundColor: "rgba(255, 255, 255, 0.5)",
-                      },
-                    }}
-                  >
-                    <ChevronRightIcon />
-                  </IconButton>
-                </>
-              )}
-          </ModalDialog>
-        </ModalOverflow>
-      </Modal>
-
-      {variant === "DESKTOP" && onClick && (
-        <Tooltip title="View details">
-          <IconButton
-            size="sm"
-            color="primary"
-            onClick={() => {
-              onClick();
-              setIsOpen(true);
-            }}
-          >
-            <InfoIcon />
-          </IconButton>
-        </Tooltip>
+                    <IconButton
+                      onClick={handleNextAttendance}
+                      sx={{
+                        position: "absolute",
+                        right: -43,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        height: "100%",
+                        px: 1,
+                        "&:hover": {
+                          backgroundColor: "rgba(255, 255, 255, 0.5)",
+                        },
+                      }}
+                    >
+                      <ChevronRightIcon />
+                    </IconButton>
+                  </>
+                )}
+            </ModalDialog>
+          </ModalOverflow>
+        </Modal>
       )}
 
       {variant === "MOBILE" && (
