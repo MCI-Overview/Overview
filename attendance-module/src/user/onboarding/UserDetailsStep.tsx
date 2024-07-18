@@ -62,7 +62,14 @@ export default function UserDetailsStep() {
         We’re glad you’re here. We just need a few details to get started.
       </Typography>
 
-      <Grid container columns={2} spacing={2}>
+      <Grid
+        container
+        columns={2}
+        spacing={2}
+        sx={{
+          marginBottom: "10rem",
+        }}
+      >
         <Grid xs={2} sm={1}>
           <FormControl disabled>
             <FormLabel>NRIC</FormLabel>
