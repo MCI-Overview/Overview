@@ -267,46 +267,46 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
             if (hasNoOverlap && itemStartTime.isAfter(dayjs())) {
               acc[1].push(date);
 
-              if (itemType === "shift") {
-                const isCandidate =
-                  selectedCandidates.includes(cuid) ||
-                  (!selectedCandidates.length && candidateHoverCuid === cuid);
+              // if (itemType === "shift") {
+              //   const isCandidate =
+              //     selectedCandidates.includes(cuid) ||
+              //     (!selectedCandidates.length && candidateHoverCuid === cuid);
 
-                const isDateSelected =
-                  dates.some((d) => d.isSame(date, "day")) ||
-                  (!dates.length && hoverDate && hoverDate.isSame(date, "day"));
+              //   const isDateSelected =
+              //     dates.some((d) => d.isSame(date, "day")) ||
+              //     (!dates.length && hoverDate && hoverDate.isSame(date, "day"));
 
-                if (isCandidate && isDateSelected) {
-                  acc[0].push({
-                    ...item,
-                    isPartial: false,
-                    originalStartTime: itemStartTime,
-                    originalEndTime: itemEndTime,
-                    startTime: itemStartTime,
-                    endTime: itemEndTime,
-                    state: "PREVIEW",
-                  });
-                }
-              }
+              //   if (isCandidate && isDateSelected) {
+              //     acc[0].push({
+              //       ...item,
+              //       isPartial: false,
+              //       originalStartTime: itemStartTime,
+              //       originalEndTime: itemEndTime,
+              //       startTime: itemStartTime,
+              //       endTime: itemEndTime,
+              //       state: "PREVIEW",
+              //     });
+              //   }
+              // }
 
-              if (itemType === "roster") {
-                const isCandidate = candidateHoverCuid === cuid;
+              // if (itemType === "roster") {
+              //   const isCandidate = candidateHoverCuid === cuid;
 
-                const isDateSelected =
-                  hoverDate && hoverDate.isSame(date, "day");
+              //   const isDateSelected =
+              //     hoverDate && hoverDate.isSame(date, "day");
 
-                if (isCandidate && isDateSelected) {
-                  acc[0].push({
-                    ...item,
-                    isPartial: false,
-                    originalStartTime: itemStartTime,
-                    originalEndTime: itemEndTime,
-                    startTime: itemStartTime,
-                    endTime: itemEndTime,
-                    state: "PREVIEW",
-                  });
-                }
-              }
+              //   if (isCandidate && isDateSelected) {
+              //     acc[0].push({
+              //       ...item,
+              //       isPartial: false,
+              //       originalStartTime: itemStartTime,
+              //       originalEndTime: itemEndTime,
+              //       startTime: itemStartTime,
+              //       endTime: itemEndTime,
+              //       state: "PREVIEW",
+              //     });
+              //   }
+              // }
 
               return acc;
             }
