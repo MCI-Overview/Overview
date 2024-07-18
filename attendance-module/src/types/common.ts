@@ -31,9 +31,13 @@ export type CandidateDetails = {
 
 export type CommonConsultant = {
   cuid: string;
-  email: string;
   name: string;
-  role: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
+  email: string;
+  contact?: string;
+  department?: true;
+  designation?: true;
+  registration?: true;
+  role?: "CLIENT_HOLDER" | "CANDIDATE_HOLDER";
 };
 
 export type CommonLocation = {
@@ -212,16 +216,19 @@ export type GetRosterResponse = {
   name: string;
   startDate: string;
   endDate: string;
-  shifts: {
-    shiftType: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+  rosters: {
+    type: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+    breakDuration: number;
     leave: string;
     status: string;
     rosterCuid: string;
     shiftCuid: string;
     projectCuid: string;
-    shiftStartTime: string;
-    shiftEndTime: string;
-    consultantCuid: string;
+    startTime: string;
+    endTime: string;
+    clockInTime: string | undefined;
+    clockOutTime: string | undefined;
+    clientHolderCuids: string[];
   }[];
 }[];
 

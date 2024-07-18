@@ -231,6 +231,9 @@ projectAPIRouter.get(
         shiftType: true,
         leave: true,
         status: true,
+        clockInTime: true,
+        clockOutTime: true,
+        Request: true,
         Shift: {
           select: {
             Project: {
@@ -238,6 +241,7 @@ projectAPIRouter.get(
                 Manage: true,
               },
             },
+            breakDuration: true,
             startTime: true,
             endTime: true,
             halfDayStartTime: true,
@@ -251,11 +255,11 @@ projectAPIRouter.get(
 
     const data = candidateCuids.map((c) => {
       return {
+        cuid: c.candidateCuid,
+        name: c.Candidate.name,
         startDate: c.startDate,
         endDate: c.endDate,
-        name: c.Candidate.name,
-        cuid: c.candidateCuid,
-        shifts: candidateRoster
+        rosters: candidateRoster
           .filter((cr) => cr.candidateCuid === c.candidateCuid)
           .map((cr) => {
             const startDate = dayjs(cr.shiftDate);
@@ -280,20 +284,24 @@ projectAPIRouter.get(
                   .set("month", startDate.month())
                   .set("year", startDate.year());
 
+            // TODO: Hide other project roster irrelevant data
             return {
+              breakDuration: cr.Shift.breakDuration,
               leave: cr.leave,
               status: cr.status,
               projectCuid: cr.Shift.projectCuid,
               shiftCuid: cr.Shift.cuid,
               rosterCuid: cr.cuid,
-              shiftType: cr.shiftType,
-              shiftStartTime: startTime,
-              shiftEndTime: startTime.isBefore(endTime)
+              type: cr.shiftType,
+              startTime: startTime,
+              endTime: startTime.isBefore(endTime)
                 ? endTime
                 : endTime.add(1, "day"),
-              consultantCuid: cr.Shift.Project.Manage.filter(
+              clockInTime: cr.clockInTime,
+              clockOutTime: cr.clockOutTime,
+              clientHolderCuids: cr.Shift.Project.Manage.filter(
                 (manage) => manage.role === Role.CLIENT_HOLDER
-              ).map((manage) => manage.consultantCuid)[0],
+              ).map((manage) => manage.consultantCuid),
             };
           }),
       };
@@ -1677,20 +1685,44 @@ projectAPIRouter.get("/projects", async (req, res) => {
           },
         },
       },
-      include: {
+      select: {
+        cuid: true,
+        name: true,
+        createdAt: true,
+        startDate: true,
+        endDate: true,
         Manage: {
-          include: {
-            Consultant: true,
+          select: {
+            consultantCuid: true,
+            role: true,
           },
           where: {
-            role: "CLIENT_HOLDER",
+            Consultant: {
+              status: "ACTIVE",
+            },
           },
         },
         Client: true,
       },
     });
 
-    return res.send(projectsData);
+    return res.send(
+      projectsData.map((project) => {
+        return {
+          cuid: project.cuid,
+          name: project.name,
+          createdAt: project.createdAt,
+          clientName: project.Client.name,
+          clientUEN: project.Client.uen,
+          startDate: project.startDate,
+          endDate: project.endDate,
+          consultants: project.Manage.map((manage) => ({
+            cuid: manage.consultantCuid,
+            role: manage.role,
+          })),
+        };
+      })
+    );
   } catch (error) {
     console.log(error);
     return res.status(500).send("Internal server error.");
@@ -2364,6 +2396,86 @@ projectAPIRouter.post(
       }
 
       return res.send("Successfully cleared roster data.");
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: "Internal server error." });
+    }
+  }
+);
+
+projectAPIRouter.post(
+  "/project/:projectCuid/shifts/archive",
+  async (req, res) => {
+    const user = req.user as User;
+    const { projectCuid } = req.params;
+    const { startDate } = req.body;
+
+    if (!projectCuid) {
+      return res.status(400).send("projectCuid is required.");
+    }
+
+    if (!startDate || isNaN(Date.parse(startDate))) {
+      return res.status(400).send("valid startDate is required.");
+    }
+
+    let projectData;
+    try {
+      projectData = await prisma.project.findUniqueOrThrow({
+        where: {
+          cuid: projectCuid,
+        },
+        include: {
+          Manage: true,
+        },
+      });
+    } catch (error) {
+      const prismaError = error as PrismaError;
+      if (prismaError.code === "P2025") {
+        return res.status(404).send("Project does not exist.");
+      }
+
+      console.error(error);
+      return res.status(500).send({ error: "Internal server error." });
+    }
+
+    const hasPermission =
+      projectData.Manage.some(
+        (m) => m.role === Role.CLIENT_HOLDER && m.consultantCuid === user.cuid
+      ) ||
+      (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+    if (!hasPermission) {
+      return res
+        .status(401)
+        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+    }
+
+    try {
+      const rosteredShifts = await prisma.attendance.findMany({
+        where: {
+          shiftDate: {
+            gte: new Date(startDate),
+          },
+          Shift: {
+            projectCuid,
+          },
+        },
+        distinct: ["shiftCuid"],
+      });
+
+      await prisma.shift.updateMany({
+        where: {
+          projectCuid,
+          cuid: {
+            notIn: rosteredShifts.map((shift) => shift.shiftCuid),
+          },
+        },
+        data: {
+          status: ShiftStatus.ARCHIVED,
+        },
+      });
+
+      return res.send("Successfully archived shifts.");
     } catch (error) {
       console.error(error);
       return res.status(500).send({ error: "Internal server error." });

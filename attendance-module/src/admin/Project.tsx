@@ -22,41 +22,6 @@ import AdminProjectAttendancePage from "../components/project/attendance/AdminPr
 import { Typography, Box } from "@mui/joy";
 import { useUserContext } from "../providers/userContextProvider.tsx";
 
-const tabs: (Tab & {
-  clientHolderOnly: boolean;
-})[] = [
-  {
-    label: "Overview",
-    content: <ProjectOverview />,
-    clientHolderOnly: false,
-  },
-  {
-    label: "Attendance",
-    content: <AdminProjectAttendancePage />,
-    clientHolderOnly: false,
-  },
-  {
-    label: "Candidates",
-    content: <AdminProjectCandidatesPage />,
-    clientHolderOnly: false,
-  },
-  {
-    label: "Requests",
-    content: <AdminRequestsPage />,
-    clientHolderOnly: true,
-  },
-  {
-    label: "Timetable",
-    content: <TimetablePage />,
-    clientHolderOnly: false,
-  },
-  {
-    label: "Settings",
-    content: <Settings />,
-    clientHolderOnly: false,
-  },
-];
-
 const AdminProjects = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -65,6 +30,45 @@ const AdminProjects = () => {
   const { project, updateProject } = useProjectContext();
 
   const [tabValue, setTabValue] = useState<number>(0);
+
+  const tabs: (Tab & {
+    clientHolderOnly: boolean;
+  })[] = [
+    {
+      label: "Overview",
+      content: <ProjectOverview />,
+      clientHolderOnly: false,
+    },
+    {
+      label: "Attendance",
+      content: <AdminProjectAttendancePage />,
+      clientHolderOnly: false,
+    },
+    {
+      label: "Candidates",
+      content: <AdminProjectCandidatesPage />,
+      clientHolderOnly: false,
+    },
+    {
+      label: "Requests",
+      content: (
+        <AdminRequestsPage
+          baseURL={`/api/admin/project/${project?.cuid}/requests`}
+        />
+      ),
+      clientHolderOnly: true,
+    },
+    {
+      label: "Timetable",
+      content: <TimetablePage />,
+      clientHolderOnly: false,
+    },
+    {
+      label: "Settings",
+      content: <Settings />,
+      clientHolderOnly: false,
+    },
+  ];
 
   const filteredTabs = tabs.filter(
     (tab) =>

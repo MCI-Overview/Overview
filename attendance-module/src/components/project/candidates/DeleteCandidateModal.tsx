@@ -1,14 +1,7 @@
+import ResponsiveDialog from "../../ResponsiveDialog";
 import { CommonCandidate } from "../../../types/common";
 
-import {
-  Button,
-  List,
-  ListItem,
-  Modal,
-  ModalDialog,
-  Stack,
-  Typography,
-} from "@mui/joy";
+import { Button, List, ListItem, Stack, Typography } from "@mui/joy";
 
 interface DeleteCandidateModal {
   isDeleteModalOpen: boolean;
@@ -26,25 +19,13 @@ const DeleteCandidateModal = ({
   handleDeleteCandidates,
 }: DeleteCandidateModal) => {
   return (
-    <Modal open={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)}>
-      <ModalDialog sx={{ maxWidth: "525px" }}>
-        <Typography level="body-md">
-          Are you sure you want to delete the following candidates? This action
-          cannot be undone.
-        </Typography>
-        <List component="ol" marker="decimal">
-          {candidatesData.map((c) => {
-            if (candidatesToDelete.includes(c.cuid)) {
-              return (
-                <ListItem key={c.cuid}>
-                  <Typography level="body-sm">
-                    {c.nric} - {c.name}
-                  </Typography>
-                </ListItem>
-              );
-            }
-          })}
-        </List>
+    <ResponsiveDialog
+      open={isDeleteModalOpen}
+      handleClose={() => setIsDeleteModalOpen(false)}
+      title="Delete candidate"
+      subtitle="Are you sure you want to delete the following candidates? This action
+          cannot be undone."
+      actions={
         <Stack direction="row" spacing={1}>
           <Button
             variant="outlined"
@@ -61,8 +42,22 @@ const DeleteCandidateModal = ({
             Confirm
           </Button>
         </Stack>
-      </ModalDialog>
-    </Modal>
+      }
+    >
+      <List component="ol" marker="decimal">
+        {candidatesData.map((c) => {
+          if (candidatesToDelete.includes(c.cuid)) {
+            return (
+              <ListItem key={c.cuid}>
+                <Typography level="body-sm">
+                  {c.nric} - {c.name}
+                </Typography>
+              </ListItem>
+            );
+          }
+        })}
+      </List>
+    </ResponsiveDialog>
   );
 };
 

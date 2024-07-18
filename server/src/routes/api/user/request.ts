@@ -192,7 +192,7 @@ requestAPIRouter.post(
         .send(
           new PutObjectCommand({
             Bucket: process.env.S3_BUCKET_NAME!,
-            Key: `receipt/${request.cuid}`,
+            Key: `projects/${projectCuid}/receipts/${request.cuid}`,
             Body: receipt.buffer,
           })
         )
@@ -380,7 +380,7 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
     await s3.send(
       new PutObjectCommand({
         Bucket: process.env.S3_BUCKET_NAME!,
-        Key: `mc/${imageUUID}`,
+        Key: `mcs/${imageUUID}`,
         Body: mc.buffer,
       })
     );
@@ -421,13 +421,14 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
     select: {
       data: true,
       type: true,
+      projectCuid: true,
     },
   });
 
   if (request.type === "CLAIM") {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `receipt/${requestCuid}`,
+      Key: `projects/${request.projectCuid}/receipts/${requestCuid}`,
     });
 
     const response = await s3.send(command);
@@ -441,7 +442,7 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
   if (request.type === "MEDICAL_LEAVE") {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `mc/${(request.data as { imageUUID: string }).imageUUID}`,
+      Key: `mcs/${(request.data as { imageUUID: string }).imageUUID}`,
     });
 
     const response = await s3.send(command);

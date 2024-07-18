@@ -1,7 +1,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import { FC, useState, useEffect } from "react";
-import { Project } from "../../types/index";
+import { BasicProject } from "../../types/index";
 import { useUserContext } from "../../providers/userContextProvider";
 import AdminProjectDisplay from "./ui/AdminProjectDisplay";
 
@@ -17,14 +17,14 @@ import {
 import { ArrowDropDown as ArrowDropDownIcon } from "@mui/icons-material";
 
 // sort by createdAt (most recent first)
-const projectComparator = (a: Project, b: Project) => {
+const projectComparator = (a: BasicProject, b: BasicProject) => {
   return dayjs(b.createdAt).diff(dayjs(a.createdAt));
 };
 
 const AllProjects: FC = () => {
-  const [previousProjects, setPreviousProjects] = useState<Project[]>([]);
-  const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
-  const [futureProjects, setFutureProjects] = useState<Project[]>([]);
+  const [previousProjects, setPreviousProjects] = useState<BasicProject[]>([]);
+  const [ongoingProjects, setOngoingProjects] = useState<BasicProject[]>([]);
+  const [futureProjects, setFutureProjects] = useState<BasicProject[]>([]);
   const [value, setValue] = useState<"concluded" | "ongoing" | "upcoming">(
     "ongoing"
   );
@@ -35,26 +35,35 @@ const AllProjects: FC = () => {
     if (!user) return;
 
     axios.get("/api/admin/projects/all").then((response) => {
-      const allProjects = response.data as Project[];
+      const allProjects = response.data as BasicProject[];
 
       const projects = allProjects.filter((project) => {
-        return !project.Manage.find((m) => m.consultantCuid === user.cuid);
+        return !project.consultants.find((c) => c.cuid === user.cuid);
       });
 
+      const currentTime = dayjs();
+
       setPreviousProjects(
-        projects.filter((project) => dayjs().isAfter(dayjs(project.endDate)))
+        projects.filter((project) =>
+          currentTime.isAfter(dayjs(project.endDate))
+        )
       );
 
       setOngoingProjects(
-        projects.filter(
-          (project) =>
-            dayjs().isAfter(dayjs(project.startDate)) &&
-            dayjs().isBefore(dayjs(project.endDate))
+        projects.filter((project) =>
+          currentTime.isBetween(
+            dayjs(project.startDate),
+            dayjs(project.endDate),
+            null,
+            "[]"
+          )
         )
       );
 
       setFutureProjects(
-        projects.filter((project) => dayjs().isBefore(dayjs(project.startDate)))
+        projects.filter((project) =>
+          currentTime.isBefore(dayjs(project.startDate))
+        )
       );
     });
   }, [user]);
@@ -125,7 +134,7 @@ const AllProjects: FC = () => {
             ) : (
               currentProjectList
                 .sort(projectComparator)
-                .map((project: Project) => (
+                .map((project: BasicProject) => (
                   <AdminProjectDisplay
                     key={project.cuid}
                     project={project}

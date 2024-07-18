@@ -1,22 +1,16 @@
-import axios, { AxiosError } from "axios";
-import toast from "react-hot-toast";
 import { useState } from "react";
+import toast from "react-hot-toast";
+import axios, { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
-import { CommonConsultant, CommonLocation } from "../../../types/common";
+
 import { CreateProjectData } from "../../../types";
 import ProjectDetailsSection from "./DetailsSection";
+import ResponsiveDialog from "../../ResponsiveDialog";
 import ProjectLocationsSection from "./LocationsSection";
 import ProjectCandidateHoldersSection from "./CandidateHoldersSection";
+import { CommonConsultant, CommonLocation } from "../../../types/common";
 
-import {
-  Box,
-  Button,
-  Divider,
-  Modal,
-  ModalClose,
-  ModalDialog,
-  ModalOverflow,
-} from "@mui/joy";
+import { Button, Divider, Stack } from "@mui/joy";
 
 // Define the interface for the error response data
 interface ErrorResponseData {
@@ -71,40 +65,33 @@ const CreateProjectModal = ({ isOpen, setIsOpen }: CreateProjectModalProps) => {
   };
 
   return (
-    <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-      <ModalOverflow sx={{ height: "100vh", width: "100vw" }}>
-        <ModalDialog sx={{ width: { xs: "100%", sm: "600px" } }}>
-          <ModalClose onClick={() => setIsOpen(false)} />
-
-          <ProjectDetailsSection
-            projectDetails={projectDetails}
-            setProjectDetails={setProjectDetails}
-          />
-
-          <Divider />
-
-          <ProjectLocationsSection
-            locations={locations}
-            setLocations={setLocations}
-          />
-
-          <Divider />
-
-          <ProjectCandidateHoldersSection
-            candidateHolders={candidateHolders}
-            setCandidateHolders={setCandidateHolders}
-          />
-
-          <Divider />
-
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <Button size="sm" variant="solid" onClick={handleSaveProject}>
-              Create Project
-            </Button>
-          </Box>
-        </ModalDialog>
-      </ModalOverflow>
-    </Modal>
+    <ResponsiveDialog
+      open={isOpen}
+      title="Create Project"
+      handleClose={() => setIsOpen(false)}
+      actions={
+        <Button size="sm" variant="solid" onClick={handleSaveProject}>
+          Create Project
+        </Button>
+      }
+    >
+      <Stack spacing={1}>
+        <ProjectDetailsSection
+          projectDetails={projectDetails}
+          setProjectDetails={setProjectDetails}
+        />
+        <Divider />
+        <ProjectLocationsSection
+          locations={locations}
+          setLocations={setLocations}
+        />
+        <Divider />
+        <ProjectCandidateHoldersSection
+          candidateHolders={candidateHolders}
+          setCandidateHolders={setCandidateHolders}
+        />
+      </Stack>
+    </ResponsiveDialog>
   );
 };
 

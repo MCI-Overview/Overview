@@ -110,7 +110,7 @@ export default function ViewClaim({
       >
         <img
           src={receiptPreview}
-          alt="Receipt"
+          alt="Receipt Image"
           style={{
             width: "100%",
             height: "auto",

@@ -53,7 +53,7 @@ const CollaboratorsTable = ({
                 </Select>
               ) : (
                 <Typography level="body-md">
-                  {readableEnum(consultant.role)}
+                  {readableEnum(consultant.role || "")}
                 </Typography>
               )}
             </td>

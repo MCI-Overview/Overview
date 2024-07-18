@@ -768,14 +768,11 @@ candidateAPIRoutes.get(
     try {
       const command = new GetObjectCommand({
         Bucket: process.env.S3_BUCKET_NAME!,
-        Key: `${candidateCuid}/nric/front`,
+        Key: `users/${candidateCuid}/nric/front`,
       });
 
-      console.log("----\n", command, "\n----");
-
-      console.log("yes");
       const response = await s3.send(command);
-      console.log("no");
+
       if (response.Body instanceof Readable) {
         return response.Body.pipe(res);
       } else {
@@ -846,7 +843,7 @@ candidateAPIRoutes.get(
     try {
       const command = new GetObjectCommand({
         Bucket: process.env.S3_BUCKET_NAME!,
-        Key: `${candidateCuid}/nric/back`,
+        Key: `users/${candidateCuid}/nric/back`,
       });
 
       const response = await s3.send(command);
