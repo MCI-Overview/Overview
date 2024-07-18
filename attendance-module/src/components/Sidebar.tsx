@@ -24,8 +24,6 @@ import {
   GroupRounded as GroupIcon,
   PersonRounded as PersonIcon,
   LogoutRounded as LogoutIcon,
-  SupportRounded as SupportIcon,
-  SettingsRounded as SettingsIcon,
   AccountTreeRounded as AccountTreeIcon,
   WorkHistoryRounded as WorkHistoryIcon,
 } from "@mui/icons-material";
