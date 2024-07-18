@@ -42,7 +42,11 @@ const AdminProjectAttendanceEditModal = ({
             if (!updatefields.clockIn) {
                 return "NO_SHOW";
             }
-            if (dayjs(updatefields.clockIn).isBefore(selectedAtt.shiftStart) || dayjs(updatefields.clockIn).isSame(selectedAtt.shiftStart)) {
+
+            const clockInTime = dayjs(updatefields.clockIn).format('HH:mm:ss');
+            const shiftStartTime = dayjs(selectedAtt.shiftStart).format('HH:mm:ss');
+
+            if (clockInTime <= shiftStartTime) {
                 return "ON_TIME";
             }
             return "LATE";
@@ -85,7 +89,7 @@ const AdminProjectAttendanceEditModal = ({
         const { name, value } = e.target;
         setUpdateFields(prevFields => ({
             ...prevFields,
-            [name]: dayjs(value, 'HH:mm')
+            [name]: value ? dayjs(value, 'HH:mm') : null
         }));
     };
 
@@ -161,7 +165,12 @@ const AdminProjectAttendanceEditModal = ({
                     <Grid xs={12} sm={6}>
                         <FormControl>
                             <FormLabel>Location</FormLabel>
-                            <Select onChange={handleSelectChange} name="postalCode" placeholder="Select Location" defaultValue={updatefields.postalCode}>
+                            <Select
+                                onChange={handleSelectChange}
+                                name="postalCode"
+                                placeholder="Select Location"
+                                value={updatefields.postalCode || null}
+                            >
                                 <Option value={null}>-</Option>
                                 {locationOptions.map(option => (
                                     <Option key={option.value} value={option.value}>
