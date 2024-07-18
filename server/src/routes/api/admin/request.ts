@@ -301,6 +301,7 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
         rosterCuid: true,
         data: true,
         type: true,
+        Roster: true,
         Assign: {
           select: {
             Project: {

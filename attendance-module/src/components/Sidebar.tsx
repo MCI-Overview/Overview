@@ -97,14 +97,14 @@ const SideBarList = ({ isAdmin }: SideBarListProps) => {
         navigate("/admin/candidates");
       },
     },
-    {
-      name: "Requests",
-      icon: <MailIcon />,
-      onClick: () => {
-        closeSidebar();
-        navigate("/admin/requests");
-      },
-    },
+    // {
+    //   name: "Requests",
+    //   icon: <MailIcon />,
+    //   onClick: () => {
+    //     closeSidebar();
+    //     navigate("/admin/requests");
+    //   },
+    // },
   ];
 
   const fields = isAdmin ? adminSideBarFields : userSideBarFields;
@@ -213,7 +213,7 @@ export default function Sidebar() {
         }}
       >
         <SideBarList isAdmin={user?.userType === "Admin"} />
-        <List
+        {/* <List
           size="sm"
           sx={{
             mt: "auto",
@@ -235,7 +235,7 @@ export default function Sidebar() {
               Settings
             </ListItemButton>
           </ListItem>
-        </List>
+        </List> */}
       </Box>
       <Divider />
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>

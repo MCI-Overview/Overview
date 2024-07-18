@@ -18,7 +18,11 @@ export default function LateCount({ count, total }: LateCountProps) {
       }}
     >
       <CardContent orientation="horizontal">
-        <CircularProgress size="lg" determinate value={(count / total) * 100}>
+        <CircularProgress
+          size="lg"
+          determinate
+          value={total > 0 ? (count / total) * 100 : 0}
+        >
           <WatchLaterIcon />
         </CircularProgress>
         <CardContent>
@@ -28,6 +32,6 @@ export default function LateCount({ count, total }: LateCountProps) {
           <Typography level="h2">{count}</Typography>
         </CardContent>
       </CardContent>
-    </Card>
+    </Card >
   );
 }
