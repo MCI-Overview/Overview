@@ -18,6 +18,7 @@ export type CreateShiftData = {
   endTime: string | null;
   halfDayStartTime: string | null;
   halfDayEndTime: string | null;
+  timezone: string;
 };
 
 export type Manage = {

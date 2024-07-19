@@ -1,6 +1,7 @@
-import axios, { AxiosError } from "axios";
+import dayjs from "dayjs";
 import toast from "react-hot-toast";
 import { useRef, useState } from "react";
+import axios, { AxiosError } from "axios";
 
 import { CreateShiftData } from "../../../types";
 import ResponsiveDialog from "../../ResponsiveDialog";
@@ -45,6 +46,7 @@ export default function CreateShiftModal() {
     halfDayStartTime: null,
     halfDayEndTime: null,
     breakDuration: null,
+    timezone: dayjs.tz.guess(),
   });
   const breakDurationInputRef = useRef<HTMLInputElement>(null);
   const shiftDuration = getShiftDuration(
@@ -69,6 +71,7 @@ export default function CreateShiftModal() {
         halfDayStartTime: null,
         halfDayEndTime: null,
         breakDuration: null,
+        timezone: shiftData.timezone,
       });
     } catch (error) {
       const axiosError = error as AxiosError;

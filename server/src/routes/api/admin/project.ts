@@ -567,9 +567,12 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
 
   const start = typeof weekStart === "string" ? weekStart : undefined;
   const end = typeof endDate === "string" ? endDate : undefined;
-  const formattedWeekStart = dayjs(start).startOf('day').toDate();
-  const formattedWeekEnd = dayjs(end).endOf('day').toDate();
-  const difference = dayjs(formattedWeekEnd).diff(dayjs(formattedWeekStart), 'day'); // Including the end day
+  const formattedWeekStart = dayjs(start).startOf("day").toDate();
+  const formattedWeekEnd = dayjs(end).endOf("day").toDate();
+  const difference = dayjs(formattedWeekEnd).diff(
+    dayjs(formattedWeekStart),
+    "day"
+  ); // Including the end day
 
   try {
     // Fetch attendance data
@@ -600,7 +603,10 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
 
     attendanceResponse.forEach((item) => {
       if (item.shiftDate && item.status) {
-        const dayOfWeek = dayjs(item.shiftDate).diff(dayjs(formattedWeekStart), 'day'); // Get the day index from week start
+        const dayOfWeek = dayjs(item.shiftDate).diff(
+          dayjs(formattedWeekStart),
+          "day"
+        ); // Get the day index from week start
         if (item.status === "MEDICAL") {
           totals.MEDICAL[dayOfWeek] += item._count.status;
         } else if (item.leave === "FULLDAY") {
@@ -632,20 +638,20 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
           shiftDate: {
             gt: formattedWeekStart,
             lte: formattedWeekEnd,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     const expenses = {
       medical: 0,
       transport: 0,
-      others: 0
+      others: 0,
     };
 
     claimsResponse.reduce<{ [key: string]: number }>((acc, claim) => {
       // Parse the data JSON
-      const data = claim.data as { claimType: string, claimAmount: string };
+      const data = claim.data as { claimType: string; claimAmount: string };
 
       // Extract claimType and claimAmount
       const { claimType, claimAmount } = data;
@@ -1239,7 +1245,8 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
   }
 
   try {
-    return await prisma.$transaction(async (prisma) => {
+    return await prisma.$transaction(
+      async (prisma) => {
       const candidateData = await prisma.candidate.createManyAndReturn({
         data: candidateObjects,
         skipDuplicates: true,
@@ -1294,14 +1301,18 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
       const alreadyAssignedCandidates = candidatesInDb
         .filter(
           (cdd) =>
-            !createdAssigns.some((assign) => assign.candidateCuid === cdd.cuid)
+              !createdAssigns.some(
+                (assign) => assign.candidateCuid === cdd.cuid
+              )
         )
         .map((cdd) => cdd.cuid);
 
       return res.send(alreadyAssignedCandidates);
-    }, {
-      timeout: candidates.length * 2000
-    });
+      },
+      {
+        timeout: candidates.length * 2000,
+      }
+    );
   } catch (error) {
     const err = error as PrismaError;
     console.log(err);
@@ -1385,6 +1396,7 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
     halfDayEndTime,
     halfDayStartTime,
     breakDuration,
+    timezone,
   } = req.body;
 
   if (!startTime) return res.status(400).send("startTime is required.");
@@ -1415,20 +1427,25 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
     return res.status(400).send(timeValidity.message);
   }
 
-  const startTimeObject = new Date();
   const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
-  startTimeObject.setHours(startTimeHour, startTimeMinute, 0, 0);
+  const startTimeObject = dayjs()
+    .set("hour", startTimeHour)
+    .set("minute", startTimeMinute)
+    .startOf("minute")
+    .tz(timezone, true);
 
-  const endTimeObject = new Date();
   const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
-  endTimeObject.setHours(endTimeHour, endTimeMinute, 0, 0);
+  let endTimeObject = dayjs()
+    .set("hour", endTimeHour)
+    .set("minute", endTimeMinute)
+    .startOf("minute")
+    .tz(timezone, true);
 
-  if (startTimeObject >= endTimeObject) {
-    endTimeObject.setDate(endTimeObject.getDate() + 1);
+  if (startTimeObject.isAfter(endTimeObject)) {
+    endTimeObject = endTimeObject.add(1, "day");
   }
 
-  const shiftDuration =
-    (endTimeObject.getTime() - startTimeObject.getTime()) / 1000 / 60 / 60;
+  const shiftDuration = endTimeObject.diff(startTimeObject, "hour", true);
 
   if (shiftDuration >= 8 && breakDuration < 45) {
     return res

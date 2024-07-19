@@ -13,6 +13,7 @@ import axiosRetry from "axios-retry";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import isoWeek from "dayjs/plugin/isoWeek";
+import timezone from "dayjs/plugin/timezone";
 import isBetween from "dayjs/plugin/isBetween";
 import relativeTime from "dayjs/plugin/relativeTime";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -44,6 +45,7 @@ dayjs.extend(isoWeek);
 dayjs.extend(utc);
 dayjs.extend(customParseFormat);
 dayjs.extend(relativeTime);
+dayjs.extend(timezone);
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
