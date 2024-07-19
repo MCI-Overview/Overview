@@ -13,7 +13,6 @@ import {
   GetProjectDataResponse,
   User,
   CommonLocation,
-  CommonShiftGroup,
   CopyAttendanceResponse,
 } from "@/types/common";
 import {
@@ -27,7 +26,6 @@ import {
   maskNRIC,
 } from "../../../utils";
 import bcrypt from "bcrypt";
-import customParseFormat from "dayjs/plugin/customParseFormat";
 
 import {
   PERMISSION_ERROR_TEMPLATE,
@@ -39,8 +37,6 @@ import dayjs from "dayjs";
 import { doesClash } from "../../../utils/clash";
 
 const projectAPIRouter: Router = Router();
-
-dayjs.extend(customParseFormat);
 
 projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
   const user = req.user as User;
@@ -109,7 +105,6 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
       distanceRadius,
       status,
       Client,
-      shiftGroups,
       Shift,
       Assign,
       Manage,
@@ -128,7 +123,6 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
       timeWindow,
       distanceRadius,
       status,
-      shiftGroups: shiftGroups as unknown as CommonShiftGroup[],
       shifts: Shift.map((shift) => ({
         ...shift,
         startTime: shift.startTime.toISOString(),
@@ -266,23 +260,23 @@ projectAPIRouter.get(
             const startTime =
               cr.shiftType === "SECOND_HALF"
                 ? dayjs(cr.Shift.halfDayStartTime)
-                  .set("date", startDate.date())
-                  .set("month", startDate.month())
-                  .set("year", startDate.year())
+                    .set("date", startDate.date())
+                    .set("month", startDate.month())
+                    .set("year", startDate.year())
                 : dayjs(cr.Shift.startTime)
-                  .set("date", startDate.date())
-                  .set("month", startDate.month())
-                  .set("year", startDate.year());
+                    .set("date", startDate.date())
+                    .set("month", startDate.month())
+                    .set("year", startDate.year());
             const endTime =
               cr.shiftType === "FIRST_HALF"
                 ? dayjs(cr.Shift.halfDayEndTime)
-                  .set("date", startDate.date())
-                  .set("month", startDate.month())
-                  .set("year", startDate.year())
+                    .set("date", startDate.date())
+                    .set("month", startDate.month())
+                    .set("year", startDate.year())
                 : dayjs(cr.Shift.endTime)
-                  .set("date", startDate.date())
-                  .set("month", startDate.month())
-                  .set("year", startDate.year());
+                    .set("date", startDate.date())
+                    .set("month", startDate.month())
+                    .set("year", startDate.year());
 
             // TODO: Hide other project roster irrelevant data
             return {
@@ -1028,7 +1022,6 @@ projectAPIRouter.patch("/project", async (req, res) => {
     timeWindow,
     distanceRadius,
     candidateHolders,
-    shiftGroups,
     noticePeriodDuration,
     noticePeriodUnit,
   } = req.body;
@@ -1107,7 +1100,6 @@ projectAPIRouter.patch("/project", async (req, res) => {
     ...(candidateHolders && {
       candidateHolders,
     }),
-    ...(shiftGroups && { shiftGroups }),
     ...(noticePeriodDuration && { noticePeriodDuration }),
     ...(noticePeriodUnit && { noticePeriodUnit }),
   };
@@ -1247,67 +1239,67 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
   try {
     return await prisma.$transaction(
       async (prisma) => {
-      const candidateData = await prisma.candidate.createManyAndReturn({
-        data: candidateObjects,
-        skipDuplicates: true,
-      });
+        const candidateData = await prisma.candidate.createManyAndReturn({
+          data: candidateObjects,
+          skipDuplicates: true,
+        });
 
-      await Promise.all(
-        candidateData.map((cdd) =>
-          prisma.user.create({
-            data: {
-              hash: bcrypt.hashSync(cdd.contact, 12),
-              username: cdd.nric,
-              Candidate: {
-                connect: {
-                  cuid: cdd.cuid,
+        await Promise.all(
+          candidateData.map((cdd) =>
+            prisma.user.create({
+              data: {
+                hash: bcrypt.hashSync(cdd.contact, 12),
+                username: cdd.nric,
+                Candidate: {
+                  connect: {
+                    cuid: cdd.cuid,
+                  },
                 },
               },
+            })
+          )
+        );
+
+        // retrieve cuids
+        const candidatesInDb = await prisma.candidate.findMany({
+          where: {
+            nric: {
+              in: candidateObjects.map((cdd) => cdd.nric),
             },
-          })
-        )
-      );
-
-      // retrieve cuids
-      const candidatesInDb = await prisma.candidate.findMany({
-        where: {
-          nric: {
-            in: candidateObjects.map((cdd) => cdd.nric),
           },
-        },
-      });
+        });
 
-      const assignData = candidatesInDb.map((cdd) => {
-        return {
-          candidateCuid: cdd.cuid,
-          consultantCuid: user.cuid,
-          projectCuid: projectCuid,
-          startDate: new Date(
-            candidates.find((c) => c.nric === cdd.nric).startDate
-          ),
-          endDate: new Date(
-            candidates.find((c) => c.nric === cdd.nric).endDate
-          ),
-          employmentType: candidates.find((c) => c.nric === cdd.nric)
-            .employmentType as EmploymentType,
-        };
-      });
+        const assignData = candidatesInDb.map((cdd) => {
+          return {
+            candidateCuid: cdd.cuid,
+            consultantCuid: user.cuid,
+            projectCuid: projectCuid,
+            startDate: new Date(
+              candidates.find((c) => c.nric === cdd.nric).startDate
+            ),
+            endDate: new Date(
+              candidates.find((c) => c.nric === cdd.nric).endDate
+            ),
+            employmentType: candidates.find((c) => c.nric === cdd.nric)
+              .employmentType as EmploymentType,
+          };
+        });
 
-      const createdAssigns = await prisma.assign.createManyAndReturn({
-        data: assignData,
-        skipDuplicates: true,
-      });
+        const createdAssigns = await prisma.assign.createManyAndReturn({
+          data: assignData,
+          skipDuplicates: true,
+        });
 
-      const alreadyAssignedCandidates = candidatesInDb
-        .filter(
-          (cdd) =>
+        const alreadyAssignedCandidates = candidatesInDb
+          .filter(
+            (cdd) =>
               !createdAssigns.some(
                 (assign) => assign.candidateCuid === cdd.cuid
               )
-        )
-        .map((cdd) => cdd.cuid);
+          )
+          .map((cdd) => cdd.cuid);
 
-      return res.send(alreadyAssignedCandidates);
+        return res.send(alreadyAssignedCandidates);
       },
       {
         timeout: candidates.length * 2000,
@@ -1532,8 +1524,6 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
 
   return res.send("Shift created successfully.");
 });
-
-// TODO: check for clashes in timings with existing shifts (For shift groups)
 
 projectAPIRouter.get(
   "/project/:projectCuid/attendance/:date&:candidateCuid",

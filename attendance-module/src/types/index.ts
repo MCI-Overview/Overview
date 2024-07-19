@@ -58,7 +58,6 @@ export type Project = {
   clientUEN: string;
   employmentBy: string;
   locations: JSON;
-  shiftGroups: JSON;
   createdAt: Date;
   endDate: Date;
   startDate: Date;

@@ -99,17 +99,11 @@ export type CommonShift = {
   halfDayEndTime: Dayjs | null;
 };
 
-export type CommonShiftGroup = {
-  name: string;
-  shifts: CommonShift[];
-};
-
 export type CommonProject = {
   cuid: string;
   name: string;
   employmentBy: string;
   locations: CommonLocation[];
-  shiftGroups: CommonShiftGroup[];
   startDate: Dayjs;
   endDate: Dayjs;
   createdAt: Dayjs;
@@ -133,7 +127,6 @@ export type GetProjectDataResponse = {
   name: string;
   employmentBy: string;
   locations: CommonLocation[];
-  shiftGroups: CommonShiftGroup[];
   startDate: string;
   endDate: string;
   createdAt: string;
