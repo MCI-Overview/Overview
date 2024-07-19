@@ -216,9 +216,6 @@ export default function RosterTable({ type }: RosterTableProps) {
                   sx={{
                     display: type === "ATTENDANCE" ? "none" : "block",
                   }}
-                  defaultChecked={
-                    selectedCandidates.length === sortedCandidates.length
-                  }
                   checked={
                     selectedCandidates.length > 0 &&
                     selectedCandidates.length === sortedCandidates.length
@@ -254,9 +251,6 @@ export default function RosterTable({ type }: RosterTableProps) {
                       sx={{
                         display: type === "ATTENDANCE" ? "none" : "block",
                       }}
-                      defaultChecked={dates.some((otherDate) =>
-                        otherDate.isSame(date, "day")
-                      )}
                       checked={dates.some((otherDate) =>
                         otherDate.isSame(date, "day")
                       )}
@@ -301,7 +295,6 @@ export default function RosterTable({ type }: RosterTableProps) {
                       sx={{
                         display: type === "ATTENDANCE" ? "none" : "block",
                       }}
-                      defaultChecked={selectedCandidates.includes(cuid)}
                       checked={selectedCandidates.includes(cuid)}
                       onChange={(e) => {
                         setSelectedCandidates(
