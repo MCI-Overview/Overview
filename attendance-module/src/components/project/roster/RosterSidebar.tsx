@@ -1,8 +1,11 @@
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
 
 import NewDeleteBin from "./DeleteBin";
 import CreateShiftModal from "./CreateShiftModal";
+import { CommonShift } from "../../../types/common";
+import DraggableRosterChip from "./DraggableRosterChip";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { useRosterContext } from "../../../providers/rosterContextProvider";
 
@@ -27,8 +30,6 @@ import {
   HourglassTopRounded as HourglassTopIcon,
   HourglassBottomRounded as HourglassBottomIcon,
 } from "@mui/icons-material";
-import { useState } from "react";
-import DraggableRosterChip from "./DraggableRosterChip";
 
 export default function RosterSidebar() {
   const { project, updateProject } = useProjectContext();
@@ -37,6 +38,87 @@ export default function RosterSidebar() {
   const [filterState, setFilterState] = useState<
     "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF"
   >("FULL_DAY");
+
+  const [filteredShifts, setFilteredShifts] = useState<{
+    FULL_DAY: (CommonShift & {
+      type: "FULL_DAY";
+    })[];
+    FIRST_HALF: (CommonShift & {
+      type: "FIRST_HALF";
+    })[];
+    SECOND_HALF: (CommonShift & {
+      type: "SECOND_HALF";
+    })[];
+  }>({
+    FULL_DAY: [],
+    FIRST_HALF: [],
+    SECOND_HALF: [],
+  });
+
+  useEffect(() => {
+    if (!project) return;
+
+    const shifts = project.shifts
+      .flatMap((shift) => {
+        if (shift.halfDayStartTime && shift.halfDayEndTime) {
+          return [
+            {
+              ...shift,
+              type: "FULL_DAY",
+              startTime: shift.startTime,
+              endTime: shift.endTime,
+            },
+            {
+              ...shift,
+              type: "FIRST_HALF",
+              startTime: shift.startTime,
+              endTime: shift.halfDayEndTime,
+            },
+            {
+              ...shift,
+              type: "SECOND_HALF",
+              startTime: shift.halfDayStartTime,
+              endTime: shift.endTime,
+            },
+          ];
+        }
+
+        return {
+          ...shift,
+          type: "FULL_DAY",
+          startTime: shift.startTime,
+          endTime: shift.endTime,
+        };
+      })
+      .sort((a, b) => (a.startTime.isBefore(b.startTime) ? -1 : 1));
+
+    setFilteredShifts({
+      FULL_DAY: shifts.filter(
+        (shift) => shift.type === "FULL_DAY"
+      ) as (CommonShift & {
+        type: "FULL_DAY";
+      })[],
+      FIRST_HALF: shifts.filter(
+        (shift) => shift.type === "FIRST_HALF"
+      ) as (CommonShift & {
+        type: "FIRST_HALF";
+      })[],
+      SECOND_HALF: shifts.filter(
+        (shift) => shift.type === "SECOND_HALF"
+      ) as (CommonShift & {
+        type: "SECOND_HALF";
+      })[], 
+    });
+  }, [project]);
+
+  useEffect(() => {
+    if (
+      filterState !== "FULL_DAY" &&
+      filteredShifts[filterState].length === 0
+    ) {
+      setFilterState("FULL_DAY");
+    }
+  }, [filterState, filteredShifts]);
 
   return (
     <Sheet
@@ -57,23 +139,26 @@ export default function RosterSidebar() {
       }}
     >
       <Typography level="title-lg">Shifts</Typography>
-      <ToggleButtonGroup
-        aria-label="outlined button group"
-        value={filterState}
-        onChange={(_e, value) =>
-          setFilterState(value as "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF")
-        }
-      >
-        <Button value="FULL_DAY">
-          <HourglassIcon />
-        </Button>
-        <Button value="FIRST_HALF">
-          <HourglassTopIcon />
-        </Button>
-        <Button value="SECOND_HALF">
-          <HourglassBottomIcon />
-        </Button>
-      </ToggleButtonGroup>
+      {(filteredShifts.FIRST_HALF.length > 0 ||
+        filteredShifts.SECOND_HALF.length > 0) && (
+        <ToggleButtonGroup
+          aria-label="outlined button group"
+          value={filterState}
+          onChange={(_e, value) =>
+            setFilterState(value as "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF")
+          }
+        >
+          <Button value="FULL_DAY">
+            <HourglassIcon />
+          </Button>
+          <Button value="FIRST_HALF">
+            <HourglassTopIcon />
+          </Button>
+          <Button value="SECOND_HALF">
+            <HourglassBottomIcon />
+          </Button>
+        </ToggleButtonGroup>
+      )}
       <div
         style={{
           height: "100%",
@@ -82,55 +167,20 @@ export default function RosterSidebar() {
       >
         <Table borderAxis="none">
           <tbody>
-            {project?.shifts
-              .sort((a, b) => (a.startTime.isBefore(b.startTime) ? -1 : 1))
-              .flatMap((shift) => {
-                if (shift.halfDayStartTime && shift.halfDayEndTime) {
-                  return [
-                    {
-                      ...shift,
-                      type: "FULL_DAY",
-                      startTime: shift.startTime,
-                      endTime: shift.endTime,
-                    },
-                    {
-                      ...shift,
-                      type: "FIRST_HALF",
-                      startTime: shift.startTime,
-                      endTime: shift.halfDayEndTime,
-                    },
-                    {
-                      ...shift,
-                      type: "SECOND_HALF",
-                      startTime: shift.halfDayStartTime,
-                      endTime: shift.endTime,
-                    },
-                  ];
-                }
-
-                return {
-                  ...shift,
-                  type: "FULL_DAY",
-                  startTime: shift.startTime,
-                  endTime: shift.endTime,
-                };
-              })
-              .filter((shift) => shift.type === filterState)
-              .sort((a, b) => (a.startTime.isBefore(b.startTime) ? -1 : 1))
-              .map((shift) => (
-                <tr>
-                  <td>
-                    <DraggableRosterChip
-                      type={
-                        shift.type as "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF"
-                      }
-                      shiftCuid={shift.cuid}
-                      startTime={shift.startTime}
-                      endTime={shift.endTime}
-                    />
-                  </td>
-                </tr>
-              ))}
+            {filteredShifts[filterState].map((shift) => (
+              <tr>
+                <td>
+                  <DraggableRosterChip
+                    type={
+                      shift.type as "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF"
+                    }
+                    shiftCuid={shift.cuid}
+                    startTime={shift.startTime}
+                    endTime={shift.endTime}
+                  />
+                </td>
+              </tr>
+            ))}
           </tbody>
         </Table>
       </div>

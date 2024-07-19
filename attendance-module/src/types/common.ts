@@ -207,6 +207,7 @@ export type GetCandidateResponse = {
 export type GetRosterResponse = {
   cuid: string;
   name: string;
+  nric: string;
   startDate: string;
   endDate: string;
   rosters: {

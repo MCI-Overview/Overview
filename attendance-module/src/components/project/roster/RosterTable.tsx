@@ -289,7 +289,7 @@ export default function RosterTable({ type }: RosterTableProps) {
             return (
               <tr key={cuid} onPointerEnter={() => setCandidateHoverCuid}>
                 <td>
-                  <Stack direction="row" gap={1}>
+                  <Stack direction="row" gap={1} alignItems="center">
                     <Checkbox
                       overlay
                       sx={{
@@ -304,7 +304,10 @@ export default function RosterTable({ type }: RosterTableProps) {
                         );
                       }}
                     />
-                    {candidate.name}
+                    <Stack direction="column" gap={1}>
+                      <Typography level="title-sm">{candidate.name}</Typography>
+                      <Typography level="body-xs">{candidate.nric}</Typography>
+                    </Stack>
                   </Stack>
                 </td>
                 {Array.from({

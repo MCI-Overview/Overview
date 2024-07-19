@@ -203,6 +203,7 @@ projectAPIRouter.get(
         Candidate: {
           select: {
             name: true,
+            nric: true,
           },
         },
       },
@@ -251,6 +252,7 @@ projectAPIRouter.get(
       return {
         cuid: c.candidateCuid,
         name: c.Candidate.name,
+        nric: maskNRIC(c.Candidate.nric),
         startDate: c.startDate,
         endDate: c.endDate,
         rosters: candidateRoster
@@ -723,6 +725,7 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
   }
 });
 
+// Add permission check for root
 projectAPIRouter.delete("/roster/:rosterCuid", async (req, res) => {
   const user = req.user as User;
   const { rosterCuid } = req.params;
