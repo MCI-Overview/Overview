@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-import { useRosterContext } from "../../../providers/rosterContextProvider";
+import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import {
@@ -26,7 +26,7 @@ export default function WeekPicker() {
     setSortOrderBy,
     setWeekOffset,
     setDates,
-  } = useRosterContext();
+  } = useRosterTableContext();
   const projectStartDate = dayjs(project?.startDate);
   const projectEndDate = dayjs(project?.endDate);
 

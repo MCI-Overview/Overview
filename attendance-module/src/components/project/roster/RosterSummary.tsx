@@ -1,6 +1,6 @@
 import { Stack, Tooltip, Typography } from "@mui/joy";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { useRosterContext } from "../../../providers/rosterContextProvider";
+import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 import { seedToColor } from "../../../utils/colors";
 import SummaryDisplayItem from "./SummaryDisplayItem";
 import { RosterDisplayProps } from "./RosterDisplay";
@@ -16,7 +16,7 @@ type RosterSummary = {
 
 export default function RosterSummary() {
   const { project } = useProjectContext();
-  const { rosterData, dateRangeStart, dateRangeEnd } = useRosterContext();
+  const { rosterData, dateRangeStart, dateRangeEnd } = useRosterTableContext();
 
   if (!rosterData || !project) return null;
 

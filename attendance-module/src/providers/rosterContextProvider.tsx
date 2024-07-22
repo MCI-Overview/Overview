@@ -29,7 +29,7 @@ type MappedRosterResponse = {
   };
 };
 
-const RosterContext = createContext<{
+const RosterTableContext = createContext<{
   days: number[];
   item: DraggableRosterProps | DraggableRosterChipProps | null;
   dates: dayjs.Dayjs[];
@@ -93,7 +93,11 @@ const RosterContext = createContext<{
   setCandidateHoverCuid: () => {},
 });
 
-export function RosterContextProvider({ children }: { children: ReactNode }) {
+export function RosterTableContextProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const { project } = useProjectContext();
   const [rosterData, setRosterData] = useState<MappedRosterResponse | null>(
     null
@@ -342,7 +346,7 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <RosterContext.Provider
+    <RosterTableContext.Provider
       value={{
         days,
         item,
@@ -376,12 +380,12 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-    </RosterContext.Provider>
+    </RosterTableContext.Provider>
   );
 }
 
-export function useRosterContext() {
-  const context = useContext(RosterContext);
+export function useRosterTableContext() {
+  const context = useContext(RosterTableContext);
   if (context === undefined) {
     throw new Error(
       "useRosterContext must be used within a RosterContextProvider"

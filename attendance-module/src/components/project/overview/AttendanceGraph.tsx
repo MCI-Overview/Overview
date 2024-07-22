@@ -80,14 +80,14 @@ const AttendanceGraph: React.FC<AttendanceGraphProps> = ({
   weekStart,
   endDate,
 }) => {
-  console.log("received dates:", weekStart, "end date", endDate);
-  console.log("datasets:", datasets)
-  const start = dayjs(weekStart).startOf('day');
-  const end = dayjs(endDate).endOf('day');
+  const start = dayjs(weekStart).startOf("day");
+  const end = dayjs(endDate).endOf("day");
   const days = end.diff(start, "day") + 1;
-  console.log('days count:', days);
   const labels = Array.from({ length: days }, (_, index) =>
-    start.add(index - 1, "day").add(1, "day").format("ddd DD/MM")
+    start
+      .add(index - 1, "day")
+      .add(1, "day")
+      .format("ddd DD/MM")
   );
 
   const data = {

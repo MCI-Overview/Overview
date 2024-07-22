@@ -8,13 +8,13 @@ import {
 } from "../../../utils/colors";
 import { RosterDisplayProps } from "./RosterDisplay";
 import SummaryDisplayItem from "./SummaryDisplayItem";
-import { useRosterContext } from "../../../providers/rosterContextProvider";
+import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import { Typography } from "@mui/joy";
 
 export default function AttendanceSummary() {
   const { project } = useProjectContext();
-  const { rosterData, dateRangeStart, dateRangeEnd } = useRosterContext();
+  const { rosterData, dateRangeStart, dateRangeEnd } = useRosterTableContext();
 
   if (!rosterData || !project) return null;
 

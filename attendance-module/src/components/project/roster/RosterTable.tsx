@@ -6,7 +6,7 @@ import DroppableArea from "./DroppableArea";
 import RosterSummary from "./RosterSummary";
 import AttendanceSummary from "./AttendanceSummary";
 import { RosterDisplayProps } from "./RosterDisplay";
-import { useRosterContext } from "../../../providers/rosterContextProvider";
+import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import { Checkbox, Sheet, Stack, Table, Typography } from "@mui/joy";
@@ -32,7 +32,7 @@ export default function RosterTable({ type }: RosterTableProps) {
     setHoverDate,
     setSelectedCandidates,
     setCandidateHoverCuid,
-  } = useRosterContext();
+  } = useRosterTableContext();
 
   const [sortedCandidates, setSortedCandidates] = useState<string[]>([]);
 

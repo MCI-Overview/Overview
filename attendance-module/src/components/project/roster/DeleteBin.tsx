@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 
 import { DraggableRosterChipProps } from "./DraggableRosterChip";
 import { DraggableRosterProps } from "./DraggableRoster";
-import { useRosterContext } from "../../../providers/rosterContextProvider";
+import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import { Delete } from "@mui/icons-material";
@@ -12,7 +12,7 @@ import { Card, Tooltip, Typography } from "@mui/joy";
 
 const NewDeleteBin = () => {
   const { updateProject } = useProjectContext();
-  const { updateRosterData } = useRosterContext();
+  const { updateRosterData } = useRosterTableContext();
 
   const [{ isOver }, drop] = useDrop({
     accept: ["shift", "roster"],
