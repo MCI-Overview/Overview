@@ -30,7 +30,6 @@ type MappedRosterResponse = {
 };
 
 const RosterTableContext = createContext<{
-  days: number[];
   item: DraggableRosterProps | DraggableRosterChipProps | null;
   dates: dayjs.Dayjs[];
   itemType: "shift" | "roster" | null;
@@ -43,10 +42,8 @@ const RosterTableContext = createContext<{
   draggingCuid: string | null;
   dateRangeEnd: dayjs.Dayjs;
   dateRangeStart: dayjs.Dayjs;
-  validCandidates: string[];
   selectedCandidates: string[];
   candidateHoverCuid: string | null;
-  setDays: (days: number[]) => void;
   setItem: (
     item: DraggableRosterProps | DraggableRosterChipProps | null
   ) => void;
@@ -62,7 +59,6 @@ const RosterTableContext = createContext<{
   setSelectedCandidates: (cuids: string[]) => void;
   setCandidateHoverCuid: (cuid: string | null) => void;
 }>({
-  days: [],
   item: null,
   dates: [],
   itemType: null,
@@ -75,11 +71,9 @@ const RosterTableContext = createContext<{
   draggingCuid: null,
   dateRangeEnd: dayjs(),
   dateRangeStart: dayjs(),
-  validCandidates: [],
   candidateHoverCuid: null,
   selectedCandidates: [],
   setItem: () => {},
-  setDays: () => {},
   setDates: () => {},
   setItemType: () => {},
   setSortOrder: () => {},
@@ -120,7 +114,6 @@ export function RosterTableContextProvider({
   const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
 
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
-  const [days, setDays] = useState<number[]>([]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [sortOrderBy, setSortOrderBy] = useState<"name" | "assign">("name");
 
@@ -348,7 +341,6 @@ export function RosterTableContextProvider({
   return (
     <RosterTableContext.Provider
       value={{
-        days,
         item,
         dates,
         itemType,
@@ -362,9 +354,7 @@ export function RosterTableContextProvider({
         dateRangeStart,
         selectedCandidates,
         candidateHoverCuid,
-        validCandidates: [],
         rosterData: memomizedMergedData,
-        setDays,
         setItem,
         setDates,
         setItemType,
