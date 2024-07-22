@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useDrop } from "react-dnd";
+import { useEffect, useState } from "react";
 
 import DroppableArea from "./DroppableArea";
 import RosterSummary from "./RosterSummary";
@@ -32,6 +33,8 @@ export default function RosterTable({ type }: RosterTableProps) {
     setSelectedCandidates,
     setCandidateHoverCuid,
   } = useRosterContext();
+
+  const [sortedCandidates, setSortedCandidates] = useState<string[]>([]);
 
   const [{ item, itemType }, drop] = useDrop({
     accept: ["shift", "roster", "candidate"],
@@ -88,39 +91,45 @@ export default function RosterTable({ type }: RosterTableProps) {
     }),
   });
 
+  useEffect(() => {
+    if (!rosterData) return;
+
+    let sortedCandidates = Object.keys(rosterData);
+
+    if (sortOrderBy === "name") {
+      sortedCandidates = Object.keys(rosterData).sort((a, b) =>
+        rosterData[a].name.localeCompare(rosterData[b].name)
+      );
+    }
+
+    if (sortOrder === "desc") {
+      sortedCandidates = sortedCandidates.reverse();
+    }
+
+    if (sortOrderBy === "assign") {
+      sortedCandidates = Object.keys(rosterData).sort((a, b) => {
+        if (
+          rosterData[a].rosterLength === 0 &&
+          rosterData[b].rosterLength === 0
+        ) {
+          return a.localeCompare(b);
+        }
+        if (rosterData[a].rosterLength === 0) {
+          return sortOrder === "asc" ? 1 : -1;
+        }
+        if (rosterData[b].rosterLength === 0) {
+          return sortOrder === "asc" ? -1 : 1;
+        }
+
+        return a.localeCompare(b);
+      });
+    }
+
+    setSortedCandidates(sortedCandidates);
+  }, [rosterData, sortOrder, sortOrderBy]);
+
   if (!dateRangeStart || !dateRangeEnd || !project || !rosterData) {
     return null;
-  }
-
-  let sortedCandidates = Object.keys(rosterData);
-
-  if (sortOrderBy === "name") {
-    sortedCandidates = Object.keys(rosterData).sort((a, b) =>
-      rosterData[a].name.localeCompare(rosterData[b].name)
-    );
-  }
-
-  if (sortOrder === "desc") {
-    sortedCandidates = sortedCandidates.reverse();
-  }
-
-  if (sortOrderBy === "assign") {
-    sortedCandidates = Object.keys(rosterData).sort((a, b) => {
-      if (
-        rosterData[a].rosterLength === 0 &&
-        rosterData[b].rosterLength === 0
-      ) {
-        return a.localeCompare(b);
-      }
-      if (rosterData[a].rosterLength === 0) {
-        return sortOrder === "asc" ? 1 : -1;
-      }
-      if (rosterData[b].rosterLength === 0) {
-        return sortOrder === "asc" ? -1 : 1;
-      }
-
-      return a.localeCompare(b);
-    });
   }
 
   const processedRoster = sortedCandidates.reduce((acc, cuid) => {

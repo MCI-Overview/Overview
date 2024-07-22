@@ -7,11 +7,10 @@ import { RosterDisplayProps } from "./RosterDisplay";
 
 type RosterSummary = {
   shiftCuid: string;
-  FULL_DAY?: number;
-  FIRST_HALF?: number;
-  SECOND_HALF?: number;
+  FULL_DAY: number;
+  FIRST_HALF: number;
+  SECOND_HALF: number;
   OVERLAP?: number;
-  TOTAL?: number;
   data?: RosterDisplayProps["data"];
 };
 
@@ -44,15 +43,16 @@ export default function RosterSummary() {
       if (!acc[roster.shiftCuid]) {
         acc[roster.shiftCuid] = {
           shiftCuid: roster.shiftCuid,
+          FULL_DAY: 0,
+          FIRST_HALF: 0,
+          SECOND_HALF: 0,
         };
       }
 
-      if (roster.state === "PREVIEW") return acc;
+      // if (roster.state === "PREVIEW") return acc;
 
       acc[roster.shiftCuid][roster.type] =
-        (acc[roster.shiftCuid][roster.type] || 0) + 1;
-      acc[roster.shiftCuid]["TOTAL"] =
-        (acc[roster.shiftCuid]["TOTAL"] || 0) + 1;
+        acc[roster.shiftCuid][roster.type] + 1;
       acc[roster.shiftCuid]["data"] = roster;
 
       return acc;
@@ -108,7 +108,11 @@ export default function RosterSummary() {
                           text={`${startTime.format("HHmm")} - ${endTime.format(
                             "HHmm"
                           )}`}
-                          count={roster.TOTAL || 0}
+                          count={
+                            roster.FIRST_HALF +
+                            roster.SECOND_HALF +
+                            roster.FULL_DAY
+                          }
                         />
                       </Tooltip>
                     );

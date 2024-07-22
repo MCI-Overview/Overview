@@ -6,6 +6,7 @@ import {
   useState,
   ReactNode,
   useCallback,
+  useMemo,
 } from "react";
 import { GetRosterResponse } from "../types/common";
 import axios from "axios";
@@ -18,6 +19,7 @@ import { DraggableRosterProps } from "../components/project/roster/DraggableRost
 type MappedRosterResponse = {
   [cuid: string]: {
     name: string;
+    nric: string;
     startDate: dayjs.Dayjs;
     endDate: dayjs.Dayjs;
     roster: RosterDisplayProps["data"][];
@@ -138,6 +140,7 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
           (acc, candidate) => {
             acc[candidate.cuid] = {
               name: candidate.name,
+              nric: candidate.nric,
               startDate: dayjs(candidate.startDate),
               endDate: dayjs(candidate.endDate),
               roster: candidate.rosters.map((roster) => ({
@@ -182,13 +185,10 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rosterData]);
 
-  if (!project || !dateRangeStart || !dateRangeEnd) {
-    return null;
-  }
+  const memomizedMergedData = useMemo(() => {
+    if (!rosterData || !dateRangeEnd || !dateRangeStart) return rosterData;
 
-  const mergedData =
-    rosterData &&
-    Object.keys(rosterData).reduce<MappedRosterResponse>((acc, cuid) => {
+    return Object.keys(rosterData).reduce<MappedRosterResponse>((acc, cuid) => {
       if (!rosterData) return acc;
 
       const [newRoster, possibleDates] = Array.from({
@@ -267,46 +267,46 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
             if (hasNoOverlap && itemStartTime.isAfter(dayjs())) {
               acc[1].push(date);
 
-              // if (itemType === "shift") {
-              //   const isCandidate =
-              //     selectedCandidates.includes(cuid) ||
-              //     (!selectedCandidates.length && candidateHoverCuid === cuid);
+              if (itemType === "shift") {
+                const isCandidate =
+                  selectedCandidates.includes(cuid) ||
+                  (!selectedCandidates.length && candidateHoverCuid === cuid);
 
-              //   const isDateSelected =
-              //     dates.some((d) => d.isSame(date, "day")) ||
-              //     (!dates.length && hoverDate && hoverDate.isSame(date, "day"));
+                const isDateSelected =
+                  dates.some((d) => d.isSame(date, "day")) ||
+                  (!dates.length && hoverDate && hoverDate.isSame(date, "day"));
 
-              //   if (isCandidate && isDateSelected) {
-              //     acc[0].push({
-              //       ...item,
-              //       isPartial: false,
-              //       originalStartTime: itemStartTime,
-              //       originalEndTime: itemEndTime,
-              //       startTime: itemStartTime,
-              //       endTime: itemEndTime,
-              //       state: "PREVIEW",
-              //     });
-              //   }
-              // }
+                if (isCandidate && isDateSelected) {
+                  acc[0].push({
+                    ...item,
+                    isPartial: false,
+                    originalStartTime: itemStartTime,
+                    originalEndTime: itemEndTime,
+                    startTime: itemStartTime,
+                    endTime: itemEndTime,
+                    state: "PREVIEW",
+                  });
+                }
+              }
 
-              // if (itemType === "roster") {
-              //   const isCandidate = candidateHoverCuid === cuid;
+              if (itemType === "roster") {
+                const isCandidate = candidateHoverCuid === cuid;
 
-              //   const isDateSelected =
-              //     hoverDate && hoverDate.isSame(date, "day");
+                const isDateSelected =
+                  hoverDate && hoverDate.isSame(date, "day");
 
-              //   if (isCandidate && isDateSelected) {
-              //     acc[0].push({
-              //       ...item,
-              //       isPartial: false,
-              //       originalStartTime: itemStartTime,
-              //       originalEndTime: itemEndTime,
-              //       startTime: itemStartTime,
-              //       endTime: itemEndTime,
-              //       state: "PREVIEW",
-              //     });
-              //   }
-              // }
+                if (isCandidate && isDateSelected) {
+                  acc[0].push({
+                    ...item,
+                    isPartial: false,
+                    originalStartTime: itemStartTime,
+                    originalEndTime: itemEndTime,
+                    startTime: itemStartTime,
+                    endTime: itemEndTime,
+                    state: "PREVIEW",
+                  });
+                }
+              }
 
               return acc;
             }
@@ -325,6 +325,21 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
 
       return acc;
     }, {});
+  }, [
+    rosterData,
+    dateRangeEnd,
+    dateRangeStart,
+    item,
+    itemType,
+    selectedCandidates,
+    candidateHoverCuid,
+    dates,
+    hoverDate,
+  ]);
+
+  if (!project || !dateRangeStart || !dateRangeEnd || !rosterData) {
+    return null;
+  }
 
   return (
     <RosterContext.Provider
@@ -344,7 +359,7 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
         selectedCandidates,
         candidateHoverCuid,
         validCandidates: [],
-        rosterData: mergedData,
+        rosterData: memomizedMergedData,
         setDays,
         setItem,
         setDates,
