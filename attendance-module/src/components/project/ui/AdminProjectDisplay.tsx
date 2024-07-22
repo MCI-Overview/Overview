@@ -59,11 +59,13 @@ export function AdminProjectDisplay({
           <Chip sx={{ marginY: "auto" }}>{project.clientName}</Chip>
         </Tooltip>
       </Box>
-      <Stack gap={2}>
-        {cuids.map((cuid) => (
-          <ConsultantDisplay key={cuid} cuid={cuid} />
-        ))}
-      </Stack>
+      {cuids && cuids.length > 0 && (
+        <Stack gap={2}>
+          {cuids.map((cuid) => (
+            <ConsultantDisplay key={cuid} cuid={cuid} />
+          ))}
+        </Stack>
+      )}
     </Card>
   );
 }
