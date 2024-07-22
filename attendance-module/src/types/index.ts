@@ -18,6 +18,7 @@ export type CreateShiftData = {
   endTime: string | null;
   halfDayStartTime: string | null;
   halfDayEndTime: string | null;
+  timezone: string;
 };
 
 export type Manage = {
@@ -57,7 +58,6 @@ export type Project = {
   clientUEN: string;
   employmentBy: string;
   locations: JSON;
-  shiftGroups: JSON;
   createdAt: Date;
   endDate: Date;
   startDate: Date;

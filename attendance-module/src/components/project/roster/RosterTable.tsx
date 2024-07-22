@@ -1,11 +1,12 @@
 import axios from "axios";
 import { useDrop } from "react-dnd";
+import { useEffect, useState } from "react";
 
 import DroppableArea from "./DroppableArea";
 import RosterSummary from "./RosterSummary";
 import AttendanceSummary from "./AttendanceSummary";
 import { RosterDisplayProps } from "./RosterDisplay";
-import { useRosterContext } from "../../../providers/rosterContextProvider";
+import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import { Checkbox, Sheet, Stack, Table, Typography } from "@mui/joy";
@@ -31,7 +32,9 @@ export default function RosterTable({ type }: RosterTableProps) {
     setHoverDate,
     setSelectedCandidates,
     setCandidateHoverCuid,
-  } = useRosterContext();
+  } = useRosterTableContext();
+
+  const [sortedCandidates, setSortedCandidates] = useState<string[]>([]);
 
   const [{ item, itemType }, drop] = useDrop({
     accept: ["shift", "roster", "candidate"],
@@ -88,39 +91,45 @@ export default function RosterTable({ type }: RosterTableProps) {
     }),
   });
 
+  useEffect(() => {
+    if (!rosterData) return;
+
+    let sortedCandidates = Object.keys(rosterData);
+
+    if (sortOrderBy === "name") {
+      sortedCandidates = Object.keys(rosterData).sort((a, b) =>
+        rosterData[a].name.localeCompare(rosterData[b].name)
+      );
+    }
+
+    if (sortOrder === "desc") {
+      sortedCandidates = sortedCandidates.reverse();
+    }
+
+    if (sortOrderBy === "assign") {
+      sortedCandidates = Object.keys(rosterData).sort((a, b) => {
+        if (
+          rosterData[a].rosterLength === 0 &&
+          rosterData[b].rosterLength === 0
+        ) {
+          return a.localeCompare(b);
+        }
+        if (rosterData[a].rosterLength === 0) {
+          return sortOrder === "asc" ? 1 : -1;
+        }
+        if (rosterData[b].rosterLength === 0) {
+          return sortOrder === "asc" ? -1 : 1;
+        }
+
+        return a.localeCompare(b);
+      });
+    }
+
+    setSortedCandidates(sortedCandidates);
+  }, [rosterData, sortOrder, sortOrderBy]);
+
   if (!dateRangeStart || !dateRangeEnd || !project || !rosterData) {
     return null;
-  }
-
-  let sortedCandidates = Object.keys(rosterData);
-
-  if (sortOrderBy === "name") {
-    sortedCandidates = Object.keys(rosterData).sort((a, b) =>
-      rosterData[a].name.localeCompare(rosterData[b].name)
-    );
-  }
-
-  if (sortOrder === "desc") {
-    sortedCandidates = sortedCandidates.reverse();
-  }
-
-  if (sortOrderBy === "assign") {
-    sortedCandidates = Object.keys(rosterData).sort((a, b) => {
-      if (
-        rosterData[a].rosterLength === 0 &&
-        rosterData[b].rosterLength === 0
-      ) {
-        return a.localeCompare(b);
-      }
-      if (rosterData[a].rosterLength === 0) {
-        return sortOrder === "asc" ? 1 : -1;
-      }
-      if (rosterData[b].rosterLength === 0) {
-        return sortOrder === "asc" ? -1 : 1;
-      }
-
-      return a.localeCompare(b);
-    });
   }
 
   const processedRoster = sortedCandidates.reduce((acc, cuid) => {
@@ -216,9 +225,6 @@ export default function RosterTable({ type }: RosterTableProps) {
                   sx={{
                     display: type === "ATTENDANCE" ? "none" : "block",
                   }}
-                  defaultChecked={
-                    selectedCandidates.length === sortedCandidates.length
-                  }
                   checked={
                     selectedCandidates.length > 0 &&
                     selectedCandidates.length === sortedCandidates.length
@@ -254,9 +260,6 @@ export default function RosterTable({ type }: RosterTableProps) {
                       sx={{
                         display: type === "ATTENDANCE" ? "none" : "block",
                       }}
-                      defaultChecked={dates.some((otherDate) =>
-                        otherDate.isSame(date, "day")
-                      )}
                       checked={dates.some((otherDate) =>
                         otherDate.isSame(date, "day")
                       )}
@@ -295,13 +298,12 @@ export default function RosterTable({ type }: RosterTableProps) {
             return (
               <tr key={cuid} onPointerEnter={() => setCandidateHoverCuid}>
                 <td>
-                  <Stack direction="row" gap={1}>
+                  <Stack direction="row" gap={1} alignItems="center">
                     <Checkbox
                       overlay
                       sx={{
                         display: type === "ATTENDANCE" ? "none" : "block",
                       }}
-                      defaultChecked={selectedCandidates.includes(cuid)}
                       checked={selectedCandidates.includes(cuid)}
                       onChange={(e) => {
                         setSelectedCandidates(
@@ -311,7 +313,10 @@ export default function RosterTable({ type }: RosterTableProps) {
                         );
                       }}
                     />
-                    {candidate.name}
+                    <Stack direction="column" gap={1}>
+                      <Typography level="title-sm">{candidate.name}</Typography>
+                      <Typography level="body-xs">{candidate.nric}</Typography>
+                    </Stack>
                   </Stack>
                 </td>
                 {Array.from({

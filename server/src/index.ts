@@ -1,12 +1,22 @@
-import express, { Express } from "express";
+import dayjs from "dayjs";
 import dotenv from "dotenv";
-import routes from "./routes";
 import passport from "passport";
+import utc from "dayjs/plugin/utc";
 import session from "express-session";
 import PgSession from "connect-pg-simple";
+import express, { Express } from "express";
+import timezone from "dayjs/plugin/timezone";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+import routes from "./routes";
+
 import "./cron/cron";
 
 dotenv.config();
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
 
 const port = process.env.PORT;
 
@@ -33,12 +43,12 @@ app.use(
         ssl: {
           rejectUnauthorized: true,
           ca: Buffer.from(process.env.DATABASE_CA as string, "base64").toString(
-            "ascii",
+            "ascii"
           ),
         },
       },
     }),
-  }),
+  })
 );
 
 app.use(passport.initialize());

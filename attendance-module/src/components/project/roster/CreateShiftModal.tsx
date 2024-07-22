@@ -1,6 +1,7 @@
-import axios, { AxiosError } from "axios";
+import dayjs from "dayjs";
 import toast from "react-hot-toast";
 import { useRef, useState } from "react";
+import axios, { AxiosError } from "axios";
 
 import { CreateShiftData } from "../../../types";
 import ResponsiveDialog from "../../ResponsiveDialog";
@@ -14,11 +15,12 @@ import {
   Grid,
   Input,
   Stack,
-  Table,
   ListItemButton,
+  Chip,
 } from "@mui/joy";
 
 import { CreateRounded as CreateIcon } from "@mui/icons-material";
+import RosterIcon from "./RosterIcon";
 
 function getShiftDuration(startTime: string | null, endTime: string | null) {
   if (!startTime || !endTime) return 0;
@@ -45,6 +47,7 @@ export default function CreateShiftModal() {
     halfDayStartTime: null,
     halfDayEndTime: null,
     breakDuration: null,
+    timezone: dayjs.tz.guess(),
   });
   const breakDurationInputRef = useRef<HTMLInputElement>(null);
   const shiftDuration = getShiftDuration(
@@ -52,6 +55,15 @@ export default function CreateShiftModal() {
     shiftData.endTime
   );
   const hasHalfDay = shiftDuration > 6;
+
+  const firstHalfShiftDuration = getShiftDuration(
+    shiftData.startTime,
+    shiftData.halfDayEndTime
+  );
+  const secondHalfShiftDuration = getShiftDuration(
+    shiftData.halfDayStartTime,
+    shiftData.endTime
+  );
 
   if (!project) return null;
 
@@ -69,6 +81,7 @@ export default function CreateShiftModal() {
         halfDayStartTime: null,
         halfDayEndTime: null,
         breakDuration: null,
+        timezone: shiftData.timezone,
       });
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -91,13 +104,78 @@ export default function CreateShiftModal() {
         open={isOpen}
         title="Create Shift"
         handleClose={() => setIsOpen(false)}
-        actions={<Button onClick={handleCreateShift}>Create Shift</Button>}
+        actions={
+          <Button
+            onClick={handleCreateShift}
+            disabled={
+              firstHalfShiftDuration > shiftDuration ||
+              secondHalfShiftDuration > shiftDuration
+            }
+          >
+            Create Shift
+          </Button>
+        }
       >
         <Stack spacing={1}>
+          <Grid container xs={12} spacing={1}>
+            <Grid xs={6}>
+              <FormControl>
+                <FormLabel>Start Time</FormLabel>
+                <Input
+                  type="time"
+                  onChange={(e) =>
+                    setShiftData({ ...shiftData, startTime: e.target.value })
+                  }
+                />
+              </FormControl>
+            </Grid>
+            <Grid xs={6}>
+              <FormControl>
+                <FormLabel>End Time</FormLabel>
+                <Input
+                  type="time"
+                  onChange={(e) =>
+                    setShiftData({ ...shiftData, endTime: e.target.value })
+                  }
+                />
+              </FormControl>
+            </Grid>
+          </Grid>
+          {hasHalfDay && (
+            <Grid container xs={12} spacing={1}>
+              <Grid xs={6}>
+                <FormControl>
+                  <FormLabel>Half Day End Time</FormLabel>
+                  <Input
+                    type="time"
+                    onChange={(e) =>
+                      setShiftData({
+                        ...shiftData,
+                        halfDayEndTime: e.target.value,
+                      })
+                    }
+                  />
+                </FormControl>
+              </Grid>
+              <Grid xs={6}>
+                <FormControl>
+                  <FormLabel>Half Day Start Time</FormLabel>
+                  <Input
+                    type="time"
+                    onChange={(e) =>
+                      setShiftData({
+                        ...shiftData,
+                        halfDayStartTime: e.target.value,
+                      })
+                    }
+                  />
+                </FormControl>
+              </Grid>
+            </Grid>
+          )}
           <Grid container spacing={1}>
             <Grid xs={6}>
               <FormControl
-                required
                 error={
                   shiftDuration >= 8 &&
                   parseInt(shiftData.breakDuration || "0") < 45
@@ -130,95 +208,39 @@ export default function CreateShiftModal() {
                 </FormHelperText>
               </FormControl>
             </Grid>
-          </Grid>
-          <Grid container xs={12} spacing={1}>
-            <Grid xs={6}>
-              <FormControl required>
-                <FormLabel>Start Time</FormLabel>
-                <Input
-                  type="time"
-                  onChange={(e) =>
-                    setShiftData({ ...shiftData, startTime: e.target.value })
-                  }
-                />
-              </FormControl>
-            </Grid>
-            <Grid xs={6}>
-              <FormControl required>
-                <FormLabel>End Time</FormLabel>
-                <Input
-                  type="time"
-                  onChange={(e) =>
-                    setShiftData({ ...shiftData, endTime: e.target.value })
-                  }
-                />
-              </FormControl>
-            </Grid>
-          </Grid>
-          <Grid container xs={12} spacing={1}>
-            <Grid xs={6}>
-              <FormControl required>
-                <FormLabel>Half Day End Time</FormLabel>
-                <Input
-                  type="time"
-                  disabled={!hasHalfDay}
-                  onChange={(e) =>
-                    setShiftData({
-                      ...shiftData,
-                      halfDayEndTime: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
-            </Grid>
-            <Grid xs={6}>
-              <FormControl required>
-                <FormLabel>Half Day Start Time</FormLabel>
-                <Input
-                  type="time"
-                  disabled={!hasHalfDay}
-                  onChange={(e) =>
-                    setShiftData({
-                      ...shiftData,
-                      halfDayStartTime: e.target.value,
-                    })
-                  }
-                />
-              </FormControl>
+            <Grid xs={6} display="flex" flexDirection="column">
+              <FormLabel>⠀</FormLabel>
+              <Stack
+                spacing={1}
+                direction="row"
+                alignContent="center"
+                flexGrow={1}
+              >
+                <Chip
+                  variant="plain"
+                  startDecorator={<RosterIcon type="FULL_DAY" />}
+                >
+                  {shiftDuration.toFixed(1)}h
+                </Chip>
+                {hasHalfDay && (
+                  <Chip
+                    variant="plain"
+                    startDecorator={<RosterIcon type="FIRST_HALF" />}
+                  >
+                    {firstHalfShiftDuration.toFixed(1)}h
+                  </Chip>
+                )}
+                {hasHalfDay && (
+                  <Chip
+                    variant="plain"
+                    startDecorator={<RosterIcon type="SECOND_HALF" />}
+                  >
+                    {secondHalfShiftDuration.toFixed(1)}h
+                  </Chip>
+                )}
+              </Stack>
             </Grid>
           </Grid>
-          <Table borderAxis="bothBetween">
-            <thead>
-              <tr>
-                <td />
-                <td>Full</td>
-                <td>AM</td>
-                <td>PM</td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Shift Duration</td>
-                <td>{shiftDuration.toFixed(1)}h</td>
-                <td>
-                  {hasHalfDay
-                    ? getShiftDuration(
-                        shiftData.startTime,
-                        shiftData.halfDayEndTime
-                      ).toFixed(1) + "h"
-                    : "-"}
-                </td>
-                <td>
-                  {hasHalfDay
-                    ? getShiftDuration(
-                        shiftData.halfDayStartTime,
-                        shiftData.endTime
-                      ).toFixed(1) + "h"
-                    : "-"}
-                </td>
-              </tr>
-            </tbody>
-          </Table>
         </Stack>
       </ResponsiveDialog>
     </>

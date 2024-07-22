@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { useDrop } from "react-dnd";
 import { useState, useEffect } from "react";
 
-import { useRosterContext } from "../../../providers/rosterContextProvider";
+import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import DraggableRoster from "./DraggableRoster";
@@ -29,8 +29,10 @@ export default function DroppableArea({
   date: dayjs.Dayjs;
 }) {
   const { project } = useProjectContext();
-  const { setHoverDate, setCandidateHoverCuid, item } = useRosterContext();
+  const { setHoverDate, setCandidateHoverCuid, item } = useRosterTableContext();
   const [tooltip, setTooltip] = useState<React.ReactElement | null>(null);
+  const [isOutOfDateRange, setIsOutOfDateRange] = useState(false);
+  const [isPossible, setIsPossible] = useState(false);
 
   const [, drop] = useDrop({
     accept: ["shift", "roster"],
@@ -41,11 +43,19 @@ export default function DroppableArea({
   });
 
   useEffect(() => {
+    if (!project || !candidate || !candidate.possibleDates) return;
+
+    setIsPossible(
+      candidate.possibleDates.some((validDate) => validDate.isSame(date, "day"))
+    );
+
     if (date.isAfter(project?.endDate)) {
+      setIsOutOfDateRange(true);
       return setTooltip(<Typography>Project has ended</Typography>);
     }
 
     if (date.isBefore(project?.startDate)) {
+      setIsOutOfDateRange(true);
       return setTooltip(<Typography>Project has yet to start</Typography>);
     }
 
@@ -53,10 +63,12 @@ export default function DroppableArea({
       date.isBefore(candidate && candidate.startDate) &&
       !date.isSame(candidate && candidate.startDate, "day")
     ) {
+      setIsOutOfDateRange(true);
       return setTooltip(
         <Typography>
-          Candidate start date is{" "}
-          {candidate && candidate.startDate.format("DD MMM")}
+          {`Candidate start date is ${
+            candidate && candidate.startDate.format("DD MMM")
+          }`}
         </Typography>
       );
     }
@@ -65,6 +77,7 @@ export default function DroppableArea({
       date.isAfter(candidate && candidate.endDate) &&
       !date.isSame(candidate && candidate.endDate, "day")
     ) {
+      setIsOutOfDateRange(true);
       return setTooltip(
         <Typography>
           {`Candidate last day is ${
@@ -74,25 +87,11 @@ export default function DroppableArea({
       );
     }
 
+    setIsOutOfDateRange(false);
     setTooltip(null);
   }, [date, project, candidate]);
 
-  if (!candidate) return null;
-
-  const isPossible = candidate.possibleDates?.some((validDate) =>
-    validDate.isSame(date, "day")
-  );
-
-  const outOfDateRange =
-    date.isBefore(project?.startDate) ||
-    date.isAfter(project?.endDate) ||
-    (date.isBefore(candidate.startDate) &&
-      !date.isSame(candidate.startDate, "day")) ||
-    (date.isAfter(candidate.endDate) &&
-      !date.isSame(candidate.endDate, "day")) ||
-    date.isBefore(dayjs(), "day");
-
-  const greyBackground = outOfDateRange;
+  const greyBackground = isOutOfDateRange;
 
   return (
     <Tooltip title={tooltip}>
@@ -101,7 +100,7 @@ export default function DroppableArea({
         style={{
           background: greyBackground
             ? "rgba(0, 0, 0, 0.08)"
-            : item && candidate.possibleDates
+            : item
             ? isPossible
               ? "rgba(0, 128, 0, 0.08)"
               : "rgba(255, 0, 0, 0.08)"
@@ -110,7 +109,6 @@ export default function DroppableArea({
       >
         <Stack spacing={1}>
           {(candidate.roster || [])
-            .filter((roster) => roster.startTime.isSame(date, "day"))
             .sort((a, b) => (a.startTime.isBefore(b.startTime) ? -1 : 1))
             .map((roster) => (
               <DraggableRoster

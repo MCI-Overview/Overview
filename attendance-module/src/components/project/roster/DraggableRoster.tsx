@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { useEffect } from "react";
 import { useDrag } from "react-dnd";
 
-import { useRosterContext } from "../../../providers/rosterContextProvider";
+import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import RosterDisplay, { RosterDisplayProps } from "./RosterDisplay";
@@ -36,7 +36,7 @@ export default function DraggableRoster({
     setItem,
     setItemType,
     draggingCuid,
-  } = useRosterContext();
+  } = useRosterTableContext();
 
   const [{ isDragging, canDrag }, drag] = useDrag({
     type: "roster",

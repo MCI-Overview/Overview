@@ -106,7 +106,6 @@ model Project {
   clientUEN            String
   employmentBy         String
   locations            Json[]           @default([])
-  shiftGroups          Json[]           @default([])
   createdAt            DateTime         @default(now())
   endDate              DateTime
   startDate            DateTime

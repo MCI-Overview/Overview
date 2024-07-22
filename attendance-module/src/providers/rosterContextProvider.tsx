@@ -6,6 +6,7 @@ import {
   useState,
   ReactNode,
   useCallback,
+  useMemo,
 } from "react";
 import { GetRosterResponse } from "../types/common";
 import axios from "axios";
@@ -18,6 +19,7 @@ import { DraggableRosterProps } from "../components/project/roster/DraggableRost
 type MappedRosterResponse = {
   [cuid: string]: {
     name: string;
+    nric: string;
     startDate: dayjs.Dayjs;
     endDate: dayjs.Dayjs;
     roster: RosterDisplayProps["data"][];
@@ -27,8 +29,7 @@ type MappedRosterResponse = {
   };
 };
 
-const RosterContext = createContext<{
-  days: number[];
+const RosterTableContext = createContext<{
   item: DraggableRosterProps | DraggableRosterChipProps | null;
   dates: dayjs.Dayjs[];
   itemType: "shift" | "roster" | null;
@@ -41,10 +42,8 @@ const RosterContext = createContext<{
   draggingCuid: string | null;
   dateRangeEnd: dayjs.Dayjs;
   dateRangeStart: dayjs.Dayjs;
-  validCandidates: string[];
   selectedCandidates: string[];
   candidateHoverCuid: string | null;
-  setDays: (days: number[]) => void;
   setItem: (
     item: DraggableRosterProps | DraggableRosterChipProps | null
   ) => void;
@@ -60,7 +59,6 @@ const RosterContext = createContext<{
   setSelectedCandidates: (cuids: string[]) => void;
   setCandidateHoverCuid: (cuid: string | null) => void;
 }>({
-  days: [],
   item: null,
   dates: [],
   itemType: null,
@@ -73,11 +71,9 @@ const RosterContext = createContext<{
   draggingCuid: null,
   dateRangeEnd: dayjs(),
   dateRangeStart: dayjs(),
-  validCandidates: [],
   candidateHoverCuid: null,
   selectedCandidates: [],
   setItem: () => {},
-  setDays: () => {},
   setDates: () => {},
   setItemType: () => {},
   setSortOrder: () => {},
@@ -91,7 +87,11 @@ const RosterContext = createContext<{
   setCandidateHoverCuid: () => {},
 });
 
-export function RosterContextProvider({ children }: { children: ReactNode }) {
+export function RosterTableContextProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const { project } = useProjectContext();
   const [rosterData, setRosterData] = useState<MappedRosterResponse | null>(
     null
@@ -114,7 +114,6 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
   const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
 
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
-  const [days, setDays] = useState<number[]>([]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [sortOrderBy, setSortOrderBy] = useState<"name" | "assign">("name");
 
@@ -138,6 +137,7 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
           (acc, candidate) => {
             acc[candidate.cuid] = {
               name: candidate.name,
+              nric: candidate.nric,
               startDate: dayjs(candidate.startDate),
               endDate: dayjs(candidate.endDate),
               roster: candidate.rosters.map((roster) => ({
@@ -182,13 +182,10 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rosterData]);
 
-  if (!project || !dateRangeStart || !dateRangeEnd) {
-    return null;
-  }
+  const memomizedMergedData = useMemo(() => {
+    if (!rosterData || !dateRangeEnd || !dateRangeStart) return rosterData;
 
-  const mergedData =
-    rosterData &&
-    Object.keys(rosterData).reduce<MappedRosterResponse>((acc, cuid) => {
+    return Object.keys(rosterData).reduce<MappedRosterResponse>((acc, cuid) => {
       if (!rosterData) return acc;
 
       const [newRoster, possibleDates] = Array.from({
@@ -325,11 +322,25 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
 
       return acc;
     }, {});
+  }, [
+    rosterData,
+    dateRangeEnd,
+    dateRangeStart,
+    item,
+    itemType,
+    selectedCandidates,
+    candidateHoverCuid,
+    dates,
+    hoverDate,
+  ]);
+
+  if (!project || !dateRangeStart || !dateRangeEnd || !rosterData) {
+    return null;
+  }
 
   return (
-    <RosterContext.Provider
+    <RosterTableContext.Provider
       value={{
-        days,
         item,
         dates,
         itemType,
@@ -343,9 +354,7 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
         dateRangeStart,
         selectedCandidates,
         candidateHoverCuid,
-        validCandidates: [],
-        rosterData: mergedData,
-        setDays,
+        rosterData: memomizedMergedData,
         setItem,
         setDates,
         setItemType,
@@ -361,12 +370,12 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-    </RosterContext.Provider>
+    </RosterTableContext.Provider>
   );
 }
 
-export function useRosterContext() {
-  const context = useContext(RosterContext);
+export function useRosterTableContext() {
+  const context = useContext(RosterTableContext);
   if (context === undefined) {
     throw new Error(
       "useRosterContext must be used within a RosterContextProvider"

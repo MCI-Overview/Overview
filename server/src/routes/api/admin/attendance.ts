@@ -64,6 +64,7 @@ attendanceApiRouter.get("/attendance/:attendanceCuid/image",
   }
 );
 
+// TODO: Add permission check
 attendanceApiRouter.patch("/attendance/:attendanceCuid/edit", async (req: Request, res: Response) => {
   const { attendanceCuid } = req.params;
   const { clockInTime, clockOutTime, postalCode, status } = req.body;

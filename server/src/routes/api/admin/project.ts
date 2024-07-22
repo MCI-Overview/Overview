@@ -13,7 +13,6 @@ import {
   GetProjectDataResponse,
   User,
   CommonLocation,
-  CommonShiftGroup,
   CopyAttendanceResponse,
 } from "@/types/common";
 import {
@@ -27,7 +26,6 @@ import {
   maskNRIC,
 } from "../../../utils";
 import bcrypt from "bcrypt";
-import customParseFormat from "dayjs/plugin/customParseFormat";
 
 import {
   PERMISSION_ERROR_TEMPLATE,
@@ -39,8 +37,6 @@ import dayjs from "dayjs";
 import { correctTimes, doesClash } from "../../../utils/clash";
 
 const projectAPIRouter: Router = Router();
-
-dayjs.extend(customParseFormat);
 
 projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
   const user = req.user as User;
@@ -109,7 +105,6 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
       distanceRadius,
       status,
       Client,
-      shiftGroups,
       Shift,
       Assign,
       Manage,
@@ -128,7 +123,6 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
       timeWindow,
       distanceRadius,
       status,
-      shiftGroups: shiftGroups as unknown as CommonShiftGroup[],
       shifts: Shift.map((shift) => ({
         ...shift,
         startTime: shift.startTime.toISOString(),
@@ -209,6 +203,7 @@ projectAPIRouter.get(
         Candidate: {
           select: {
             name: true,
+            nric: true,
           },
         },
       },
@@ -257,6 +252,7 @@ projectAPIRouter.get(
       return {
         cuid: c.candidateCuid,
         name: c.Candidate.name,
+        nric: maskNRIC(c.Candidate.nric),
         startDate: c.startDate,
         endDate: c.endDate,
         rosters: candidateRoster
@@ -793,6 +789,7 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
   }
 });
 
+// Add permission check for root
 projectAPIRouter.delete("/roster/:rosterCuid", async (req, res) => {
   const user = req.user as User;
   const { rosterCuid } = req.params;
@@ -1109,7 +1106,6 @@ projectAPIRouter.patch("/project", async (req, res) => {
     timeWindow,
     distanceRadius,
     candidateHolders,
-    shiftGroups,
     noticePeriodDuration,
     noticePeriodUnit,
   } = req.body;
@@ -1188,7 +1184,6 @@ projectAPIRouter.patch("/project", async (req, res) => {
     ...(candidateHolders && {
       candidateHolders,
     }),
-    ...(shiftGroups && { shiftGroups }),
     ...(noticePeriodDuration && { noticePeriodDuration }),
     ...(noticePeriodUnit && { noticePeriodUnit }),
   };
@@ -1477,6 +1472,7 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
     halfDayEndTime,
     halfDayStartTime,
     breakDuration,
+    timezone,
   } = req.body;
 
   if (!startTime) return res.status(400).send("startTime is required.");
@@ -1507,20 +1503,25 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
     return res.status(400).send(timeValidity.message);
   }
 
-  const startTimeObject = new Date();
   const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
-  startTimeObject.setHours(startTimeHour, startTimeMinute, 0, 0);
+  const startTimeObject = dayjs()
+    .set("hour", startTimeHour)
+    .set("minute", startTimeMinute)
+    .startOf("minute")
+    .tz(timezone, true);
 
-  const endTimeObject = new Date();
   const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
-  endTimeObject.setHours(endTimeHour, endTimeMinute, 0, 0);
+  let endTimeObject = dayjs()
+    .set("hour", endTimeHour)
+    .set("minute", endTimeMinute)
+    .startOf("minute")
+    .tz(timezone, true);
 
-  if (startTimeObject >= endTimeObject) {
-    endTimeObject.setDate(endTimeObject.getDate() + 1);
+  if (startTimeObject.isAfter(endTimeObject)) {
+    endTimeObject = endTimeObject.add(1, "day");
   }
 
-  const shiftDuration =
-    (endTimeObject.getTime() - startTimeObject.getTime()) / 1000 / 60 / 60;
+  const shiftDuration = endTimeObject.diff(startTimeObject, "hour", true);
 
   if (shiftDuration >= 8 && breakDuration < 45) {
     return res
@@ -1589,8 +1590,6 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
 
   return res.send("Shift created successfully.");
 });
-
-// TODO: check for clashes in timings with existing shifts (For shift groups)
 
 projectAPIRouter.get(
   "/project/:projectCuid/attendance/:date&:candidateCuid",

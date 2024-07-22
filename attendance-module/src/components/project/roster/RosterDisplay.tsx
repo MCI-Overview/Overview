@@ -1,11 +1,12 @@
 import dayjs from "dayjs";
 import { useState } from "react";
 
+import RosterIcon from "./RosterIcon";
 import MagicalButton from "./MagicalButton";
 import ConsultantDisplay from "../ui/ConsultantDisplay";
 import AttendanceStatusChip from "../attendance/AttendanceStatusChip";
-import { useRosterContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
+
 import {
   LATE_COLOR,
   LEAVE_COLOR,
@@ -27,11 +28,8 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
+
 import {
-  HourglassFullRounded as HourglassIcon,
-  HourglassTopRounded as HourglassTopIcon,
-  HourglassBottomRounded as HourglassBottomIcon,
-  AlignHorizontalLeftRounded as AlignHorizontalLeftIcon,
   FreeBreakfastRounded as BreakIcon,
   PunchClockRounded as PunchClockIcon,
 } from "@mui/icons-material";
@@ -87,20 +85,6 @@ function getAttendanceColor(
   return UPCOMING_COLOR;
 }
 
-function getRosterIcon(type: string) {
-  if (type === "FULL_DAY") {
-    return <HourglassIcon sx={{ color: "inherit" }} />;
-  }
-
-  if (type === "FIRST_HALF") {
-    return <HourglassTopIcon sx={{ color: "inherit" }} />;
-  }
-
-  if (type === "SECOND_HALF") {
-    return <HourglassBottomIcon sx={{ color: "inherit" }} />;
-  }
-}
-
 function addS(value: number, string: string) {
   return Math.abs(value) <= 1 ? string : `${string}s`;
 }
@@ -111,7 +95,6 @@ export default function RosterDisplay({
   opacity,
 }: RosterDisplayProps) {
   const { project } = useProjectContext();
-  const { setHoverCuid, hoverCuid } = useRosterContext();
 
   const [open, setOpen] = useState(false);
 
@@ -140,10 +123,13 @@ export default function RosterDisplay({
           }}
         >
           <Stack spacing={2}>
+            <Typography level="title-lg">Roster Details</Typography>
             <Card>
-              <Typography level="title-md">Roster Details</Typography>
               <Stack direction="row" spacing={0.5}>
-                <Chip startDecorator={getRosterIcon(data.type)} variant="plain">
+                <Chip
+                  startDecorator={<RosterIcon type={data.type} />}
+                  variant="plain"
+                >
                   {`${data.startTime.format("HHmm")} - ${data.endTime.format(
                     "HHmm"
                   )}`}
@@ -176,14 +162,16 @@ export default function RosterDisplay({
             </Card>
             <Divider />
             {data.clientHolderCuids && data.clientHolderCuids.length !== 0 && (
-              <Card>
-                <Typography level="title-md">
+              <>
+                <Typography level="title-lg">
                   {addS(data.clientHolderCuids.length, "Client Holder")}
                 </Typography>
-                {data.clientHolderCuids.map((cuid) => (
-                  <ConsultantDisplay key={cuid} cuid={cuid} variant="SMALL" />
-                ))}
-              </Card>
+                <Card>
+                  {data.clientHolderCuids.map((cuid) => (
+                    <ConsultantDisplay key={cuid} cuid={cuid} variant="SMALL" />
+                  ))}
+                </Card>
+              </>
             )}
           </Stack>
         </DialogContent>
@@ -205,17 +193,8 @@ export default function RosterDisplay({
             ? getAttendanceColor(data.status, data.leave)
             : undefined
         }
-        hover={
-          data.rosterCuid && hoverCuid === data.rosterCuid ? "true" : undefined
-        }
         blinking={blinking ? "true" : undefined}
         issameproject={isSameProject ? "true" : undefined}
-        onMouseEnter={() => {
-          setHoverCuid(data.rosterCuid || null);
-        }}
-        onMouseLeave={() => {
-          setHoverCuid(null);
-        }}
         onClick={() => setOpen(true)}
       >
         <Typography
@@ -232,9 +211,8 @@ export default function RosterDisplay({
                 <CircularProgress color="neutral" size="sm" />
               </Box>
             )}
-            {!loading && !data.isPartial && getRosterIcon(data.type)}
-            {!loading && data.isPartial && (
-              <AlignHorizontalLeftIcon sx={{ color: "inherit" }} />
+            {!loading && (
+              <RosterIcon type={data.type} isPartial={data.isPartial} />
             )}
           </Box>
           <Typography>{data.startTime.format("HHmm")}</Typography>-
