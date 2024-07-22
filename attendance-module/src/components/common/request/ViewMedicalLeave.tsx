@@ -2,7 +2,6 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { CustomRequest } from "../../../types";
-import { correctTimes } from "../../../utils/date-time";
 import RequestStatusChip from "../../project/requests/RequestStatusChip";
 
 import { Box, IconButton, Stack, Typography } from "@mui/joy";
@@ -10,57 +9,17 @@ import { DownloadOutlined as DownloadIcon } from "@mui/icons-material";
 
 export default function ViewMedicalLeave({
   request,
-  rosterRequestURL,
   imageRequestURL,
 }: {
   request: CustomRequest;
-  rosterRequestURL: string;
   imageRequestURL: string;
 }) {
-  const [affectedRosters, setAffectedRosters] = useState([]);
   const [mcPreview, setMcPreview] = useState("");
 
   const requestData = request.data as {
     startDate: string;
     numberOfDays: number;
   };
-
-  useEffect(() => {
-    axios.get(rosterRequestURL).then((response) => {
-      setAffectedRosters(
-        response.data.map(
-          (roster: {
-            cuid: string;
-            shiftDate: string;
-            shiftType: string;
-            Shift: {
-              halfDayStartTime: string;
-              halfDayEndTime: string;
-              startTime: string;
-              endTime: string;
-            };
-          }) => {
-            const { correctStart, correctEnd } = correctTimes(
-              dayjs(roster.shiftDate),
-              roster.shiftType === "SECOND_HALF"
-                ? dayjs(roster.Shift.halfDayStartTime)
-                : dayjs(roster.Shift.startTime),
-              roster.shiftType === "FIRST_HALF"
-                ? dayjs(roster.Shift.halfDayEndTime)
-                : dayjs(roster.Shift.endTime)
-            );
-
-            return {
-              cuid: roster.cuid,
-              shiftDate: dayjs(roster.shiftDate).format("DD/MM/YY"),
-              startTime: correctStart.format("HHmm"),
-              endTime: correctEnd.format("HHmm"),
-            };
-          }
-        )
-      );
-    });
-  }, [rosterRequestURL]);
 
   useEffect(() => {
     axios
@@ -101,23 +60,18 @@ export default function ViewMedicalLeave({
 
       <Box>
         <Typography level="body-sm"> Affected rosters:</Typography>
-        {affectedRosters.length === 0 ? (
+        {request.affectedRosters.length === 0 ? (
           <Typography level="body-sm">None</Typography>
         ) : (
-          affectedRosters.map(
-            (roster: {
-              cuid: string;
-              shiftDate: string;
-              startTime: string;
-              endTime: string;
-            }) => (
-              <>
-                <Typography key={roster.cuid} level="body-sm">
-                  {`• ${roster.shiftDate} ${roster.startTime} - ${roster.endTime}`}
-                </Typography>
-              </>
-            )
-          )
+          request.affectedRosters.map((roster) => (
+            <Typography key={roster.cuid} level="body-sm">
+              {`• ${dayjs(roster.correctStartTime).format(
+                "DD/MM/YYYY"
+              )} ${dayjs(roster.correctStartTime).format("HHmm")} - ${dayjs(
+                roster.correctEndTime
+              ).format("HHmm")}`}
+            </Typography>
+          ))
         )}
       </Box>
 

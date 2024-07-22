@@ -30,9 +30,8 @@ model Request {
   type          RequestType
   status        RequestStatus @default(PENDING)
   createdAt     DateTime      @default(now())
-  rosterCuid    String?
   Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
-  Attendance    Attendance?   @relation(fields: [rosterCuid], references: [cuid])
+  Attendance    Attendance[]
 }
 
 model Attendance {
@@ -61,11 +60,11 @@ model Candidate {
   dateOfBirth      DateTime        @db.Date
   hasOnboarded     Boolean         @default(false)
   nationality      String?
-  residency        ResidencyStatus @default(CITIZEN)
   bankDetails      Json?
   address          Json?
   emergencyContact Json?
   createdAt        DateTime        @default(now())
+  residency        ResidencyStatus
   Assign           Assign[]
   Attendance       Attendance[]
   User             User?
@@ -141,8 +140,6 @@ model Shift {
   status           ShiftStatus  @default(ACTIVE)
   Attendance       Attendance[]
   Project          Project      @relation(fields: [projectCuid], references: [cuid])
-
-  @@unique([projectCuid, startTime, endTime])
 }
 
 model User {

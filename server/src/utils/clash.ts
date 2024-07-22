@@ -1,6 +1,6 @@
 import dayjs, { Dayjs } from "dayjs";
 
-function correctTimes(
+export function correctTimes(
   date: Date,
   startTime: Date,
   endTime: Date
@@ -10,10 +10,14 @@ function correctTimes(
 
   const correctStart = dayjs(date)
     .set("hour", start.hour())
-    .set("minute", start.minute());
+    .set("minute", start.minute())
+    .set("second", start.second())
+    .set("millisecond", start.millisecond());
   const correctEnd = dayjs(date)
     .set("hour", end.hour())
-    .set("minute", end.minute());
+    .set("minute", end.minute())
+    .set("second", end.second())
+    .set("millisecond", end.millisecond());
 
   if (correctEnd.isBefore(correctStart)) {
     return {

@@ -36,7 +36,7 @@ import {
   PermissionList,
 } from "../../../utils/permissions";
 import dayjs from "dayjs";
-import { doesClash } from "../../../utils/clash";
+import { correctTimes, doesClash } from "../../../utils/clash";
 
 const projectAPIRouter: Router = Router();
 
@@ -419,6 +419,11 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
             },
           },
         },
+        Attendance: {
+          include: {
+            Shift: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -427,7 +432,30 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
       take: limit,
     });
 
-    const maskedData = fetchedData.map((req) => {
+    const customRequests = fetchedData.map((request) => {
+      return {
+        ...request,
+        affectedRosters: request.Attendance.map((attendance) => {
+          const { correctStartTime, correctEndTime } = correctTimes(
+            attendance.shiftDate,
+            attendance.shiftType === "SECOND_HALF"
+              ? attendance.Shift.halfDayStartTime!
+              : attendance.Shift.startTime,
+            attendance.shiftType === "FIRST_HALF"
+              ? attendance.Shift.halfDayEndTime!
+              : attendance.Shift.endTime
+          );
+
+          return {
+            cuid: attendance.cuid,
+            correctStartTime,
+            correctEndTime,
+          };
+        }),
+      };
+    });
+
+    const maskedData = customRequests.map((req) => {
       req.Assign.Candidate.nric = maskNRIC(req.Assign.Candidate.nric);
       return req;
     });
@@ -698,26 +726,8 @@ projectAPIRouter.delete("/roster/:rosterCuid", async (req, res) => {
     });
 
   try {
-    await prisma.attendance.delete({
-      where: {
-        cuid: rosterCuid,
-        Request: {
-          none: {
-            status: RequestStatus.PENDING,
-            rosterCuid: rosterCuid,
-          },
-        },
-        Shift: {
-          Project: {
-            Manage: {
-              some: {
-                consultantCuid: user.cuid,
-                role: Role.CLIENT_HOLDER,
-              },
-            },
-          },
-        },
-      },
+    const attendanceToBeDeleted = await prisma.attendance.findUnique({
+      where: { cuid: rosterCuid },
       include: {
         Shift: {
           include: {
@@ -728,17 +738,52 @@ projectAPIRouter.delete("/roster/:rosterCuid", async (req, res) => {
             },
           },
         },
+        Request: {
+          select: {
+            status: true,
+          },
+        },
       },
     });
 
-    return res.json({
-      message: "Attendance deleted successfully.",
+    if (!attendanceToBeDeleted) {
+      return res.status(404).json({ message: "Attendance not found." });
+    }
+
+    const hasPermission =
+      attendanceToBeDeleted.Shift.Project.Manage.some(
+        (manage) => manage.consultantCuid === user.cuid
+      ) ||
+      (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+    if (!hasPermission) {
+      return res
+        .status(401)
+        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+    }
+
+    // Check if any requests are pending or approved
+    const hasPendingOrApprovedRequests = attendanceToBeDeleted.Request.some(
+      (request) =>
+        request.status === RequestStatus.PENDING ||
+        request.status === RequestStatus.APPROVED
+    );
+
+    if (hasPendingOrApprovedRequests) {
+      return res.status(400).json({
+        message: "Cannot delete roster with pending or approved requests.",
+      });
+    }
+
+    // Perform the deletion
+    await prisma.attendance.delete({
+      where: { cuid: rosterCuid },
     });
+
+    return res.json({ message: "Attendance deleted successfully." });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Internal server error.",
-    });
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error." });
   }
 });
 
@@ -1452,26 +1497,8 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
   };
 
   try {
-    await prisma.shift.upsert({
-      where: {
-        projectCuid_startTime_endTime: {
-          projectCuid,
-          startTime: createData.startTime,
-          endTime: createData.endTime,
-        },
-        status: ShiftStatus.ARCHIVED,
-      },
-      update: {
-        status: ShiftStatus.ACTIVE,
-      },
-      create: createData,
-    });
+    await prisma.shift.create({ data: createData });
   } catch (error) {
-    const prismaError = error as PrismaError;
-    if (prismaError.code === "P2002") {
-      return res.status(400).send("Shift already exists.");
-    }
-
     console.log(error);
     return res.status(500).send("Internal server error.");
   }
@@ -2301,38 +2328,38 @@ projectAPIRouter.post(
     }
 
     try {
-      if (!candidateCuids || candidateCuids.length === 0) {
-        await prisma.attendance.deleteMany({
-          where: {
-            shiftDate: {
-              gte: new Date(startDate),
-              lte: new Date(endDate),
+      await prisma.attendance.deleteMany({
+        where: {
+          // do not delete attendances that have pending or approved requests
+          Request: {
+            status: {
+              notIn: [RequestStatus.PENDING, RequestStatus.APPROVED],
             },
-            Shift: {
-              projectCuid,
-            },
-            status: null,
-            leave: null,
           },
-        });
-      } else {
-        await prisma.attendance.deleteMany({
-          where: {
-            candidateCuid: {
-              in: candidateCuids,
-            },
-            shiftDate: {
-              gte: new Date(startDate),
-              lte: new Date(endDate),
-            },
-            Shift: {
-              projectCuid,
-            },
-            status: null,
-            leave: null,
+
+          // check all candidate if candidateCuids is not provided/empty
+          ...(candidateCuids &&
+            candidateCuids.length > 0 && {
+              candidateCuid: {
+                in: candidateCuids,
+              },
+            }),
+          shiftDate: {
+            gte: new Date(startDate),
+            lte: new Date(endDate),
           },
-        });
-      }
+          Shift: {
+            projectCuid,
+          },
+          Candidate: {
+            Assign: {
+              Request: {},
+            },
+          },
+          status: null,
+          leave: null,
+        },
+      });
 
       return res.send("Successfully cleared roster data.");
     } catch (error) {

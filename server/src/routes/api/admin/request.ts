@@ -27,6 +27,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
             },
           },
         },
+        Attendance: true,
       },
     });
 
@@ -47,36 +48,13 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
       transactionRequests.push(
         prisma.attendance.updateMany({
           where: {
-            candidateCuid: request.candidateCuid,
-            NOT: {
-              leave: "FULLDAY",
+            cuid: {
+              in: request.Attendance.map((attendance) => attendance.cuid),
             },
-            OR: [
-              {
-                status: null,
-              },
-              {
-                status: "NO_SHOW",
-              },
+            AND: [
+              { OR: [{ leave: null }, { leave: "HALFDAY" }] },
+              { OR: [{ status: null }, { status: "NO_SHOW" }] },
             ],
-            shiftDate: {
-              gte: dayjs(
-                (request.data as { startDate: string }).startDate
-              ).toDate(),
-              lte: dayjs((request.data as { startDate: string }).startDate)
-                .add(
-                  parseInt(
-                    (request.data as { numberOfDays: string }).numberOfDays,
-                    10
-                  ) - 1,
-                  "day"
-                )
-                .endOf("day")
-                .toDate(),
-            },
-            Shift: {
-              projectCuid: request.projectCuid,
-            },
           },
           data: {
             status: "MEDICAL",
@@ -102,10 +80,10 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
     }
 
     if (request.type === "PAID_LEAVE" || request.type === "UNPAID_LEAVE") {
-      if (!request.rosterCuid) {
-        return res.status(500).send("Leave request missing linked roster.");
+      if (request.Attendance.length !== 1) {
+        return res.status(500).send("Linked roster details are invalid.");
       }
-
+      const affectedRoster = request.Attendance[0];
       const leaveDuration = (request.data as { leaveDuration: string })
         .leaveDuration;
 
@@ -113,7 +91,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
         transactionRequests.push(
           prisma.attendance.update({
             where: {
-              cuid: request.rosterCuid,
+              cuid: affectedRoster.cuid,
             },
             data: {
               leave: "FULLDAY",
@@ -126,7 +104,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
         transactionRequests.push(
           prisma.attendance.update({
             where: {
-              cuid: request.rosterCuid,
+              cuid: affectedRoster.cuid,
             },
             data: {
               leave: "HALFDAY",
@@ -140,7 +118,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
         transactionRequests.push(
           prisma.attendance.update({
             where: {
-              cuid: request.rosterCuid,
+              cuid: affectedRoster.cuid,
             },
             data: {
               leave: "HALFDAY",
@@ -298,7 +276,6 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
       select: {
         candidateCuid: true,
         projectCuid: true,
-        rosterCuid: true,
         data: true,
         type: true,
         Assign: {
@@ -310,6 +287,7 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
             },
           },
         },
+        Attendance: true,
       },
     });
 
@@ -365,13 +343,14 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
     }
 
     if (request.type === "CLAIM") {
-      if (!request.rosterCuid) {
-        return res.status(500).send("Claim request missing linked roster.");
+      if (request.Attendance.length !== 1) {
+        return res.status(500).send("Linked roster details are invalid.");
       }
+      const affectedRoster = request.Attendance[0];
 
       const claimRosterData = await prisma.attendance.findUniqueOrThrow({
         where: {
-          cuid: request.rosterCuid,
+          cuid: affectedRoster.cuid,
         },
         include: {
           Shift: true,
@@ -382,13 +361,14 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
     }
 
     if (request.type === "UNPAID_LEAVE" || request.type === "PAID_LEAVE") {
-      if (!request.rosterCuid) {
-        return res.status(500).send("Leave request missing linked roster.");
+      if (request.Attendance.length !== 1) {
+        return res.status(500).send("Linked roster details are invalid.");
       }
+      const affectedRoster = request.Attendance[0];
 
       const leaveRosterData = await prisma.attendance.findUniqueOrThrow({
         where: {
-          cuid: request.rosterCuid,
+          cuid: affectedRoster.cuid,
         },
         include: {
           Shift: true,

@@ -60,7 +60,6 @@ export type CustomRequest = {
   candidateCuid: string;
   createdAt: string;
   cuid: string;
-  rosterCuid: string;
   projectCuid: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   type:
@@ -79,6 +78,11 @@ export type CustomRequest = {
       name: string;
     };
   };
+  affectedRosters: {
+    cuid: string;
+    correctStartTime: string;
+    correctEndTime: string;
+  }[];
 };
 
 export type CustomAttendance = {
