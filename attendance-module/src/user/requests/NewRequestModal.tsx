@@ -13,7 +13,6 @@ import {
   Option,
   Select,
   Sheet,
-  Stack,
 } from "@mui/joy";
 
 const NewRequestModal = () => {
@@ -38,7 +37,7 @@ const NewRequestModal = () => {
         handleClose={() => setIsOpen(false)}
         title="New Request"
       >
-        <Stack spacing={1}>
+        <Sheet sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <FormControl>
             <FormLabel>Request type</FormLabel>
             <Select onChange={(_e, value) => setType(value || "")} value={type}>
@@ -48,11 +47,12 @@ const NewRequestModal = () => {
               <Option value="Resign">Resign</Option>
             </Select>
           </FormControl>
+
           {type === "MC" && <MedicalLeaveForm setIsOpen={setIsOpen} />}
           {type === "Leave" && <RequestLeaveForm setIsOpen={setIsOpen} />}
           {type === "Claim" && <ClaimForm setIsOpen={setIsOpen} />}
           {type === "Resign" && <ResignationForm setIsOpen={setIsOpen} />}
-        </Stack>
+        </Sheet>
       </ResponsiveDialog>
     </>
   );

@@ -48,6 +48,8 @@ export default function ClaimForm({
           Shift: {
             startTime: string;
             halfDayStartTime: string;
+            endTime: string;
+            halfDayEndTime: string;
           };
         }[];
       }
@@ -165,6 +167,7 @@ export default function ClaimForm({
               getOptionLabel={(option) => option.label}
               onChange={(_e, value) => {
                 setProjectCuid(value?.projectCuid || "");
+                setRosterCuid("");
               }}
             />
           </FormControl>
@@ -175,38 +178,47 @@ export default function ClaimForm({
             <FormLabel>Shift</FormLabel>
             <Autocomplete
               disabled={!projectCuid}
-              isOptionEqualToValue={(option, value) => {
-                return option.rosterCuid === value.rosterCuid;
-              }}
+              value={rosterCuid}
               options={
                 claimableShifts[projectCuid]?.shifts
-                  .map((shift) => {
-                    return {
-                      rosterCuid: shift.cuid,
-                      shiftDate: dayjs(shift.shiftDate),
-                      shiftStartTime: dayjs(
-                        shift.shiftType === "SECOND_HALF"
-                          ? shift.Shift.halfDayStartTime
-                          : shift.Shift.startTime
-                      ),
-                    };
-                  })
                   .sort((a, b) =>
-                    a.shiftDate.isBefore(b.shiftDate) ? -1 : 1
-                  ) || []
+                    dayjs(a.shiftDate).isBefore(dayjs(b.shiftDate)) ? -1 : 1
+                  )
+                  .map((shift) => shift.cuid) || []
               }
-              getOptionLabel={(option) =>
-                `${option.shiftDate.format(
-                  "DD MMM YYYY"
-                )} - ${option.shiftStartTime.format("HHmm")}`
-              }
+              getOptionLabel={(option) => {
+                if (!claimableShifts[projectCuid]) return "";
+
+                const roster = claimableShifts[projectCuid].shifts.find(
+                  (shift) => shift.cuid === option
+                );
+
+                if (!roster) return "";
+
+                const correctStartTime =
+                  roster.shiftType === "SECOND_HALF"
+                    ? dayjs(roster.Shift.halfDayStartTime)
+                    : dayjs(roster.Shift.startTime);
+
+                const correctEndTime =
+                  roster.shiftType === "FIRST_HALF"
+                    ? dayjs(roster.Shift.halfDayEndTime)
+                    : dayjs(roster.Shift.endTime);
+
+                return `${dayjs(roster.shiftDate).format(
+                  "DD/MM/YY"
+                )} ${correctStartTime.format("HHmm")} - ${correctEndTime.format(
+                  "HHmm"
+                )}`;
+              }}
               onChange={(_e, value) => {
-                setRosterCuid(value?.rosterCuid || "");
+                setRosterCuid(value || "");
               }}
             />
           </FormControl>
         </Grid>
       </Grid>
+
       <FormControl>
         <FormLabel>Description</FormLabel>
         <Textarea
@@ -215,6 +227,7 @@ export default function ClaimForm({
           }}
         />
       </FormControl>
+
       <FormControl>
         <FileUpload
           label="Upload Claim Receipt"
@@ -222,6 +235,7 @@ export default function ClaimForm({
           setState={handleReceiptFileChange}
         />
       </FormControl>
+
       {receiptPreview && (
         <Sheet sx={{ overflowY: "auto", width: "100%" }}>
           <img
@@ -231,6 +245,7 @@ export default function ClaimForm({
           />
         </Sheet>
       )}
+
       <LoadingRequestButton
         promise={handleClaimSubmit}
         disabled={

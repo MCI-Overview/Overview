@@ -21,7 +21,7 @@ type Page = {
   totalCount: number;
 };
 
-const ViewShifts = () => {
+const UserUpcomingShiftsPage = () => {
   const [data, setData] = useState<CustomAttendance[] | null>(null);
   const [page, setPage] = useState<Page>({
     isFirstPage: true,
@@ -135,4 +135,4 @@ const ViewShifts = () => {
   );
 };
 
-export default ViewShifts;
+export default UserUpcomingShiftsPage;

@@ -6,7 +6,7 @@ import {
   UserBreadcrumb,
   BreadcrumbPart,
 } from "../components/project/ui/UserBreadcrumb";
-import ViewShifts from "./shifts/UserUpcomingShiftsPage";
+import UserUpcomingShiftsPage from "./shifts/UserUpcomingShiftsPage";
 import UserAttendanceHistoryPage from "./shifts/UserAttendanceHistoryPage";
 
 const UserShifts: FC = () => {
@@ -17,7 +17,7 @@ const UserShifts: FC = () => {
   const tabs: Tab[] = [
     {
       label: "Upcoming",
-      content: <ViewShifts />,
+      content: <UserUpcomingShiftsPage />,
     },
     {
       label: "History",

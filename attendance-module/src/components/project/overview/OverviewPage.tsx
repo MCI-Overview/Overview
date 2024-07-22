@@ -36,6 +36,7 @@ import { correctTimes } from "../../../utils/date-time";
 import MCMoneyCount from "./MCMoneyCount";
 import TransportMoneyCount from "./TransportMoneyCount";
 import OtherMoneyCount from "./OtherMoneyCount";
+import PassTypeCount from "./PassTypeCount";
 
 type DisplayData = {
   datasets: {
@@ -56,15 +57,12 @@ type DisplayData = {
     };
   };
   headcount: {
-    nationality: {
-      singapore: number;
-      malaysia: number;
-      china: number;
-    };
+    nationality: Record<string, number>;
     endDate: {
       ongoing: number;
       hasEnded: number;
     };
+    residency: Record<string, number>;
   };
   expenses: {
     medical: number;
@@ -201,13 +199,11 @@ const ProjectOverview = () => {
     }
   };
 
-  const defaultHeadcount = {
-    singapore: 0,
-    malaysia: 0,
-    china: 0,
-  };
+  const defaultHeadcount = {};
 
   const headcount = plotData?.headcount?.nationality ?? defaultHeadcount;
+  const residency = plotData?.headcount?.residency ?? defaultHeadcount;
+
   if (!plotData)
     return (
       <div
@@ -444,14 +440,17 @@ const ProjectOverview = () => {
           <Divider />
           <Stack columnGap={2} rowGap={2} sx={{ flexGrow: 1, mx: 0 }}>
             <Grid container spacing={2}>
-              <Grid xs={12} sm={6}>
+              <Grid xs={12} sm={6} md={4}>
                 <HeadcountSection
                   active={plotData?.headcount.endDate.ongoing ?? 0}
                   inactive={plotData?.headcount.endDate.hasEnded ?? 0}
                 />
               </Grid>
-              <Grid xs={12} sm={6}>
+              <Grid xs={12} sm={6} md={4}>
                 <NationalityCount headcount={headcount} />
+              </Grid>
+              <Grid xs={12} sm={6} md={4}>
+                <PassTypeCount headcount={residency} />
               </Grid>
             </Grid>
           </Stack>

@@ -15,6 +15,25 @@ import {
   Autocomplete,
 } from "@mui/joy";
 
+type UpcomingRostersType = {
+  [projectCuid: string]: {
+    name: string;
+    rosters: {
+      cuid: string;
+      shiftType: string;
+      shiftDate: string;
+      Shift: {
+        startTime: string;
+        endTime: string;
+        halfDayStartTime: string;
+        halfDayEndTime: string;
+      };
+      status: string;
+      leave: string;
+    }[];
+  };
+};
+
 export default function RequestLeaveForm({
   setIsOpen,
 }: {
@@ -23,35 +42,24 @@ export default function RequestLeaveForm({
   const { updateRequest } = useRequestContext();
 
   const [type, setType] = useState("UNPAID_LEAVE");
-  const [duration, setDuration] = useState("FULL");
+  const [duration, setDuration] = useState("FULL_DAY");
   const [reason, setReason] = useState("");
   const [projectCuid, setProjectCuid] = useState("");
   const [rosterCuid, setRosterCuid] = useState("");
 
-  const [shiftType, setShiftType] = useState("FULL");
+  const [isHalfDayAllowed, setIsHalfDayAllowed] = useState(false);
 
-  const [upcomingShifts, setUpcomingShifts] = useState<{
-    [projectCuid: string]: {
-      name: string;
-      shifts: {
-        cuid: string;
-        shiftType: string;
-        shiftDate: string;
-        Shift: {
-          startTime: string;
-          halfDayStartTime: string;
-        };
-      }[];
-    };
-  }>({});
+  const [upcomingRosters, setUpcomingRosters] = useState<UpcomingRostersType>(
+    {}
+  );
 
   useEffect(() => {
-    axios.get("/api/user/upcomingShifts").then((response) => {
-      setUpcomingShifts(response.data);
+    axios.get("/api/user/upcomingRosters").then((response) => {
+      setUpcomingRosters(response.data);
     });
   }, []);
 
-  const handleClaimSubmit = async () => {
+  const handleSubmit = async () => {
     try {
       const response = await axios.post(`/api/user/request/leave`, {
         projectCuid,
@@ -75,71 +83,91 @@ export default function RequestLeaveForm({
   return (
     <>
       <Grid container spacing={2}>
-        <Grid xs={12} sm={6}>
-          <FormControl>
-            <FormLabel>Project</FormLabel>
-            <Autocomplete
-              isOptionEqualToValue={(option, value) => {
-                return option.projectCuid === value.projectCuid;
-              }}
-              options={Object.keys(upcomingShifts).map((key) => {
-                return {
-                  projectCuid: key,
-                  label: upcomingShifts[key].name,
-                };
-              })}
-              getOptionLabel={(option) => option.label}
-              onChange={(_e, value) => {
-                setProjectCuid(value?.projectCuid || "");
-              }}
-            />
-          </FormControl>
-        </Grid>
+        {upcomingRosters && (
+          <>
+            <Grid xs={12} sm={6}>
+              <FormControl>
+                <FormLabel>Project</FormLabel>
+                <Autocomplete
+                  value={projectCuid}
+                  options={Object.keys(upcomingRosters)}
+                  getOptionLabel={(option) =>
+                    upcomingRosters[option] ? upcomingRosters[option].name : ""
+                  }
+                  onChange={(_e, value) => {
+                    setProjectCuid(value || "");
+                    setRosterCuid("");
+                    setDuration("FULL_DAY");
+                  }}
+                />
+              </FormControl>
+            </Grid>
 
-        <Grid xs={12} sm={6}>
-          <FormControl>
-            <FormLabel>Shift</FormLabel>
-            <Autocomplete
-              disabled={!projectCuid}
-              isOptionEqualToValue={(option, value) => {
-                return option.rosterCuid === value.rosterCuid;
-              }}
-              options={
-                upcomingShifts[projectCuid]?.shifts
-                  .map((shift) => {
-                    return {
-                      rosterCuid: shift.cuid,
-                      shiftType: shift.shiftType,
-                      shiftDate: dayjs(shift.shiftDate),
-                      shiftStartTime: dayjs(
-                        shift.shiftType === "SECOND_HALF"
-                          ? shift.Shift.halfDayStartTime
-                          : shift.Shift.startTime
-                      ),
-                    };
-                  })
-                  .sort((a, b) =>
-                    a.shiftDate.isBefore(b.shiftDate) ? -1 : 1
-                  ) || []
-              }
-              getOptionLabel={(option) =>
-                `${option.shiftDate.format(
-                  "DD MMM YYYY"
-                )} - ${option.shiftStartTime.format("HHmm")}`
-              }
-              onChange={(_e, value) => {
-                setShiftType(value?.shiftType || "FULL");
-                setRosterCuid(value?.rosterCuid || "");
-              }}
-            />
-          </FormControl>
-        </Grid>
+            <Grid xs={12} sm={6}>
+              <FormControl>
+                <FormLabel>Shift</FormLabel>
+                <Autocomplete
+                  value={rosterCuid}
+                  disabled={!projectCuid}
+                  options={
+                    projectCuid
+                      ? upcomingRosters[projectCuid].rosters
+                          .sort((a, b) =>
+                            dayjs(a.shiftDate).isBefore(dayjs(b.shiftDate))
+                              ? -1
+                              : 1
+                          )
+                          .map((shift) => shift.cuid)
+                      : []
+                  }
+                  getOptionLabel={(option) => {
+                    if (!upcomingRosters[projectCuid]) return "";
+
+                    const roster = upcomingRosters[projectCuid].rosters.find(
+                      (shift) => shift.cuid === option
+                    );
+
+                    if (!roster) return "";
+
+                    const correctStartTime =
+                      roster.shiftType === "SECOND_HALF"
+                        ? dayjs(roster.Shift.halfDayStartTime)
+                        : dayjs(roster.Shift.startTime);
+
+                    const correctEndTime =
+                      roster.shiftType === "FIRST_HALF"
+                        ? dayjs(roster.Shift.halfDayEndTime)
+                        : dayjs(roster.Shift.endTime);
+
+                    return `${dayjs(roster.shiftDate).format(
+                      "DD/MM/YY"
+                    )} ${correctStartTime.format(
+                      "HHmm"
+                    )} - ${correctEndTime.format("HHmm")}`;
+                  }}
+                  onChange={(_e, value) => {
+                    const roster = upcomingRosters[projectCuid].rosters.find(
+                      (shift) => shift.cuid === value
+                    );
+
+                    setRosterCuid(value || "");
+                    setDuration("FULL_DAY");
+                    setIsHalfDayAllowed(
+                      Boolean(roster?.Shift.halfDayStartTime) &&
+                        roster?.shiftType === "FULL_DAY"
+                    );
+                  }}
+                />
+              </FormControl>
+            </Grid>
+          </>
+        )}
 
         <Grid xs={12} sm={6}>
           <FormControl>
             <FormLabel>Type</FormLabel>
             <Select
-              defaultValue={type}
+              value={type}
               onChange={(_e, value) => {
                 setType(value || "UNPAID_LEAVE");
               }}
@@ -154,29 +182,31 @@ export default function RequestLeaveForm({
           <FormControl>
             <FormLabel>Duration</FormLabel>
             <Select
+              value={duration}
               disabled={!rosterCuid}
-              defaultValue={duration}
               onChange={(_e, value) => {
                 setDuration(value || "FULL_DAY");
               }}
             >
               <Option value="FULL_DAY">Full</Option>
-              {shiftType === "FULL" ? null : (
-                <>
-                  <Option value="FIRST_HALF">First Half</Option>
-                  <Option value="SECOND_HALF">Second Half</Option>
-                </>
-              )}
+              <Option value="FIRST_HALF" disabled={!isHalfDayAllowed}>
+                First Half
+              </Option>
+              <Option value="SECOND_HALF" disabled={!isHalfDayAllowed}>
+                Second Half
+              </Option>
             </Select>
           </FormControl>
         </Grid>
       </Grid>
+
       <FormControl>
         <FormLabel>Reason</FormLabel>
         <Textarea value={reason} onChange={(e) => setReason(e.target.value)} />
       </FormControl>
+
       <LoadingRequestButton
-        promise={handleClaimSubmit}
+        promise={handleSubmit}
         disabled={!projectCuid || !type || !rosterCuid || !duration || !reason}
       />
     </>

@@ -5,6 +5,7 @@ import { Router } from "express";
 import dayjs from "dayjs";
 import { randomUUID } from "crypto";
 import { Readable } from "stream";
+import { correctTimes } from "../../../utils/clash";
 
 const requestAPIRouter = Router();
 
@@ -44,12 +45,35 @@ requestAPIRouter.get("/requests/current", async (req, res) => {
             },
           },
         },
+        Attendance: {
+          include: {
+            Shift: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
       },
     });
-    return res.send(requests);
+
+    const customRequests = requests.map((request) => {
+      return {
+        ...request,
+        affectedRosters: request.Attendance.map((attendance) => {
+          return correctTimes(
+            attendance.shiftDate,
+            attendance.shiftType === "SECOND_HALF"
+              ? attendance.Shift.halfDayStartTime!
+              : attendance.Shift.startTime,
+            attendance.shiftType === "FIRST_HALF"
+              ? attendance.Shift.halfDayEndTime!
+              : attendance.Shift.endTime
+          );
+        }),
+      };
+    });
+
+    return res.send(customRequests);
   } catch (error) {
     console.error("Error while fetching requests:", error);
     return res.status(500).send("Internal server error");
@@ -107,9 +131,31 @@ requestAPIRouter.get("/requests/history/:page", async (req, res) => {
             },
           },
         },
+        Attendance: {
+          include: {
+            Shift: true,
+          },
+        },
       },
       skip: offset,
       take: limit,
+    });
+
+    const customRequests = fetchedData.map((request) => {
+      return {
+        ...request,
+        affectedRosters: request.Attendance.map((attendance) => {
+          return correctTimes(
+            attendance.shiftDate,
+            attendance.shiftType === "SECOND_HALF"
+              ? attendance.Shift.halfDayStartTime!
+              : attendance.Shift.startTime,
+            attendance.shiftType === "FIRST_HALF"
+              ? attendance.Shift.halfDayEndTime!
+              : attendance.Shift.endTime
+          );
+        }),
+      };
     });
 
     const totalCount = await prisma.request.count({
@@ -126,7 +172,7 @@ requestAPIRouter.get("/requests/history/:page", async (req, res) => {
       totalCount: totalCount,
     };
 
-    return res.json([fetchedData, paginationData]);
+    return res.json([customRequests, paginationData]);
   } catch (error) {
     console.error("Error while fetching requests:", error);
     return res.status(500).send("Internal server error");
@@ -171,21 +217,23 @@ requestAPIRouter.post(
       return res.status(400).send("Claim amount must be positive");
     }
 
-    const createData = {
-      projectCuid,
-      candidateCuid,
-      rosterCuid,
-      type: RequestType.CLAIM,
-      data: {
-        claimType: type,
-        claimDescription: description,
-        claimAmount: amount,
-      },
-    };
-
     try {
       const request = await prisma.request.create({
-        data: createData,
+        data: {
+          projectCuid,
+          candidateCuid,
+          type: RequestType.CLAIM,
+          data: {
+            claimType: type,
+            claimDescription: description,
+            claimAmount: amount,
+          },
+          Attendance: {
+            connect: {
+              cuid: rosterCuid,
+            },
+          },
+        },
       });
 
       await s3
@@ -259,20 +307,22 @@ requestAPIRouter.post("/request/leave", async (req, res) => {
     return res.status(400).send("Leave reason is required");
   }
 
-  const createData = {
-    projectCuid,
-    candidateCuid,
-    rosterCuid,
-    type,
-    data: {
-      leaveDuration: duration,
-      reason,
-    },
-  };
-
   try {
     await prisma.request.create({
-      data: createData,
+      data: {
+        projectCuid,
+        candidateCuid,
+        type,
+        data: {
+          leaveDuration: duration,
+          reason,
+        },
+        Attendance: {
+          connect: {
+            cuid: rosterCuid,
+          },
+        },
+      },
     });
 
     return res.send("Leave request submitted successfully");
@@ -345,7 +395,7 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
     return res.status(400).send("MC image is required");
   }
 
-  const affectedRoster = await prisma.attendance.findMany({
+  const affectedRosters = await prisma.attendance.findMany({
     where: {
       candidateCuid,
       OR: [
@@ -362,6 +412,7 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
       },
     },
     select: {
+      cuid: true,
       Shift: {
         select: {
           projectCuid: true,
@@ -371,7 +422,7 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
   });
 
   const affectedProjects = new Set(
-    affectedRoster.map((roster) => roster.Shift.projectCuid)
+    affectedRosters.map((roster) => roster.Shift.projectCuid)
   );
 
   const imageUUID = randomUUID();
@@ -386,8 +437,14 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
     );
 
     await prisma.$transaction(
-      Array.from(affectedProjects).map((projectCuid) =>
-        prisma.request.create({
+      Array.from(affectedProjects).map((projectCuid) => {
+        const rosterCuids = affectedRosters
+          .filter((roster) => roster.Shift.projectCuid === projectCuid)
+          .map((roster) => {
+            return { cuid: roster.cuid };
+          });
+
+        return prisma.request.create({
           data: {
             projectCuid,
             candidateCuid,
@@ -397,10 +454,33 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
               numberOfDays,
               imageUUID,
             },
+
+            // connect rosters to the request
+            Attendance: {
+              connect: rosterCuids,
+            },
           },
-        })
-      )
+        });
+      })
     );
+
+    // set pending leave requests to cancelled for affected rosters
+    await prisma.request.updateMany({
+      where: {
+        status: "PENDING",
+        type: RequestType.PAID_LEAVE || RequestType.UNPAID_LEAVE,
+        Attendance: {
+          some: {
+            cuid: {
+              in: affectedRosters.map((roster) => roster.cuid),
+            },
+          },
+        },
+      },
+      data: {
+        status: "CANCELLED",
+      },
+    });
 
     return res.send("MC request submitted successfully");
   } catch (error) {
@@ -456,6 +536,7 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
   return res.status(400).send("No image found for this request.");
 });
 
+// Is this still required? Attendance is already linked to the request
 requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
   const user = req.user as User;
   const { requestCuid } = req.params;
@@ -469,9 +550,13 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
       select: {
         candidateCuid: true,
         projectCuid: true,
-        rosterCuid: true,
         data: true,
         type: true,
+        Attendance: {
+          include: {
+            Shift: true,
+          },
+        },
       },
     });
 
@@ -518,30 +603,15 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
       return res.json(affectedRosterData);
     }
 
-    if (request.type === "CLAIM") {
-      const claimRosterData = await prisma.attendance.findUniqueOrThrow({
-        where: {
-          cuid: request.rosterCuid as string,
-        },
-        include: {
-          Shift: true,
-        },
-      });
-
-      return res.json(claimRosterData);
-    }
-
-    if (request.type === "UNPAID_LEAVE" || request.type === "PAID_LEAVE") {
-      const leaveRosterData = await prisma.attendance.findUniqueOrThrow({
-        where: {
-          cuid: request.rosterCuid as string,
-        },
-        include: {
-          Shift: true,
-        },
-      });
-
-      return res.json(leaveRosterData);
+    if (
+      // these request types should have only one linked roster
+      request.Attendance.length === 1 &&
+      (request.type === "CLAIM" ||
+        request.type === "UNPAID_LEAVE" ||
+        request.type === "PAID_LEAVE")
+    ) {
+      const rosterData = request.Attendance[0];
+      return res.json(rosterData);
     }
 
     return res.status(400).send("No roster details found for this request.");
