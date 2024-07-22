@@ -156,14 +156,15 @@ userAPIRouter.get("/claimableShifts", async (req, res) => {
   }
 });
 
-userAPIRouter.get("/upcomingShifts", async (req, res) => {
+userAPIRouter.get("/upcomingRosters", async (req, res) => {
   const { cuid } = req.user as User;
 
   try {
-    const shifts = await prisma.attendance.findMany({
+    const rosters = await prisma.attendance.findMany({
       where: {
         candidateCuid: cuid,
         leave: null,
+        status: null,
         shiftDate: {
           gte: dayjs().startOf("day").toDate(),
           lte: dayjs().endOf("day").add(1, "month").toDate(),
@@ -179,15 +180,15 @@ userAPIRouter.get("/upcomingShifts", async (req, res) => {
     });
 
     return res.send(
-      shifts.reduce((acc, shift) => {
-        const projectCuid = shift.Shift.Project.cuid;
+      rosters.reduce((acc, roster) => {
+        const projectCuid = roster.Shift.Project.cuid;
         if (!acc[projectCuid]) {
           acc[projectCuid] = {};
-          acc[projectCuid]["name"] = shift.Shift.Project.name;
-          acc[projectCuid]["shifts"] = [];
+          acc[projectCuid]["name"] = roster.Shift.Project.name;
+          acc[projectCuid]["rosters"] = [];
         }
 
-        acc[projectCuid]["shifts"].push(shift);
+        acc[projectCuid]["rosters"].push(roster);
 
         return acc;
       }, {} as Record<string, any>)

@@ -1,52 +1,17 @@
-import axios from "axios";
-import dayjs, { Dayjs } from "dayjs";
-import { useState, useEffect } from "react";
+import dayjs from "dayjs";
 import { CustomRequest } from "../../../types";
-import { correctTimes } from "../../../utils/date-time";
 import { readableEnum } from "../../../utils/capitalize";
 import RequestStatusChip from "../../project/requests/RequestStatusChip";
 
 import { Box, Stack, Typography } from "@mui/joy";
 
-export default function ViewClaim({
-  request,
-  rosterRequestURL,
-}: {
-  request: CustomRequest;
-  rosterRequestURL: string;
-}) {
-  const [affectedRoster, setAffectedRoster] = useState<{
-    shiftDate: Dayjs;
-    correctStart: Dayjs;
-    correctEnd: Dayjs;
-  } | null>(null);
-
+export default function ViewClaim({ request }: { request: CustomRequest }) {
+  const affectedRoster =
+    request.affectedRosters.length === 0 ? null : request.affectedRosters[0];
   const requestData = request.data as {
     leaveDuration: string;
     reason: string;
   };
-
-  useEffect(() => {
-    axios.get(rosterRequestURL).then((response) => {
-      const { correctStart, correctEnd } = correctTimes(
-        dayjs(response.data.shiftDate),
-        response.data.shiftType === "SECOND_HALF"
-          ? dayjs(response.data.Shift.halfDayStartTime)
-          : dayjs(response.data.Shift.startTime),
-        response.data.shiftType === "FIRST_HALF"
-          ? dayjs(response.data.Shift.halfDayEndTime)
-          : dayjs(response.data.Shift.endTime)
-      );
-
-      setAffectedRoster({
-        shiftDate: dayjs(response.data.shiftDate),
-        correctStart,
-        correctEnd,
-      });
-    });
-  }, [rosterRequestURL]);
-
-  if (!affectedRoster) return null;
 
   return (
     <Stack gap={1}>
@@ -57,14 +22,19 @@ export default function ViewClaim({
       <RequestStatusChip status={request.status} />
 
       <Box>
-        <Typography level="body-sm">
-          Roster:{" "}
-          {`${affectedRoster.shiftDate.format(
-            "DD/MM/YY"
-          )} ${affectedRoster.correctStart.format(
-            "HHmm"
-          )} - ${affectedRoster.correctEnd.format("HHmm")}`}
-        </Typography>
+        {affectedRoster ? (
+          <Typography level="body-sm">
+            {`Roster: ${dayjs(affectedRoster.correctStartTime).format(
+              "DD/MM/YY"
+            )} ${dayjs(affectedRoster.correctStartTime).format(
+              "HHmm"
+            )} - ${dayjs(affectedRoster.correctEndTime).format("HHmm")}`}
+          </Typography>
+        ) : (
+          <Typography level="body-sm" color="danger">
+            Roster has been deleted
+          </Typography>
+        )}
 
         <Typography level="body-sm">
           Leave duration: {readableEnum(requestData.leaveDuration)}

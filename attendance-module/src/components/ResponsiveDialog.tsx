@@ -65,7 +65,7 @@ export default function ResponsiveDialog({
           >
             {children}
           </DialogContent>
-          <DialogActions>{actions}</DialogActions>
+          {actions && <DialogActions>{actions}</DialogActions>}
         </ModalDialog>
       </Modal>
       <Drawer
@@ -107,7 +107,7 @@ export default function ResponsiveDialog({
         >
           {children}
         </DialogContent>
-        <DialogActions>{actions}</DialogActions>
+        {actions && <DialogActions>{actions}</DialogActions>}
       </Drawer>
     </>
   );

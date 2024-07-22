@@ -58,25 +58,16 @@ const ViewDetailsModal = ({
 
   const componentMap = {
     CLAIM: (
-      <ViewClaim
-        request={request}
-        imageRequestURL={requestURL("image")}
-        rosterRequestURL={requestURL("roster")}
-      />
+      <ViewClaim request={request} imageRequestURL={requestURL("image")} />
     ),
     MEDICAL_LEAVE: (
       <ViewMedicalLeave
         request={request}
         imageRequestURL={requestURL("image")}
-        rosterRequestURL={requestURL("roster")}
       />
     ),
-    PAID_LEAVE: (
-      <ViewLeave request={request} rosterRequestURL={requestURL("roster")} />
-    ),
-    UNPAID_LEAVE: (
-      <ViewLeave request={request} rosterRequestURL={requestURL("roster")} />
-    ),
+    PAID_LEAVE: <ViewLeave request={request} />,
+    UNPAID_LEAVE: <ViewLeave request={request} />,
     RESIGNATION: <ViewResignation request={request} />,
   };
 
@@ -84,14 +75,8 @@ const ViewDetailsModal = ({
     <>
       <Modal open={isOpen} onClose={() => setIsOpen(false)}>
         <ModalOverflow>
-          <ModalDialog
-            sx={{
-              maxWidth: "40vw",
-            }}
-          >
+          <ModalDialog sx={{ maxWidth: "30vw" }}>
             {componentMap[request.type] || null}
-
-            {request.status === "PENDING" && <Divider />}
 
             <ViewDetailsModalActions
               request={request}
@@ -213,8 +198,21 @@ const ViewDetailsModalActions = ({
       });
   }
 
+  // if the roster has been deleted, do not display actions for leaves
+  // claims should still be able to be approved, even if the roster is somehow deleted
+  const leaveTypes = ["MEDICAL_LEAVE", "PAID_LEAVE", "UNPAID_LEAVE"];
+  if (
+    userType === "ADMIN" &&
+    leaveTypes.includes(request.type) &&
+    request.affectedRosters.length === 0
+  ) {
+    return null;
+  }
+
   return (
     <>
+      <Divider />
+
       {userType === "USER" && (
         <Tooltip title="Cancel">
           <LoadingRequestIconButton promise={cancelRequest} color="danger">
