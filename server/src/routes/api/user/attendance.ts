@@ -93,35 +93,53 @@ attendanceApiRouter.patch(
     }
 
     try {
-      await prisma.attendance.update({
-        where: {
-          cuid: attendanceCuid,
-          candidateCuid: candidateCuid,
+      prisma.$transaction(
+        async () => {
+          const attendance = await prisma.attendance.update({
+            where: {
+              cuid: attendanceCuid,
+              candidateCuid: candidateCuid,
+            },
+            data: body,
+            select: {
+              Shift: {
+                select: {
+                  projectCuid: true,
+                },
+              },
+            },
+          });
+
+          if (imageData) {
+            const base64Data = imageData.replace(
+              /^data:image\/\w+;base64,/,
+              ""
+            );
+            const buffer = Buffer.from(base64Data, "base64");
+
+            try {
+              await s3.send(
+                new PutObjectCommand({
+                  Bucket: process.env.S3_BUCKET_NAME!,
+                  Key: `projects/${attendance.Shift.projectCuid}/clock-in/${candidateCuid}/${attendanceCuid}.jpg`,
+                  Body: buffer,
+                })
+              );
+            } catch (error) {
+              console.error(error);
+              return res.status(500).send("Internal server error");
+            }
+          }
+
+          return;
         },
-        data: body,
-      });
+        {
+          timeout: 10000,
+        }
+      );
     } catch (error) {
       console.error(error);
       return res.status(500).send("Internal server error");
-    }
-
-    // Upload image to S3
-    if (imageData) {
-      const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
-      const buffer = Buffer.from(base64Data, "base64");
-
-      try {
-        await s3.send(
-          new PutObjectCommand({
-            Bucket: process.env.S3_BUCKET_NAME!,
-            Key: `${candidateCuid}/clock-in/${attendanceCuid}.jpg`,
-            Body: buffer,
-          })
-        );
-      } catch (error) {
-        console.error(error);
-        return res.status(500).send("Internal server error");
-      }
     }
 
     return res.send("Attendance created successfully");

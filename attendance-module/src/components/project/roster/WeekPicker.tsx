@@ -3,7 +3,14 @@ import dayjs from "dayjs";
 import { useRosterContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import { Box, iconButtonClasses, Button, Select, Option } from "@mui/joy";
+import {
+  Box,
+  iconButtonClasses,
+  Button,
+  Select,
+  Option,
+  Stack,
+} from "@mui/joy";
 import {
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
@@ -66,43 +73,53 @@ export default function WeekPicker() {
       </Button>
 
       <Box sx={{ flex: 1 }} />
-      <Button size="sm" variant="outlined" color="neutral">
-        {`${dateRangeStart?.format("DD/MM/YY")} -
-        ${dateRangeEnd?.format("DD/MM/YY")}`}
-      </Button>
-      <Select
-        defaultValue="name-asc"
-        sx={{
-          width: "9rem",
+      <Stack
+        direction={{
+          xs: "column",
+          md: "row",
         }}
-        onChange={(_, value) => {
-          switch (value) {
-            case "name-asc":
-              setSortOrder("asc");
-              setSortOrderBy("name");
-              break;
-            case "name-desc":
-              setSortOrder("desc");
-              setSortOrderBy("name");
-              break;
-            case "unassign":
-              setSortOrder("desc");
-              setSortOrderBy("assign");
-              break;
-            case "assign":
-              setSortOrder("asc");
-              setSortOrderBy("assign");
-              break;
-            default:
-              break;
-          }
-        }}
+        justifyContent="center"
+        alignItems="center"
+        spacing={1}
       >
-        <Option value="name-asc">Name (Asc)</Option>
-        <Option value="name-desc">Name (Desc)</Option>
-        <Option value="unassign">Unassigned</Option>
-        <Option value="assign">Assigned</Option>
-      </Select>
+        <Button variant="outlined" color="neutral">
+          {`${dateRangeStart?.format("DD/MM/YY")} -
+        ${dateRangeEnd?.format("DD/MM/YY")}`}
+        </Button>
+        <Select
+          defaultValue="name-asc"
+          sx={{
+            width: "9rem",
+          }}
+          onChange={(_, value) => {
+            switch (value) {
+              case "name-asc":
+                setSortOrder("asc");
+                setSortOrderBy("name");
+                break;
+              case "name-desc":
+                setSortOrder("desc");
+                setSortOrderBy("name");
+                break;
+              case "unassign":
+                setSortOrder("desc");
+                setSortOrderBy("assign");
+                break;
+              case "assign":
+                setSortOrder("asc");
+                setSortOrderBy("assign");
+                break;
+              default:
+                break;
+            }
+          }}
+        >
+          <Option value="name-asc">Name (Asc)</Option>
+          <Option value="name-desc">Name (Desc)</Option>
+          <Option value="unassign">Unassigned</Option>
+          <Option value="assign">Assigned</Option>
+        </Select>
+      </Stack>
       <Box sx={{ flex: 1 }} />
 
       <Button

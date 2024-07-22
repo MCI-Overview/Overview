@@ -1,11 +1,111 @@
+import dayjs from "dayjs";
+import { Router } from "express";
+import { Readable } from "stream";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+
 import { User } from "@/types/common";
 import { prisma, s3 } from "../../../client";
-import { Router } from "express";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { Readable } from "stream";
-import dayjs from "dayjs";
+import { maskNRIC } from "../../../utils";
 
-const requestAPIRouter = Router();
+const requestAPIRouter: Router = Router();
+
+requestAPIRouter.get("/request/all/:page", async (req, res) => {
+  const user = req.user as User;
+  const page = parseInt(req.params.page, 10);
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  const { searchValue, typeFilter, statusFilter } = req.query as any;
+
+  try {
+    const project = await prisma.project.findMany({
+      where: {
+        Manage: {
+          some: {
+            consultantCuid: user.cuid,
+            role: "CLIENT_HOLDER",
+          },
+        },
+      },
+      include: {
+        Manage: true,
+      },
+    });
+
+    const queryConditions = {
+      projectCuid: {
+        in: project.map((proj) => proj.cuid),
+      },
+      ...(typeFilter && { type: typeFilter }),
+      ...(statusFilter && { status: statusFilter }),
+      ...(searchValue && {
+        Assign: {
+          Candidate: {
+            OR: [
+              {
+                nric: {
+                  contains: searchValue,
+                  mode: "insensitive",
+                },
+              },
+              {
+                name: {
+                  contains: searchValue,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+        },
+      }),
+    };
+
+    const fetchedData = await prisma.request.findMany({
+      where: queryConditions,
+      include: {
+        Assign: {
+          select: {
+            Candidate: {
+              select: {
+                nric: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    const maskedData = fetchedData.map((req) => {
+      req.Assign.Candidate.nric = maskNRIC(req.Assign.Candidate.nric);
+      return req;
+    });
+
+    const totalCount = await prisma.request.count({
+      where: queryConditions,
+    });
+
+    const paginationData = {
+      isFirstPage: page === 1,
+      isLastPage: page * limit >= totalCount,
+      currentPage: page,
+      previousPage: page > 1 ? page - 1 : null,
+      nextPage: page * limit < totalCount ? page + 1 : null,
+      pageCount: Math.ceil(totalCount / limit),
+      totalCount: totalCount,
+    };
+
+    return res.json([maskedData, paginationData]);
+  } catch (error) {
+    console.error("Error while fetching requests:", error);
+    return res.status(500).send("Internal server error");
+  }
+});
 
 requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
   const user = req.user as User;
@@ -210,6 +310,7 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
     select: {
       data: true,
       type: true,
+      projectCuid: true,
       Assign: {
         select: {
           Project: {
@@ -236,7 +337,7 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
   if (request.type === "CLAIM") {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `receipt/${requestCuid}`,
+      Key: `projects/${request.projectCuid}/receipts/${requestCuid}`,
     });
 
     const response = await s3.send(command);
@@ -250,7 +351,7 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
   if (request.type === "MEDICAL_LEAVE") {
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME!,
-      Key: `mc/${(request.data as { imageUUID: string }).imageUUID}`,
+      Key: `mcs/${(request.data as { imageUUID: string }).imageUUID}`,
     });
 
     const response = await s3.send(command);
@@ -278,6 +379,7 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
         projectCuid: true,
         data: true,
         type: true,
+        Attendance: true,
         Assign: {
           select: {
             Project: {
@@ -287,7 +389,6 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
             },
           },
         },
-        Attendance: true,
       },
     });
 

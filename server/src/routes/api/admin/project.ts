@@ -231,6 +231,9 @@ projectAPIRouter.get(
         shiftType: true,
         leave: true,
         status: true,
+        clockInTime: true,
+        clockOutTime: true,
+        Request: true,
         Shift: {
           select: {
             Project: {
@@ -238,6 +241,7 @@ projectAPIRouter.get(
                 Manage: true,
               },
             },
+            breakDuration: true,
             startTime: true,
             endTime: true,
             halfDayStartTime: true,
@@ -251,11 +255,11 @@ projectAPIRouter.get(
 
     const data = candidateCuids.map((c) => {
       return {
+        cuid: c.candidateCuid,
+        name: c.Candidate.name,
         startDate: c.startDate,
         endDate: c.endDate,
-        name: c.Candidate.name,
-        cuid: c.candidateCuid,
-        shifts: candidateRoster
+        rosters: candidateRoster
           .filter((cr) => cr.candidateCuid === c.candidateCuid)
           .map((cr) => {
             const startDate = dayjs(cr.shiftDate);
@@ -280,20 +284,24 @@ projectAPIRouter.get(
                     .set("month", startDate.month())
                     .set("year", startDate.year());
 
+            // TODO: Hide other project roster irrelevant data
             return {
+              breakDuration: cr.Shift.breakDuration,
               leave: cr.leave,
               status: cr.status,
               projectCuid: cr.Shift.projectCuid,
               shiftCuid: cr.Shift.cuid,
               rosterCuid: cr.cuid,
-              shiftType: cr.shiftType,
-              shiftStartTime: startTime,
-              shiftEndTime: startTime.isBefore(endTime)
+              type: cr.shiftType,
+              startTime: startTime,
+              endTime: startTime.isBefore(endTime)
                 ? endTime
                 : endTime.add(1, "day"),
-              consultantCuid: cr.Shift.Project.Manage.filter(
+              clockInTime: cr.clockInTime,
+              clockOutTime: cr.clockOutTime,
+              clientHolderCuids: cr.Shift.Project.Manage.filter(
                 (manage) => manage.role === Role.CLIENT_HOLDER
-              ).map((manage) => manage.consultantCuid)[0],
+              ).map((manage) => manage.consultantCuid),
             };
           }),
       };
@@ -521,13 +529,6 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
 
   const start = typeof startDate === "string" ? startDate : undefined;
   const end = typeof endDate === "string" ? endDate : undefined;
-  const now = dayjs();
-  const adjustedEnd =
-    end && dayjs(end).isAfter(now)
-      ? now.startOf("day").toDate()
-      : end
-      ? dayjs(end).startOf("day").toDate()
-      : undefined;
 
   const isNricUnmasked = await checkPermission(
     user.cuid,
@@ -539,7 +540,7 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
       where: {
         shiftDate: {
           gte: start ? dayjs(start).startOf("day").toDate() : undefined,
-          lte: adjustedEnd,
+          lte: end ? dayjs(end).endOf("day").toDate() : undefined,
         },
         Shift: {
           projectCuid: projectCuid,
@@ -590,11 +591,16 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
 
 projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
   const { projectCuid } = req.params;
-  const { weekStart } = req.query;
+  const { weekStart, endDate } = req.query;
 
   const start = typeof weekStart === "string" ? weekStart : undefined;
-  const formattedWeekStart = dayjs(start).startOf("week").toDate();
-  const formattedWeekEnd = dayjs(start).endOf("week").toDate();
+  const end = typeof endDate === "string" ? endDate : undefined;
+  const formattedWeekStart = dayjs(start).startOf("day").toDate();
+  const formattedWeekEnd = dayjs(end).endOf("day").toDate();
+  const difference = dayjs(formattedWeekEnd).diff(
+    dayjs(formattedWeekStart),
+    "day"
+  ); // Including the end day
 
   try {
     // Fetch attendance data
@@ -616,27 +622,28 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
 
     // Initialize an object to hold the data arrays for each status
     const totals: Record<string, number[]> = {
-      LATE: Array(7).fill(0),
-      MEDICAL: Array(7).fill(0),
-      NO_SHOW: Array(7).fill(0),
-      ON_TIME: Array(7).fill(0),
-      LEAVE: Array(7).fill(0),
+      LATE: Array(difference).fill(0),
+      MEDICAL: Array(difference).fill(0),
+      NO_SHOW: Array(difference).fill(0),
+      ON_TIME: Array(difference).fill(0),
+      LEAVE: Array(difference).fill(0),
     };
 
     attendanceResponse.forEach((item) => {
       if (item.shiftDate && item.status) {
-        const dayOfWeek = dayjs(item.shiftDate).day(); // Get the day of the week (0 for Sunday, 6 for Saturday)
-        const dayIndex = (dayOfWeek + 6) % 7; // Convert so Monday is 0 and Sunday is 6
-
+        const dayOfWeek = dayjs(item.shiftDate).diff(
+          dayjs(formattedWeekStart),
+          "day"
+        ); // Get the day index from week start
         if (item.status === "MEDICAL") {
-          totals.MEDICAL[dayIndex] += item._count.status;
+          totals.MEDICAL[dayOfWeek] += item._count.status;
         } else if (item.leave === "FULLDAY") {
-          totals.LEAVE[dayIndex] += item._count.status;
+          totals.LEAVE[dayOfWeek] += item._count.status;
         } else if (item.leave === "HALFDAY") {
-          totals.LEAVE[dayIndex] += item._count.status * 0.5;
-          totals[item.status][dayIndex] += item._count.status;
+          totals.LEAVE[dayOfWeek] += item._count.status * 0.5;
+          totals[item.status][dayOfWeek] += item._count.status;
         } else {
-          totals[item.status][dayIndex] += item._count.status;
+          totals[item.status][dayOfWeek] += item._count.status;
         }
       }
     });
@@ -644,10 +651,67 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
     // Fetch headcount data
     const nationalityResponse = await prisma.candidate.groupBy({
       by: ["nationality"],
+      where: {
+        Assign: {
+          some: {
+            projectCuid: projectCuid,
+          },
+        },
+      },
       _count: {
-        nationality: true,
+        _all: true,
       },
     });
+
+    const passTypeResponse = await prisma.candidate.groupBy({
+      by: ["residency"],
+      where: {
+        Assign: {
+          some: {
+            projectCuid: projectCuid,
+          },
+        },
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    // Fetch claims amt
+    const claimsResponse = await prisma.request.findMany({
+      where: {
+        projectCuid,
+        type: "CLAIM",
+        status: "APPROVED",
+        Attendance: {
+          some: {
+            shiftDate: {
+              gte: formattedWeekStart,
+              lte: formattedWeekEnd,
+            },
+          },
+        },
+      },
+    });
+
+    const expenses = {
+      medical: 0,
+      transport: 0,
+      others: 0,
+    };
+
+    claimsResponse.reduce<{ [key: string]: number }>((acc, claim) => {
+      // Parse the data JSON
+      const data = claim.data as { claimType: string; claimAmount: string };
+
+      // Extract claimType and claimAmount
+      const { claimType, claimAmount } = data;
+
+      // Sum the claim amounts
+      const claimTypeKey = claimType.toLowerCase();
+      acc[claimTypeKey] = (acc[claimTypeKey] || 0) + parseFloat(claimAmount);
+      return acc;
+    }, expenses);
 
     const endDateResponse = await prisma.assign.groupBy({
       by: ["endDate"],
@@ -661,9 +725,21 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
 
     const nationalityData: Record<string, number> = nationalityResponse.reduce(
       (acc: Record<string, number>, item) => {
-        if (item.nationality) {
-          acc[item.nationality.toLowerCase()] = item._count.nationality;
-        }
+        const nationalityKey = item.nationality
+          ? item.nationality.toLowerCase()
+          : "not_set";
+        acc[nationalityKey] = item._count._all;
+        return acc;
+      },
+      {}
+    );
+
+    const passTypeData: Record<string, number> = passTypeResponse.reduce(
+      (acc: Record<string, number>, item) => {
+        const nationalityKey = item.residency
+          ? item.residency.toLowerCase()
+          : "not_set";
+        acc[nationalityKey] = item._count._all;
         return acc;
       },
       {}
@@ -705,9 +781,10 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
     const headcount = {
       nationality: nationalityData,
       endDate: endDateData,
+      residency: passTypeData,
     };
 
-    return res.json({ datasets, headcount });
+    return res.json({ datasets, headcount, expenses });
   } catch (error) {
     console.error("Error fetching overview:", error);
     return res.status(500).json({
@@ -1249,67 +1326,74 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
   }
 
   try {
-    return await prisma.$transaction(async (prisma) => {
-      const candidateData = await prisma.candidate.createManyAndReturn({
-        data: candidateObjects,
-        skipDuplicates: true,
-      });
+    return await prisma.$transaction(
+      async (prisma) => {
+        const candidateData = await prisma.candidate.createManyAndReturn({
+          data: candidateObjects,
+          skipDuplicates: true,
+        });
 
-      await Promise.all(
-        candidateData.map((cdd) =>
-          prisma.user.create({
-            data: {
-              hash: bcrypt.hashSync(cdd.contact, 12),
-              username: cdd.nric,
-              Candidate: {
-                connect: {
-                  cuid: cdd.cuid,
+        await Promise.all(
+          candidateData.map((cdd) =>
+            prisma.user.create({
+              data: {
+                hash: bcrypt.hashSync(cdd.contact, 12),
+                username: cdd.nric,
+                Candidate: {
+                  connect: {
+                    cuid: cdd.cuid,
+                  },
                 },
               },
+            })
+          )
+        );
+
+        // retrieve cuids
+        const candidatesInDb = await prisma.candidate.findMany({
+          where: {
+            nric: {
+              in: candidateObjects.map((cdd) => cdd.nric),
             },
-          })
-        )
-      );
-
-      // retrieve cuids
-      const candidatesInDb = await prisma.candidate.findMany({
-        where: {
-          nric: {
-            in: candidateObjects.map((cdd) => cdd.nric),
           },
-        },
-      });
+        });
 
-      const assignData = candidatesInDb.map((cdd) => {
-        return {
-          candidateCuid: cdd.cuid,
-          consultantCuid: user.cuid,
-          projectCuid: projectCuid,
-          startDate: new Date(
-            candidates.find((c) => c.nric === cdd.nric).startDate
-          ),
-          endDate: new Date(
-            candidates.find((c) => c.nric === cdd.nric).endDate
-          ),
-          employmentType: candidates.find((c) => c.nric === cdd.nric)
-            .employmentType as EmploymentType,
-        };
-      });
+        const assignData = candidatesInDb.map((cdd) => {
+          return {
+            candidateCuid: cdd.cuid,
+            consultantCuid: user.cuid,
+            projectCuid: projectCuid,
+            startDate: new Date(
+              candidates.find((c) => c.nric === cdd.nric).startDate
+            ),
+            endDate: new Date(
+              candidates.find((c) => c.nric === cdd.nric).endDate
+            ),
+            employmentType: candidates.find((c) => c.nric === cdd.nric)
+              .employmentType as EmploymentType,
+          };
+        });
 
-      const createdAssigns = await prisma.assign.createManyAndReturn({
-        data: assignData,
-        skipDuplicates: true,
-      });
+        const createdAssigns = await prisma.assign.createManyAndReturn({
+          data: assignData,
+          skipDuplicates: true,
+        });
 
-      const alreadyAssignedCandidates = candidatesInDb
-        .filter(
-          (cdd) =>
-            !createdAssigns.some((assign) => assign.candidateCuid === cdd.cuid)
-        )
-        .map((cdd) => cdd.cuid);
+        const alreadyAssignedCandidates = candidatesInDb
+          .filter(
+            (cdd) =>
+              !createdAssigns.some(
+                (assign) => assign.candidateCuid === cdd.cuid
+              )
+          )
+          .map((cdd) => cdd.cuid);
 
-      return res.send(alreadyAssignedCandidates);
-    });
+        return res.send(alreadyAssignedCandidates);
+      },
+      {
+        timeout: candidates.length * 2000,
+      }
+    );
   } catch (error) {
     const err = error as PrismaError;
     console.log(err);
@@ -1675,20 +1759,44 @@ projectAPIRouter.get("/projects", async (req, res) => {
           },
         },
       },
-      include: {
+      select: {
+        cuid: true,
+        name: true,
+        createdAt: true,
+        startDate: true,
+        endDate: true,
         Manage: {
-          include: {
-            Consultant: true,
+          select: {
+            consultantCuid: true,
+            role: true,
           },
           where: {
-            role: "CLIENT_HOLDER",
+            Consultant: {
+              status: "ACTIVE",
+            },
           },
         },
         Client: true,
       },
     });
 
-    return res.send(projectsData);
+    return res.send(
+      projectsData.map((project) => {
+        return {
+          cuid: project.cuid,
+          name: project.name,
+          createdAt: project.createdAt,
+          clientName: project.Client.name,
+          clientUEN: project.Client.uen,
+          startDate: project.startDate,
+          endDate: project.endDate,
+          consultants: project.Manage.map((manage) => ({
+            cuid: manage.consultantCuid,
+            role: manage.role,
+          })),
+        };
+      })
+    );
   } catch (error) {
     console.log(error);
     return res.status(500).send("Internal server error.");
@@ -2044,12 +2152,12 @@ Steps:
 1. Retrieve attendance data for that week (include with Manage data for permission check)
 2. Check permissions
 3. For each attendance:
-	a. Check that its shift's status is active
-	b. Check that its copy will be within candidate assign period
-	c. Check that it does not clash with any other attendance (can be from other projects)
-	d. If any of the above checks fail, add to failure list, continue to next attendance
-	e. Create new attendance
-		i. Check LeaveType => if HALF_DAY, adjust ShiftType
+  a. Check that its shift's status is active
+  b. Check that its copy will be within candidate assign period
+  c. Check that it does not clash with any other attendance (can be from other projects)
+  d. If any of the above checks fail, add to failure list, continue to next attendance
+  e. Create new attendance
+    i. Check LeaveType => if HALF_DAY, adjust ShiftType
 4. Return failure list in response
  */
 projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
@@ -2362,6 +2470,86 @@ projectAPIRouter.post(
       });
 
       return res.send("Successfully cleared roster data.");
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: "Internal server error." });
+    }
+  }
+);
+
+projectAPIRouter.post(
+  "/project/:projectCuid/shifts/archive",
+  async (req, res) => {
+    const user = req.user as User;
+    const { projectCuid } = req.params;
+    const { startDate } = req.body;
+
+    if (!projectCuid) {
+      return res.status(400).send("projectCuid is required.");
+    }
+
+    if (!startDate || isNaN(Date.parse(startDate))) {
+      return res.status(400).send("valid startDate is required.");
+    }
+
+    let projectData;
+    try {
+      projectData = await prisma.project.findUniqueOrThrow({
+        where: {
+          cuid: projectCuid,
+        },
+        include: {
+          Manage: true,
+        },
+      });
+    } catch (error) {
+      const prismaError = error as PrismaError;
+      if (prismaError.code === "P2025") {
+        return res.status(404).send("Project does not exist.");
+      }
+
+      console.error(error);
+      return res.status(500).send({ error: "Internal server error." });
+    }
+
+    const hasPermission =
+      projectData.Manage.some(
+        (m) => m.role === Role.CLIENT_HOLDER && m.consultantCuid === user.cuid
+      ) ||
+      (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+    if (!hasPermission) {
+      return res
+        .status(401)
+        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+    }
+
+    try {
+      const rosteredShifts = await prisma.attendance.findMany({
+        where: {
+          shiftDate: {
+            gte: new Date(startDate),
+          },
+          Shift: {
+            projectCuid,
+          },
+        },
+        distinct: ["shiftCuid"],
+      });
+
+      await prisma.shift.updateMany({
+        where: {
+          projectCuid,
+          cuid: {
+            notIn: rosteredShifts.map((shift) => shift.shiftCuid),
+          },
+        },
+        data: {
+          status: ShiftStatus.ARCHIVED,
+        },
+      });
+
+      return res.send("Successfully archived shifts.");
     } catch (error) {
       console.error(error);
       return res.status(500).send({ error: "Internal server error." });

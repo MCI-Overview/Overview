@@ -31,7 +31,7 @@ import { useState } from "react";
 import DraggableRosterChip from "./DraggableRosterChip";
 
 export default function RosterSidebar() {
-  const { project } = useProjectContext();
+  const { project, updateProject } = useProjectContext();
   const { dateRangeStart, dateRangeEnd, updateRosterData, selectedCandidates } =
     useRosterContext();
   const [filterState, setFilterState] = useState<
@@ -168,7 +168,21 @@ export default function RosterSidebar() {
             </ListItemButton>
           </ListItem>
           <ListItem>
-            <ListItemButton>
+            <ListItemButton
+              onClick={() => {
+                axios
+                  .post(`/api/admin/project/${project?.cuid}/shifts/archive`, {
+                    startDate: dateRangeStart?.toISOString(),
+                  })
+                  .then(() => {
+                    toast.success("Successfully removed unused shifts.");
+                    updateProject();
+                  })
+                  .catch(() => {
+                    toast.error("Failed to remove unused shifts.");
+                  });
+              }}
+            >
               <DeleteForeverIcon />
               Remove Unused Shifts
             </ListItemButton>
@@ -178,9 +192,7 @@ export default function RosterSidebar() {
               onClick={() => {
                 axios
                   .post(`/api/admin/project/${project?.cuid}/roster/clear`, {
-                    candidateCuids: selectedCandidates,
                     startDate: dateRangeStart?.toISOString(),
-                    endDate: dateRangeEnd?.toISOString(),
                   })
                   .then(() => {
                     toast.success("Successfully cleared this weeks's roster.");

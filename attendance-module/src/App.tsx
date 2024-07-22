@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { CircularProgress, CssBaseline, Box, CssVarsProvider } from "@mui/joy";
 import { useEffect, useState } from "react";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import axiosRetry from "axios-retry";
 import dayjs from "dayjs";
@@ -17,6 +17,7 @@ import isBetween from "dayjs/plugin/isBetween";
 import relativeTime from "dayjs/plugin/relativeTime";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
+import { ConsultantsContextProvider } from "./providers/consultantsContextProvider";
 import { PrivateAdminRoutes, PrivateUserRoutes } from "./utils/private-route";
 import { ProjectContextProvider } from "./providers/projectContextProvider";
 import { UserContextProvider } from "./providers/userContextProvider";
@@ -36,6 +37,7 @@ import OnboardingPage from "./user/onboarding/OnboardingPage";
 import NotFound from "./components/NotFound";
 import ServiceUnavailable from "./components/ServiceUnavailable";
 import Login from "./login/Login";
+import AdminRequests from "./admin/Requests";
 
 dayjs.extend(isBetween);
 dayjs.extend(isoWeek);
@@ -52,6 +54,22 @@ function App() {
 
   useEffect(() => {
     document.title = "Overview";
+
+    window.addEventListener("offline", () => {
+      toast.dismiss("network-status");
+      toast.error("You are offline. Please check your internet connection.", {
+        duration: Infinity,
+        id: "network-status",
+      });
+    });
+
+    window.addEventListener("online", () => {
+      toast.dismiss("network-status");
+      toast.success("You are back online!", {
+        id: "network-status",
+        duration: 2000,
+      });
+    });
   }, []);
 
   axios.defaults.baseURL = SERVER_URL;
@@ -74,80 +92,92 @@ function App() {
   return (
     <CssVarsProvider disableTransitionOnChange>
       <UserContextProvider>
-        {loading && (
-          <Box
-            sx={{ display: "flex", width: "100dvw", height: "100dvh" }}
-            justifyContent="center"
-            alignItems="center"
-          >
-            <LoadUser setLoadingFalse={setLoadingFalse} />
-            <CircularProgress />
-          </Box>
-        )}
-        {!loading && (
-          <>
-            <CssBaseline />
-            <Box sx={{ display: "flex", minHeight: "100dvh" }}>
-              {!shouldHideSidebar && <Sidebar />}
-              {!shouldHideSidebar && <Header />}
-
-              <Box
-                component="main"
-                className="MainContent"
-                sx={{
-                  pt: { xs: "calc(12px + var(--Header-height))", md: 3 },
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  minWidth: 0,
-                  height: "100dvh",
-                  gap: 1,
-                  overflow: "auto",
-                }}
-              >
-                <RemoveTrailingSlash />
-                <ProjectContextProvider>
-                  <Routes>
-                    <Route element={<PrivateUserRoutes />}>
-                      <Route path="/" element={<Login />} />
-                      <Route path="/user/new" element={<OnboardingPage />} />
-                      <Route path="/user/home" element={<UserHome />} />
-                      <Route path="/user/requests" element={<UserRequests />} />
-                      <Route
-                        path="/user/profile"
-                        element={<CandidateProfile />}
-                      />
-                      <Route path="/user/shifts" element={<UserShifts />} />
-                      <Route path="/user/projects" element={<UserProjects />} />
-                    </Route>
-
-                    {/* Admin routes */}
-
-                    <Route element={<PrivateAdminRoutes />}>
-                      <Route path="/admin/home" element={<AdminHome />} />
-                      <Route
-                        path="/admin/project/:projectCuid?"
-                        element={<Project />}
-                      />
-                      <Route
-                        path="/admin/candidates"
-                        element={<AdminCandidates />}
-                      />
-                      <Route
-                        path="/admin/candidate/:candidateCuid"
-                        element={<CandidateProfile />}
-                      />
-                    </Route>
-
-                    <Route path="*" element={<Navigate to="/404" />} />
-                    <Route path="/404" element={<NotFound />} />
-                    <Route path="/503" element={<ServiceUnavailable />} />
-                  </Routes>
-                </ProjectContextProvider>
-              </Box>
+        <ConsultantsContextProvider>
+          {loading && (
+            <Box
+              sx={{ display: "flex", width: "100dvw", height: "100dvh" }}
+              justifyContent="center"
+              alignItems="center"
+            >
+              <LoadUser setLoadingFalse={setLoadingFalse} />
+              <CircularProgress />
             </Box>
-          </>
-        )}
+          )}
+          {!loading && (
+            <>
+              <CssBaseline />
+              <Box sx={{ display: "flex", minHeight: "100dvh" }}>
+                {!shouldHideSidebar && <Sidebar />}
+                {!shouldHideSidebar && <Header />}
+
+                <Box
+                  component="main"
+                  className="MainContent"
+                  sx={{
+                    pt: { xs: "calc(12px + var(--Header-height))", md: 3 },
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    minWidth: 0,
+                    height: "100dvh",
+                    gap: 1,
+                    overflow: "auto",
+                  }}
+                >
+                  <RemoveTrailingSlash />
+                  <ProjectContextProvider>
+                    <Routes>
+                      <Route element={<PrivateUserRoutes />}>
+                        <Route path="/" element={<Login />} />
+                        <Route path="/user/new" element={<OnboardingPage />} />
+                        <Route path="/user/home" element={<UserHome />} />
+                        <Route
+                          path="/user/requests"
+                          element={<UserRequests />}
+                        />
+                        <Route
+                          path="/user/profile"
+                          element={<CandidateProfile />}
+                        />
+                        <Route path="/user/shifts" element={<UserShifts />} />
+                        <Route
+                          path="/user/projects"
+                          element={<UserProjects />}
+                        />
+                      </Route>
+
+                      {/* Admin routes */}
+
+                      <Route element={<PrivateAdminRoutes />}>
+                        <Route path="/admin/home" element={<AdminHome />} />
+                        <Route
+                          path="/admin/project/:projectCuid?"
+                          element={<Project />}
+                        />
+                        <Route
+                          path="/admin/candidates"
+                          element={<AdminCandidates />}
+                        />
+                        <Route
+                          path="/admin/requests"
+                          element={<AdminRequests />}
+                        />
+                        <Route
+                          path="/admin/candidate/:candidateCuid"
+                          element={<CandidateProfile />}
+                        />
+                      </Route>
+
+                      <Route path="*" element={<Navigate to="/404" />} />
+                      <Route path="/404" element={<NotFound />} />
+                      <Route path="/503" element={<ServiceUnavailable />} />
+                    </Routes>
+                  </ProjectContextProvider>
+                </Box>
+              </Box>
+            </>
+          )}
+        </ConsultantsContextProvider>
       </UserContextProvider>
     </CssVarsProvider>
   );

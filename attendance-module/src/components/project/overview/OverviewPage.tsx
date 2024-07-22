@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
+import { OpUnitType } from "dayjs";
 
 import McCount from "./McCount";
 import OnLeaveCount from "./OnLeaveCount";
@@ -24,14 +25,20 @@ import {
   Button,
   iconButtonClasses,
   CircularProgress,
+  Select,
+  Option,
 } from "@mui/joy";
 import {
   KeyboardArrowRightRounded as KeyboardArrowRightIcon,
   KeyboardArrowLeftRounded as KeyboardArrowLeftIcon,
 } from "@mui/icons-material";
 import { correctTimes } from "../../../utils/date-time";
+import MCMoneyCount from "./MCMoneyCount";
+import TransportMoneyCount from "./TransportMoneyCount";
+import OtherMoneyCount from "./OtherMoneyCount";
+import PassTypeCount from "./PassTypeCount";
 
-type displayData = {
+type DisplayData = {
   datasets: {
     leave: {
       data: number[];
@@ -50,27 +57,40 @@ type displayData = {
     };
   };
   headcount: {
-    nationality: {
-      singapore: number;
-      malaysia: number;
-      china: number;
-    };
+    nationality: Record<string, number>;
     endDate: {
       ongoing: number;
       hasEnded: number;
     };
+    residency: Record<string, number>;
+  };
+  expenses: {
+    medical: number,
+    transport: number,
+    others: number
   };
 };
 
 const ProjectOverview = () => {
+  const [timeSpan, setTimeSpan] = useState<string>("week");
   const [data, setData] = useState<CustomAdminAttendance[]>([]);
-  const [plotData, setPlotData] = useState<displayData>();
-  const [weekStart, setWeekStart] = useState<Dayjs>(dayjs().startOf("isoWeek"));
+  const [plotData, setPlotData] = useState<DisplayData>();
+  const [startDate, setStartDate] = useState<Dayjs>(dayjs().startOf("isoWeek"));
   const { project } = useProjectContext();
 
   const projectCuid = project?.cuid;
-
+  let graphStartDate = dayjs(startDate);
   useEffect(() => {
+
+    if (timeSpan === "day") {
+      graphStartDate = dayjs(startDate).startOf("day");
+    } else if (timeSpan === "week") {
+      graphStartDate = dayjs(startDate).startOf("isoWeek");
+    } else if (timeSpan === "month") {
+      graphStartDate = dayjs(startDate).startOf("month");
+    }
+
+
     const fetchUpcomingShifts = async () => {
       try {
         const formattedStartDate = dayjs()
@@ -113,13 +133,22 @@ const ProjectOverview = () => {
     };
 
     const getDisplayData = async () => {
-      const formattedWeekStart = dayjs(weekStart).format(
-        "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
-      );
+      let formattedStartDate, formattedEndDate;
+
+      if (timeSpan === "day") {
+        formattedStartDate = startDate.startOf("day").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+        formattedEndDate = startDate.endOf("day").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+      } else if (timeSpan === "week") {
+        formattedStartDate = startDate.startOf("isoWeek").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+        formattedEndDate = startDate.endOf("month").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+      } else if (timeSpan === "month") {
+        formattedStartDate = startDate.startOf("month").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+        formattedEndDate = startDate.endOf("month").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+      }
 
       axios
         .get(
-          `/api/admin/project/${projectCuid}/overview?weekStart=${formattedWeekStart}`
+          `/api/admin/project/${projectCuid}/overview?weekStart=${formattedStartDate}&endDate=${formattedEndDate}`
         )
         .then((response) => {
           setPlotData(response.data);
@@ -128,33 +157,46 @@ const ProjectOverview = () => {
 
     getDisplayData();
     fetchUpcomingShifts();
-  }, [projectCuid, weekStart]);
+    console.log("THis is the timespan:", timeSpan);
+  }, [projectCuid, startDate, timeSpan]);
 
   const sumArray = (arr: number[]) => arr.reduce((acc, curr) => acc + curr, 0);
 
   const total = plotData
     ? sumArray(plotData.datasets.leave.data) +
-      sumArray(plotData.datasets.late.data) +
-      sumArray(plotData.datasets.ontime.data) +
-      sumArray(plotData.datasets.medical.data) +
-      sumArray(plotData.datasets.absent.data)
+    sumArray(plotData.datasets.late.data) +
+    sumArray(plotData.datasets.ontime.data) +
+    sumArray(plotData.datasets.medical.data) +
+    sumArray(plotData.datasets.absent.data)
     : 0;
 
   const handlePrevious = () => {
-    setWeekStart((prev) => prev.subtract(1, "week"));
+    if (timeSpan === "day") {
+      setStartDate((prev) => prev.subtract(1, "day"));
+    } else if (timeSpan === "week") {
+      setStartDate((prev) => prev.subtract(1, "week").startOf("isoWeek"));
+    } else if (timeSpan === "month") {
+      setStartDate((prev) => prev.subtract(1, "month").startOf("month"));
+    }
   };
 
   const handleNext = () => {
-    setWeekStart((prev) => prev.add(1, "week"));
+    if (timeSpan === "day") {
+      setStartDate((prev) => prev.add(1, "day"));
+    } else if (timeSpan === "week") {
+      setStartDate((prev) => prev.add(1, "week").startOf("isoWeek"));
+    } else if (timeSpan === "month") {
+      setStartDate((prev) => prev.add(1, "month").startOf("month"));
+    }
   };
 
   const defaultHeadcount = {
-    singapore: 0,
-    malaysia: 0,
-    china: 0,
   };
 
   const headcount = plotData?.headcount?.nationality ?? defaultHeadcount;
+  const residency = plotData?.headcount?.residency ?? defaultHeadcount;
+
+  console.log("graph start date", graphStartDate);
 
   if (!plotData)
     return (
@@ -212,7 +254,7 @@ const ProjectOverview = () => {
               </Box>
 
               <Typography level="body-sm">
-                Attendance stats for the week
+                Attendance stats for the {timeSpan}
               </Typography>
             </Box>
           </Box>
@@ -254,9 +296,29 @@ const ProjectOverview = () => {
                   total={total}
                 />
               </Grid>
+              <Grid xs={12} sm={5} lg={3} xl={3}>
+                <MCMoneyCount
+                  count={plotData?.expenses.medical ?? 0}
+                  total={plotData?.expenses.medical + plotData?.expenses.transport + plotData?.expenses.others}
+                />
+              </Grid>
+              <Grid xs={12} sm={5} lg={3} xl={3}>
+                <TransportMoneyCount
+                  count={plotData?.expenses.transport ?? 0}
+                  total={plotData?.expenses.medical + plotData?.expenses.transport + plotData?.expenses.others}
+                />
+              </Grid>
+              <Grid xs={12} sm={5} lg={3} xl={3}>
+                <OtherMoneyCount
+                  count={plotData?.expenses.others ?? 0}
+                  total={plotData?.expenses.medical + plotData?.expenses.transport + plotData?.expenses.others}
+                />
+              </Grid>
             </Grid>
 
-            <Typography level="body-sm">Weekly attendance trends</Typography>
+            <Typography level="body-sm">
+              {timeSpan.charAt(0).toUpperCase() + timeSpan.slice(1)} attendance trends
+            </Typography>
             <Box
               className="Pagination-laptopUp"
               sx={{
@@ -280,9 +342,15 @@ const ProjectOverview = () => {
               </Button>
 
               <Box sx={{ flex: 1 }} />
-              <Button size="sm" variant="outlined" color="neutral">
-                Week of {weekStart.format("DD/MM/YY")}
-              </Button>
+              <Select
+                name={"timeSpan"}
+                defaultValue={"week"}
+                onChange={(_e, value) => setTimeSpan(value ?? "week")}
+              >
+                <Option value={"day"}>{startDate.format("DD/MM/YY")}</Option>
+                <Option value={"week"}>Week of {startDate.format("DD/MM/YY")}</Option>
+                <Option value={"month"}>Month of {startDate.format("MMMM")}</Option>
+              </Select>
               <Box sx={{ flex: 1 }} />
 
               <Button
@@ -298,7 +366,11 @@ const ProjectOverview = () => {
             {plotData && (
               <AttendanceGraph
                 datasets={plotData.datasets}
-                weekStart={weekStart.toDate()}
+                weekStart={graphStartDate.startOf(timeSpan === "day" ? "day" : timeSpan === "week" ? "isoWeek" as OpUnitType : "month" as OpUnitType).toDate()}
+                endDate={startDate
+                  .clone()
+                  .endOf(timeSpan === "day" ? "day" : timeSpan === "week" ? "isoWeek" as OpUnitType : "month" as OpUnitType)
+                  .toDate()}
               />
             )}
           </Stack>
@@ -331,14 +403,17 @@ const ProjectOverview = () => {
           <Divider />
           <Stack columnGap={2} rowGap={2} sx={{ flexGrow: 1, mx: 0 }}>
             <Grid container spacing={2}>
-              <Grid xs={12} sm={6}>
+              <Grid xs={12} sm={6} md={4}>
                 <HeadcountSection
                   active={plotData?.headcount.endDate.ongoing ?? 0}
                   inactive={plotData?.headcount.endDate.hasEnded ?? 0}
                 />
               </Grid>
-              <Grid xs={12} sm={6}>
+              <Grid xs={12} sm={6} md={4}>
                 <NationalityCount headcount={headcount} />
+              </Grid>
+              <Grid xs={12} sm={6} md={4}>
+                <PassTypeCount headcount={residency} />
               </Grid>
             </Grid>
           </Stack>

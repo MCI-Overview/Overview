@@ -323,7 +323,7 @@ userAPIRouter.patch(
             await s3.send(
               new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET_NAME!,
-                Key: `${user.cuid}/bank-statement`,
+                Key: `users/${user.cuid}/bank-statement`,
                 Body: bankStatement.buffer,
               })
             );
@@ -338,7 +338,7 @@ userAPIRouter.patch(
             await s3.send(
               new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET_NAME!,
-                Key: `${user.cuid}/nric/front`,
+                Key: `users/${user.cuid}/nric/front`,
                 Body: nricFront.buffer,
               })
             );
@@ -353,7 +353,7 @@ userAPIRouter.patch(
             await s3.send(
               new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET_NAME!,
-                Key: `${user.cuid}/nric/back`,
+                Key: `users/${user.cuid}/nric/back`,
                 Body: nricBack.buffer,
               })
             );

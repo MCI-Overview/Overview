@@ -1,11 +1,14 @@
-import { Card, Box, Typography, Chip, Avatar, Stack } from "@mui/joy";
-import { useNavigate } from "react-router-dom";
-import { Project } from "../../../types";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
+
+import { BasicProject } from "../../../types";
+import ConsultantDisplay from "./ConsultantDisplay";
 import { useUserContext } from "../../../providers/userContextProvider";
 
+import { Card, Box, Typography, Chip, Stack, Tooltip } from "@mui/joy";
+
 interface ProjectDisplayProps {
-  project: Project;
+  project: BasicProject;
   viewOnly?: boolean;
 }
 
@@ -16,11 +19,9 @@ export function AdminProjectDisplay({
   const navigate = useNavigate();
   const { user } = useUserContext();
 
-  const manage = project.Manage.filter((m) => m.role === "CLIENT_HOLDER")[0];
-
-  const isClientHolder =
-    project.Manage.filter((manage) => manage.consultantCuid === user?.cuid)
-      .length > 0;
+  const cuids = project.consultants
+    .filter((c) => c.role === "CLIENT_HOLDER" && c.cuid !== user?.cuid)
+    .map((c) => c.cuid);
 
   const handleClick = () => {
     if (!viewOnly) {
@@ -43,8 +44,8 @@ export function AdminProjectDisplay({
       <Box
         sx={{
           display: {
-            sm: 'flex'
-          }
+            sm: "flex",
+          },
         }}
         justifyContent="space-between"
       >
@@ -54,24 +55,15 @@ export function AdminProjectDisplay({
             "DD MMM YY"
           )} - ${dayjs(project.endDate).format("DD MMM YY")}`}</Typography>
         </Stack>
-        <Chip sx={{ marginY: "auto" }}>{project.Client.name}</Chip>
+        <Tooltip title={`UEN: ${project.clientUEN}`}>
+          <Chip sx={{ marginY: "auto" }}>{project.clientName}</Chip>
+        </Tooltip>
       </Box>
-      {isClientHolder ? (
-        <Typography level="body-sm">You are the client holder!</Typography>
-      ) : (
-        <Stack direction="row" gap={2}>
-          <Avatar>{manage.Consultant.name.substring(0, 1)}</Avatar>
-          <Stack>
-            <Typography level="title-sm">{manage.Consultant.name}</Typography>
-            <Stack direction="row" gap={1}>
-              <Typography level="body-sm">{manage.Consultant.email}</Typography>
-              <Typography level="body-sm">
-                {manage.Consultant.contact}
-              </Typography>
-            </Stack>
-          </Stack>
-        </Stack>
-      )}
+      <Stack gap={2}>
+        {cuids.map((cuid) => (
+          <ConsultantDisplay key={cuid} cuid={cuid} />
+        ))}
+      </Stack>
     </Card>
   );
 }

@@ -18,7 +18,11 @@ export default function NoShowCount({ count, total }: NoShowCountProps) {
       }}
     >
       <CardContent orientation="horizontal">
-        <CircularProgress size="lg" determinate value={(count / total) * 100}>
+        <CircularProgress
+          size="lg"
+          determinate
+          value={total > 0 ? (count / total) * 100 : 0}
+        >
           <BlockIcon />
         </CircularProgress>
         <CardContent>

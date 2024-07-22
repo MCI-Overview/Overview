@@ -107,9 +107,8 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
     null
   );
   const [weekOffset, setWeekOffset] = useState<number>(
-    Math.floor(
-      dayjs().diff(project?.startDate.startOf("isoWeek"), "weeks") || 0
-    )
+    Math.floor(dayjs().diff(project?.startDate.startOf("isoWeek"), "weeks")) ||
+      0
   );
 
   const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
@@ -119,8 +118,12 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [sortOrderBy, setSortOrderBy] = useState<"name" | "assign">("name");
 
+  const baseDay = project?.startDate.startOf("isoWeek");
+  const dateRangeStart = baseDay?.add(weekOffset, "weeks");
+  const dateRangeEnd = dateRangeStart?.endOf("isoWeek");
+
   const updateRosterData = useCallback(() => {
-    if (!weekOffset || !project) return;
+    if (!project || !dateRangeStart || !dateRangeEnd) return;
 
     axios
       .get(`/api/admin/project/${project?.cuid}/roster`, {
@@ -137,23 +140,26 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
               name: candidate.name,
               startDate: dayjs(candidate.startDate),
               endDate: dayjs(candidate.endDate),
-              roster: candidate.shifts.map((shift) => ({
-                rosterCuid: shift.rosterCuid,
-                shiftCuid: shift.shiftCuid,
-                consultantCuid: shift.consultantCuid,
+              roster: candidate.rosters.map((roster) => ({
+                rosterCuid: roster.rosterCuid,
+                shiftCuid: roster.shiftCuid,
+                clientHolderCuids: roster.clientHolderCuids,
                 candidateCuid: candidate.cuid,
-                projectCuid: shift.projectCuid,
-                type: shift.shiftType,
-                status: shift.status,
-                leave: shift.leave,
+                projectCuid: roster.projectCuid,
+                type: roster.type,
+                breakDuration: roster.breakDuration,
+                status: roster.status,
+                leave: roster.leave,
                 isPartial: false,
-                startTime: dayjs(shift.shiftStartTime),
-                endTime: dayjs(shift.shiftEndTime),
-                originalStartTime: dayjs(shift.shiftStartTime),
-                originalEndTime: dayjs(shift.shiftEndTime),
+                startTime: dayjs(roster.startTime),
+                endTime: dayjs(roster.endTime),
+                originalStartTime: dayjs(roster.startTime),
+                originalEndTime: dayjs(roster.endTime),
+                clockInTime: dayjs(roster.clockInTime),
+                clockOutTime: dayjs(roster.clockOutTime),
               })),
               newRoster: [],
-              rosterLength: candidate.shifts.length,
+              rosterLength: candidate.rosters.length,
             };
             return acc;
           },
@@ -176,13 +182,9 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rosterData]);
 
-  if (!project) {
+  if (!project || !dateRangeStart || !dateRangeEnd) {
     return null;
   }
-
-  const baseDay = project.startDate.startOf("isoWeek");
-  const dateRangeStart = baseDay.add(weekOffset, "weeks");
-  const dateRangeEnd = dateRangeStart.endOf("isoWeek");
 
   const mergedData =
     rosterData &&
@@ -265,46 +267,46 @@ export function RosterContextProvider({ children }: { children: ReactNode }) {
             if (hasNoOverlap && itemStartTime.isAfter(dayjs())) {
               acc[1].push(date);
 
-              if (itemType === "shift") {
-                const isCandidate =
-                  selectedCandidates.includes(cuid) ||
-                  (!selectedCandidates.length && candidateHoverCuid === cuid);
+              // if (itemType === "shift") {
+              //   const isCandidate =
+              //     selectedCandidates.includes(cuid) ||
+              //     (!selectedCandidates.length && candidateHoverCuid === cuid);
 
-                const isDateSelected =
-                  dates.some((d) => d.isSame(date, "day")) ||
-                  (!dates.length && hoverDate && hoverDate.isSame(date, "day"));
+              //   const isDateSelected =
+              //     dates.some((d) => d.isSame(date, "day")) ||
+              //     (!dates.length && hoverDate && hoverDate.isSame(date, "day"));
 
-                if (isCandidate && isDateSelected) {
-                  acc[0].push({
-                    ...item,
-                    isPartial: false,
-                    originalStartTime: itemStartTime,
-                    originalEndTime: itemEndTime,
-                    startTime: itemStartTime,
-                    endTime: itemEndTime,
-                    state: "PREVIEW",
-                  });
-                }
-              }
+              //   if (isCandidate && isDateSelected) {
+              //     acc[0].push({
+              //       ...item,
+              //       isPartial: false,
+              //       originalStartTime: itemStartTime,
+              //       originalEndTime: itemEndTime,
+              //       startTime: itemStartTime,
+              //       endTime: itemEndTime,
+              //       state: "PREVIEW",
+              //     });
+              //   }
+              // }
 
-              if (itemType === "roster") {
-                const isCandidate = candidateHoverCuid === cuid;
+              // if (itemType === "roster") {
+              //   const isCandidate = candidateHoverCuid === cuid;
 
-                const isDateSelected =
-                  hoverDate && hoverDate.isSame(date, "day");
+              //   const isDateSelected =
+              //     hoverDate && hoverDate.isSame(date, "day");
 
-                if (isCandidate && isDateSelected) {
-                  acc[0].push({
-                    ...item,
-                    isPartial: false,
-                    originalStartTime: itemStartTime,
-                    originalEndTime: itemEndTime,
-                    startTime: itemStartTime,
-                    endTime: itemEndTime,
-                    state: "PREVIEW",
-                  });
-                }
-              }
+              //   if (isCandidate && isDateSelected) {
+              //     acc[0].push({
+              //       ...item,
+              //       isPartial: false,
+              //       originalStartTime: itemStartTime,
+              //       originalEndTime: itemEndTime,
+              //       startTime: itemStartTime,
+              //       endTime: itemEndTime,
+              //       state: "PREVIEW",
+              //     });
+              //   }
+              // }
 
               return acc;
             }

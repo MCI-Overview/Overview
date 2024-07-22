@@ -8,7 +8,7 @@ type McCountProps = {
   total: number;
 };
 
-export default function McCount({ count, total }: McCountProps) {
+export default function ClaimsMoneyCount({ count, total }: McCountProps) {
   return (
     <Card
       variant="solid"
@@ -27,9 +27,9 @@ export default function McCount({ count, total }: McCountProps) {
         </CircularProgress>
         <CardContent>
           <Typography level="body-md" textColor="common.white">
-            Medical
+            Claims
           </Typography>
-          <Typography level="h2">{count}</Typography>
+          <Typography level="h2">$ {count}</Typography>
         </CardContent>
       </CardContent>
     </Card>

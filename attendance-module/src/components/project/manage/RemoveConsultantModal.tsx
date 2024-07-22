@@ -3,18 +3,16 @@ import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 
 import { Assign } from "../../../types";
+import ResponsiveDialog from "../../ResponsiveDialog";
+import { useUserContext } from "../../../providers/userContextProvider";
 import { CommonConsultant, CommonCandidate } from "../../../types/common";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { useUserContext } from "../../../providers/userContextProvider";
 
 import {
   Autocomplete,
   Button,
-  Card,
   FormLabel,
   Input,
-  Modal,
-  ModalClose,
   Stack,
   Table,
   Typography,
@@ -121,117 +119,203 @@ const RemoveConsultantModal = ({
   };
 
   return (
-    <Modal
-      aria-labelledby="modal-title"
-      aria-describedby="modal-desc"
+    <ResponsiveDialog
       open={isOpen}
-      onClose={() => setIsOpen(false)}
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
+      title="Remove Consultant"
+      subtitle="Confirm removal of consultant. "
+      handleClose={() => setIsOpen(false)}
+      actions={
+        <Button disabled={isSubmitDisabled} onClick={handleConfirmRemove}>
+          Confirm
+        </Button>
+      }
     >
-      <Card
-        sx={{
-          maxWidth: 900,
-        }}
-      >
-        <ModalClose />
-        <Typography
-          component="h2"
-          id="modal-title"
-          level="h4"
-          fontWeight="lg"
-          mb={1}
-        >
-          Confirm removal
-        </Typography>
-        <Stack spacing={2}>
-          {affectedCdds.length > 0 ? (
-            <>
-              <Typography
-                component="p"
-                id="modal-desc"
-                textColor="text.tertiary"
-              >
-                Reassign candidates before removing the consultant{" "}
-                {consultantToRemove.name}.
-              </Typography>
-              <Table
-                stripe="odd"
-                hoverRow
-                sx={{
-                  captionSide: "top",
-                  "& tbody": { bgcolor: "background.surface" },
-                }}
-              >
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>NRIC</th>
-                    <th>
+      <Stack spacing={2}>
+        {affectedCdds.length > 0 ? (
+          <>
+            <Typography component="p" id="modal-desc" textColor="text.tertiary">
+              {`Reassign candidates before removing the consultant ${consultantToRemove.name}.`}
+            </Typography>
+            <Table
+              stripe="odd"
+              hoverRow
+              sx={{
+                captionSide: "top",
+                "& tbody": { bgcolor: "background.surface" },
+              }}
+            >
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>NRIC</th>
+                  <th>
+                    <Autocomplete
+                      placeholder="Apply to all"
+                      options={availableCollaborators}
+                      getOptionLabel={(option) => option.email}
+                      onChange={(_event, value) => handleApplyToAll(value)}
+                      value={null}
+                    />
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {affectedCdds.map((candidate, index) => (
+                  <tr key={candidate.nric}>
+                    <td>{candidate.name}</td>
+                    <td>{candidate.nric}</td>
+                    <td>
                       <Autocomplete
-                        placeholder="Apply to all"
+                        placeholder="Select"
                         options={availableCollaborators}
+                        value={
+                          availableCollaborators.find(
+                            (consultant) =>
+                              consultant.cuid ===
+                              rowSelections[index]?.consultantCuid
+                          ) || null
+                        }
                         getOptionLabel={(option) => option.email}
-                        onChange={(_event, value) => handleApplyToAll(value)}
-                        value={null}
+                        onChange={(_event, option) =>
+                          handleRowSelectionChange(index, option)
+                        }
                       />
-                    </th>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {affectedCdds.map((candidate, index) => (
-                    <tr key={candidate.nric}>
-                      <td>{candidate.name}</td>
-                      <td>{candidate.nric}</td>
-                      <td>
-                        <Autocomplete
-                          placeholder="Select"
-                          options={availableCollaborators}
-                          value={
-                            availableCollaborators.find(
-                              (consultant) =>
-                                consultant.cuid ===
-                                rowSelections[index]?.consultantCuid
-                            ) || null
-                          }
-                          getOptionLabel={(option) => option.email}
-                          onChange={(_event, option) =>
-                            handleRowSelectionChange(index, option)
-                          }
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </>
-          ) : (
-            <Typography>No candidates to reassign.</Typography>
-          )}
+                ))}
+              </tbody>
+            </Table>
+          </>
+        ) : (
+          <Typography>No candidates to reassign.</Typography>
+        )}
 
-          <FormLabel>
-            Enter email and reassign all candidates (if any) to allow
-            submission.
-          </FormLabel>
-          <Input
-            placeholder={consultantToRemove.email}
-            value={emailConfirmation}
-            onChange={(e) => setEmailConfirmation(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !isSubmitDisabled) {
-                handleConfirmRemove();
-              }
-            }}
-          />
-          <Button disabled={isSubmitDisabled} onClick={handleConfirmRemove}>
-            Confirm
-          </Button>
-        </Stack>
-      </Card>
-    </Modal>
+        <FormLabel>
+          Enter email and reassign all candidates (if any) to allow submission.
+        </FormLabel>
+        <Input
+          placeholder={consultantToRemove.email}
+          value={emailConfirmation}
+          onChange={(e) => setEmailConfirmation(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !isSubmitDisabled) {
+              handleConfirmRemove();
+            }
+          }}
+        />
+      </Stack>
+    </ResponsiveDialog>
+    // <Modal
+    //   aria-labelledby="modal-title"
+    //   aria-describedby="modal-desc"
+    //   open={isOpen}
+    //   onClose={() => setIsOpen(false)}
+    //   sx={{
+    //     display: "flex",
+    //     justifyContent: "center",
+    //     alignItems: "center",
+    //   }}
+    // >
+    //   <Card
+    //     sx={{
+    //       maxWidth: 900,
+    //     }}
+    //   >
+    //     <ModalClose />
+    //     <Typography
+    //       component="h2"
+    //       id="modal-title"
+    //       level="h4"
+    //       fontWeight="lg"
+    //       mb={1}
+    //     >
+    //       Confirm removal
+    //     </Typography>
+    //     <Stack spacing={2}>
+    //       {affectedCdds.length > 0 ? (
+    //         <>
+    //           <Typography
+    //             component="p"
+    //             id="modal-desc"
+    //             textColor="text.tertiary"
+    //           >
+    //             Reassign candidates before removing the consultant{" "}
+    //             {consultantToRemove.name}.
+    //           </Typography>
+    //           <Table
+    //             stripe="odd"
+    //             hoverRow
+    //             sx={{
+    //               captionSide: "top",
+    //               "& tbody": { bgcolor: "background.surface" },
+    //             }}
+    //           >
+    //             <thead>
+    //               <tr>
+    //                 <th>Name</th>
+    //                 <th>NRIC</th>
+    //                 <th>
+    //                   <Autocomplete
+    //                     placeholder="Apply to all"
+    //                     options={availableCollaborators}
+    //                     getOptionLabel={(option) => option.email}
+    //                     onChange={(_event, value) => handleApplyToAll(value)}
+    //                     value={null}
+    //                   />
+    //                 </th>
+    //               </tr>
+    //             </thead>
+    //             <tbody>
+    //               {affectedCdds.map((candidate, index) => (
+    //                 <tr key={candidate.nric}>
+    //                   <td>{candidate.name}</td>
+    //                   <td>{candidate.nric}</td>
+    //                   <td>
+    //                     <Autocomplete
+    //                       placeholder="Select"
+    //                       options={availableCollaborators}
+    //                       value={
+    //                         availableCollaborators.find(
+    //                           (consultant) =>
+    //                             consultant.cuid ===
+    //                             rowSelections[index]?.consultantCuid
+    //                         ) || null
+    //                       }
+    //                       getOptionLabel={(option) => option.email}
+    //                       onChange={(_event, option) =>
+    //                         handleRowSelectionChange(index, option)
+    //                       }
+    //                     />
+    //                   </td>
+    //                 </tr>
+    //               ))}
+    //             </tbody>
+    //           </Table>
+    //         </>
+    //       ) : (
+    //         <Typography>No candidates to reassign.</Typography>
+    //       )}
+
+    //       <FormLabel>
+    //         Enter email and reassign all candidates (if any) to allow
+    //         submission.
+    //       </FormLabel>
+    //       <Input
+    //         placeholder={consultantToRemove.email}
+    //         value={emailConfirmation}
+    //         onChange={(e) => setEmailConfirmation(e.target.value)}
+    //         onKeyDown={(e) => {
+    //           if (e.key === "Enter" && !isSubmitDisabled) {
+    //             handleConfirmRemove();
+    //           }
+    //         }}
+    //       />
+    //       <Button disabled={isSubmitDisabled} onClick={handleConfirmRemove}>
+    //         Confirm
+    //       </Button>
+    //     </Stack>
+    //   </Card>
+    // </Modal>
   );
 };
 

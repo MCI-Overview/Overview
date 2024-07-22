@@ -18,44 +18,11 @@ import ProjectOverview from "../components/project/overview/OverviewPage.tsx";
 import AdminRequestsPage from "../components/project/requests/AdminRequestsPage.tsx";
 import AdminProjectCandidatesPage from "../components/project/candidates/AdminProjectCandidatesPage.tsx";
 import AdminProjectAttendancePage from "../components/project/attendance/AdminProjectAttendancePage.tsx";
-
-import { Typography, Box } from "@mui/joy";
 import { useUserContext } from "../providers/userContextProvider.tsx";
 
-const tabs: (Tab & {
-  clientHolderOnly: boolean;
-})[] = [
-  {
-    label: "Overview",
-    content: <ProjectOverview />,
-    clientHolderOnly: false,
-  },
-  {
-    label: "Attendance",
-    content: <AdminProjectAttendancePage />,
-    clientHolderOnly: false,
-  },
-  {
-    label: "Candidates",
-    content: <AdminProjectCandidatesPage />,
-    clientHolderOnly: false,
-  },
-  {
-    label: "Requests",
-    content: <AdminRequestsPage />,
-    clientHolderOnly: true,
-  },
-  {
-    label: "Timetable",
-    content: <TimetablePage />,
-    clientHolderOnly: false,
-  },
-  {
-    label: "Settings",
-    content: <Settings />,
-    clientHolderOnly: false,
-  },
-];
+import { RefreshRounded as RefreshIcon } from "@mui/icons-material";
+
+import { Typography, Box, IconButton } from "@mui/joy";
 
 const AdminProjects = () => {
   const location = useLocation();
@@ -65,6 +32,45 @@ const AdminProjects = () => {
   const { project, updateProject } = useProjectContext();
 
   const [tabValue, setTabValue] = useState<number>(0);
+
+  const tabs: (Tab & {
+    clientHolderOnly: boolean;
+  })[] = [
+    {
+      label: "Overview",
+      content: <ProjectOverview />,
+      clientHolderOnly: false,
+    },
+    {
+      label: "Attendance",
+      content: <AdminProjectAttendancePage />,
+      clientHolderOnly: false,
+    },
+    {
+      label: "Candidates",
+      content: <AdminProjectCandidatesPage />,
+      clientHolderOnly: false,
+    },
+    {
+      label: "Requests",
+      content: (
+        <AdminRequestsPage
+          baseURL={`/api/admin/project/${project?.cuid}/requests`}
+        />
+      ),
+      clientHolderOnly: true,
+    },
+    {
+      label: "Timetable",
+      content: <TimetablePage />,
+      clientHolderOnly: false,
+    },
+    {
+      label: "Settings",
+      content: <Settings />,
+      clientHolderOnly: false,
+    },
+  ];
 
   const filteredTabs = tabs.filter(
     (tab) =>
@@ -161,8 +167,24 @@ const AdminProjects = () => {
       >
         <Box sx={{ px: { xs: 2, md: 6 } }}>
           <AdminBreadcrumb breadcrumbs={breadcrumbs} />
-          <Typography level="h2" component="h1" sx={{ mt: 1, mb: 2 }}>
+          <Typography
+            level="h2"
+            component="h1"
+            sx={{
+              mt: 1,
+              mb: 2,
+              display: "flex",
+              gap: 0.5,
+            }}
+          >
             {project?.name}
+            <IconButton
+              onClick={() => {
+                updateProject();
+              }}
+            >
+              <RefreshIcon />
+            </IconButton>
           </Typography>
         </Box>
         <TabBar

@@ -6,6 +6,7 @@ import AttendanceStatusChip from "./AttendanceStatusChip";
 
 import {
   Box,
+  Grid,
   List,
   ListDivider,
   ListItem,
@@ -71,25 +72,33 @@ const AdminProjectAttendanceList = ({
                     sx={{
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "space-between",
                       gap: 0.5,
                       mb: 1,
                     }}
                   >
-                    <Typography level="body-md">{att.name}</Typography>
-                    <Typography level="body-md">&bull;</Typography>
-                    <Typography level="body-md">{att.nric}</Typography>
+                    <Typography level="body-sm">{att.name}</Typography>
+                    <Typography level="body-sm">&bull;</Typography>
+                    <Typography level="body-sm">{att.nric}</Typography>
                   </Box>
-                  <Typography level="body-xs">Shift</Typography>
-                  <Typography level="body-md" gutterBottom>
-                    {att.shiftStart.format("HH:mm")} -{" "}
-                    {att.shiftEnd.format("HH:mm")}
-                  </Typography>
-                  <Typography level="body-xs">Clock in / out</Typography>
-                  <Typography level="body-md" gutterBottom>
-                    {att.rawStart ? att.rawStart.format("HH:mm") : "N/A"} -{" "}
-                    {att.rawEnd ? att.rawEnd.format("HH:mm") : "N/A"}
-                  </Typography>
+
+                  <Grid container>
+                    <Grid xs={6}>
+                      <Typography level="body-xs">Shift</Typography>
+                      <Typography level="body-sm" gutterBottom>
+                        {att.shiftStart.format("HH:mm")} -{" "}
+                        {att.shiftEnd.format("HH:mm")}
+                      </Typography>
+                    </Grid>
+                    <Grid xs={6}>
+                      <Typography level="body-xs">Clock in / out</Typography>
+                      <Typography level="body-sm" gutterBottom>
+                        {att.rawStart ? att.rawStart.format("HH:mm") : "N/A"} -{" "}
+                        {att.rawEnd ? att.rawEnd.format("HH:mm") : "N/A"}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+
+
                 </ListItemContent>
                 <AttendanceStatusChip leave={att.leave} status={att.status} />
               </ListItem>

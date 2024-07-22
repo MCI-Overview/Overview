@@ -37,6 +37,20 @@ export type Assign = {
   candidateCuid: string;
 };
 
+export type BasicProject = {
+  cuid: string;
+  name: string;
+  createdAt: string;
+  startDate: string;
+  endDate: string;
+  clientName: string;
+  clientUEN: string;
+  consultants: {
+    role: string;
+    cuid: string;
+  }[];
+};
+
 export type Project = {
   cuid: string;
   name: string;
