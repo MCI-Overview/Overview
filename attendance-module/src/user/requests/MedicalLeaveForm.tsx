@@ -138,6 +138,10 @@ export default function MedicalLeaveForm({
           />
         </Sheet>
       )}
+
+      <Typography level="body-xs" sx={{ mt: 1 }}>
+        Note: Pending leave requests in this period will be cancelled.
+      </Typography>
       <LoadingRequestButton
         promise={handleClaimSubmit}
         disabled={!startDate || !numberOfDays || !mcFile}

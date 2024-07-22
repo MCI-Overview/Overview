@@ -395,7 +395,7 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
     return res.status(400).send("MC image is required");
   }
 
-  const affectedRoster = await prisma.attendance.findMany({
+  const affectedRosters = await prisma.attendance.findMany({
     where: {
       candidateCuid,
       OR: [
@@ -422,7 +422,7 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
   });
 
   const affectedProjects = new Set(
-    affectedRoster.map((roster) => roster.Shift.projectCuid)
+    affectedRosters.map((roster) => roster.Shift.projectCuid)
   );
 
   const imageUUID = randomUUID();
@@ -438,7 +438,7 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
 
     await prisma.$transaction(
       Array.from(affectedProjects).map((projectCuid) => {
-        const rosterCuids = affectedRoster
+        const rosterCuids = affectedRosters
           .filter((roster) => roster.Shift.projectCuid === projectCuid)
           .map((roster) => {
             return { cuid: roster.cuid };
@@ -463,6 +463,24 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
         });
       })
     );
+
+    // set pending leave requests to cancelled for affected rosters
+    await prisma.request.updateMany({
+      where: {
+        status: "PENDING",
+        type: RequestType.PAID_LEAVE || RequestType.UNPAID_LEAVE,
+        Attendance: {
+          some: {
+            cuid: {
+              in: affectedRosters.map((roster) => roster.cuid),
+            },
+          },
+        },
+      },
+      data: {
+        status: "CANCELLED",
+      },
+    });
 
     return res.send("MC request submitted successfully");
   } catch (error) {
