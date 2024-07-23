@@ -248,6 +248,10 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
     }
   }
 
+  //TODO: Add validation for date of birth
+
+  const dateOfBirthObject = dayjs(dateOfBirth);
+
   const createData = {
     nric,
     name,
@@ -262,6 +266,10 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
     }),
   };
 
+  const password = `${nric.substring(5, nric.length)}${dateOfBirthObject.format(
+    "DDMMYYYY"
+  )}`;
+
   try {
     await prisma.candidate.create({
       data: {
@@ -269,7 +277,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
         User: {
           create: {
             username: nric,
-            hash: await bcrypt.hash(contact, 12),
+            hash: await bcrypt.hash(password, 12),
           },
         },
       },
