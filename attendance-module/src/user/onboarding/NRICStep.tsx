@@ -23,6 +23,8 @@ export default function NRICStep() {
       ""
   );
 
+  const [debugMessage, setDebugMessage] = useState("");
+
   if (!oldCandidate || !newCandidate) {
     return null;
   }
@@ -109,6 +111,11 @@ export default function NRICStep() {
           </Stack>
         </Grid>
       </Grid>
+      <Box>
+        <Typography level="body-sm" color="danger">
+          {debugMessage}
+        </Typography>
+      </Box>
       <Box
         sx={{
           position: "fixed",
@@ -163,6 +170,9 @@ export default function NRICStep() {
                       nricBack: newNricBack,
                     });
                     handleNext();
+                  })
+                  .catch((error) => {
+                    setDebugMessage(error.message);
                   });
               } else {
                 handleNext();
