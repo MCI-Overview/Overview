@@ -42,11 +42,11 @@ const GeneralProjectSettings = () => {
   const { user } = useUserContext();
   const { project, updateProject } = useProjectContext();
 
-  const [startDate, setStartDate] = useState<string | undefined>(
-    project?.startDate.format("YYYY-MM-DD")
+  const [startDate, setStartDate] = useState<dayjs.Dayjs | undefined>(
+    project?.startDate
   );
-  const [endDate, setEndDate] = useState<string | undefined>(
-    project?.endDate.format("YYYY-MM-DD")
+  const [endDate, setEndDate] = useState<dayjs.Dayjs | undefined>(
+    project?.endDate
   );
   const [timeWindow, setTimeWindow] = useState<number | undefined>(
     project?.timeWindow
@@ -83,11 +83,11 @@ const GeneralProjectSettings = () => {
     if (!e.target.value) {
       setStartDateError("Invalid start date");
       return;
-    } else {
-      setStartDate(e.target.value);
     }
 
     const newStartDate = dayjs(e.target.value);
+
+    setStartDate(newStartDate);
 
     if (newStartDate.isAfter(dayjs(endDate))) {
       setStartDateError("Start date must be before end date");
@@ -101,17 +101,18 @@ const GeneralProjectSettings = () => {
     }
 
     setStartDateError("");
+    setEndDateError("");
   };
 
   const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.value) {
       setEndDateError("Invalid end date");
       return;
-    } else {
-      setEndDate(e.target.value);
     }
 
     const newEndDate = dayjs(e.target.value);
+
+    setEndDate(newEndDate);
 
     if (newEndDate.isBefore(dayjs(startDate))) {
       setStartDateError("Start date must be before end date");
@@ -124,6 +125,7 @@ const GeneralProjectSettings = () => {
       return;
     }
 
+    setStartDateError("");
     setEndDateError("");
   };
 
@@ -198,17 +200,18 @@ const GeneralProjectSettings = () => {
       return;
     }
 
-    const areAllFieldsFilled =
-      Boolean(startDate) &&
-      Boolean(endDate) &&
-      Boolean(timeWindow) &&
-      Boolean(distanceRadius) &&
-      Boolean(noticePeriodDuration) &&
-      Boolean(noticePeriodUnit);
+    const areAllFieldsFilled = Boolean(
+      startDate &&
+        endDate &&
+        timeWindow !== null &&
+        distanceRadius !== null &&
+        noticePeriodDuration !== null &&
+        noticePeriodUnit
+    );
 
     const areAnyFieldsChanged =
-      startDate !== project.startDate.format("YYYY-MM-DD") ||
-      endDate !== project.endDate.format("YYYY-MM-DD") ||
+      !startDate?.isSame(project.startDate, "day") ||
+      !endDate?.isSame(project.endDate, "day") ||
       timeWindow !== project.timeWindow ||
       distanceRadius !== project.distanceRadius ||
       noticePeriodDuration !== project.noticePeriodDuration ||
@@ -272,6 +275,7 @@ const GeneralProjectSettings = () => {
           distanceRadius: distanceRadius,
           noticePeriodDuration: noticePeriodDuration,
           noticePeriodUnit: noticePeriodUnit,
+          timezone: dayjs.tz.guess(),
         })
         .then(() => {
           updateProject();
@@ -332,7 +336,7 @@ const GeneralProjectSettings = () => {
               <FormControl sx={{ flexGrow: 1 }} error={startDateError !== ""}>
                 <Input
                   type="date"
-                  value={startDate}
+                  value={startDate ? startDate.format("YYYY-MM-DD") : ""}
                   disabled={!hasEditPermission}
                   onChange={handleStartDateChange}
                 />
@@ -351,7 +355,7 @@ const GeneralProjectSettings = () => {
               <FormControl sx={{ flexGrow: 1 }} error={endDateError !== ""}>
                 <Input
                   type="date"
-                  value={endDate}
+                  value={endDate ? endDate.format("YYYY-MM-DD") : ""}
                   disabled={!hasEditPermission}
                   onChange={handleEndDateChange}
                 />

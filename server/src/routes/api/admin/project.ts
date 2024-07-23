@@ -888,6 +888,7 @@ projectAPIRouter.post("/project", async (req, res) => {
     noticePeriodDuration,
     noticePeriodUnit,
     candidateHolders,
+    timezone,
   } = req.body;
 
   if (!name)
@@ -913,6 +914,11 @@ projectAPIRouter.post("/project", async (req, res) => {
   if (!noticePeriodDuration || !noticePeriodUnit)
     return res.status(400).json({
       message: "Please specify notice period duration and unit.",
+    });
+
+  if (!timezone)
+    return res.status(400).json({
+      message: "Please specify timezone.",
     });
 
   const datesValidity = checkDatesValidity(startDate, endDate);
@@ -956,8 +962,8 @@ projectAPIRouter.post("/project", async (req, res) => {
 
   const createData = {
     name,
-    startDate: dayjs(startDate).startOf("day").toDate(),
-    endDate: dayjs(endDate).endOf("day").toDate(),
+    startDate: dayjs(startDate).tz(timezone).startOf("day").toDate(),
+    endDate: dayjs(endDate).tz(timezone).endOf("day").toDate(),
     noticePeriodDuration: parseInt(noticePeriodDuration),
     noticePeriodUnit,
     locations,
@@ -1191,8 +1197,8 @@ projectAPIRouter.patch("/project", async (req, res) => {
     ...(clientUEN && { clientUEN }),
     ...(locations && { locations }),
     ...(employmentBy && { employmentBy }),
-    ...(startDate && { startDate: new Date(startDate) }),
-    ...(endDate && { endDate: new Date(endDate) }),
+    ...(startDate && { startDate: dayjs.utc(startDate).toDate() }),
+    ...(endDate && { endDate: dayjs.utc(endDate).toDate() }),
     ...(timeWindow && { timeWindow }),
     ...(distanceRadius && { distanceRadius }),
     ...(candidateHolders && {
@@ -1519,17 +1525,19 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
 
   const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
   const startTimeObject = dayjs()
+    .tz(timezone, true)
     .set("hour", startTimeHour)
     .set("minute", startTimeMinute)
     .startOf("minute")
-    .tz(timezone, true);
+    .utc();
 
   const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
   let endTimeObject = dayjs()
+    .tz(timezone, true)
     .set("hour", endTimeHour)
     .set("minute", endTimeMinute)
     .startOf("minute")
-    .tz(timezone, true);
+    .utc();
 
   if (startTimeObject.isAfter(endTimeObject)) {
     endTimeObject = endTimeObject.add(1, "day");
