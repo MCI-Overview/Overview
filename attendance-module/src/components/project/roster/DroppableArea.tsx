@@ -91,21 +91,12 @@ export default function DroppableArea({
     setTooltip(null);
   }, [date, project, candidate]);
 
-  useEffect(() => {
-    if (type === "ROSTER" && date.isBefore(dayjs(), "day")) {
-      setIsOutOfDateRange(true);
-      return setTooltip(<Typography>Cannot roster for past dates</Typography>);
-    }
-  }, [date, type]);
-
-  const greyBackground = isOutOfDateRange;
-
   return (
     <Tooltip title={tooltip}>
       <td
         ref={drop}
         style={{
-          background: greyBackground
+          background: isOutOfDateRange
             ? "rgba(0, 0, 0, 0.08)"
             : item
             ? isPossible
