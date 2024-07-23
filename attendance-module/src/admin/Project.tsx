@@ -35,21 +35,25 @@ const AdminProjects = () => {
 
   const tabs: (Tab & {
     clientHolderOnly: boolean;
+    hash: string;
   })[] = [
     {
       label: "Overview",
       content: <ProjectOverview />,
       clientHolderOnly: false,
+      hash: "",
     },
     {
       label: "Attendance",
       content: <AdminProjectAttendancePage />,
       clientHolderOnly: false,
+      hash: "attendance",
     },
     {
       label: "Candidates",
       content: <AdminProjectCandidatesPage />,
       clientHolderOnly: false,
+      hash: "candidates",
     },
     {
       label: "Requests",
@@ -59,16 +63,19 @@ const AdminProjects = () => {
         />
       ),
       clientHolderOnly: true,
+      hash: "requests",
     },
     {
       label: "Timetable",
       content: <TimetablePage />,
       clientHolderOnly: false,
+      hash: "roster",
     },
     {
       label: "Settings",
       content: <Settings />,
       clientHolderOnly: false,
+      hash: "settings",
     },
   ];
 
@@ -89,27 +96,10 @@ const AdminProjects = () => {
 
   useEffect(() => {
     const hash = location.hash.replace("#", "");
-    switch (hash) {
-      case "attendance":
-        setTabValue(1);
-        break;
-      case "candidates":
-        setTabValue(2);
-        break;
-      case "requests":
-        setTabValue(3);
-        break;
-      case "roster":
-        setTabValue(4);
-        break;
-      case "settings":
-        setTabValue(5);
-        break;
-      default:
-        setTabValue(0);
-        break;
-    }
-  }, [location.hash]);
+    const index = filteredTabs.findIndex((tab) => tab.hash === hash);
+
+    setTabValue(index === -1 ? 0 : index);
+  }, [filteredTabs, location.hash]);
 
   if (!projectCuid) return <Navigate to="/admin/projects" />;
 
@@ -132,28 +122,11 @@ const AdminProjects = () => {
   ) => {
     if (newValue === null || typeof newValue === "string") return;
     setTabValue(newValue);
-    switch (newValue) {
-      case 0:
-        navigate(`/admin/project/${project.cuid}`);
-        break;
-      case 1:
-        navigate(`/admin/project/${project.cuid}#attendance`);
-        break;
-      case 2:
-        navigate(`/admin/project/${project.cuid}#candidates`);
-        break;
-      case 3:
-        navigate(`/admin/project/${project.cuid}#requests`);
-        break;
-      case 4:
-        navigate(`/admin/project/${project.cuid}#roster`);
-        break;
-      case 5:
-        navigate(`/admin/project/${project.cuid}#settings`);
-        break;
-      default:
-        break;
-    }
+    navigate(
+      `/admin/project/${project.cuid}${
+        filteredTabs[newValue].hash ? `#${filteredTabs[newValue].hash}` : ""
+      }`
+    );
   };
 
   return (
