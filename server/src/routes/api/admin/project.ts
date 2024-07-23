@@ -153,11 +153,10 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
   }
 });
 
-// TODO: Add permission checks
 projectAPIRouter.get(
   "/project/:projectCuid/roster",
   async (req: Request, res) => {
-    // const user = req.user as User;
+    const user = req.user as User;
     const { startDate, endDate } = req.query as any;
     const { projectCuid } = req.params;
 
@@ -195,6 +194,21 @@ projectAPIRouter.get(
         endDate: {
           gte: startDateObject.toDate(),
         },
+        OR: [
+          {
+            consultantCuid: user.cuid,
+          },
+          {
+            Project: {
+              Manage: {
+                some: {
+                  consultantCuid: user.cuid,
+                  role: Role.CLIENT_HOLDER,
+                },
+              },
+            },
+          },
+        ],
       },
       select: {
         candidateCuid: true,
