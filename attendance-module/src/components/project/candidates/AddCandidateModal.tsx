@@ -308,9 +308,10 @@ const AddCandidateModal = ({
                   name="contact"
                   value={contact}
                   onChange={(e) => {
-                    setContact(e.target.value);
+                    const value = e.target.value;
+                    setContact(value);
 
-                    if (!contactRegex.test(contact)) {
+                    if (!contactRegex.test(value)) {
                       setContactError("Invalid contact");
                     } else {
                       setContactError("");
