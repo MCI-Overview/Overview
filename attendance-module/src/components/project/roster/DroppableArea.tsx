@@ -49,11 +49,6 @@ export default function DroppableArea({
       candidate.possibleDates.some((validDate) => validDate.isSame(date, "day"))
     );
 
-    if (date.isBefore(dayjs(), "day")) {
-      setIsOutOfDateRange(true);
-      return setTooltip(<Typography>Cannot roster for past dates</Typography>);
-    }
-
     if (date.isAfter(project?.endDate)) {
       setIsOutOfDateRange(true);
       return setTooltip(<Typography>Project has ended</Typography>);
@@ -95,6 +90,13 @@ export default function DroppableArea({
     setIsOutOfDateRange(false);
     setTooltip(null);
   }, [date, project, candidate]);
+
+  useEffect(() => {
+    if (type === "ROSTER" && date.isBefore(dayjs(), "day")) {
+      setIsOutOfDateRange(true);
+      return setTooltip(<Typography>Cannot roster for past dates</Typography>);
+    }
+  }, [date, type]);
 
   const greyBackground = isOutOfDateRange;
 

@@ -10,6 +10,7 @@ import { useRosterTableContext } from "../../../providers/rosterContextProvider"
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import { Checkbox, Sheet, Stack, Table, Typography } from "@mui/joy";
+import dayjs from "dayjs";
 
 type RosterTableProps = {
   type: "ATTENDANCE" | "ROSTER";
@@ -254,6 +255,7 @@ export default function RosterTable({ type }: RosterTableProps) {
                       sx={{
                         display: type === "ATTENDANCE" ? "none" : "block",
                       }}
+                      disabled={date.isBefore(dayjs(), "day")}
                       checked={dates.some((otherDate) =>
                         otherDate.isSame(date, "day")
                       )}
