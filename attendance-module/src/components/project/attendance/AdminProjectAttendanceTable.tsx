@@ -183,7 +183,7 @@ const AdminProjectAttendanceTable = ({
           selectedAtt={selectedAtt}
         />
       )}
-      {data && (
+      {data && data.length > 0 && (
         <ViewAttendanceDetailsModal
           isOpen={isViewDetailsModalOpen}
           setIsOpen={setIsViewDetailsModalOpen}
