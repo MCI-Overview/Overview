@@ -235,6 +235,14 @@ const AssignCandidateModal = ({
       });
     }
 
+    // residency validation
+    if (!row.residency) {
+      addError("residency", {
+        message: "Residency status is required",
+        level: "error",
+      });
+    }
+
     // start date validation
     if (!row.startDate) {
       addError("startDate", {
