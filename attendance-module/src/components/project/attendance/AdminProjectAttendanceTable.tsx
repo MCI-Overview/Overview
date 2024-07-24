@@ -177,21 +177,21 @@ const AdminProjectAttendanceTable = ({
         </Table>
       </Sheet>
       {selectedAtt && data && (
-        <>
-          <AdminProjectAttendanceEditModal
-            isOpen={isOpen}
-            setIsOpen={setIsOpen}
-            selectedAtt={selectedAtt}
-          />
-          <ViewAttendanceDetailsModal
-            isOpen={isViewDetailsModalOpen}
-            setIsOpen={setIsViewDetailsModalOpen}
-            attendance={data[currentAttendanceIndex]}
-            handleNextAttendance={handleNextAttendance}
-            handlePreviousAttendance={handlePreviousAttendance}
-            variant="DESKTOP"
-          />
-        </>
+        <AdminProjectAttendanceEditModal
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          selectedAtt={selectedAtt}
+        />
+      )}
+      {data && data.length > 0 && (
+        <ViewAttendanceDetailsModal
+          isOpen={isViewDetailsModalOpen}
+          setIsOpen={setIsViewDetailsModalOpen}
+          attendance={data[currentAttendanceIndex]}
+          handleNextAttendance={handleNextAttendance}
+          handlePreviousAttendance={handlePreviousAttendance}
+          variant="DESKTOP"
+        />
       )}
     </>
   );
