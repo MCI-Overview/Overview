@@ -366,6 +366,7 @@ userAPIRouter.patch(
         return res.send("Profile updated successfully.");
       },
       {
+        maxWait: 5000,
         timeout: 15000,
       }
     );
