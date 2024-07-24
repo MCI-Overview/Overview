@@ -1525,7 +1525,7 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
 
   const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
   const startTimeObject = dayjs()
-    .tz(timezone, true)
+    .tz(timezone)
     .set("hour", startTimeHour)
     .set("minute", startTimeMinute)
     .startOf("minute")
@@ -1533,7 +1533,7 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
 
   const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
   let endTimeObject = dayjs()
-    .tz(timezone, true)
+    .tz(timezone)
     .set("hour", endTimeHour)
     .set("minute", endTimeMinute)
     .startOf("minute")
@@ -1591,8 +1591,8 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
   }
 
   const createData = {
-    startTime: defaultDate(dayjs(startTime, "HH:mm")).toDate(),
-    endTime: defaultDate(dayjs(endTime, "HH:mm")).toDate(),
+    startTime: defaultDate(startTimeObject).toDate(),
+    endTime: defaultDate(endTimeObject).toDate(),
     ...(halfDayEndTime && {
       halfDayEndTime: defaultDate(dayjs(halfDayEndTime, "HH:mm")).toDate(),
     }),
