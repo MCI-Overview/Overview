@@ -60,7 +60,7 @@ requestAPIRouter.get("/requests/current", async (req, res) => {
       return {
         ...request,
         affectedRosters: request.Attendance.map((attendance) => {
-          return correctTimes(
+          const { correctStartTime, correctEndTime } = correctTimes(
             attendance.shiftDate,
             attendance.shiftType === "SECOND_HALF"
               ? attendance.Shift.halfDayStartTime!
@@ -69,6 +69,12 @@ requestAPIRouter.get("/requests/current", async (req, res) => {
               ? attendance.Shift.halfDayEndTime!
               : attendance.Shift.endTime
           );
+
+          return {
+            cuid: attendance.cuid,
+            correctStartTime,
+            correctEndTime,
+          };
         }),
       };
     });
@@ -398,12 +404,14 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
   const affectedRosters = await prisma.attendance.findMany({
     where: {
       candidateCuid,
-      OR: [
+      AND: [
         {
-          status: null,
+          // ignore rosters with fullday leave
+          OR: [{ leave: null }, { leave: "HALFDAY" }],
         },
         {
-          status: "NO_SHOW",
+          // ignore rosters that are clocked into or have MC for
+          OR: [{ status: null }, { status: "NO_SHOW" }],
         },
       ],
       shiftDate: {
@@ -468,7 +476,7 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
     await prisma.request.updateMany({
       where: {
         status: "PENDING",
-        type: RequestType.PAID_LEAVE || RequestType.UNPAID_LEAVE,
+        type: { in: [RequestType.PAID_LEAVE, RequestType.UNPAID_LEAVE] },
         Attendance: {
           some: {
             cuid: {

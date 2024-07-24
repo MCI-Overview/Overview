@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useCallback, useState } from "react";
 import { CustomRequest } from "../../../types";
-import { useProjectContext } from "../../../providers/projectContextProvider";
 import { RequestContextProvider } from "../../../providers/requestContextProvider";
 
 import AdminRequestsTable from "./AdminRequestsTable";
@@ -53,11 +52,8 @@ const AdminRequestsPage = ({ baseURL }: { baseURL: string }) => {
   const [searchValue, setSearchValue] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const { project } = useProjectContext();
 
-  const fetchUpcomingShifts = useCallback(async () => {
-    if (!project) return [];
-
+  const fetchRequests = useCallback(async () => {
     try {
       const url = buildUrl(
         baseURL,
@@ -75,7 +71,7 @@ const AdminRequestsPage = ({ baseURL }: { baseURL: string }) => {
       console.error("Error fetching upcoming shifts: ", error);
       return [];
     }
-  }, [project, baseURL, currentPage, searchValue, typeFilter, statusFilter]);
+  }, [baseURL, currentPage, searchValue, typeFilter, statusFilter]);
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -153,7 +149,7 @@ const AdminRequestsPage = ({ baseURL }: { baseURL: string }) => {
 
         <SmallScreenDivider />
 
-        <RequestContextProvider updateFunction={() => fetchUpcomingShifts()}>
+        <RequestContextProvider updateFunction={fetchRequests}>
           <AdminRequestsTable />
           <AdminRequestsList />
         </RequestContextProvider>
