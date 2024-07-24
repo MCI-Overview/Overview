@@ -435,6 +435,11 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
                 name: true,
               },
             },
+            Project: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
         Attendance: {

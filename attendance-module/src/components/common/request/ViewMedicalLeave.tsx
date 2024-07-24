@@ -6,6 +6,7 @@ import RequestStatusChip from "../../project/requests/RequestStatusChip";
 
 import { Box, IconButton, Stack, Typography } from "@mui/joy";
 import { DownloadOutlined as DownloadIcon } from "@mui/icons-material";
+import { removeSpaces } from "../../../utils/capitalize";
 
 export default function ViewMedicalLeave({
   request,
@@ -38,7 +39,11 @@ export default function ViewMedicalLeave({
   const handleDownloadMc = () => {
     const link = document.createElement("a");
     link.href = mcPreview;
-    link.download = `${request.cuid}.jpg`;
+    link.download = removeSpaces(
+      `${request.Assign.Project?.name}_Leave_Medical_${dayjs(
+        request.createdAt
+      ).format("YYYYMMMDD")}_${request.Assign.Candidate?.name}.jpg`
+    );
     link.click();
   };
 

@@ -2,7 +2,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { useState, useEffect } from "react";
 import { CustomRequest } from "../../../types";
-import { readableEnum } from "../../../utils/capitalize";
+import { readableEnum, removeSpaces } from "../../../utils/capitalize";
 import RequestStatusChip from "../../project/requests/RequestStatusChip";
 
 import { Box, IconButton, Stack, Typography } from "@mui/joy";
@@ -43,7 +43,13 @@ export default function ViewClaim({
   const handleDownloadReceipt = () => {
     const link = document.createElement("a");
     link.href = receiptPreview;
-    link.download = `${request.cuid}.jpg`;
+    link.download = removeSpaces(
+      `${request.Assign.Project?.name}_Claim_${readableEnum(
+        requestData.claimType
+      )}_${dayjs(request.createdAt).format("YYYYMMMDD")}_${
+        request.Assign.Candidate?.name
+      }.jpg`
+    );
     link.click();
   };
 
