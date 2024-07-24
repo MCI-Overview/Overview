@@ -14,11 +14,11 @@ import AdminProjects from "../components/project/AdminProjects";
 const tabs: Tab[] = [
   {
     label: "My projects",
-    content: <AdminProjects apiURL="/api/admin/projects" />,
+    content: <AdminProjects variant="OWN" />,
   },
   {
     label: "All projects",
-    content: <AdminProjects apiURL="/api/admin/projects/all" />,
+    content: <AdminProjects variant="ALL" />,
   },
 ];
 

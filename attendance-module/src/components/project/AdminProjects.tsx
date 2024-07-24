@@ -2,28 +2,31 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { FC, useState, useEffect } from "react";
 import { BasicProject } from "../../types/index";
-import { useUserContext } from "../../providers/userContextProvider";
 import AdminProjectDisplay from "./ui/AdminProjectDisplay";
+import CreateProjectModal from "./create/CreateProjectModal";
 
 import {
   Box,
   Card,
   Divider,
+  IconButton,
   Option,
   Select,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/joy";
-import { ArrowDropDown as ArrowDropDownIcon } from "@mui/icons-material";
+import {
+  ArrowDropDown as ArrowDropDownIcon,
+  ControlPointRounded as ControlPointIcon,
+} from "@mui/icons-material";
 
 // sort by createdAt (most recent first)
 const projectComparator = (a: BasicProject, b: BasicProject) => {
   return dayjs(b.createdAt).diff(dayjs(a.createdAt));
 };
 
-const AllProjects: FC<{
-  apiURL: string;
-}> = ({ apiURL }) => {
+const AdminProjects: FC<{ variant: "OWN" | "ALL" }> = ({ variant }) => {
   const [previousProjects, setPreviousProjects] = useState<BasicProject[]>([]);
   const [ongoingProjects, setOngoingProjects] = useState<BasicProject[]>([]);
   const [futureProjects, setFutureProjects] = useState<BasicProject[]>([]);
@@ -31,42 +34,32 @@ const AllProjects: FC<{
     "ongoing"
   );
 
-  const { user } = useUserContext();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    const url =
+      variant === "OWN" ? "/api/admin/projects" : "/api/admin/projects/all";
 
-    axios.get(apiURL).then((response) => {
+    axios.get(url).then((response) => {
       const projects = response.data as BasicProject[];
 
-      const currentTime = dayjs();
-
       setPreviousProjects(
-        projects.filter((project) =>
-          currentTime.isAfter(dayjs(project.endDate))
-        )
+        projects.filter((project) => dayjs().isAfter(dayjs(project.endDate)))
       );
 
       setOngoingProjects(
-        projects.filter((project) =>
-          currentTime.isBetween(
-            dayjs(project.startDate),
-            dayjs(project.endDate),
-            null,
-            "[]"
-          )
+        projects.filter(
+          (project) =>
+            dayjs().isAfter(dayjs(project.startDate)) &&
+            dayjs().isBefore(dayjs(project.endDate))
         )
       );
 
       setFutureProjects(
-        projects.filter((project) =>
-          currentTime.isBefore(dayjs(project.startDate))
-        )
+        projects.filter((project) => dayjs().isBefore(dayjs(project.startDate)))
       );
     });
-  }, [apiURL, user]);
-
-  if (!user) return null;
+  }, [variant]);
 
   const currentProjectList =
     value === "concluded"
@@ -86,36 +79,53 @@ const AllProjects: FC<{
         }}
       >
         <Card>
-          <Box>
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <Typography
-                level="title-md"
-                sx={{ display: "flex", alignItems: "center" }}
-              >
-                All projects:
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Box>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Typography
+                  level="title-md"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  {variant === "OWN" && "My projects"}
+                  {variant === "ALL" && "All projects"}
+                </Typography>
+
+                <Select
+                  value={value}
+                  onChange={(_event, newValue) => {
+                    setValue(newValue || "ongoing");
+                  }}
+                  variant="soft"
+                  indicator={<ArrowDropDownIcon />}
+                  renderValue={(selected) => (
+                    <Typography level="title-md">{selected?.label}</Typography>
+                  )}
+                  sx={{ px: 1 }}
+                >
+                  <Option value="concluded">concluded</Option>
+                  <Option value="ongoing">ongoing</Option>
+                  <Option value="upcoming">upcoming</Option>
+                </Select>
+              </Box>
+
+              <Typography level="body-sm">
+                {variant === "OWN" &&
+                  "Projects that you have joined or created."}
+                {variant === "ALL" &&
+                  "Projects that you are not a collaborator of."}
               </Typography>
-
-              <Select
-                value={value}
-                onChange={(_event, newValue) => {
-                  setValue(newValue || "ongoing");
-                }}
-                variant="soft"
-                indicator={<ArrowDropDownIcon />}
-                renderValue={(selected) => (
-                  <Typography level="title-md">{selected?.label}</Typography>
-                )}
-                sx={{ px: 1 }}
-              >
-                <Option value="concluded">concluded</Option>
-                <Option value="ongoing">ongoing</Option>
-                <Option value="upcoming">upcoming</Option>
-              </Select>
             </Box>
-
-            <Typography level="body-sm">
-              Projects that you are not a collaborator of.
-            </Typography>
+            {variant === "OWN" && (
+              <Tooltip title="Create new project" placement="right">
+                <IconButton
+                  size="lg"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  sx={{ my: "auto" }}
+                >
+                  <ControlPointIcon />
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
 
           <Divider />
@@ -136,15 +146,22 @@ const AllProjects: FC<{
                   <AdminProjectDisplay
                     key={project.cuid}
                     project={project}
-                    viewOnly
+                    viewOnly={variant === "ALL"}
                   />
                 ))
             )}
           </Stack>
         </Card>
       </Stack>
+
+      {variant === "OWN" && (
+        <CreateProjectModal
+          isOpen={isCreateModalOpen}
+          setIsOpen={setIsCreateModalOpen}
+        />
+      )}
     </>
   );
 };
 
-export default AllProjects;
+export default AdminProjects;
