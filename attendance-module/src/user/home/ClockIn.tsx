@@ -96,6 +96,10 @@ const ClockIn = () => {
 
   useEffect(() => {
     fetchAttendance();
+
+    // refetch every 5 minutes
+    const intervalId = setInterval(fetchAttendance, 5 * 60 * 1000);
+    return () => clearInterval(intervalId); // Cleanup the interval on component unmount
   }, []);
 
   const isWithinStartTimeRange = () => {
