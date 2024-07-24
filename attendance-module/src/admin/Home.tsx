@@ -6,24 +6,23 @@ import {
   BreadcrumbPart,
 } from "../components/project/ui/AdminBreadcrumb";
 import { Tab, TabBar } from "../components/TabBar";
-import MyProjects from "../components/project/MyProjects";
-import AllProjects from "../components/project/AllProjects";
 
 import { Box, Stack, Typography } from "@mui/joy";
 import { HomeRounded as HomeIcon } from "@mui/icons-material";
+import AdminProjects from "../components/project/AdminProjects";
 
 const tabs: Tab[] = [
   {
     label: "My projects",
-    content: <MyProjects />,
+    content: <AdminProjects apiURL="/api/admin/projects" />,
   },
   {
     label: "All projects",
-    content: <AllProjects />,
+    content: <AdminProjects apiURL="/api/admin/projects/all" />,
   },
 ];
 
-const AdminProjects = () => {
+const AdminHome = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -102,4 +101,4 @@ const AdminProjects = () => {
   );
 };
 
-export default AdminProjects;
+export default AdminHome;

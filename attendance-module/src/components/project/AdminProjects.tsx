@@ -21,7 +21,9 @@ const projectComparator = (a: BasicProject, b: BasicProject) => {
   return dayjs(b.createdAt).diff(dayjs(a.createdAt));
 };
 
-const AllProjects: FC = () => {
+const AllProjects: FC<{
+  apiURL: string;
+}> = ({ apiURL }) => {
   const [previousProjects, setPreviousProjects] = useState<BasicProject[]>([]);
   const [ongoingProjects, setOngoingProjects] = useState<BasicProject[]>([]);
   const [futureProjects, setFutureProjects] = useState<BasicProject[]>([]);
@@ -34,12 +36,8 @@ const AllProjects: FC = () => {
   useEffect(() => {
     if (!user) return;
 
-    axios.get("/api/admin/projects/all").then((response) => {
-      const allProjects = response.data as BasicProject[];
-
-      const projects = allProjects.filter((project) => {
-        return !project.consultants.find((c) => c.cuid === user.cuid);
-      });
+    axios.get(apiURL).then((response) => {
+      const projects = response.data as BasicProject[];
 
       const currentTime = dayjs();
 
@@ -66,7 +64,7 @@ const AllProjects: FC = () => {
         )
       );
     });
-  }, [user]);
+  }, [apiURL, user]);
 
   if (!user) return null;
 
