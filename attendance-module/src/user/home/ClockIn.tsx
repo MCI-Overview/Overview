@@ -54,7 +54,7 @@ const ClockIn = () => {
 
   const [isClockOutModalOpen, setIsClockOutModalOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchAttendance = () => {
     axios
       .get("/api/user/attendance")
       .then((response) => {
@@ -92,6 +92,10 @@ const ClockIn = () => {
         setEndTime(correctEnd);
       })
       .catch((error) => console.error(error));
+  };
+
+  useEffect(() => {
+    fetchAttendance();
   }, []);
 
   const isWithinStartTimeRange = () => {
@@ -286,7 +290,9 @@ const ClockIn = () => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error("Failed to record attendance.", { duration: 10000 });
+        toast.error("Failed to record attendance. Please try again.", {
+          duration: 10000,
+        });
       });
 
     // update local state
@@ -328,14 +334,15 @@ const ClockIn = () => {
       .then(() => {
         toast.success("Succesfully clocked out!", { duration: 10000 });
         setIsClockOutModalOpen(false);
+
+        fetchAttendance();
       })
       .catch((error) => {
         console.error(error);
-        toast.error("Failed to record attendance.", { duration: 10000 });
+        toast.error("Failed to record attendance. Please try again.", {
+          duration: 10000,
+        });
       });
-
-    // refresh page
-    window.location.reload();
   };
 
   return (
