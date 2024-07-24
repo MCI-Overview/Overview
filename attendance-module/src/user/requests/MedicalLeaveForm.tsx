@@ -30,8 +30,7 @@ export default function MedicalLeaveForm({
   const [mcFile, setMcFile] = useState<File | null>(null);
   const [mcPreview, setMcPreview] = useState("");
 
-  const handleMcFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files && event.target.files[0];
+  const handleMcFileChange = (selectedFile: File | null) => {
     if (selectedFile) {
       setMcFile(selectedFile);
 

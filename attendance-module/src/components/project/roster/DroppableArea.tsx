@@ -2,8 +2,8 @@ import dayjs from "dayjs";
 import { useDrop } from "react-dnd";
 import { useState, useEffect } from "react";
 
-import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
+import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 
 import DraggableRoster from "./DraggableRoster";
 import { RosterDisplayProps } from "./RosterDisplay";

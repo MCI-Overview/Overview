@@ -62,10 +62,7 @@ export default function ClaimForm({
     });
   }, []);
 
-  const handleReceiptFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const selectedFile = event.target.files && event.target.files[0];
+  const handleReceiptFileChange = (selectedFile: File | null) => {
     if (selectedFile) {
       setReceiptFile(selectedFile);
 

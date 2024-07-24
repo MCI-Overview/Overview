@@ -22,6 +22,12 @@ model Assign {
   @@id([projectCuid, candidateCuid])
 }
 
+model PublicHoliday {
+  date      DateTime @id
+  name      String
+  createdAt DateTime @default(now())
+}
+
 model Request {
   cuid          String        @id @default(cuid())
   candidateCuid String

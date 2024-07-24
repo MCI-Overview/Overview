@@ -1,5 +1,7 @@
+import dayjs from "dayjs";
 import axios from "axios";
 import { useDrop } from "react-dnd";
+import { useStore } from "@tanstack/react-store";
 
 import DroppableArea from "./DroppableArea";
 import RosterSummary from "./RosterSummary";
@@ -8,8 +10,16 @@ import { RosterDisplayProps } from "./RosterDisplay";
 import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
-import { Checkbox, Sheet, Stack, Table, Typography } from "@mui/joy";
-import dayjs from "dayjs";
+import {
+  Checkbox,
+  Chip,
+  Sheet,
+  Stack,
+  Table,
+  Tooltip,
+  Typography,
+} from "@mui/joy";
+import { store } from "../../../store";
 
 type RosterTableProps = {
   type: "ATTENDANCE" | "ROSTER";
@@ -33,6 +43,20 @@ export default function RosterTable({ type }: RosterTableProps) {
     setSelectedCandidates,
     setCandidateHoverCuid,
   } = useRosterTableContext();
+
+  const publicHolidays = useStore(
+    store,
+    (state) => state.publicHolidays
+  ) as Record<
+    string,
+    {
+      date: string;
+      name: string;
+      createdAt: string;
+    }[]
+  >;
+
+  console.log(publicHolidays);
 
   const [{ item, itemType }, drop] = useDrop({
     accept: ["shift", "roster", "candidate"],
@@ -212,7 +236,13 @@ export default function RosterTable({ type }: RosterTableProps) {
       >
         <thead>
           <tr>
-            <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+            <th
+              style={{
+                width: "var(--Table-firstColumnWidth)",
+                alignContent: "center",
+                placeContent: "center",
+              }}
+            >
               <Stack direction="row" gap={1}>
                 <Checkbox
                   overlay
@@ -241,11 +271,17 @@ export default function RosterTable({ type }: RosterTableProps) {
               length: numberOfDays,
             }).map((_, index) => {
               const date = dateRangeStart.add(index, "days");
+              const holiday = publicHolidays[date.year()]?.find(
+                (holiday) => dayjs(holiday.date).isSame(date),
+                "day"
+              );
               return (
                 <th
                   key={index}
                   style={{
                     width: "9rem",
+                    alignContent: "center",
+                    placeContent: "center",
                   }}
                 >
                   <Stack direction="row" gap={1}>
@@ -267,6 +303,18 @@ export default function RosterTable({ type }: RosterTableProps) {
                       }}
                     />
                     {date.format("ddd DD MMM")}
+                    {holiday && (
+                      <Tooltip title={holiday.name}>
+                        <Chip
+                          size="sm"
+                          variant="solid"
+                          color="danger"
+                          sx={{ borderColor: "primary.main" }}
+                        >
+                          PH
+                        </Chip>
+                      </Tooltip>
+                    )}
                   </Stack>
                 </th>
               );
