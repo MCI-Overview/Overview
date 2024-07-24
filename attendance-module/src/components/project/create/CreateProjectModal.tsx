@@ -11,6 +11,7 @@ import ProjectCandidateHoldersSection from "./CandidateHoldersSection";
 import { CommonConsultant, CommonLocation } from "../../../types/common";
 
 import { Button, Divider, Stack } from "@mui/joy";
+import dayjs from "dayjs";
 
 // Define the interface for the error response data
 interface ErrorResponseData {
@@ -45,6 +46,7 @@ const CreateProjectModal = ({ isOpen, setIsOpen }: CreateProjectModalProps) => {
       ...projectDetails,
       locations,
       candidateHolders: candidateHolders.map((holder) => holder.cuid),
+      timezone: dayjs.tz.guess(),
     };
 
     try {

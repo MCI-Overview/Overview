@@ -6,6 +6,7 @@ import MagicalButton from "./MagicalButton";
 import ConsultantDisplay from "../ui/ConsultantDisplay";
 import AttendanceStatusChip from "../attendance/AttendanceStatusChip";
 import { useProjectContext } from "../../../providers/projectContextProvider";
+import { useUserContext } from "../../../providers/userContextProvider";
 
 import {
   LATE_COLOR,
@@ -94,6 +95,7 @@ export default function RosterDisplay({
   draggable,
   opacity,
 }: RosterDisplayProps) {
+  const { user } = useUserContext();
   const { project } = useProjectContext();
 
   const [open, setOpen] = useState(false);
@@ -167,9 +169,15 @@ export default function RosterDisplay({
                   {addS(data.clientHolderCuids.length, "Client Holder")}
                 </Typography>
                 <Card>
-                  {data.clientHolderCuids.map((cuid) => (
-                    <ConsultantDisplay key={cuid} cuid={cuid} variant="SMALL" />
-                  ))}
+                  {data.clientHolderCuids
+                    .sort((a) => (a === user?.cuid ? 1 : -1))
+                    .map((cuid) => (
+                      <ConsultantDisplay
+                        key={cuid}
+                        cuid={cuid}
+                        variant="SMALL"
+                      />
+                    ))}
                 </Card>
               </>
             )}

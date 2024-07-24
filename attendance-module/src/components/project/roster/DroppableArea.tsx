@@ -91,14 +91,12 @@ export default function DroppableArea({
     setTooltip(null);
   }, [date, project, candidate]);
 
-  const greyBackground = isOutOfDateRange;
-
   return (
     <Tooltip title={tooltip}>
       <td
         ref={drop}
         style={{
-          background: greyBackground
+          background: isOutOfDateRange
             ? "rgba(0, 0, 0, 0.08)"
             : item
             ? isPossible
