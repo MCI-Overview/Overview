@@ -51,20 +51,15 @@ const ViewDetailsModal = ({
 }: ViewDetailsModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const requestURL = (str: string) =>
-    `/api/${type === "ADMIN" ? "admin" : "user"}/request/${
-      request.cuid
-    }/${str}`;
+  const imageRequestURL =
+    type === "ADMIN"
+      ? `/api/admin/request/${request.cuid}/image`
+      : `/api/user/request/${request.cuid}/image`;
 
   const componentMap = {
-    CLAIM: (
-      <ViewClaim request={request} imageRequestURL={requestURL("image")} />
-    ),
+    CLAIM: <ViewClaim request={request} imageRequestURL={imageRequestURL} />,
     MEDICAL_LEAVE: (
-      <ViewMedicalLeave
-        request={request}
-        imageRequestURL={requestURL("image")}
-      />
+      <ViewMedicalLeave request={request} imageRequestURL={imageRequestURL} />
     ),
     PAID_LEAVE: <ViewLeave request={request} />,
     UNPAID_LEAVE: <ViewLeave request={request} />,
@@ -223,17 +218,13 @@ const ViewDetailsModalActions = ({
 
       {userType === "ADMIN" && (
         <Box sx={{ display: "flex", gap: 1, width: "100%" }}>
-          <Tooltip title="Reject">
-            <LoadingRequestIconButton promise={rejectRequest} color="danger">
-              Reject
-            </LoadingRequestIconButton>
-          </Tooltip>
+          <LoadingRequestIconButton promise={rejectRequest} color="danger">
+            Reject
+          </LoadingRequestIconButton>
 
-          <Tooltip title="Approve">
-            <LoadingRequestIconButton promise={approveRequest} color="success">
-              Approve
-            </LoadingRequestIconButton>
-          </Tooltip>
+          <LoadingRequestIconButton promise={approveRequest} color="success">
+            Approve
+          </LoadingRequestIconButton>
         </Box>
       )}
     </>

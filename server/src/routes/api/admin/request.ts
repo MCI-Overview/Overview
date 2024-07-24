@@ -6,6 +6,7 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { User } from "@/types/common";
 import { prisma, s3 } from "../../../client";
 import { maskNRIC } from "../../../utils";
+import { correctTimes } from "../../../utils/clash";
 
 const requestAPIRouter: Router = Router();
 
@@ -73,6 +74,11 @@ requestAPIRouter.get("/request/all/:page", async (req, res) => {
             },
           },
         },
+        Attendance: {
+          include: {
+            Shift: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -81,7 +87,30 @@ requestAPIRouter.get("/request/all/:page", async (req, res) => {
       take: limit,
     });
 
-    const maskedData = fetchedData.map((req) => {
+    const customRequests = fetchedData.map((request) => {
+      return {
+        ...request,
+        affectedRosters: request.Attendance.map((attendance) => {
+          const { correctStartTime, correctEndTime } = correctTimes(
+            attendance.shiftDate,
+            attendance.shiftType === "SECOND_HALF"
+              ? attendance.Shift.halfDayStartTime!
+              : attendance.Shift.startTime,
+            attendance.shiftType === "FIRST_HALF"
+              ? attendance.Shift.halfDayEndTime!
+              : attendance.Shift.endTime
+          );
+
+          return {
+            cuid: attendance.cuid,
+            correctStartTime,
+            correctEndTime,
+          };
+        }),
+      };
+    });
+
+    const maskedData = customRequests.map((req) => {
       req.Assign.Candidate.nric = maskNRIC(req.Assign.Candidate.nric);
       return req;
     });
@@ -158,6 +187,28 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
           },
           data: {
             status: "MEDICAL",
+          },
+        })
+      );
+
+      // reject pending unpaid and paid leave requests for affected rosters
+      transactionRequests.push(
+        prisma.request.updateMany({
+          where: {
+            type: {
+              in: ["PAID_LEAVE", "UNPAID_LEAVE"],
+            },
+            status: "PENDING",
+            Attendance: {
+              some: {
+                cuid: {
+                  in: request.Attendance.map((attendance) => attendance.cuid),
+                },
+              },
+            },
+          },
+          data: {
+            status: "REJECTED",
           },
         })
       );
@@ -424,6 +475,7 @@ requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
               status: "NO_SHOW",
             },
           ],
+          leave: null,
           shiftDate: {
             gte: dayjs(reqData.startDate).toDate(),
             lte: dayjs(reqData.startDate)
