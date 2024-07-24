@@ -1,6 +1,5 @@
 import axios from "axios";
 import { useDrop } from "react-dnd";
-import { useEffect, useState } from "react";
 
 import DroppableArea from "./DroppableArea";
 import RosterSummary from "./RosterSummary";

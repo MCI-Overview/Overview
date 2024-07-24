@@ -80,7 +80,7 @@ export function OnboardingContextProvider({
       postal: userAddress?.postal || "",
       floor: userAddress?.floor || "",
       unit: userAddress?.unit || "",
-      isLanded: !(userAddress?.unit || userAddress?.floor) || false,
+      isLanded: false,
     },
     bankDetails: {
       bankName: bankDetails?.bankName || "",

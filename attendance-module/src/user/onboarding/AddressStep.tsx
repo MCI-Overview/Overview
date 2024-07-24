@@ -143,15 +143,18 @@ export default function AddressStep() {
             <FormLabel>Block</FormLabel>
             <Input
               value={newBlock || ""}
-              onChange={(e) =>
-                setNewCandidate({
-                  ...newCandidate,
-                  address: {
-                    ...newCandidate.address,
-                    block: e.target.value.replace(/[^0-9]/g, ""),
-                  },
-                })
-              }
+              onChange={(e) => {
+                // regex allows numbers with one trailing alphabet
+                if (e.target.value.match(/^\d*[a-zA-Z]?$/)) {
+                  setNewCandidate({
+                    ...newCandidate,
+                    address: {
+                      ...newCandidate.address,
+                      block: e.target.value.toUpperCase(),
+                    },
+                  });
+                }
+              }}
             />
           </FormControl>
         </Grid>
