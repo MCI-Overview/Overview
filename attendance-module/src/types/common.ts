@@ -212,6 +212,7 @@ export type GetRosterResponse = {
   cuid: string;
   name: string;
   nric: string;
+  restDay: string;
   startDate: string;
   endDate: string;
   rosters: {
