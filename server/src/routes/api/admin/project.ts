@@ -2491,8 +2491,10 @@ projectAPIRouter.post(
         where: {
           // do not delete attendances that have pending or approved requests
           Request: {
-            status: {
-              notIn: [RequestStatus.PENDING, RequestStatus.APPROVED],
+            some: {
+              status: {
+                notIn: [RequestStatus.PENDING, RequestStatus.APPROVED],
+              },
             },
           },
 
@@ -2510,11 +2512,11 @@ projectAPIRouter.post(
           Shift: {
             projectCuid,
           },
-          Candidate: {
-            Assign: {
-              Request: {},
-            },
-          },
+          // Candidate: {
+          //   Assign: {
+          //     Request: {},
+          //   },
+          // },
           status: null,
           leave: null,
         },
