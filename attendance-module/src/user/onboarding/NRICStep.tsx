@@ -1,6 +1,6 @@
 import { Box, Typography, Button, Grid, Stack } from "@mui/joy";
 import { useOnboardingContext } from "../../providers/onboardingContextProvider";
-import { ChangeEventHandler, useState } from "react";
+import { useState } from "react";
 import InputFileUpload from "../../components/InputFileUpload";
 import axios from "axios";
 
@@ -32,10 +32,7 @@ export default function NRICStep() {
   const { nricFront: oldNricFront, nricBack: oldNricBack } = oldCandidate;
   const { nricFront: newNricFront, nricBack: newNricBack } = newCandidate;
 
-  const handleNRICFrontFileChange: ChangeEventHandler<HTMLInputElement> = (
-    event
-  ) => {
-    const selectedFile = event.target.files && event.target.files[0];
+  const handleNRICFrontFileChange = (selectedFile: File | null) => {
     if (selectedFile) {
       setNewCandidate({ ...newCandidate, nricFront: selectedFile });
 
@@ -48,10 +45,7 @@ export default function NRICStep() {
     }
   };
 
-  const handleNRICBackFileChange: ChangeEventHandler<HTMLInputElement> = (
-    event
-  ) => {
-    const selectedFile = event.target.files && event.target.files[0];
+  const handleNRICBackFileChange = (selectedFile: File | null) => {
     if (selectedFile) {
       setNewCandidate({ ...newCandidate, nricBack: selectedFile });
 

@@ -243,6 +243,7 @@ export default function RosterSidebar() {
                 axios
                   .post(`/api/admin/project/${project?.cuid}/roster/clear`, {
                     startDate: dateRangeStart?.toISOString(),
+                    endDate: dateRangeEnd?.toISOString(),
                   })
                   .then(() => {
                     toast.success("Successfully cleared this weeks's roster.");

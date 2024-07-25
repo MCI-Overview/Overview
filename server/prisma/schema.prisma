@@ -24,6 +24,12 @@ model Assign {
   @@id([projectCuid, candidateCuid])
 }
 
+model PublicHoliday {
+  date      DateTime @id
+  name      String
+  createdAt DateTime @default(now())
+}
+
 model Request {
   cuid          String        @id @default(cuid())
   candidateCuid String
@@ -46,7 +52,7 @@ model Attendance {
   leave         LeaveStatus?
   shiftDate     DateTime
   shiftType     ShiftType         @default(FULL_DAY)
-  postalCode    String?
+  location      Json?
   Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
   Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
   Request       Request[]         @relation("AttendanceToRequest")
@@ -148,12 +154,6 @@ model User {
   username  String    @unique
   hash      String
   Candidate Candidate @relation(fields: [cuid], references: [cuid])
-}
-
-model PublicHoliday {
-  date      DateTime @id
-  name      String
-  createdAt DateTime @default(now())
 }
 
 enum RequestType {

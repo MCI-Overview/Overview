@@ -1,8 +1,9 @@
-import { NextFunction, Router } from "express";
+import { Request, Response, NextFunction, Router } from "express";
+
 import userAPIRoutes from "./user";
 import adminAPIRoutes from "./admin";
 import { User } from "@/types/common";
-import { Request, Response } from "express";
+import { prisma } from "../../client";
 
 const router: Router = Router();
 
@@ -31,6 +32,26 @@ router.get("/", (req: Request, res: Response) => {
   const user = req.user as User;
 
   return res.json(user);
+});
+
+router.get("/public-holidays", async (_req, res) => {
+  const holidays = await prisma.publicHoliday.findMany();
+
+  return res.json(
+    holidays.reduce((acc, holiday) => {
+      const { date } = holiday;
+
+      const year = date.getFullYear().toString();
+
+      if (!acc[year]) {
+        acc[year] = [];
+      }
+
+      acc[year].push(holiday);
+
+      return acc;
+    }, {} as Record<string, typeof holidays>)
+  );
 });
 
 export default router;

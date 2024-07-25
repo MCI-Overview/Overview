@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { capitalizeWords } from "../../../utils/capitalize";
 import { checkPermission } from "../../../utils/permission";
 import { CommonLocation, PermissionList } from "../../../types/common";
 import AddLocationsModal from "./AddLocationsModal";
@@ -79,11 +78,9 @@ const LocationsSection = () => {
               <Typography level="body-sm">No locations added yet</Typography>
             )}
             {locations.map((location) => (
-              <ListItem key={location.postalCode}>
+              <ListItem key={`${location.latitude} ${location.longitude}`}>
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography level="body-md">
-                    {location.postalCode} - {capitalizeWords(location.address)}
-                  </Typography>
+                  <Typography level="body-md">{location?.name}</Typography>
                   {hasEditProjectsPermission && (
                     <IconButton
                       onClick={() => {
@@ -101,11 +98,13 @@ const LocationsSection = () => {
         </Card>
       </Stack>
 
-      <AddLocationsModal
-        isOpen={isAddModalOpen}
-        setIsOpen={setIsAddModalOpen}
-        locations={locations}
-      />
+      {isAddModalOpen && (
+        <AddLocationsModal
+          isOpen={isAddModalOpen}
+          setIsOpen={setIsAddModalOpen}
+          locations={locations}
+        />
+      )}
 
       {locationToDelete && (
         <DeleteLocationModal

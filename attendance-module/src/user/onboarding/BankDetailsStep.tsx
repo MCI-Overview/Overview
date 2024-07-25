@@ -12,7 +12,7 @@ import {
 import { useOnboardingContext } from "../../providers/onboardingContextProvider";
 import axios from "axios";
 import InputFileUpload from "../../components/InputFileUpload";
-import { useState, ChangeEventHandler } from "react";
+import { useState } from "react";
 
 export default function BankDetailsStep() {
   const {
@@ -48,10 +48,7 @@ export default function BankDetailsStep() {
   const { bankStatement: oldBankStatement } = oldCandidate;
   const { bankStatement: newBankStatement } = newCandidate;
 
-  const handleBankStatementFileChange: ChangeEventHandler<HTMLInputElement> = (
-    event
-  ) => {
-    const selectedFile = event.target.files && event.target.files[0];
+  const handleBankStatementFileChange = (selectedFile: File | null) => {
     if (selectedFile) {
       setNewCandidate({ ...newCandidate, bankStatement: selectedFile });
 
