@@ -14,6 +14,8 @@ model Assign {
   startDate      DateTime
   endDate        DateTime
   employmentType EmploymentType
+  employeeId     String         @default("")
+  restDay        Days           @default(SUN)
   Candidate      Candidate      @relation(fields: [candidateCuid], references: [cuid])
   Consultant     Consultant     @relation(fields: [consultantCuid], references: [cuid])
   Project        Project        @relation(fields: [projectCuid], references: [cuid])
@@ -37,7 +39,7 @@ model Request {
   status        RequestStatus @default(PENDING)
   createdAt     DateTime      @default(now())
   Assign        Assign        @relation(fields: [projectCuid, candidateCuid], references: [projectCuid, candidateCuid])
-  Attendance    Attendance[]
+  Attendance    Attendance[]  @relation("AttendanceToRequest")
 }
 
 model Attendance {
@@ -50,10 +52,10 @@ model Attendance {
   leave         LeaveStatus?
   shiftDate     DateTime
   shiftType     ShiftType         @default(FULL_DAY)
-  postalCode    String?
+  location      Json?
   Candidate     Candidate         @relation(fields: [candidateCuid], references: [cuid])
   Shift         Shift             @relation(fields: [shiftCuid], references: [cuid])
-  Request       Request[]
+  Request       Request[]         @relation("AttendanceToRequest")
 
   @@unique([candidateCuid, shiftCuid, shiftDate])
 }
@@ -225,4 +227,14 @@ enum ResidencyStatus {
   PERMANENT_RESIDENT
   WORK_PERMIT
   S_PASS
+}
+
+enum Days {
+  MON
+  TUE
+  WEB
+  THU
+  FRI
+  SAT
+  SUN
 }
