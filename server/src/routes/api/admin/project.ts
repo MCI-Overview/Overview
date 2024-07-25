@@ -1532,7 +1532,7 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
 
   const [startTimeHour, startTimeMinute] = startTime.split(":").map(Number);
   const startTimeObject = dayjs()
-    .tz(timezone, true)
+    .tz(timezone)
     .set("hour", startTimeHour)
     .set("minute", startTimeMinute)
     .startOf("minute")
@@ -1540,7 +1540,7 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
 
   const [endTimeHour, endTimeMinute] = endTime.split(":").map(Number);
   let endTimeObject = dayjs()
-    .tz(timezone, true)
+    .tz(timezone)
     .set("hour", endTimeHour)
     .set("minute", endTimeMinute)
     .startOf("minute")
@@ -1598,8 +1598,8 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
   }
 
   const createData = {
-    startTime: defaultDate(dayjs(startTime, "HH:mm")).toDate(),
-    endTime: defaultDate(dayjs(endTime, "HH:mm")).toDate(),
+    startTime: defaultDate(startTimeObject).toDate(),
+    endTime: defaultDate(endTimeObject).toDate(),
     ...(halfDayEndTime && {
       halfDayEndTime: defaultDate(dayjs(halfDayEndTime, "HH:mm")).toDate(),
     }),
@@ -1831,35 +1831,56 @@ projectAPIRouter.get("/projects", async (req, res) => {
   }
 });
 
-projectAPIRouter.get("/projects/all", async (_req, res) => {
-  /**
+projectAPIRouter.get("/projects/all", async (req, res) => {
   const user = req.user as User;
-
-  const hasReadAllProjectsPermission = await checkPermission(
-    user.cuid,
-    PermissionList.CAN_READ_ALL_PROJECTS,
-  );
-
-  if (!hasReadAllProjectsPermission) {
-    return res
-      .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_READ_ALL_PROJECTS);
-  }
-  */
 
   try {
     const projectsData = await prisma.project.findMany({
-      include: {
+      where: {
         Manage: {
-          include: {
-            Consultant: true,
+          none: {
+            consultantCuid: user.cuid,
+          },
+        },
+      },
+      select: {
+        cuid: true,
+        name: true,
+        createdAt: true,
+        startDate: true,
+        endDate: true,
+        Manage: {
+          select: {
+            consultantCuid: true,
+            role: true,
+          },
+          where: {
+            Consultant: {
+              status: "ACTIVE",
+            },
           },
         },
         Client: true,
       },
     });
 
-    return res.send(projectsData);
+    return res.send(
+      projectsData.map((project) => {
+        return {
+          cuid: project.cuid,
+          name: project.name,
+          createdAt: project.createdAt,
+          clientName: project.Client.name,
+          clientUEN: project.Client.uen,
+          startDate: project.startDate,
+          endDate: project.endDate,
+          consultants: project.Manage.map((manage) => ({
+            cuid: manage.consultantCuid,
+            role: manage.role,
+          })),
+        };
+      })
+    );
   } catch (error) {
     console.log(error);
     return res.status(500).send("Internal server error.");

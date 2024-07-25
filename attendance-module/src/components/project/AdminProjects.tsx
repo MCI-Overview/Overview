@@ -26,7 +26,7 @@ const projectComparator = (a: BasicProject, b: BasicProject) => {
   return dayjs(b.createdAt).diff(dayjs(a.createdAt));
 };
 
-const MyProjects: FC = () => {
+const AdminProjects: FC<{ variant: "OWN" | "ALL" }> = ({ variant }) => {
   const [previousProjects, setPreviousProjects] = useState<BasicProject[]>([]);
   const [ongoingProjects, setOngoingProjects] = useState<BasicProject[]>([]);
   const [futureProjects, setFutureProjects] = useState<BasicProject[]>([]);
@@ -37,7 +37,10 @@ const MyProjects: FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
-    axios.get("/api/admin/projects").then((response) => {
+    const url =
+      variant === "OWN" ? "/api/admin/projects" : "/api/admin/projects/all";
+
+    axios.get(url).then((response) => {
       const projects = response.data as BasicProject[];
 
       setPreviousProjects(
@@ -56,7 +59,7 @@ const MyProjects: FC = () => {
         projects.filter((project) => dayjs().isBefore(dayjs(project.startDate)))
       );
     });
-  }, []);
+  }, [variant]);
 
   const currentProjectList =
     value === "concluded"
@@ -83,7 +86,8 @@ const MyProjects: FC = () => {
                   level="title-md"
                   sx={{ display: "flex", alignItems: "center" }}
                 >
-                  My projects:
+                  {variant === "OWN" && "My projects"}
+                  {variant === "ALL" && "All projects"}
                 </Typography>
 
                 <Select
@@ -105,19 +109,23 @@ const MyProjects: FC = () => {
               </Box>
 
               <Typography level="body-sm">
-                Projects that you have joined or created.
+                {variant === "OWN" &&
+                  "Projects that you have joined or created."}
+                {variant === "ALL" &&
+                  "Projects that you are not a collaborator of."}
               </Typography>
             </Box>
-
-            <Tooltip title="Create new project" placement="right">
-              <IconButton
-                size="lg"
-                onClick={() => setIsCreateModalOpen(true)}
-                sx={{ my: "auto" }}
-              >
-                <ControlPointIcon />
-              </IconButton>
-            </Tooltip>
+            {variant === "OWN" && (
+              <Tooltip title="Create new project" placement="right">
+                <IconButton
+                  size="lg"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  sx={{ my: "auto" }}
+                >
+                  <ControlPointIcon />
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
 
           <Divider />
@@ -135,19 +143,25 @@ const MyProjects: FC = () => {
               currentProjectList
                 .sort(projectComparator)
                 .map((project: BasicProject) => (
-                  <AdminProjectDisplay key={project.cuid} project={project} />
+                  <AdminProjectDisplay
+                    key={project.cuid}
+                    project={project}
+                    viewOnly={variant === "ALL"}
+                  />
                 ))
             )}
           </Stack>
         </Card>
       </Stack>
 
-      <CreateProjectModal
-        isOpen={isCreateModalOpen}
-        setIsOpen={setIsCreateModalOpen}
-      />
+      {variant === "OWN" && (
+        <CreateProjectModal
+          isOpen={isCreateModalOpen}
+          setIsOpen={setIsCreateModalOpen}
+        />
+      )}
     </>
   );
 };
 
-export default MyProjects;
+export default AdminProjects;
