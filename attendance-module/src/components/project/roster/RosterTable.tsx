@@ -56,7 +56,6 @@ export default function RosterTable({ type }: RosterTableProps) {
     }[]
   >;
 
-  console.log(publicHolidays);
 
   const [{ item, itemType }, drop] = useDrop({
     accept: ["shift", "roster", "candidate"],
