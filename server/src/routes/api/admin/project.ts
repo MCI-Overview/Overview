@@ -276,23 +276,23 @@ projectAPIRouter.get(
             const startTime =
               cr.shiftType === "SECOND_HALF"
                 ? dayjs(cr.Shift.halfDayStartTime)
-                    .set("date", startDate.date())
-                    .set("month", startDate.month())
-                    .set("year", startDate.year())
+                  .set("date", startDate.date())
+                  .set("month", startDate.month())
+                  .set("year", startDate.year())
                 : dayjs(cr.Shift.startTime)
-                    .set("date", startDate.date())
-                    .set("month", startDate.month())
-                    .set("year", startDate.year());
+                  .set("date", startDate.date())
+                  .set("month", startDate.month())
+                  .set("year", startDate.year());
             const endTime =
               cr.shiftType === "FIRST_HALF"
                 ? dayjs(cr.Shift.halfDayEndTime)
-                    .set("date", startDate.date())
-                    .set("month", startDate.month())
-                    .set("year", startDate.year())
+                  .set("date", startDate.date())
+                  .set("month", startDate.month())
+                  .set("year", startDate.year())
                 : dayjs(cr.Shift.endTime)
-                    .set("date", startDate.date())
-                    .set("month", startDate.month())
-                    .set("year", startDate.year());
+                  .set("date", startDate.date())
+                  .set("month", startDate.month())
+                  .set("year", startDate.year());
 
             // TODO: Hide other project roster irrelevant data
             return {
@@ -2497,10 +2497,10 @@ projectAPIRouter.post(
           // check all candidate if candidateCuids is not provided/empty
           ...(candidateCuids &&
             candidateCuids.length > 0 && {
-              candidateCuid: {
-                in: candidateCuids,
-              },
-            }),
+            candidateCuid: {
+              in: candidateCuids,
+            },
+          }),
           shiftDate: {
             gte: new Date(startDate),
             lte: new Date(endDate),

@@ -9,6 +9,7 @@ export type CommonCandidate = CandidateDetails & {
   startDate: string;
   endDate: string;
   restDay: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
+  employeeId: string;
 };
 
 export type ProjectCandidate = CommonCandidate & {
@@ -156,6 +157,7 @@ export type CommonProject = {
 export type GetProjectDataResponse = {
   cuid: string;
   name: string;
+  employeeId: string;
   employmentBy: string;
   locations: CommonLocation[];
   startDate: string;
@@ -187,6 +189,7 @@ export type GetShiftResponse = {
 }[];
 
 export type GetCandidateResponse = {
+  employeeId: string;
   cuid: string;
   nric: string;
   name: string;

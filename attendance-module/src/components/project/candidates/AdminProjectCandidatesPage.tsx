@@ -8,7 +8,7 @@ import AddCandidateModal from "./AddCandidateModal";
 import AssignCandidateModal from "./AssignCandidateModal";
 import DeleteCandidateModal from "./DeleteCandidateModal";
 import SmallScreenDivider from "../ui/SmallScreenDivider";
-import CandidateTable from "./CandidateTable";
+import CandidateTable, { CddTableDataType } from "./CandidateTable";
 
 import {
   Box,
@@ -29,6 +29,7 @@ import {
   ArrowDropDownRounded as ArrowDropDownIcon,
   SearchRounded as SearchIcon,
 } from "@mui/icons-material";
+import EditCandidateModal from "./EditCandidateModal";
 
 const AdminProjectCandidatesPage = () => {
   const { project, updateProject } = useProjectContext();
@@ -36,6 +37,7 @@ const AdminProjectCandidatesPage = () => {
   const candidatesData =
     project?.candidates?.map((cdd) => {
       return {
+        employeeId: cdd.employeeId,
         cuid: cdd.cuid,
         nric: cdd.nric,
         name: cdd.name,
@@ -56,10 +58,14 @@ const AdminProjectCandidatesPage = () => {
     }) || [];
 
   const [searchValue, setSearchValue] = useState("");
+
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const [candidatesToDelete, setCandidatesToDelete] = useState<string[]>([]);
+  const [candidatesToEdit, setCandidatesToEdit] = useState<CddTableDataType>();
 
   // TODO: Fix type
   const matchSearchValue = (c: CommonCandidate) =>
@@ -69,6 +75,11 @@ const AdminProjectCandidatesPage = () => {
   const handleConfirmDeletion = async (cuidList: string[]) => {
     setCandidatesToDelete(cuidList);
     setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmEdit = async (selectedcdd: CddTableDataType) => {
+    setCandidatesToEdit(selectedcdd);
+    setIsEditModalOpen(true);
   };
 
   const handleDeleteCandidates = async () => {
@@ -165,6 +176,7 @@ const AdminProjectCandidatesPage = () => {
       <CandidateTable
         tableData={candidatesData.filter((c) => matchSearchValue(c))}
         handleDelete={handleConfirmDeletion}
+        handleEdit={handleConfirmEdit}
         showCandidateHolder={true}
       />
 
@@ -179,6 +191,12 @@ const AdminProjectCandidatesPage = () => {
         candidatesData={candidatesData}
         candidatesToDelete={candidatesToDelete}
         handleDeleteCandidates={handleDeleteCandidates}
+      />
+
+      <EditCandidateModal
+        isDeleteModalOpen={isEditModalOpen}
+        setIsEditModalOpen={setIsEditModalOpen}
+        candidatesData={candidatesData}
       />
 
       <AddCandidateModal

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { FormControl, FormLabel, Modal, ModalDialog, Typography, Input, Grid, Divider, ModalClose, Button, Select, Option } from "@mui/joy";
@@ -17,25 +17,25 @@ const AdminProjectAttendanceEditModal = ({
     setIsOpen,
     selectedAtt,
 }: AddLocationsModalProps) => {
-    if (!selectedAtt) return null;
-
     const { project, updateProject } = useProjectContext();
     const projectLocations = project?.locations || [];
-    const initialFields = {
-        clockIn: selectedAtt.rawStart ? dayjs(selectedAtt.rawStart) : null,
-        clockOut: selectedAtt.rawEnd ? dayjs(selectedAtt.rawEnd) : null,
-        postalCode: selectedAtt.postalCode || null,
-        status: selectedAtt.status
-    };
+
+    const initialFields = useMemo(() => ({
+        clockIn: selectedAtt?.rawStart ? dayjs(selectedAtt.rawStart) : null,
+        clockOut: selectedAtt?.rawEnd ? dayjs(selectedAtt.rawEnd) : null,
+        postalCode: selectedAtt?.postalCode || null,
+        status: selectedAtt?.status || "UPCOMING"
+    }), [selectedAtt]);
+
     const [updatefields, setUpdateFields] = useState(initialFields);
     const [hasChanges, setHasChanges] = useState(false);
 
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && selectedAtt) {
             setUpdateFields(initialFields);
             setHasChanges(false);
         }
-    }, [isOpen, selectedAtt]);
+    }, [isOpen, selectedAtt, initialFields]);
 
     useEffect(() => {
         const determineStatus = () => {
@@ -44,7 +44,7 @@ const AdminProjectAttendanceEditModal = ({
             }
 
             const clockInTime = dayjs(updatefields.clockIn).format('HH:mm:ss');
-            const shiftStartTime = dayjs(selectedAtt.shiftStart).format('HH:mm:ss');
+            const shiftStartTime = dayjs(selectedAtt?.shiftStart).format('HH:mm:ss');
 
             if (clockInTime <= shiftStartTime) {
                 return "ON_TIME";
@@ -52,11 +52,13 @@ const AdminProjectAttendanceEditModal = ({
             return "LATE";
         };
 
-        setUpdateFields(prevFields => ({
-            ...prevFields,
-            status: determineStatus()
-        }));
-    }, [updatefields.clockIn, selectedAtt.shiftStart]);
+        if (selectedAtt) {
+            setUpdateFields(prevFields => ({
+                ...prevFields,
+                status: determineStatus()
+            }));
+        }
+    }, [updatefields.clockIn, selectedAtt]);
 
     useEffect(() => {
         const hasUpdates = JSON.stringify(updatefields) !== JSON.stringify(initialFields);
@@ -69,6 +71,7 @@ const AdminProjectAttendanceEditModal = ({
     }));
 
     const handleSubmit = async () => {
+        if (!selectedAtt) return;
         try {
             await axios.patch(`/api/admin/attendance/${selectedAtt.attendanceCuid}/edit`, {
                 clockInTime: updatefields.clockIn,
@@ -93,12 +96,14 @@ const AdminProjectAttendanceEditModal = ({
         }));
     };
 
-    const handleSelectChange = (_event: any, newValue: string | null) => {
+    const handleSelectChange = (_event: React.SyntheticEvent<Element, Event> | null, newValue: string | null) => {
         setUpdateFields(prevFields => ({
             ...prevFields,
             postalCode: newValue
         }));
     };
+
+    if (!selectedAtt) return null;
 
     return (
         <Modal open={isOpen} onClose={() => setIsOpen(false)}>

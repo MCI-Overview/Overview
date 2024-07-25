@@ -73,18 +73,18 @@ const RosterTableContext = createContext<{
   dateRangeStart: dayjs(),
   candidateHoverCuid: null,
   selectedCandidates: [],
-  setItem: () => {},
-  setDates: () => {},
-  setItemType: () => {},
-  setSortOrder: () => {},
-  setHoverDate: () => {},
-  setHoverCuid: () => {},
-  setWeekOffset: () => {},
-  setSortOrderBy: () => {},
-  setDraggingCuid: () => {},
-  updateRosterData: () => {},
-  setSelectedCandidates: () => {},
-  setCandidateHoverCuid: () => {},
+  setItem: () => { },
+  setDates: () => { },
+  setItemType: () => { },
+  setSortOrder: () => { },
+  setHoverDate: () => { },
+  setHoverCuid: () => { },
+  setWeekOffset: () => { },
+  setSortOrderBy: () => { },
+  setDraggingCuid: () => { },
+  updateRosterData: () => { },
+  setSelectedCandidates: () => { },
+  setCandidateHoverCuid: () => { },
 });
 
 export function RosterTableContextProvider({
@@ -108,7 +108,7 @@ export function RosterTableContextProvider({
   );
   const [weekOffset, setWeekOffset] = useState<number>(
     Math.floor(dayjs().diff(project?.startDate.startOf("isoWeek"), "weeks")) ||
-      0
+    0
   );
 
   const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
@@ -261,7 +261,8 @@ export function RosterTableContextProvider({
                   )
               );
 
-            if (hasNoOverlap && itemStartTime.isAfter(dayjs())) {
+            //&& itemStartTime.isAfter(dayjs()) ADD THIS HERE TO RESTRICT AFTER DATE HAS PASSED
+            if (hasNoOverlap) {
               acc[1].push(date);
 
               if (itemType === "shift") {

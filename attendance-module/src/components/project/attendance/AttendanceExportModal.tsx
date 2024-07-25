@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import * as XLSX from "xlsx";
@@ -6,7 +6,8 @@ import toast from "react-hot-toast";
 
 import ResponsiveDialog from "../../ResponsiveDialog";
 
-import { Grid, Input, FormControl, FormLabel, Button } from "@mui/joy";
+import { Grid, Input, FormControl, FormLabel, Button, Autocomplete } from "@mui/joy";
+import { useProjectContext } from "../../../providers/projectContextProvider";
 
 interface ModalProps {
   show: boolean;
@@ -33,6 +34,20 @@ const AttendanceExportModal: React.FC<ModalProps> = ({
 }) => {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
+  const [selectedNRIC, setSelectedNRIC] = useState<string>('all');
+
+  const { project } = useProjectContext();
+  const cddList = useMemo(() => {
+    const candidates = project?.candidates.map(cdd => ({
+      label: `${cdd.name} - ${cdd.nric}`,
+      value: cdd.nric
+    })) || [];
+
+    return [
+      { label: 'All Candidates', value: 'all' },
+      ...candidates
+    ];
+  }, [project]);
 
   const getExportData = async (
     formattedStartDate: string,
@@ -52,7 +67,12 @@ const AttendanceExportModal: React.FC<ModalProps> = ({
     const formattedStartDate = dayjs(startDate).format("YYYY-MM-DD");
     const formattedEndDate = dayjs(endDate).format("YYYY-MM-DD");
 
-    const data = await getExportData(formattedStartDate, formattedEndDate);
+    let data = await getExportData(formattedStartDate, formattedEndDate);
+
+    // Filter data if a specific NRIC is selected
+    if (selectedNRIC !== 'all') {
+      data = data.filter(entry => entry.nric === selectedNRIC);
+    }
 
     // Format the data
     const formattedData = data.map((entry) => ({
@@ -72,10 +92,11 @@ const AttendanceExportModal: React.FC<ModalProps> = ({
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance Data");
 
-    XLSX.writeFile(
-      workbook,
-      `attendance_${formattedStartDate}_to_${formattedEndDate}.xlsx`
-    );
+    const fileName = selectedNRIC === 'all'
+      ? `attendance_all_${formattedStartDate}_to_${formattedEndDate}.xlsx`
+      : `attendance_${selectedNRIC}_${formattedStartDate}_to_${formattedEndDate}.xlsx`;
+
+    XLSX.writeFile(workbook, fileName);
     toast.success("Download starting ...");
   };
 
@@ -87,6 +108,17 @@ const AttendanceExportModal: React.FC<ModalProps> = ({
       actions={<Button onClick={handleExport}>Export</Button>}
     >
       <Grid container columnGap={2} rowGap={2}>
+        <Grid xs={12}>
+          <FormControl>
+            <FormLabel>Select Candidate</FormLabel>
+            <Autocomplete
+              options={cddList}
+              value={cddList.find(option => option.value === selectedNRIC) || cddList[0]}
+              onChange={(_event, newValue) => setSelectedNRIC(newValue ? newValue.value : 'all')}
+              getOptionLabel={(option) => option.label}
+            />
+          </FormControl>
+        </Grid>
         <Grid xs={12}>
           <FormControl>
             <FormLabel>Start date</FormLabel>

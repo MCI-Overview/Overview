@@ -6,6 +6,7 @@ import { checkPermission } from "../../../utils/permission";
 import { readableEnum } from "../../../utils/capitalize";
 import { CommonCandidate, PermissionList } from "../../../types/common";
 import { ThTypo, TdTypo } from "../ui/TableTypo";
+import EditIcon from '@mui/icons-material/Edit';
 
 import {
   Box,
@@ -43,6 +44,7 @@ export interface CandidateTableProps {
   tableProps?: TableProps;
   tableData: CddTableDataType[];
   handleDelete?: (nricList: string[]) => void;
+  handleEdit?: (selectedcdd: CddTableDataType) => void,
   showCandidateHolder?: boolean;
   showRestDay?: boolean;
 }
@@ -56,6 +58,7 @@ const CandidateTable = ({
   tableProps,
   tableData,
   handleDelete,
+  handleEdit,
   showCandidateHolder = false,
   showRestDay = false,
 }: CandidateTableProps) => {
@@ -166,6 +169,9 @@ const CandidateTable = ({
             >
               <thead>
                 <tr>
+                  <ThTypo>
+                    EmployeeId
+                  </ThTypo>
                   <ThTypo>Nric</ThTypo>
                   <ThTypo>Name</ThTypo>
                   <ThTypo>Contact</ThTypo>
@@ -184,6 +190,7 @@ const CandidateTable = ({
                   {showRestDay && <ThTypo>Rest day</ThTypo>}
                   {showCandidateHolder && <ThTypo>Consultant</ThTypo>}
                   {handleDelete && <ThTypo>Action</ThTypo>}
+                  {<ThTypo>Edit</ThTypo>}
                 </tr>
               </thead>
 
@@ -197,6 +204,7 @@ const CandidateTable = ({
                 ) : (
                   sortedData.map((row) => (
                     <tr key={row.nric}>
+                      <TdTypo>{row.employeeId}</TdTypo>
                       <TdTypo>{row.nric}</TdTypo>
                       <TdTypo>
                         {row.cuid ? (
@@ -225,36 +233,69 @@ const CandidateTable = ({
                       )}
 
                       {handleDelete && (
-                        <td>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              flexWrap: "wrap",
-                              justifyContent: "center",
-                              gap: 1,
-                            }}
-                          >
-                            {handleDelete && (
-                              <Tooltip
-                                size="sm"
-                                title="Delete"
-                                placement="right"
-                              >
-                                <IconButton
+                        <>
+                          <td>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                justifyContent: "center",
+                                gap: 1,
+                              }}
+                            >
+                              {handleDelete && (
+                                <Tooltip
                                   size="sm"
-                                  color="danger"
-                                  onClick={() => handleDelete([row.cuid])}
-                                  disabled={
-                                    !hasEditProjectPermission &&
-                                    !isHolder(row.cuid)
-                                  }
+                                  title="Delete"
+                                  placement="right"
                                 >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Box>
-                        </td>
+                                  <IconButton
+                                    size="sm"
+                                    color="danger"
+                                    onClick={() => handleDelete([row.cuid])}
+                                    disabled={
+                                      !hasEditProjectPermission &&
+                                      !isHolder(row.cuid)
+                                    }
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                            </Box>
+                          </td>
+
+                          <td>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                justifyContent: "center",
+                                gap: 1,
+                              }}
+                            >
+                              {handleEdit && (
+                                <Tooltip
+                                  size="sm"
+                                  title="Delete"
+                                  placement="right"
+                                >
+                                  <IconButton
+                                    size="sm"
+                                    color="primary"
+                                    onClick={() => handleEdit(row)}
+                                    disabled={
+                                      !hasEditProjectPermission &&
+                                      !isHolder(row.cuid)
+                                    }
+                                  >
+                                    <EditIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                            </Box>
+                          </td>
+                        </>
                       )}
                     </tr>
                   ))
@@ -296,7 +337,7 @@ const CandidateTable = ({
                         }}
                       >
                         <Typography level="body-xs">
-                          Name: {listItem.name}
+                          Name: {listItem.name} {listItem.employeeId}
                         </Typography>
 
                         <Chip
@@ -339,6 +380,7 @@ const CandidateTable = ({
                           <Typography level="body-xs">
                             End: {dayjs(listItem.endDate).format("DD/MM/YY")}
                           </Typography>
+
                         </Box>
                       </Box>
                     </Box>

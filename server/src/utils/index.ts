@@ -20,13 +20,13 @@ export function defaultDate(dateTime: Dayjs): Dayjs {
 
 type ParameterValidity =
   | {
-      isValid: false;
-      message: string;
-    }
+    isValid: false;
+    message: string;
+  }
   | {
-      isValid: true;
-      message?: string;
-    };
+    isValid: true;
+    message?: string;
+  };
 
 export function checkLocationsValidity(locations: any): ParameterValidity {
   if (!locations)
@@ -299,6 +299,7 @@ export async function processCandidateData(
       return {
         cuid,
         nric: maskNRIC(nric),
+        employeeId: assign.employeeId,
         name,
         contact,
         residency,
@@ -318,6 +319,7 @@ export async function processCandidateData(
       ...assign.Candidate,
       dateOfBirth: assign.Candidate.dateOfBirth.toISOString(),
       startDate: assign.startDate.toISOString(),
+      employeeId: assign.employeeId,
       endDate: assign.endDate.toISOString(),
       residency: assign.Candidate.residency,
       employmentType: assign.employmentType,
