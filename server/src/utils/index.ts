@@ -298,6 +298,7 @@ export async function processCandidateData(
       return {
         cuid,
         nric: maskNRIC(nric),
+        employeeId: assign.employeeId,
         name,
         contact,
         residency,
@@ -315,6 +316,7 @@ export async function processCandidateData(
   return assignData.map((assign) => {
     return {
       ...assign.Candidate,
+      employeeId: assign.employeeId,
       dateOfBirth: assign.Candidate.dateOfBirth.toISOString(),
       startDate: assign.startDate.toISOString(),
       endDate: assign.endDate.toISOString(),

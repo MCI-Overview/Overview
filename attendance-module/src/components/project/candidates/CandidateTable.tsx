@@ -168,6 +168,7 @@ const CandidateTable = ({
                 <tr>
                   <ThTypo>Nric</ThTypo>
                   <ThTypo>Name</ThTypo>
+                  <ThTypo>Employee ID</ThTypo>
                   <ThTypo>Contact</ThTypo>
                   <ThTypo>Date of birth</ThTypo>
                   <ThTypo onClick={() => requestSort("age")}>
@@ -208,6 +209,7 @@ const CandidateTable = ({
                           row.name
                         )}
                       </TdTypo>
+                      <TdTypo>{row.employeeId}</TdTypo>
                       <TdTypo>{row.contact}</TdTypo>
                       <TdTypo>
                         {dayjs(row.dateOfBirth).format("DD/MM/YY")}
