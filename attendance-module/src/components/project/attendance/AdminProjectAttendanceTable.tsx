@@ -124,7 +124,6 @@ const AdminProjectAttendanceTable = ({
               <ThTypo>End Time</ThTypo>
               <ThTypo>Clock In</ThTypo>
               <ThTypo>Clock Out</ThTypo>
-              <ThTypo>Location</ThTypo>
               <ThTypo>Status</ThTypo>
               <th></th>
             </tr>
@@ -159,7 +158,6 @@ const AdminProjectAttendanceTable = ({
                         ? "NIL"
                         : "-"}
                     </TdTypo>
-                    <TdTypo>{att.postalCode ? att.postalCode : "-"}</TdTypo>
                     <TdTypo>
                       <AttendanceStatusChip
                         leave={att.leave}
