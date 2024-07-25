@@ -232,7 +232,7 @@ enum ResidencyStatus {
 enum Days {
   MON
   TUE
-  WEB
+  WED
   THU
   FRI
   SAT
