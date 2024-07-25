@@ -3,9 +3,17 @@ export function capitalizeWords(str: string) {
     return "";
   }
   return str
-    .split(" ")
-    .map((word) => capitalize(word))
-    .join(" ");
+    .split(/(\(|\[|\{)/)
+    .map((segment) => {
+      if (segment === "(" || segment === "[" || segment === "{") {
+        return segment;
+      }
+      return segment
+        .split(" ")
+        .map((word) => capitalize(word))
+        .join(" ");
+    })
+    .join("");
 }
 
 function capitalize(str: string) {
@@ -32,7 +40,7 @@ export function generateCapitalizations(arr: string[]) {
   return result;
 }
 
-export function readableEnum(enumValue: string) {
+export function readableEnum(enumValue: string | undefined) {
   if (!enumValue) return "-";
 
   return capitalizeWords(enumValue.replace(/_/g, " "));

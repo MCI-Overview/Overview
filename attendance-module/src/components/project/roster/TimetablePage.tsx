@@ -1,16 +1,29 @@
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider } from "react-dnd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { RosterTableContextProvider } from "../../../providers/rosterContextProvider";
 import ShiftDisplay from "./RosterSidebar";
 import RosterTable from "./RosterTable";
 import WeekPicker from "./WeekPicker";
+import { store } from "../../../store";
 
 import { Button, Modal, ModalClose, ModalDialog, Stack } from "@mui/joy";
+import axios from "axios";
 
 export default function NewRosterPage() {
   const [editMode, setEditMode] = useState(false);
+
+  useEffect(() => {
+    axios.get("/api/public-holidays").then((response) => {
+      const holidays = response.data;
+
+      store.setState((state) => ({
+        ...state,
+        publicHolidays: holidays,
+      }));
+    });
+  });
 
   return (
     <DndProvider backend={HTML5Backend}>

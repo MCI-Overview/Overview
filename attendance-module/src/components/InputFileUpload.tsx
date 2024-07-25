@@ -1,9 +1,11 @@
+import { ChangeEventHandler, useState } from "react";
+import imageCompression from "browser-image-compression";
+
+import { styled, Button } from "@mui/joy";
 import {
   ImageRounded as ImageIcon,
   DoneRounded as CheckIcon,
 } from "@mui/icons-material";
-import { styled, Button } from "@mui/joy";
-import { ChangeEventHandler, useState } from "react";
 
 const VisuallyHiddenInput = styled("input")`
   clip: rect(0 0 0 0);
@@ -24,15 +26,27 @@ export default function InputFileUpload({
 }: {
   label: string;
   hasFile?: boolean;
-  setState: ChangeEventHandler<HTMLInputElement>;
+  setState: (file: File | null) => void;
 }) {
   const [upload, setUpload] = useState(hasFile || false);
 
-  const handleFileChange: ChangeEventHandler<HTMLInputElement> = (event) => {
-    const selectedFile = event.target.files && event.target.files[0];
+  const handleFileChange: ChangeEventHandler<HTMLInputElement> = async (
+    event
+  ) => {
+    let selectedFile = event.target.files && event.target.files[0];
+
+    if (!selectedFile || !event.target.files || !event.target.files[0]) return;
+
+    if (selectedFile.size > 1024 * 1024 * 2) {
+      selectedFile = await imageCompression(selectedFile, {
+        maxSizeMB: 2,
+        useWebWorker: true,
+      });
+    }
+
     if (selectedFile) {
       setUpload(true);
-      setState(event);
+      setState(selectedFile);
     }
   };
   return (

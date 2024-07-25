@@ -60,7 +60,7 @@ attendanceApiRouter.patch(
       clockOutTime,
       imageData,
       startTime,
-      postalCode,
+      location,
     } = req.body;
 
     if (!attendanceCuid) {
@@ -87,9 +87,9 @@ attendanceApiRouter.patch(
     if (!clockInTime) {
       body = { clockOutTime };
     } else if (clockInTime < startTime) {
-      body = { clockInTime, status: AttendanceStatus.ON_TIME, postalCode };
+      body = { clockInTime, status: AttendanceStatus.ON_TIME, location };
     } else {
-      body = { clockInTime, status: AttendanceStatus.LATE, postalCode };
+      body = { clockInTime, status: AttendanceStatus.LATE, location };
     }
 
     try {

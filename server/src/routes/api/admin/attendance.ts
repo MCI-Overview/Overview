@@ -7,7 +7,8 @@ import { prisma, s3 } from "../../../client";
 
 const attendanceApiRouter: Router = Router();
 
-attendanceApiRouter.get("/attendance/:attendanceCuid/image",
+attendanceApiRouter.get(
+  "/attendance/:attendanceCuid/image",
   async (req: Request, res: Response) => {
     const user = req.user as User;
     const { attendanceCuid } = req.params;
@@ -65,32 +66,35 @@ attendanceApiRouter.get("/attendance/:attendanceCuid/image",
 );
 
 // TODO: Add permission check
-attendanceApiRouter.patch("/attendance/:attendanceCuid/edit", async (req: Request, res: Response) => {
-  const { attendanceCuid } = req.params;
-  const { clockInTime, clockOutTime, postalCode, status } = req.body;
+attendanceApiRouter.patch(
+  "/attendance/:attendanceCuid/edit",
+  async (req: Request, res: Response) => {
+    const { attendanceCuid } = req.params;
+    const { clockInTime, clockOutTime, location, status } = req.body;
 
-  try {
-    await prisma.attendance.update({
-      data: {
-        clockInTime,
-        clockOutTime,
-        postalCode,
-        status
-      },
-      where: {
-        cuid: attendanceCuid
-      }
-    });
+    try {
+      await prisma.attendance.update({
+        data: {
+          clockInTime,
+          clockOutTime,
+          location,
+          status,
+        },
+        where: {
+          cuid: attendanceCuid,
+        },
+      });
 
-    return res.json({
-      message: "Attendance updated successfully.",
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Internal server error.",
-    });
+      return res.json({
+        message: "Attendance updated successfully.",
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "Internal server error.",
+      });
+    }
   }
-});
+);
 
 export default attendanceApiRouter;

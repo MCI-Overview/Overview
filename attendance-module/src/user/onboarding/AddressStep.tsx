@@ -1,3 +1,7 @@
+import axios from "axios";
+import { readableEnum } from "../../utils/capitalize";
+import { useOnboardingContext } from "../../providers/onboardingContextProvider";
+
 import {
   Stack,
   Box,
@@ -11,9 +15,7 @@ import {
   Autocomplete,
   Checkbox,
 } from "@mui/joy";
-import { useOnboardingContext } from "../../providers/onboardingContextProvider";
-import { readableEnum } from "../../utils/capitalize";
-import axios from "axios";
+import { useState } from "react";
 
 const DEFAULT_ADDRESS = {
   postal: "",
@@ -26,6 +28,10 @@ const DEFAULT_ADDRESS = {
   isLanded: false,
 };
 
+function equalsIgnoringCase(text: string, other: string) {
+  return text.localeCompare(other, undefined, { sensitivity: "base" }) === 0;
+}
+
 export default function AddressStep() {
   const {
     oldCandidate,
@@ -35,6 +41,10 @@ export default function AddressStep() {
     setOldCandidate,
     setNewCandidate,
   } = useOnboardingContext();
+
+  const [addressList, setAddressList] = useState<
+    { POSTAL: string; BLK_NO: string; ROAD_NAME: string; BUILDING: string }[]
+  >([]);
 
   if (!oldCandidate || !newCandidate) {
     return null;
@@ -60,30 +70,6 @@ export default function AddressStep() {
     isLanded: newIsLanded,
   } = newCandidate.address || DEFAULT_ADDRESS;
 
-  async function loadAddress() {
-    if (!newCandidate) {
-      return;
-    }
-
-    axios
-      .get(
-        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${newPostal}&returnGeom=N&getAddrDetails=Y`,
-        { withCredentials: false }
-      )
-      .then((res) => {
-        setNewCandidate({
-          ...newCandidate,
-          address: {
-            ...newCandidate.address,
-            block: readableEnum(res.data.results[0].BLK_NO),
-            building: readableEnum(res.data.results[0].BUILDING),
-            street: readableEnum(res.data.results[0].ROAD_NAME),
-            country: "Singapore",
-          },
-        });
-      });
-  }
-
   return (
     <Stack
       sx={{
@@ -98,44 +84,63 @@ export default function AddressStep() {
         </Typography>
       </Box>
       <Grid container spacing={2} columns={2} paddingBottom={15}>
-        <Grid xs={1} sm={1}>
+        <Grid xs={2} sm={2}>
           <FormControl>
-            <FormLabel>Postal Code</FormLabel>
-            <Input
-              value={newPostal || ""}
-              onChange={(e) =>
-                setNewCandidate({
-                  ...newCandidate,
-                  address: {
-                    ...newCandidate.address,
-                    postal: e.target.value.replace(/[^0-9]/g, ""),
-                  },
-                })
+            <FormLabel>Search Address</FormLabel>
+            <Autocomplete
+              autoSelect
+              clearOnBlur
+              clearOnEscape
+              options={addressList.filter(
+                (address) => address.POSTAL !== "NIL"
+              )}
+              getOptionLabel={(option) =>
+                `${
+                  !equalsIgnoringCase(option.BLK_NO, "NIL") ? option.BLK_NO : ""
+                } ${
+                  !equalsIgnoringCase(option.ROAD_NAME, "NIL")
+                    ? readableEnum(option.ROAD_NAME)
+                    : ""
+                } ${
+                  !equalsIgnoringCase(option.BUILDING, "NIL")
+                    ? readableEnum(option.BUILDING)
+                    : ""
+                } ${
+                  !equalsIgnoringCase(option.POSTAL, "NIL")
+                    ? `Singapore ${option.POSTAL}`
+                    : ""
+                }`
               }
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  loadAddress();
+              onInput={(e) => {
+                setAddressList([]);
+                const searchValue = (e.target as HTMLInputElement).value;
+                if (searchValue) {
+                  axios
+                    .get(
+                      `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${searchValue}&returnGeom=N&getAddrDetails=Y`,
+                      { withCredentials: false }
+                    )
+                    .then((res) => {
+                      setAddressList(res.data.results);
+                    });
+                }
+              }}
+              onChange={(_e, value) => {
+                if (value) {
+                  setNewCandidate({
+                    ...newCandidate,
+                    address: {
+                      ...newCandidate.address,
+                      postal: value.POSTAL,
+                      block: value.BLK_NO,
+                      building: readableEnum(value.BUILDING),
+                      street: readableEnum(value.ROAD_NAME),
+                      country: "Singapore",
+                    },
+                  });
                 }
               }}
             />
-          </FormControl>
-        </Grid>
-        <Grid xs={1} sm={1}>
-          <FormControl>
-            <FormLabel>⠀</FormLabel>
-            <Button
-              onClick={loadAddress}
-              disabled={
-                (newPostal !== undefined && newPostal.length !== 6) ||
-                (oldPostal === newPostal &&
-                  oldBlock === newBlock &&
-                  oldStreet === newStreet &&
-                  oldCountry === newCountry &&
-                  oldBuilding === newBuilding)
-              }
-            >
-              Search
-            </Button>
           </FormControl>
         </Grid>
         <Grid xs={1}>

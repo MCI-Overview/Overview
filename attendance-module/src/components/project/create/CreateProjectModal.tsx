@@ -6,11 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { CreateProjectData } from "../../../types";
 import ProjectDetailsSection from "./DetailsSection";
 import ResponsiveDialog from "../../ResponsiveDialog";
-import ProjectLocationsSection from "./LocationsSection";
-import ProjectCandidateHoldersSection from "./CandidateHoldersSection";
-import { CommonConsultant, CommonLocation } from "../../../types/common";
 
-import { Button, Divider, Stack } from "@mui/joy";
+import { Button } from "@mui/joy";
 import dayjs from "dayjs";
 
 // Define the interface for the error response data
@@ -34,18 +31,12 @@ const CreateProjectModal = ({ isOpen, setIsOpen }: CreateProjectModalProps) => {
     noticePeriodDuration: null,
     noticePeriodUnit: null,
   });
-  const [locations, setLocations] = useState<CommonLocation[]>([]);
-  const [candidateHolders, setCandidateHolders] = useState<CommonConsultant[]>(
-    []
-  );
 
   const navigate = useNavigate();
 
   const handleSaveProject = async () => {
     const body = {
       ...projectDetails,
-      locations,
-      candidateHolders: candidateHolders.map((holder) => holder.cuid),
       timezone: dayjs.tz.guess(),
     };
 
@@ -77,22 +68,10 @@ const CreateProjectModal = ({ isOpen, setIsOpen }: CreateProjectModalProps) => {
         </Button>
       }
     >
-      <Stack spacing={1}>
-        <ProjectDetailsSection
-          projectDetails={projectDetails}
-          setProjectDetails={setProjectDetails}
-        />
-        <Divider />
-        <ProjectLocationsSection
-          locations={locations}
-          setLocations={setLocations}
-        />
-        <Divider />
-        <ProjectCandidateHoldersSection
-          candidateHolders={candidateHolders}
-          setCandidateHolders={setCandidateHolders}
-        />
-      </Stack>
+      <ProjectDetailsSection
+        projectDetails={projectDetails}
+        setProjectDetails={setProjectDetails}
+      />
     </ResponsiveDialog>
   );
 };
