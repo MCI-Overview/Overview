@@ -72,8 +72,6 @@ attendanceApiRouter.patch(
     const { attendanceCuid } = req.params;
     const { clockInTime, clockOutTime, location, status } = req.body;
 
-    console.log(req.body);
-
     try {
       await prisma.attendance.update({
         data: {
