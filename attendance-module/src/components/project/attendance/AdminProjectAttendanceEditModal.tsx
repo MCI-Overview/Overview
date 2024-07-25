@@ -78,8 +78,8 @@ const AdminProjectAttendanceEditModal = ({
   }, [updatefields, initialFields]);
 
   const locationOptions = projectLocations.map((location) => ({
-    value: location.postalCode,
-    label: `${location.postalCode} - ${location.name}`,
+    value: location.name,
+    label: `${location.name}`,
   }));
 
   const handleSubmit = async () => {
@@ -89,7 +89,6 @@ const AdminProjectAttendanceEditModal = ({
         {
           clockInTime: updatefields.clockIn,
           clockOutTime: updatefields.clockOut,
-          postalCode: updatefields.postalCode,
           status: updatefields.status,
         }
       );
