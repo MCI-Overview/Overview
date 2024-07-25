@@ -308,6 +308,7 @@ export async function processCandidateData(
         endDate: assign.endDate.toISOString(),
         employmentType: assign.employmentType,
         hasOnboarded,
+        restDay: assign.restDay,
       };
     });
   }
@@ -324,6 +325,7 @@ export async function processCandidateData(
       address: assign.Candidate.address as CommonAddress,
       bankDetails: assign.Candidate.bankDetails as BankDetails,
       emergencyContact: assign.Candidate.emergencyContact as EmergencyContact,
+      restDay: assign.restDay,
     };
   });
 }

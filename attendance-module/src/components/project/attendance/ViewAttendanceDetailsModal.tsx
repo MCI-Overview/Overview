@@ -20,6 +20,8 @@ import {
 import dayjs from "dayjs";
 import AttendanceStatusChip from "./AttendanceStatusChip";
 import axios from "axios";
+import { removeSpaces } from "../../../utils/capitalize";
+import { useProjectContext } from "../../../providers/projectContextProvider";
 
 const getStartColor = (
   rawStart: dayjs.Dayjs | null,
@@ -63,12 +65,17 @@ const ViewAttendanceDetailsModal = ({
   sx,
   children,
 }: ViewDetailsModalProps) => {
+  const { project } = useProjectContext();
   const [imagePreview, setImagePreview] = useState("");
 
   const handleDownloadPreviewImage = () => {
     const link = document.createElement("a");
     link.href = imagePreview;
-    link.download = `${attendance.attendanceCuid}.jpg`;
+    link.download = removeSpaces(
+      `${project?.name}_Attendance_${attendance.date.format("YYYYMMMDD")}_${
+        attendance.name
+      }.jpg`
+    );
     link.click();
   };
 

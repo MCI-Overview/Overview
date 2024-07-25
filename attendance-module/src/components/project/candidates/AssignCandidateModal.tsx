@@ -179,6 +179,28 @@ const AssignCandidateModal = ({
       },
       example: "Full-time",
     },
+    {
+      label: "Restday",
+      key: "restDay",
+      alternateMatches: generateCapitalizations([
+        "restday",
+        "rest",
+        "rest day",
+      ]),
+      fieldType: {
+        type: "select",
+        options: [
+          { label: "Monday", value: "MON" },
+          { label: "Tuesday", value: "TUE" },
+          { label: "Wednesday", value: "WED" },
+          { label: "Thursday", value: "THU" },
+          { label: "Friday", value: "FRI" },
+          { label: "Saturday", value: "SAT" },
+          { label: "Sunday", value: "SUN" },
+        ],
+      },
+      example: "Monday",
+    },
   ];
 
   const rowHook: RowHook<string> = (row, addError) => {
@@ -345,6 +367,7 @@ const AssignCandidateModal = ({
       employmentType: row.employmentType
         ? (row.employmentType as string).trim()
         : row.employmentType,
+      restDay: row.restDay ? (row.restDay as string).trim() : "SUN",
     };
   };
 
@@ -355,6 +378,7 @@ const AssignCandidateModal = ({
         "These candidates will be added to the project upon submission.",
       tableProps: { stripe: "odd", size: "sm" },
       tableData: validCddList,
+      showRestDay: true,
     },
     {
       tableTitle: "Invalid Info",
@@ -362,6 +386,7 @@ const AssignCandidateModal = ({
         "These candidates have missing/invalid info and will be excluded from submission.",
       tableProps: { variant: "soft", color: "danger", size: "sm" },
       tableData: invalidCddList,
+      showRestDay: true,
     },
   ];
 

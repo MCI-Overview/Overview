@@ -142,7 +142,7 @@ attendanceApiRouter.patch(
       return res.status(500).send("Internal server error");
     }
 
-    return res.send("Attendance created successfully");
+    return res.send("Attendance updated successfully");
   }
 );
 

@@ -37,3 +37,7 @@ export function readableEnum(enumValue: string) {
 
   return capitalizeWords(enumValue.replace(/_/g, " "));
 }
+
+export function removeSpaces(str: string) {
+  return str.replace(/\s/g, "");
+}
