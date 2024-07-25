@@ -20,6 +20,7 @@ type MappedRosterResponse = {
   [cuid: string]: {
     name: string;
     nric: string;
+    restDay: string;
     startDate: dayjs.Dayjs;
     endDate: dayjs.Dayjs;
     roster: RosterDisplayProps["data"][];
@@ -138,6 +139,7 @@ export function RosterTableContextProvider({
             acc[candidate.cuid] = {
               name: candidate.name,
               nric: candidate.nric,
+              restDay: candidate.restDay,
               startDate: dayjs(candidate.startDate),
               endDate: dayjs(candidate.endDate),
               roster: candidate.rosters.map((roster) => ({

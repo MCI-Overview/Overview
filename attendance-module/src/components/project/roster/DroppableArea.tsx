@@ -13,6 +13,7 @@ import { Typography, Stack, Tooltip } from "@mui/joy";
 export type Candidate = {
   cuid: string;
   name: string;
+  restDay: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
   roster: RosterDisplayProps["data"][];
@@ -100,8 +101,12 @@ export default function DroppableArea({
             ? "rgba(0, 0, 0, 0.08)"
             : item
             ? isPossible
-              ? "rgba(0, 128, 0, 0.08)"
+              ? date.format("ddd").toUpperCase() === candidate.restDay
+                ? "repeating-linear-gradient(135deg,rgba(0, 128, 0, 0.08),rgba(0, 128, 0, 0.08) 10px,#ffffff 10px,#ffffff 20px)"
+                : "rgba(0, 128, 0, 0.08)"
               : "rgba(255, 0, 0, 0.08)"
+            : date.format("ddd").toUpperCase() === candidate.restDay
+            ? "repeating-linear-gradient(135deg,rgba(255, 165, 0, 0.25),rgba(255, 165, 0, 0.25) 10px,#ffffff 10px,#ffffff 20px)"
             : "inherit",
         }}
       >

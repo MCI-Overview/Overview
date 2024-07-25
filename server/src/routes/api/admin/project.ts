@@ -211,6 +211,7 @@ projectAPIRouter.get(
         ],
       },
       select: {
+        restDay: true,
         candidateCuid: true,
         startDate: true,
         endDate: true,
@@ -269,6 +270,7 @@ projectAPIRouter.get(
         nric: maskNRIC(c.Candidate.nric),
         startDate: c.startDate,
         endDate: c.endDate,
+        restDay: c.restDay,
         rosters: candidateRoster
           .filter((cr) => cr.candidateCuid === c.candidateCuid)
           .map((cr) => {
