@@ -288,7 +288,6 @@ export default function RosterTable({ type }: RosterTableProps) {
                       sx={{
                         display: type === "ATTENDANCE" ? "none" : "block",
                       }}
-                      disabled={date.isBefore(dayjs(), "day")}
                       checked={dates.some((otherDate) =>
                         otherDate.isSame(date, "day")
                       )}

@@ -2,6 +2,7 @@ import { Box, Divider, Stack, Typography, Card } from "@mui/joy";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { ChartData, ChartOptions } from "chart.js/auto";
+import { readableEnum } from "../../../utils/capitalize";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -14,7 +15,9 @@ interface BarChartProps {
 }
 
 const NationalityCount: React.FC<BarChartProps> = ({ headcount }) => {
-  const labels = Object.keys(headcount).map(nationality => nationality.charAt(0).toUpperCase() + nationality.slice(1));
+  const labels = Object.keys(headcount).map((nationality) =>
+    readableEnum(nationality)
+  );
   const dataValues = Object.values(headcount);
 
   const data: ChartData<"bar"> = {
