@@ -92,13 +92,11 @@ const AdminProjectAttendanceList = ({
                     <Grid xs={6}>
                       <Typography level="body-xs">Clock in / out</Typography>
                       <Typography level="body-sm" gutterBottom>
-                        {att.rawStart ? att.rawStart.format("HH:mm") : "N/A"} -{" "}
-                        {att.rawEnd ? att.rawEnd.format("HH:mm") : "N/A"}
+                        {att.rawStart ? att.rawStart.format("HH:mm") : "NIL"} -{" "}
+                        {att.rawEnd ? att.rawEnd.format("HH:mm") : "NIL"}
                       </Typography>
                     </Grid>
                   </Grid>
-
-
                 </ListItemContent>
                 <AttendanceStatusChip leave={att.leave} status={att.status} />
               </ListItem>
