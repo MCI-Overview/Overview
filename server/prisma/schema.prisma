@@ -156,12 +156,6 @@ model User {
   Candidate Candidate @relation(fields: [cuid], references: [cuid])
 }
 
-model PublicHoliday {
-  date      DateTime @id
-  name      String
-  createdAt DateTime @default(now())
-}
-
 enum RequestType {
   CLAIM
   PAID_LEAVE
