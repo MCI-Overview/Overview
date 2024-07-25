@@ -263,7 +263,9 @@ export function RosterTableContextProvider({
                   )
               );
 
-            if (hasNoOverlap && itemStartTime.isAfter(dayjs())) {
+            // Enable dragging to past
+            // if (hasNoOverlap && itemStartTime.isAfter(dayjs())) {
+            if (hasNoOverlap) {
               acc[1].push(date);
 
               if (itemType === "shift") {
