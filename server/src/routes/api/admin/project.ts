@@ -889,12 +889,10 @@ projectAPIRouter.post("/project", async (req, res) => {
     clientUEN,
     clientName,
     employmentBy,
-    locations,
     startDate,
     endDate,
     noticePeriodDuration,
     noticePeriodUnit,
-    candidateHolders,
     timezone,
   } = req.body;
 
@@ -947,23 +945,10 @@ projectAPIRouter.post("/project", async (req, res) => {
     });
   }
 
-  const locationsValidity = checkLocationsValidity(locations);
-  if (!locationsValidity.isValid) {
-    return res.status(400).json({
-      message: locationsValidity.message,
-    });
-  }
-
   const employmentByValidity = checkEmploymentByValidity(employmentBy);
   if (!employmentByValidity.isValid) {
     return res.status(400).json({
       message: employmentByValidity.message,
-    });
-  }
-
-  if (candidateHolders && !Array.isArray(candidateHolders)) {
-    return res.status(400).json({
-      message: "Invalid candidate holders parameter (Not an array).",
     });
   }
 
@@ -973,7 +958,6 @@ projectAPIRouter.post("/project", async (req, res) => {
     endDate: dayjs(endDate).tz(timezone).endOf("day").toDate(),
     noticePeriodDuration: parseInt(noticePeriodDuration),
     noticePeriodUnit,
-    locations,
     employmentBy,
   };
 
@@ -988,12 +972,6 @@ projectAPIRouter.post("/project", async (req, res) => {
                 consultantCuid: user.cuid,
                 role: Role.CLIENT_HOLDER,
               },
-              ...candidateHolders.map((cuid: string) => {
-                return {
-                  consultantCuid: cuid,
-                  role: Role.CANDIDATE_HOLDER,
-                };
-              }),
             ],
           },
         },
