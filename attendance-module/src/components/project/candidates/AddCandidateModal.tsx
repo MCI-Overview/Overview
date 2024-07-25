@@ -46,6 +46,7 @@ const AddCandidateModal = ({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [employmentType, setEmploymentType] = useState("");
+  const [restDay, setRestDay] = useState("SUN");
 
   const [nricError, setNricError] = useState("");
   const [nameError, setNameError] = useState("");
@@ -55,6 +56,7 @@ const AddCandidateModal = ({
   const [startDateError, setStartDateError] = useState("");
   const [endDateError, setEndDateError] = useState("");
   const [employmentTypeError, setEmploymentTypeError] = useState("");
+  const [restDayError, setRestDayError] = useState("");
 
   const resetAllFieldsAndErrors = () => {
     setNric("");
@@ -65,6 +67,7 @@ const AddCandidateModal = ({
     setStartDate("");
     setEndDate("");
     setEmploymentType("");
+    setRestDay("SUN");
 
     setNricError("");
     setNameError("");
@@ -74,6 +77,7 @@ const AddCandidateModal = ({
     setStartDateError("");
     setEndDateError("");
     setEmploymentTypeError("");
+    setRestDayError("");
   };
 
   const handleCloseModal = () => {
@@ -121,7 +125,8 @@ const AddCandidateModal = ({
       !residency ||
       !startDate ||
       !endDate ||
-      !employmentType
+      !employmentType ||
+      !restDay
     ) {
       toast.error("Please fill in all fields");
       return;
@@ -135,7 +140,8 @@ const AddCandidateModal = ({
       residencyError ||
       startDateError ||
       endDateError ||
-      employmentTypeError
+      employmentTypeError ||
+      restDayError
     ) {
       toast.error("Invalid fields ");
       return;
@@ -150,6 +156,7 @@ const AddCandidateModal = ({
       startDate: new Date(startDate).toISOString(),
       endDate: new Date(endDate).toISOString(),
       employmentType,
+      restDay,
     };
 
     axios
@@ -162,7 +169,7 @@ const AddCandidateModal = ({
 
         toast.success("Candidate added successfully");
         updateProject();
-        setAddModalOpen(false);
+        handleCloseModal();
       })
       .catch((error) => {
         toast.error("Error in adding candidate");
@@ -323,12 +330,14 @@ const AddCandidateModal = ({
               </FormControl>
             </Grid>
 
-            <Grid xs={12}>
-              <Typography level="body-xs" sx={{ mt: -2 }}>
-                The above details have been pre-filled from existing records. If
-                needed, you may update them on their profile page later.
-              </Typography>
-            </Grid>
+            {isExistingCandidate && (
+              <Grid xs={12}>
+                <Typography level="body-xs" sx={{ mt: -2 }}>
+                  The above details have been pre-filled from existing records.
+                  If needed, you may update them on their profile page later.
+                </Typography>
+              </Grid>
+            )}
           </>
         )}
 
@@ -426,7 +435,7 @@ const AddCandidateModal = ({
           </FormControl>
         </Grid>
 
-        <Grid xs={12}>
+        <Grid xs={12} md={6}>
           <FormControl required error={!!employmentTypeError}>
             <FormLabel>Job type</FormLabel>
             <Select
@@ -448,6 +457,34 @@ const AddCandidateModal = ({
               <Option value={"CONTRACT"}>Contract</Option>
             </Select>
             <FormHelperText>{employmentTypeError}</FormHelperText>
+          </FormControl>
+        </Grid>
+
+        {/* Restday input */}
+        <Grid xs={12} md={6}>
+          <FormControl>
+            <FormLabel>Rest day</FormLabel>
+            <Select
+              value={restDay}
+              onChange={(_e, value) => {
+                if (!value) {
+                  setRestDay("SUN");
+                  setRestDayError("Rest day is required");
+                  return;
+                }
+
+                setRestDay(value);
+                setRestDayError("");
+              }}
+            >
+              <Option value={"MON"}>Monday</Option>
+              <Option value={"TUE"}>Tuesday</Option>
+              <Option value={"WED"}>Wednesday</Option>
+              <Option value={"THU"}>Thursday</Option>
+              <Option value={"FRI"}>Friday</Option>
+              <Option value={"SAT"}>Saturday</Option>
+              <Option value={"SUN"}>Sunday</Option>
+            </Select>
           </FormControl>
         </Grid>
       </Grid>

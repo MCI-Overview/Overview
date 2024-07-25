@@ -72,6 +72,11 @@ requestAPIRouter.get("/request/all/:page", async (req, res) => {
                 name: true,
               },
             },
+            Project: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
         Attendance: {

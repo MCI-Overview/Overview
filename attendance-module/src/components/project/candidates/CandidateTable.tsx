@@ -44,6 +44,7 @@ export interface CandidateTableProps {
   tableData: CddTableDataType[];
   handleDelete?: (nricList: string[]) => void;
   showCandidateHolder?: boolean;
+  showRestDay?: boolean;
 }
 
 // List of sortable keys
@@ -56,6 +57,7 @@ const CandidateTable = ({
   tableData,
   handleDelete,
   showCandidateHolder = false,
+  showRestDay = false,
 }: CandidateTableProps) => {
   const { user } = useUserContext();
   const { project } = useProjectContext();
@@ -179,6 +181,7 @@ const CandidateTable = ({
                     {renderSortIcon("endDate")} End date
                   </ThTypo>
                   <ThTypo>Type</ThTypo>
+                  {showRestDay && <ThTypo>Rest day</ThTypo>}
                   {showCandidateHolder && <ThTypo>Consultant</ThTypo>}
                   {handleDelete && <ThTypo>Action</ThTypo>}
                 </tr>
@@ -214,6 +217,9 @@ const CandidateTable = ({
                       <TdTypo>{dayjs(row.startDate).format("DD/MM/YY")}</TdTypo>
                       <TdTypo>{dayjs(row.endDate).format("DD/MM/YY")}</TdTypo>
                       <TdTypo>{readableEnum(row.employmentType)}</TdTypo>
+                      {showRestDay && (
+                        <TdTypo>{readableEnum(row.restDay)}</TdTypo>
+                      )}
                       {showCandidateHolder && (
                         <TdTypo>{row.consultantName}</TdTypo>
                       )}
@@ -273,7 +279,7 @@ const CandidateTable = ({
             }}
           >
             {sortedData.map((listItem) => (
-              <Fragment key={listItem.cuid}>
+              <Fragment key={listItem.nric}>
                 <ListItem
                   sx={{
                     display: "flex",

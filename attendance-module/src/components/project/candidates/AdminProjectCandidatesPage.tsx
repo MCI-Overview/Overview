@@ -51,6 +51,7 @@ const AdminProjectCandidatesPage = () => {
         consultantName: project?.consultants.find(
           (c) => c.cuid === cdd.consultantCuid
         )!.name,
+        restDay: cdd.restDay,
       };
     }) || [];
 

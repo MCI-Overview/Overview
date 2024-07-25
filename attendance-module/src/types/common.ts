@@ -8,6 +8,7 @@ export type CommonCandidate = CandidateDetails & {
   consultantCuid: string;
   startDate: string;
   endDate: string;
+  restDay: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
 };
 
 export type ProjectCandidate = CommonCandidate & {
@@ -201,6 +202,7 @@ export type GetCandidateResponse = {
   bankDetails?: BankDetails;
   emergencyContact?: EmergencyContact;
   hasOnboarded: boolean;
+  restDay: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
 }[];
 
 export type GetRosterResponse = {

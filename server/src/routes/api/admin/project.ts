@@ -435,6 +435,11 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
                 name: true,
               },
             },
+            Project: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
         Attendance: {
@@ -1279,7 +1284,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
     return res.status(400).send("Nonempty candidates array is required.");
   }
 
-  // verify all candidates have nric, name, contact, dateOfBirth, startDate, endDate, employmentType, residency
+  // verify all candidates have nric, name, contact, dateOfBirth, startDate, endDate, employmentType, residency, restDay
   const invalidCandidates = candidates.filter(
     (cdd: any) =>
       !cdd.nric ||
@@ -1289,7 +1294,8 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
       !cdd.dateOfBirth ||
       !cdd.startDate ||
       !cdd.endDate ||
-      !cdd.employmentType
+      !cdd.employmentType ||
+      !cdd.restDay
   );
 
   if (invalidCandidates.length > 0) {
@@ -1386,6 +1392,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
             ),
             employmentType: candidates.find((c) => c.nric === cdd.nric)
               .employmentType as EmploymentType,
+            restDay: candidates.find((c) => c.nric === cdd.nric).restDay,
           };
         });
 
