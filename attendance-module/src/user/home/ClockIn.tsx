@@ -64,28 +64,14 @@ const ClockIn = () => {
 
         setProjLocations(att.Shift.Project.locations);
 
-        let incorrectStart: Dayjs, incorrectEnd: Dayjs;
-        switch (att.shiftType) {
-          case "FULL_DAY":
-            incorrectStart = dayjs(att.Shift.startTime);
-            incorrectEnd = dayjs(att.Shift.endTime);
-            break;
-          case "FIRST_HALF":
-            incorrectStart = dayjs(att.Shift.startTime);
-            incorrectEnd = dayjs(att.Shift.halfDayEndTime);
-            break;
-          case "SECOND_HALF":
-            incorrectStart = dayjs(att.Shift.halfDayStartTime);
-            incorrectEnd = dayjs(att.Shift.endTime);
-            break;
-          default:
-            throw Error("Invalid shift type");
-        }
-
         const { correctStart, correctEnd } = correctTimes(
           dayjs(att.shiftDate),
-          incorrectStart,
-          incorrectEnd
+          att.shiftType === "SECOND_HALF"
+            ? dayjs(att.Shift.halfDayStartTime)
+            : dayjs(att.Shift.startTime),
+          att.shiftType === "FIRST_HALF"
+            ? dayjs(att.Shift.halfDayEndTime)
+            : dayjs(att.Shift.endTime)
         );
 
         setStartTime(correctStart);
@@ -282,7 +268,7 @@ const ClockIn = () => {
       clockInTime: dayjs(),
       imageData: capturedImage,
       startTime: startTime,
-      location: JSON.stringify(nearestLocation),
+      location: nearestLocation,
     };
 
     // update attendance in database
@@ -291,6 +277,12 @@ const ClockIn = () => {
       .then(() => {
         toast.success("Successfully clocked in!", { duration: 10000 });
         setIsPictureModalOpen(false);
+
+        // update local state
+        setCurrAttendance({
+          ...currAttendance,
+          clockInTime: dayjs().toISOString(),
+        });
       })
       .catch((error) => {
         console.error(error);
@@ -298,12 +290,6 @@ const ClockIn = () => {
           duration: 10000,
         });
       });
-
-    // update local state
-    setCurrAttendance({
-      ...currAttendance,
-      clockInTime: dayjs().toISOString(),
-    });
   };
 
   const handleAttemptClockOut = () => {

@@ -6,6 +6,7 @@ import AttendanceStatusChip from "./AttendanceStatusChip";
 
 import ViewAttendanceDetailsModal from "./ViewAttendanceDetailsModal";
 import AdminProjectAttendanceEditModal from "./AdminProjectAttendanceEditModal";
+
 import {
   Sheet,
   Table,
@@ -16,7 +17,6 @@ import {
   Divider,
   MenuButton,
 } from "@mui/joy";
-
 import { MoreHorizRounded as MoreHorizRoundedIcon } from "@mui/icons-material";
 
 type AdminProjectAttendanceTableProps = {

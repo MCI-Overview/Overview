@@ -17,6 +17,7 @@ import CandidateTable, {
   CandidateTableProps,
   CddTableDataType,
 } from "./CandidateTable";
+import LoadingRequestButton from "../../LoadingRequestButton";
 
 import {
   Box,
@@ -27,7 +28,6 @@ import {
   ModalClose,
   ModalDialog,
   ModalOverflow,
-  Stack,
   Typography,
 } from "@mui/joy";
 
@@ -464,19 +464,16 @@ const AssignCandidateModal = ({
 
               {validCddList.length !== 0 ? (
                 <>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Checkbox
-                      onChange={() => setIsSubmitDisabled(!isSubmitDisabled)}
-                      label="I have reviewed all candidate information."
-                      sx={{ fontSize: "sm" }}
-                    />
-                  </Stack>
-                  <Button
-                    onClick={handleSubmitData}
+                  <Checkbox
+                    onChange={() => setIsSubmitDisabled(!isSubmitDisabled)}
+                    label="I have reviewed all candidate information."
+                    sx={{ fontSize: "sm" }}
+                  />
+
+                  <LoadingRequestButton
+                    promise={handleSubmitData}
                     disabled={isSubmitDisabled}
-                  >
-                    Submit
-                  </Button>
+                  />
                 </>
               ) : (
                 <Typography level="title-sm" sx={{ textAlign: "center" }}>

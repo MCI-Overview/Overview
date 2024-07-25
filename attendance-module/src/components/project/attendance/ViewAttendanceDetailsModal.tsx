@@ -1,6 +1,9 @@
+import axios from "axios";
 import { ReactNode, useEffect, useState } from "react";
 import { CustomAdminAttendance } from "../../../types";
-import { SxProps } from "@mui/joy/styles/types";
+import { removeSpaces } from "../../../utils/capitalize";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+import AttendanceStatusChip from "./AttendanceStatusChip";
 
 import {
   Box,
@@ -12,37 +15,12 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
+import { SxProps } from "@mui/joy/styles/types";
 import {
   ChevronLeftRounded as ChevronLeftIcon,
   ChevronRightRounded as ChevronRightIcon,
   DownloadOutlined as DownloadIcon,
 } from "@mui/icons-material";
-import dayjs from "dayjs";
-import AttendanceStatusChip from "./AttendanceStatusChip";
-import axios from "axios";
-import { removeSpaces } from "../../../utils/capitalize";
-import { useProjectContext } from "../../../providers/projectContextProvider";
-
-const getStartColor = (
-  rawStart: dayjs.Dayjs | null,
-  shiftStart: dayjs.Dayjs
-) => {
-  if (!rawStart) return undefined;
-
-  const diff = rawStart.diff(shiftStart);
-  return diff < 0 ? "success" : "warning";
-};
-
-const getEndColor = (
-  rawStart: dayjs.Dayjs | null,
-  rawEnd: dayjs.Dayjs | null,
-  shiftEnd: dayjs.Dayjs
-) => {
-  if (!rawEnd) return rawStart ? "warning" : undefined;
-
-  const diff = rawEnd.diff(shiftEnd);
-  return diff > 0 ? "success" : "warning";
-};
 
 interface ViewDetailsModalProps {
   isOpen: boolean;
@@ -121,43 +99,31 @@ const ViewAttendanceDetailsModal = ({
                 />
 
                 <Typography level="body-sm">
-                  {`Clock in: ${attendance.shiftStart.format("HH:mm")} / `}
-                  <Typography
-                    color={getStartColor(
-                      attendance.rawStart,
-                      attendance.shiftStart
-                    )}
-                  >
-                    {attendance.rawStart
-                      ? attendance.rawStart.format("HH:mm")
-                      : "-"}
-                  </Typography>
+                  {`Shift: ${attendance.shiftStart.format(
+                    "HH:mm"
+                  )} - ${attendance.shiftEnd.format("HH:mm")} `}
                 </Typography>
 
                 <Typography level="body-sm">
-                  {`Clock out: ${attendance.shiftEnd.format("HH:mm")} / `}
-                  <Typography
-                    color={getEndColor(
-                      attendance.rawStart,
-                      attendance.rawEnd,
-                      attendance.shiftEnd
-                    )}
-                  >
-                    {attendance.rawEnd
+                  {`Clock in/out: ${
+                    attendance.rawStart
+                      ? attendance.rawStart.format("HH:mm")
+                      : "NIL"
+                  } - ${
+                    attendance.rawEnd
                       ? attendance.rawEnd.format("HH:mm")
-                      : "-"}
-                  </Typography>
+                      : "NIL"
+                  }`}
                 </Typography>
 
                 {attendance.rawStart && (
                   <>
-                    <Typography level="body-sm">{`Location: ${attendance.postalCode}`}</Typography>
+                    <Typography level="body-sm">{`Location: ${attendance.location.name}`}</Typography>
 
                     <Box
                       sx={{
                         position: "relative",
                         display: "inline-block",
-                        maxWidth: "500px",
                       }}
                     >
                       <img
@@ -165,7 +131,6 @@ const ViewAttendanceDetailsModal = ({
                         alt="Clock In Image"
                         style={{
                           width: "100%",
-                          maxHeight: "300px",
                         }}
                       />
                       <IconButton

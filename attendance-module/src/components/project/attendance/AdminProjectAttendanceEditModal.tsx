@@ -1,6 +1,11 @@
-import { useState, useEffect } from "react";
 import axios from "axios";
+import dayjs from "dayjs";
 import toast from "react-hot-toast";
+import { useState, useEffect } from "react";
+import { CustomAdminAttendance } from "../../../types";
+import { readableEnum } from "../../../utils/capitalize";
+import { useProjectContext } from "../../../providers/projectContextProvider";
+
 import {
   FormControl,
   FormLabel,
@@ -15,9 +20,6 @@ import {
   Select,
   Option,
 } from "@mui/joy";
-import { CustomAdminAttendance } from "../../../types";
-import { useProjectContext } from "../../../providers/projectContextProvider";
-import dayjs from "dayjs";
 
 interface AddLocationsModalProps {
   isOpen: boolean;
@@ -37,7 +39,7 @@ const AdminProjectAttendanceEditModal = ({
   const initialFields = {
     clockIn: selectedAtt.rawStart ? dayjs(selectedAtt.rawStart) : null,
     clockOut: selectedAtt.rawEnd ? dayjs(selectedAtt.rawEnd) : null,
-    postalCode: selectedAtt.postalCode || null,
+    name: selectedAtt.location.name || null,
     status: selectedAtt.status,
   };
   const [updatefields, setUpdateFields] = useState(initialFields);
@@ -90,6 +92,9 @@ const AdminProjectAttendanceEditModal = ({
           clockInTime: updatefields.clockIn,
           clockOutTime: updatefields.clockOut,
           status: updatefields.status,
+          location: projectLocations.find(
+            (loc) => loc.name === updatefields.name
+          ),
         }
       );
       toast.success("Attendance updated successfully");
@@ -112,7 +117,7 @@ const AdminProjectAttendanceEditModal = ({
   const handleSelectChange = (_event: any, newValue: string | null) => {
     setUpdateFields((prevFields) => ({
       ...prevFields,
-      postalCode: newValue,
+      name: newValue,
     }));
   };
 
@@ -131,7 +136,8 @@ const AdminProjectAttendanceEditModal = ({
           Edit {selectedAtt.name}'s attendance
         </Typography>
 
-        <Typography>Basic details</Typography>
+        <Divider />
+        <Typography level="title-md">Basic details:</Typography>
         <Divider />
         <Grid container spacing={2}>
           <Grid xs={12} sm={6}>
@@ -163,7 +169,8 @@ const AdminProjectAttendanceEditModal = ({
           </Grid>
         </Grid>
 
-        <Typography>Editable</Typography>
+        <Divider />
+        <Typography level="title-md">Editable fields:</Typography>
         <Divider />
         <Grid container spacing={2}>
           <Grid xs={12} sm={6}>
@@ -200,27 +207,25 @@ const AdminProjectAttendanceEditModal = ({
 
           <Grid xs={12} sm={6}>
             <FormControl>
+              <FormLabel>Status</FormLabel>
+              <Input value={readableEnum(updatefields.status || "UPCOMING")} />
+            </FormControl>
+          </Grid>
+
+          <Grid xs={12} sm={6}>
+            <FormControl>
               <FormLabel>Location</FormLabel>
               <Select
                 onChange={handleSelectChange}
-                name="postalCode"
                 placeholder="Select Location"
-                value={updatefields.postalCode || null}
+                value={updatefields.name || null}
               >
-                <Option value={null}>-</Option>
                 {locationOptions.map((option) => (
                   <Option key={option.value} value={option.value}>
                     {option.label}
                   </Option>
                 ))}
               </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid xs={12} sm={6}>
-            <FormControl>
-              <FormLabel>Status</FormLabel>
-              <Input disabled value={updatefields.status || "UPCOMING"} />
             </FormControl>
           </Grid>
         </Grid>
