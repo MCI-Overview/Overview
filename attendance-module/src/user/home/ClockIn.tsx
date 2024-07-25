@@ -274,7 +274,7 @@ const ClockIn = () => {
       clockInTime: dayjs(),
       imageData: capturedImage,
       startTime: startTime,
-      postalCode: nearestLocation?.postalCode,
+      location: JSON.stringify(nearestLocation),
     };
 
     // update attendance in database
@@ -526,7 +526,7 @@ const ClockIn = () => {
                 {projLocations.length > 0 &&
                   projLocations.map((loc) => (
                     <Marker
-                      key={loc.postalCode}
+                      key={loc.name}
                       icon={redIcon}
                       position={[
                         parseFloat(loc.latitude),
@@ -534,9 +534,7 @@ const ClockIn = () => {
                       ]}
                     >
                       <Popup>
-                        <Typography level="body-sm">
-                          {loc.address}, {loc.postalCode}
-                        </Typography>
+                        <Typography level="body-sm">{loc.name}</Typography>
                       </Popup>
                     </Marker>
                   ))}
@@ -558,8 +556,8 @@ const ClockIn = () => {
           <Typography level="title-sm">
             {projLocations.length > 0
               ? nearestLocation && distance
-                ? `Nearest location: ${nearestLocation.address}, ${
-                    nearestLocation.postalCode
+                ? `Nearest location: ${
+                    nearestLocation.name
                   } (${distance.toFixed(2)}m away)`
                 : "Fetching location..."
               : "No site locations found"}

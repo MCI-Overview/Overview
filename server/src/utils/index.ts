@@ -43,8 +43,7 @@ export function checkLocationsValidity(locations: any): ParameterValidity {
   try {
     locations.map((location: CommonLocation) => {
       return {
-        postalCode: location.postalCode,
-        address: location.address,
+        name: location.name,
         longitude: location.longitude,
         latitude: location.latitude,
       };

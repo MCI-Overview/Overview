@@ -589,7 +589,7 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
         rawEnd: row.clockOutTime,
         leave: row.leave,
         status: row.status,
-        postalCode: row.postalCode,
+        location: row.location,
       }))
     );
   } catch (error) {

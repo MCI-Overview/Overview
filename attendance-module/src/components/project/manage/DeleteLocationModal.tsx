@@ -23,7 +23,10 @@ const DeleteLocationModal = ({
 
   const handleDeleteLocation = async () => {
     const updatedLocations = locations.filter(
-      (location) => location.postalCode !== locationToDelete.postalCode,
+      (location) =>
+        location.name !== locationToDelete.name &&
+        location.latitude !== locationToDelete.latitude &&
+        location.longitude !== locationToDelete.longitude
     );
 
     try {

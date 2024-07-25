@@ -41,8 +41,7 @@ export type CommonConsultant = {
 };
 
 export type CommonLocation = {
-  postalCode: string;
-  address: string;
+  name: string;
   longitude: string;
   latitude: string;
 };
