@@ -52,6 +52,7 @@ const AdminProjectCandidatesPage = () => {
           (c) => c.cuid === cdd.consultantCuid
         )!.name,
         restDay: cdd.restDay,
+        employeeId: cdd.employeeId,
       };
     }) || [];
 
