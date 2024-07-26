@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("ALTERNATIVE_DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model Assign {
@@ -65,7 +65,7 @@ model Candidate {
   nric             String          @unique @db.VarChar(9)
   contact          String
   name             String
-  dateOfBirth      DateTime        @db.Date
+  dateOfBirth      DateTime
   hasOnboarded     Boolean         @default(false)
   nationality      String?
   residency        ResidencyStatus

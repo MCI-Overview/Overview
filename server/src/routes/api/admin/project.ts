@@ -24,6 +24,7 @@ import {
   checkNoticePeriodValidity,
   checkTimesValidity,
   maskNRIC,
+  generateDefaultPassword,
 } from "../../../utils";
 import bcrypt from "bcrypt";
 
@@ -211,6 +212,7 @@ projectAPIRouter.get(
         ],
       },
       select: {
+        restDay: true,
         candidateCuid: true,
         startDate: true,
         endDate: true,
@@ -269,6 +271,7 @@ projectAPIRouter.get(
         nric: maskNRIC(c.Candidate.nric),
         startDate: c.startDate,
         endDate: c.endDate,
+        restDay: c.restDay,
         rosters: candidateRoster
           .filter((cr) => cr.candidateCuid === c.candidateCuid)
           .map((cr) => {
@@ -887,12 +890,10 @@ projectAPIRouter.post("/project", async (req, res) => {
     clientUEN,
     clientName,
     employmentBy,
-    locations,
     startDate,
     endDate,
     noticePeriodDuration,
     noticePeriodUnit,
-    candidateHolders,
     timezone,
   } = req.body;
 
@@ -945,23 +946,10 @@ projectAPIRouter.post("/project", async (req, res) => {
     });
   }
 
-  const locationsValidity = checkLocationsValidity(locations);
-  if (!locationsValidity.isValid) {
-    return res.status(400).json({
-      message: locationsValidity.message,
-    });
-  }
-
   const employmentByValidity = checkEmploymentByValidity(employmentBy);
   if (!employmentByValidity.isValid) {
     return res.status(400).json({
       message: employmentByValidity.message,
-    });
-  }
-
-  if (candidateHolders && !Array.isArray(candidateHolders)) {
-    return res.status(400).json({
-      message: "Invalid candidate holders parameter (Not an array).",
     });
   }
 
@@ -971,7 +959,6 @@ projectAPIRouter.post("/project", async (req, res) => {
     endDate: dayjs(endDate).tz(timezone).endOf("day").toDate(),
     noticePeriodDuration: parseInt(noticePeriodDuration),
     noticePeriodUnit,
-    locations,
     employmentBy,
   };
 
@@ -986,12 +973,6 @@ projectAPIRouter.post("/project", async (req, res) => {
                 consultantCuid: user.cuid,
                 role: Role.CLIENT_HOLDER,
               },
-              ...candidateHolders.map((cuid: string) => {
-                return {
-                  consultantCuid: cuid,
-                  role: Role.CANDIDATE_HOLDER,
-                };
-              }),
             ],
           },
         },
@@ -1358,7 +1339,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
           candidateData.map((cdd) =>
             prisma.user.create({
               data: {
-                hash: bcrypt.hashSync(cdd.contact, 12),
+                hash: bcrypt.hashSync(generateDefaultPassword(cdd), 12),
                 username: cdd.nric,
                 Candidate: {
                   connect: {
@@ -2489,8 +2470,10 @@ projectAPIRouter.post(
         where: {
           // do not delete attendances that have pending or approved requests
           Request: {
-            status: {
-              notIn: [RequestStatus.PENDING, RequestStatus.APPROVED],
+            none: {
+              status: {
+                in: [RequestStatus.PENDING, RequestStatus.APPROVED],
+              },
             },
           },
 
@@ -2508,11 +2491,11 @@ projectAPIRouter.post(
           Shift: {
             projectCuid,
           },
-          Candidate: {
-            Assign: {
-              Request: {},
-            },
-          },
+          // Candidate: {
+          //   Assign: {
+          //     Request: {},
+          //   },
+          // },
           status: null,
           leave: null,
         },

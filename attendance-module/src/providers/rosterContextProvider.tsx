@@ -20,6 +20,7 @@ type MappedRosterResponse = {
   [cuid: string]: {
     name: string;
     nric: string;
+    restDay: string;
     startDate: dayjs.Dayjs;
     endDate: dayjs.Dayjs;
     roster: RosterDisplayProps["data"][];
@@ -138,6 +139,7 @@ export function RosterTableContextProvider({
             acc[candidate.cuid] = {
               name: candidate.name,
               nric: candidate.nric,
+              restDay: candidate.restDay,
               startDate: dayjs(candidate.startDate),
               endDate: dayjs(candidate.endDate),
               roster: candidate.rosters.map((roster) => ({
@@ -261,7 +263,9 @@ export function RosterTableContextProvider({
                   )
               );
 
-            if (hasNoOverlap && itemStartTime.isAfter(dayjs())) {
+            // Enable dragging to past
+            // if (hasNoOverlap && itemStartTime.isAfter(dayjs())) {
+            if (hasNoOverlap) {
               acc[1].push(date);
 
               if (itemType === "shift") {
