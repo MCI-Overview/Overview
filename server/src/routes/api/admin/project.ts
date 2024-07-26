@@ -2470,9 +2470,9 @@ projectAPIRouter.post(
         where: {
           // do not delete attendances that have pending or approved requests
           Request: {
-            some: {
+            none: {
               status: {
-                notIn: [RequestStatus.PENDING, RequestStatus.APPROVED],
+                in: [RequestStatus.PENDING, RequestStatus.APPROVED],
               },
             },
           },
