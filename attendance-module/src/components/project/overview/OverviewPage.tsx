@@ -72,23 +72,44 @@ type DisplayData = {
 };
 
 const ProjectOverview = () => {
-  const [timeSpan, setTimeSpan] = useState<string>("week");
+  const [timeSpan, setTimeSpan] = useState<"day" | "week" | "month">("week");
   const [data, setData] = useState<CustomAdminAttendance[]>([]);
   const [plotData, setPlotData] = useState<DisplayData>();
   const [startDate, setStartDate] = useState<Dayjs>(dayjs().startOf("isoWeek"));
   const { project } = useProjectContext();
 
   const projectCuid = project?.cuid;
-  let graphStartDate = dayjs(startDate);
+
   useEffect(() => {
     if (timeSpan === "day") {
-      graphStartDate = dayjs(startDate).startOf("day");
+      setStartDate((startDate) => startDate.startOf("day"));
     } else if (timeSpan === "week") {
-      graphStartDate = dayjs(startDate).startOf("isoWeek");
+      setStartDate((startDate) => startDate.startOf("isoWeek"));
     } else if (timeSpan === "month") {
-      graphStartDate = dayjs(startDate).startOf("month");
+      setStartDate((startDate) => startDate.startOf("month"));
     }
+  }, [timeSpan]);
 
+  useEffect(() => {
+    const getDisplayData = async () => {
+      const { formattedStartDate, formattedEndDate } = formatStartAndEndDates(
+        startDate,
+        timeSpan
+      );
+
+      axios
+        .get(
+          `/api/admin/project/${projectCuid}/overview?weekStart=${formattedStartDate}&endDate=${formattedEndDate}`
+        )
+        .then((response) => {
+          setPlotData(response.data);
+        });
+    };
+
+    getDisplayData();
+  }, [projectCuid, timeSpan, startDate]);
+
+  useEffect(() => {
     const fetchUpcomingShifts = async () => {
       try {
         const formattedStartDate = dayjs()
@@ -130,44 +151,8 @@ const ProjectOverview = () => {
       }
     };
 
-    const getDisplayData = async () => {
-      let formattedStartDate, formattedEndDate;
-
-      if (timeSpan === "day") {
-        formattedStartDate = startDate
-          .startOf("day")
-          .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
-        formattedEndDate = startDate
-          .endOf("day")
-          .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
-      } else if (timeSpan === "week") {
-        formattedStartDate = startDate
-          .startOf("isoWeek")
-          .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
-        formattedEndDate = startDate
-          .endOf("month")
-          .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
-      } else if (timeSpan === "month") {
-        formattedStartDate = startDate
-          .startOf("month")
-          .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
-        formattedEndDate = startDate
-          .endOf("month")
-          .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
-      }
-
-      axios
-        .get(
-          `/api/admin/project/${projectCuid}/overview?weekStart=${formattedStartDate}&endDate=${formattedEndDate}`
-        )
-        .then((response) => {
-          setPlotData(response.data);
-        });
-    };
-
-    getDisplayData();
     fetchUpcomingShifts();
-  }, [projectCuid, startDate, timeSpan]);
+  }, [projectCuid]);
 
   const sumArray = (arr: number[]) => arr.reduce((acc, curr) => acc + curr, 0);
 
@@ -364,15 +349,17 @@ const ProjectOverview = () => {
               <Select
                 name={"timeSpan"}
                 defaultValue={"week"}
-                onChange={(_e, value) => setTimeSpan(value ?? "week")}
+                onChange={(_e, value) =>
+                  setTimeSpan((value as "day" | "week" | "month") ?? "week")
+                }
               >
-                <Option value={"day"}>{startDate.format("DD/MM/YY")}</Option>
+                <Option value={"day"}>
+                  {startDate.format("ddd DD MMM YY")}
+                </Option>
                 <Option value={"week"}>
                   Week of {startDate.format("DD/MM/YY")}
                 </Option>
-                <Option value={"month"}>
-                  Month of {startDate.format("MMMM")}
-                </Option>
+                <Option value={"month"}>{startDate.format("MMMM YYYY")}</Option>
               </Select>
               <Box sx={{ flex: 1 }} />
 
@@ -389,7 +376,7 @@ const ProjectOverview = () => {
             {plotData && (
               <AttendanceGraph
                 datasets={plotData.datasets}
-                weekStart={graphStartDate
+                weekStart={startDate
                   .startOf(
                     timeSpan === "day"
                       ? "day"
@@ -489,6 +476,19 @@ const ProjectOverview = () => {
       </Box>
     </>
   );
+};
+
+const formatStartAndEndDates = (
+  startDate: Dayjs,
+  timespan: "day" | "week" | "month" | "isoWeek"
+) => {
+  const format = (date: Dayjs) => date.format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+  if (timespan === "week") timespan = "isoWeek";
+
+  return {
+    formattedStartDate: format(startDate.startOf(timespan)),
+    formattedEndDate: format(startDate.endOf(timespan)),
+  };
 };
 
 export default ProjectOverview;
