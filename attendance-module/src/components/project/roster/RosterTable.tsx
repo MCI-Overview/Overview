@@ -269,9 +269,8 @@ export default function RosterTable({ type }: RosterTableProps) {
               length: numberOfDays,
             }).map((_, index) => {
               const date = dateRangeStart.add(index, "days");
-              const holiday = publicHolidays[date.year()]?.find(
-                (holiday) => dayjs(holiday.date).isSame(date),
-                "day"
+              const holiday = publicHolidays[date.year()]?.find((holiday) =>
+                dayjs(holiday.date).isSame(date, "day")
               );
               return (
                 <th
