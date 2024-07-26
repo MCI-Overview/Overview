@@ -1,7 +1,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import toast from "react-hot-toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { CustomAdminAttendance } from "../../../types";
 import { readableEnum } from "../../../utils/capitalize";
 import { useProjectContext } from "../../../providers/projectContextProvider";
@@ -32,16 +32,18 @@ const AdminProjectAttendanceEditModal = ({
   setIsOpen,
   selectedAtt,
 }: AddLocationsModalProps) => {
-  if (!selectedAtt) return null;
-
   const { project, updateProject } = useProjectContext();
   const projectLocations = project?.locations || [];
-  const initialFields = {
-    clockIn: selectedAtt.rawStart ? dayjs(selectedAtt.rawStart) : null,
-    clockOut: selectedAtt.rawEnd ? dayjs(selectedAtt.rawEnd) : null,
-    name: selectedAtt.location.name || null,
-    status: selectedAtt.status,
-  };
+
+  const initialFields = useMemo(
+    () => ({
+      clockIn: selectedAtt?.rawStart ? dayjs(selectedAtt.rawStart) : null,
+      clockOut: selectedAtt?.rawEnd ? dayjs(selectedAtt.rawEnd) : null,
+      name: selectedAtt?.location.name || null,
+      status: selectedAtt?.status,
+    }),
+    [selectedAtt]
+  );
   const [updatefields, setUpdateFields] = useState(initialFields);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -50,9 +52,11 @@ const AdminProjectAttendanceEditModal = ({
       setUpdateFields(initialFields);
       setHasChanges(false);
     }
-  }, [isOpen, selectedAtt]);
+  }, [initialFields, isOpen, selectedAtt]);
 
   useEffect(() => {
+    if (!selectedAtt) return;
+
     const determineStatus = () => {
       if (!updatefields.clockIn) {
         return "NO_SHOW";
@@ -71,13 +75,15 @@ const AdminProjectAttendanceEditModal = ({
       ...prevFields,
       status: determineStatus(),
     }));
-  }, [updatefields.clockIn, selectedAtt.shiftStart]);
+  }, [updatefields.clockIn, selectedAtt]);
 
   useEffect(() => {
     const hasUpdates =
       JSON.stringify(updatefields) !== JSON.stringify(initialFields);
     setHasChanges(hasUpdates);
   }, [updatefields, initialFields]);
+
+  if (!selectedAtt) return null;
 
   const locationOptions = projectLocations.map((location) => ({
     value: location.name,
@@ -114,7 +120,10 @@ const AdminProjectAttendanceEditModal = ({
     }));
   };
 
-  const handleSelectChange = (_event: any, newValue: string | null) => {
+  const handleSelectChange = (
+    _event: React.SyntheticEvent<Element, Event> | null,
+    newValue: string | null
+  ) => {
     setUpdateFields((prevFields) => ({
       ...prevFields,
       name: newValue,

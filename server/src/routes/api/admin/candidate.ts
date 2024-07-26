@@ -9,7 +9,7 @@ import {
 } from "@/types/common";
 import bcrypt from "bcrypt";
 import dayjs from "dayjs";
-import { maskNRIC } from "../../../utils";
+import { generateDefaultPassword, maskNRIC } from "../../../utils";
 import {
   PERMISSION_ERROR_TEMPLATE,
   checkPermission,
@@ -248,9 +248,10 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
     }
   }
 
-  //TODO: Add validation for date of birth
-
   const dateOfBirthObject = dayjs(dateOfBirth);
+  if (!dateOfBirthObject.isValid()) {
+    return res.status(400).send("Invalid dateOfBirth parameter.");
+  }
 
   const createData = {
     nric,
@@ -266,10 +267,6 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
     }),
   };
 
-  const password = `${nric.substring(5, nric.length)}${dateOfBirthObject.format(
-    "DDMMYYYY"
-  )}`;
-
   try {
     await prisma.candidate.create({
       data: {
@@ -277,7 +274,7 @@ candidateAPIRoutes.post("/candidate", async (req, res) => {
         User: {
           create: {
             username: nric,
-            hash: await bcrypt.hash(password, 12),
+            hash: await bcrypt.hash(generateDefaultPassword(createData), 12),
           },
         },
       },

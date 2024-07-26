@@ -54,4 +54,19 @@ router.get("/public-holidays", async (_req, res) => {
   );
 });
 
+router.get("/public-holidays/:year", async (req, res) => {
+  const { year } = req.params;
+
+  const holidays = await prisma.publicHoliday.findMany({
+    where: {
+      date: {
+        gte: new Date(`${year}-01-01`),
+        lte: new Date(`${year}-12-31`),
+      },
+    },
+  });
+
+  return res.json(holidays);
+});
+
 export default router;

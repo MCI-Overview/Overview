@@ -8,7 +8,7 @@ import {
   GetCandidateResponse,
 } from "@/types/common";
 import { PermissionList, checkPermission } from "./permissions";
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 export function maskNRIC(nric: string): string {
   return "*****" + nric.slice(5, 9);
@@ -329,4 +329,10 @@ export async function processCandidateData(
       restDay: assign.restDay,
     };
   });
+}
+
+export function generateDefaultPassword({ nric, dateOfBirth }: Candidate) {
+  return `${nric.substring(5, nric.length)}${dayjs(dateOfBirth).format(
+    "DDMMYYYY"
+  )}`;
 }

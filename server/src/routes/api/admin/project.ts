@@ -24,6 +24,7 @@ import {
   checkNoticePeriodValidity,
   checkTimesValidity,
   maskNRIC,
+  generateDefaultPassword,
 } from "../../../utils";
 import bcrypt from "bcrypt";
 
@@ -1338,7 +1339,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
           candidateData.map((cdd) =>
             prisma.user.create({
               data: {
-                hash: bcrypt.hashSync(cdd.contact, 12),
+                hash: bcrypt.hashSync(generateDefaultPassword(cdd), 12),
                 username: cdd.nric,
                 Candidate: {
                   connect: {
@@ -2469,9 +2470,9 @@ projectAPIRouter.post(
         where: {
           // do not delete attendances that have pending or approved requests
           Request: {
-            some: {
+            none: {
               status: {
-                notIn: [RequestStatus.PENDING, RequestStatus.APPROVED],
+                in: [RequestStatus.PENDING, RequestStatus.APPROVED],
               },
             },
           },
