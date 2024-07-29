@@ -29,6 +29,19 @@
   --chakra-colors-chakra-body-bg: var(--joy-palette-background-body);
 }
 
+.leaflet-control {
+  z-index: 0 !important;
+}
+
+.leaflet-pane {
+  z-index: 0 !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 0 !important;
+}
+
 @keyframes blink {
   50% {
     opacity: 0;
