@@ -67,7 +67,7 @@ export default function RosterTable({ type }: RosterTableProps) {
             ...acc,
             ...rosterData[cuid].newRoster.map((roster) => ({
               shiftType: roster.type,
-              shiftDate: roster.startTime.toDate(),
+              shiftDate: roster.startTime.startOf("day").toDate(),
               shiftCuid: roster.shiftCuid,
               candidateCuid: cuid,
             })),
