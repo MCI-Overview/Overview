@@ -30,6 +30,7 @@ import {
   ArrowUpwardRounded as ArrowUpwardIcon,
   ArrowDownwardRounded as ArrowDownwardIcon,
   SwapVertRounded as SwapVertIcon,
+  CheckCircleRounded as CheckCircleIcon,
 } from "@mui/icons-material";
 
 //TODO: Fix type
@@ -203,6 +204,11 @@ const CandidateTable = ({
                         {row.cuid ? (
                           <Link href={`#/admin/candidate/${row.cuid}`}>
                             {row.name}
+                            {row.hasOnboarded && (
+                              <Typography color="success">
+                                <CheckCircleIcon />
+                              </Typography>
+                            )}
                           </Link>
                         ) : (
                           // Should not link during candidates assigning

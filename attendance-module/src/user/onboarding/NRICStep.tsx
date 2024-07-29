@@ -68,7 +68,7 @@ export default function NRICStep() {
     >
       <Box>
         <Typography level="body-sm">
-          Great! We now need you to upload your NRIC.
+          Great! We now need you to upload images of your Identity Card.
         </Typography>
       </Box>
       <Grid container columns={2} paddingBottom={15} gap={2}>
@@ -77,7 +77,7 @@ export default function NRICStep() {
             <InputFileUpload
               setState={handleNRICFrontFileChange}
               hasFile={!!newNricFront}
-              label="NRIC (Front)"
+              label="Identity Card (Front)"
             />
             {nricFrontPreview && (
               <img
@@ -93,7 +93,7 @@ export default function NRICStep() {
             <InputFileUpload
               setState={handleNRICBackFileChange}
               hasFile={!!newNricBack}
-              label="NRIC (Back)"
+              label="Identity Card (Back)"
             />
             {nricBackPreview && (
               <img

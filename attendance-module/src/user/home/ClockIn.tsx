@@ -646,11 +646,15 @@ const ClockIn = () => {
             This action cannot be undone.
           </Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Button fullWidth onClick={handleClockOut}>
-              Confirm
-            </Button>
-            <Button fullWidth onClick={() => setIsClockOutModalOpen(false)}>
+            <Button
+              fullWidth
+              onClick={() => setIsClockOutModalOpen(false)}
+              variant="outlined"
+            >
               Cancel
+            </Button>
+            <Button fullWidth onClick={handleClockOut} color="danger">
+              Confirm
             </Button>
           </Box>
         </ModalDialog>

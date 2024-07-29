@@ -531,7 +531,7 @@ function reformatDates(data: CddTableDataType[]) {
     ...cdd,
     startDate: IsoOrInvalid(parseDate(cdd.startDate)),
     endDate: IsoOrInvalid(parseDate(cdd.endDate)),
-    dateOfBirth: IsoOrInvalid(parseDate(cdd.dateOfBirth)),
+    dateOfBirth: IsoOrInvalid(parseDate(cdd.dateOfBirth).utc(true)),
   }));
 }
 

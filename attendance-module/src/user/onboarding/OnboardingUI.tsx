@@ -1,7 +1,7 @@
-import NRICStep from "./NRICStep";
-import AddressStep from "./AddressStep";
+// import NRICStep from "./NRICStep";
+// import AddressStep from "./AddressStep";
 import UserOnboarded from "./UserOnboarded";
-import BankDetailsStep from "./BankDetailsStep";
+// import BankDetailsStep from "./BankDetailsStep";
 import UserDetailsStep from "./UserDetailsStep";
 import EmergencyContactStep from "./EmergencyContactStep";
 import CameraPermissionStep from "./CameraPermissionStep";
@@ -19,12 +19,12 @@ import {
   Typography,
 } from "@mui/joy";
 import {
-  AccountBalanceRounded as AccountBalanceIcon,
-  BadgeRounded as BadgeIcon,
+  // AccountBalanceRounded as AccountBalanceIcon,
+  // BadgeRounded as BadgeIcon,
   CameraAltOutlined as CameraAltIcon,
   CheckCircleRounded as CheckCircleIcon,
   ContactEmergencyRounded as ContactEmergencyIcon,
-  HomeRounded as HomeIcon,
+  // HomeRounded as HomeIcon,
   RoomOutlined as RoomIcon,
   WavingHandRounded as WavingHandIcon,
 } from "@mui/icons-material";
@@ -38,26 +38,26 @@ export default function OnboardingUI() {
       icon: <WavingHandIcon />,
       component: <UserDetailsStep />,
     },
-    {
-      label: "NRIC",
-      icon: <BadgeIcon />,
-      component: <NRICStep />,
-    },
-    {
-      label: "Address",
-      icon: <HomeIcon />,
-      component: <AddressStep />,
-    },
+    // {
+    //   label: "Verify Identity",
+    //   icon: <BadgeIcon />,
+    //   component: <NRICStep />,
+    // },
+    // {
+    //   label: "Address",
+    //   icon: <HomeIcon />,
+    //   component: <AddressStep />,
+    // },
     {
       label: "Emergency Contact",
       icon: <ContactEmergencyIcon />,
       component: <EmergencyContactStep />,
     },
-    {
-      label: "Bank Details",
-      icon: <AccountBalanceIcon />,
-      component: <BankDetailsStep />,
-    },
+    // {
+    //   label: "Bank Details",
+    //   icon: <AccountBalanceIcon />,
+    //   component: <BankDetailsStep />,
+    // },
     {
       label: "Location Permission",
       icon: <RoomIcon />,

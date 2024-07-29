@@ -4,8 +4,24 @@ import { useUserContext } from "../../providers/userContextProvider";
 import { formatDate } from "../../utils/date-time";
 import { TdTypo, ThTypo } from "../project/ui/TableTypo";
 
-import { Box, Chip, FormControl, FormLabel, Input, Link, Sheet, Stack, Typography, Table, List, ListItem, ListItemContent, ListDivider } from "@mui/joy";
+import {
+  Box,
+  Chip,
+  FormControl,
+  FormLabel,
+  Input,
+  Link,
+  Sheet,
+  Stack,
+  Typography,
+  Table,
+  List,
+  ListItem,
+  ListItemContent,
+  ListDivider,
+} from "@mui/joy";
 
+import { CheckCircleRounded as CheckCircleIcon } from "@mui/icons-material";
 
 export type CandidateData = {
   candidateCuid: string;
@@ -15,6 +31,7 @@ export type CandidateData = {
   projectName: string;
   startDate: Date;
   endDate: Date;
+  hasOnboarded: boolean;
 };
 
 type ResponseDataType = {
@@ -38,7 +55,9 @@ const MyCandidatesPage = () => {
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`/api/admin/consultant/${user?.cuid}/candidates`);
+        const res = await axios.get(
+          `/api/admin/consultant/${user?.cuid}/candidates`
+        );
         const data = res.data.map((data: ResponseDataType) => ({
           ...data,
           startDate: new Date(data.startDate),
@@ -106,15 +125,21 @@ const MyCandidatesPage = () => {
   ];
 
   const matchSearchValue = (cdd: [string, CandidateData[]]) => {
-    return cdd[1].some((project) =>
-      project.candidateName.toLowerCase().includes(searchValue.toLowerCase()) ||
-      project.candidateNric.toLowerCase().includes(searchValue.toLowerCase())
+    return cdd[1].some(
+      (project) =>
+        project.candidateName
+          .toLowerCase()
+          .includes(searchValue.toLowerCase()) ||
+        project.candidateNric.toLowerCase().includes(searchValue.toLowerCase())
     );
   };
 
   return (
     <>
-      <Stack spacing={1} sx={{ display: "flex", mx: "auto", px: { xs: 0, md: 4 } }}>
+      <Stack
+        spacing={1}
+        sx={{ display: "flex", mx: "auto", px: { xs: 0, md: 4 } }}
+      >
         <FormControl size="sm">
           <FormLabel>Search candidates</FormLabel>
           <Input
@@ -142,7 +167,11 @@ const MyCandidatesPage = () => {
                 gap: 0.5,
               }}
             >
-              <Chip key={field.color} color={field.color as "warning" | "success" | "neutral"} size="sm">
+              <Chip
+                key={field.color}
+                color={field.color as "warning" | "success" | "neutral"}
+                size="sm"
+              >
                 <Typography level="body-xs">{field.label}</Typography>
               </Chip>
             </Box>
@@ -164,9 +193,11 @@ const MyCandidatesPage = () => {
             aria-labelledby="tableTitle"
             stickyHeader
             sx={{
-              "--TableCell-headBackground": "var(--joy-palette-background-level1)",
+              "--TableCell-headBackground":
+                "var(--joy-palette-background-level1)",
               "--Table-headerUnderlineThickness": "1px",
-              "--TableRow-hoverBackground": "var(--joy-palette-background-level1)",
+              "--TableRow-hoverBackground":
+                "var(--joy-palette-background-level1)",
               "--TableCell-paddingY": "4px",
               "--TableCell-paddingX": "8px",
               "& tr > *": { textAlign: "center" },
@@ -200,8 +231,16 @@ const MyCandidatesPage = () => {
                         )}
                         {index === 0 && (
                           <TdTypo rowSpan={projects.length}>
-                            <Link variant="soft" href={`#/admin/candidate/${candidateCuid}`}>
+                            <Link
+                              variant="soft"
+                              href={`#/admin/candidate/${candidateCuid}`}
+                            >
                               {project.candidateName}
+                              {project.hasOnboarded && (
+                                <Typography color="success">
+                                  <CheckCircleIcon />
+                                </Typography>
+                              )}
                             </Link>
                           </TdTypo>
                         )}
@@ -212,8 +251,8 @@ const MyCandidatesPage = () => {
                               new Date() < project.startDate
                                 ? "warning"
                                 : new Date() > project.endDate
-                                  ? "neutral"
-                                  : "success"
+                                ? "neutral"
+                                : "success"
                             }
                             href={`#/admin/project/${project.projectCuid}`}
                           >
@@ -267,11 +306,16 @@ const MyCandidatesPage = () => {
                                 mb: 1,
                               }}
                             >
-                              <Link variant="soft" href={`#/admin/candidate/${candidateCuid}`}>
+                              <Link
+                                variant="soft"
+                                href={`#/admin/candidate/${candidateCuid}`}
+                              >
                                 {project.candidateName}
                               </Link>
                               <Typography level="body-md">&bull;</Typography>
-                              <Typography level="body-md">{project.candidateNric}</Typography>
+                              <Typography level="body-md">
+                                {project.candidateNric}
+                              </Typography>
                             </Box>
                             <Link
                               variant="soft"
@@ -279,8 +323,8 @@ const MyCandidatesPage = () => {
                                 new Date() < project.startDate
                                   ? "warning"
                                   : new Date() > project.endDate
-                                    ? "neutral"
-                                    : "success"
+                                  ? "neutral"
+                                  : "success"
                               }
                               href={`#/admin/project/${project.projectCuid}`}
                             >
@@ -296,9 +340,13 @@ const MyCandidatesPage = () => {
                                 mb: 1,
                               }}
                             >
-                              <Typography level="body-md">{formatDate(project.startDate)}</Typography>
+                              <Typography level="body-md">
+                                {formatDate(project.startDate)}
+                              </Typography>
                               <Typography level="body-md">&bull;</Typography>
-                              <Typography level="body-md">{formatDate(project.endDate)}</Typography>
+                              <Typography level="body-md">
+                                {formatDate(project.endDate)}
+                              </Typography>
                             </Box>
                           </ListItemContent>
                         </ListItem>
