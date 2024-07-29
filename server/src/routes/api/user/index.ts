@@ -226,6 +226,7 @@ userAPIRouter.patch(
       bankDetails,
       address,
       emergencyContact,
+      hasOnboarded,
     } = req.body;
 
     if (
@@ -239,7 +240,8 @@ userAPIRouter.patch(
       !emergencyContact &&
       !bankStatement &&
       !nricFront &&
-      !nricBack
+      !nricBack &&
+      !hasOnboarded
     ) {
       return res
         .status(400)
@@ -300,7 +302,8 @@ userAPIRouter.patch(
       ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
       ...(address && { address }),
       ...(emergencyContact && { emergencyContact }),
-      ...(bankDetails && { bankDetails, hasOnboarded: true }),
+      ...(bankDetails && { bankDetails }),
+      ...(hasOnboarded && { hasOnboarded }),
     };
 
     // TODO: Fix transaction timeout issue

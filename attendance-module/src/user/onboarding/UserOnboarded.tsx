@@ -1,6 +1,7 @@
 import { Typography, Button, Stack, Box } from "@mui/joy";
 import { useUserContext } from "../../providers/userContextProvider";
 import { useOnboardingContext } from "../../providers/onboardingContextProvider";
+import axios from "axios";
 
 export default function UserOnboarded() {
   const { updateUser } = useUserContext();
@@ -37,7 +38,13 @@ export default function UserOnboarded() {
             Back
           </Button>
           <Button
-            onClick={() => updateUser()}
+            onClick={() =>
+              axios
+                .patch("/api/user", {
+                  hasOnboarded: true,
+                })
+                .then(() => updateUser())
+            }
             sx={{
               width: "80dvw",
               maxWidth: "600px",
