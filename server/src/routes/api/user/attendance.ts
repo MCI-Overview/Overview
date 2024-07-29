@@ -160,7 +160,7 @@ attendanceApiRouter.get(
       let whereClause: any = {
         candidateCuid: user.cuid,
         shiftDate: {
-          gte: today,
+          gte: today.toDate(),
         },
       };
 
