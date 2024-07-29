@@ -55,6 +55,7 @@ consultantAPIRoutes.get(
           projectName: assign.Project.name,
           startDate: assign.startDate,
           endDate: assign.endDate,
+          hasOnboarded: assign.Candidate.hasOnboarded,
         };
       });
 

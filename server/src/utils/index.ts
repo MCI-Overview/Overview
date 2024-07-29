@@ -332,7 +332,7 @@ export async function processCandidateData(
 }
 
 export function generateDefaultPassword({ nric, dateOfBirth }: Candidate) {
-  return `${nric.substring(5, nric.length)}${dayjs(dateOfBirth).format(
-    "DDMMYYYY"
-  )}`;
+  return `${nric.substring(5, nric.length)}${dayjs
+    .utc(dateOfBirth)
+    .format("DDMMYYYY")}`;
 }

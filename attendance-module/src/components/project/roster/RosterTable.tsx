@@ -67,7 +67,7 @@ export default function RosterTable({ type }: RosterTableProps) {
             ...acc,
             ...rosterData[cuid].newRoster.map((roster) => ({
               shiftType: roster.type,
-              shiftDate: roster.startTime.toDate(),
+              shiftDate: roster.startTime.startOf("day").toDate(),
               shiftCuid: roster.shiftCuid,
               candidateCuid: cuid,
             })),
@@ -269,9 +269,8 @@ export default function RosterTable({ type }: RosterTableProps) {
               length: numberOfDays,
             }).map((_, index) => {
               const date = dateRangeStart.add(index, "days");
-              const holiday = publicHolidays[date.year()]?.find(
-                (holiday) => dayjs(holiday.date).isSame(date),
-                "day"
+              const holiday = publicHolidays[date.year()]?.find((holiday) =>
+                dayjs(holiday.date).isSame(date, "day")
               );
               return (
                 <th

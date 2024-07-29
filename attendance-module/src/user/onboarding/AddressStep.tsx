@@ -215,6 +215,23 @@ export default function AddressStep() {
             />
           </FormControl>
         </Grid>
+        <Grid xs={2} sm={1}>
+          <FormControl>
+            <FormLabel>Postal Code</FormLabel>
+            <Input
+              value={newPostal || ""}
+              onChange={(e) =>
+                setNewCandidate({
+                  ...newCandidate,
+                  address: {
+                    ...newCandidate.address,
+                    postal: e.target.value,
+                  },
+                })
+              }
+            />
+          </FormControl>
+        </Grid>
         <Grid container xs={2}>
           <Grid xs={1}>
             <FormControl>
@@ -270,7 +287,7 @@ export default function AddressStep() {
                 }}
               />
               <FormHelperText>
-                Check this if you are living in a landed property.
+                Check this if you live in a landed property.
               </FormHelperText>
             </FormControl>
           </Grid>

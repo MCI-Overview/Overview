@@ -77,8 +77,13 @@ const AttendanceHistoryM = ({ data }: AttendanceHistoryMProps) => {
                     </Typography>
                     <Typography level="body-xs">
                       {"Clocked In: "}
-                      {dayjs(att.clockInTime).format("HH:mm")} to{" "}
-                      {dayjs(att.clockOutTime).format("HH:mm")}
+                      {dayjs(att.clockInTime).isValid()
+                        ? dayjs(att.clockInTime).format("HH:mm")
+                        : "NIL"}{" "}
+                      to{" "}
+                      {dayjs(att.clockOutTime).isValid()
+                        ? dayjs(att.clockOutTime).format("HH:mm")
+                        : "NIL"}
                     </Typography>
                   </ListItemContent>
 
