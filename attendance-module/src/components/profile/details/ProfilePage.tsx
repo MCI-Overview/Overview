@@ -58,7 +58,12 @@ const ProfilePage = () => {
   if (!candidate) return null;
   if (!user) return null;
 
-  const { address, bankDetails, emergencyContact, ...details } = candidate;
+  const {
+    //address,
+    // bankDetails,
+    emergencyContact,
+    ...details
+  } = candidate;
 
   async function handleSubmitHandler(
     data: object,
