@@ -1,7 +1,7 @@
-import NRICStep from "./NRICStep";
-import AddressStep from "./AddressStep";
+// import NRICStep from "./NRICStep";
+// import AddressStep from "./AddressStep";
 import UserOnboarded from "./UserOnboarded";
-import BankDetailsStep from "./BankDetailsStep";
+// import BankDetailsStep from "./BankDetailsStep";
 import UserDetailsStep from "./UserDetailsStep";
 import EmergencyContactStep from "./EmergencyContactStep";
 import { useOnboardingContext } from "../../providers/onboardingContextProvider";
@@ -17,11 +17,11 @@ import {
   Typography,
 } from "@mui/joy";
 import {
-  AccountBalanceRounded as AccountBalanceIcon,
-  BadgeRounded as BadgeIcon,
+  // AccountBalanceRounded as AccountBalanceIcon,
+  // BadgeRounded as BadgeIcon,
   CheckCircleRounded as CheckCircleIcon,
   ContactEmergencyRounded as ContactEmergencyIcon,
-  HomeRounded as HomeIcon,
+  // HomeRounded as HomeIcon,
   WavingHandRounded as WavingHandIcon,
 } from "@mui/icons-material";
 
@@ -34,26 +34,26 @@ export default function OnboardingUI() {
       icon: <WavingHandIcon />,
       component: <UserDetailsStep />,
     },
-    {
-      label: "NRIC",
-      icon: <BadgeIcon />,
-      component: <NRICStep />,
-    },
-    {
-      label: "Address",
-      icon: <HomeIcon />,
-      component: <AddressStep />,
-    },
+    // {
+    //   label: "Verify Identity",
+    //   icon: <BadgeIcon />,
+    //   component: <NRICStep />,
+    // },
+    // {
+    //   label: "Address",
+    //   icon: <HomeIcon />,
+    //   component: <AddressStep />,
+    // },
     {
       label: "Emergency Contact",
       icon: <ContactEmergencyIcon />,
       component: <EmergencyContactStep />,
     },
-    {
-      label: "Bank Details",
-      icon: <AccountBalanceIcon />,
-      component: <BankDetailsStep />,
-    },
+    // {
+    //   label: "Bank Details",
+    //   icon: <AccountBalanceIcon />,
+    //   component: <BankDetailsStep />,
+    // },
     {
       label: "Complete",
       icon: <CheckCircleIcon />,
