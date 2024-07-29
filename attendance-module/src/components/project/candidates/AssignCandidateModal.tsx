@@ -519,7 +519,7 @@ const AssignCandidateModal = ({
 };
 
 function parseDate(date: string | boolean) {
-  return dayjs(date as string, ["DD/MM/YYYY", "DD-MM-YYYY"]).utc();
+  return dayjs(date as string, ["DD/MM/YYYY", "DD-MM-YYYY"]);
 }
 
 function IsoOrInvalid(date: dayjs.Dayjs) {
