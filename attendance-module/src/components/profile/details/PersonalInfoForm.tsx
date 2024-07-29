@@ -4,6 +4,8 @@ import { useState } from "react";
 import isEqual from "../../../utils";
 import { CandidateDetails } from "../../../types/common";
 
+// import NricImagesModal from "./NricImagesModal";
+
 import {
   Autocomplete,
   Box,
@@ -16,15 +18,14 @@ import {
   FormHelperText,
   FormLabel,
   Grid,
-  IconButton,
+  // IconButton,
   Input,
   Option,
   Select,
-  Tooltip,
+  // Tooltip,
   Typography,
 } from "@mui/joy";
-import { CreditCard as CreditCardIcon } from "@mui/icons-material";
-import NricImagesModal from "./NricImagesModal";
+// import { CreditCard as CreditCardIcon } from "@mui/icons-material";
 
 type PersonalInfoFormProps = {
   candidateDetails: CandidateDetails | undefined;
@@ -58,7 +59,7 @@ export default function PersonalInfoForm({
   const [newCandidateDetails, setNewCandidateDetails] =
     useState<CandidateDetails>(oldCandidateDetails);
 
-  const [isNricModalOpen, setIsNricModalOpen] = useState(false);
+  // const [isNricModalOpen, setIsNricModalOpen] = useState(false);
 
   const isSame = isEqual(oldCandidateDetails, newCandidateDetails);
 
@@ -79,7 +80,7 @@ export default function PersonalInfoForm({
       >
         <Typography level="title-md">Personal details</Typography>
 
-        <Tooltip title="View NRIC" placement="left">
+        {/* <Tooltip title="View NRIC" placement="left">
           <IconButton onClick={() => setIsNricModalOpen(true)}>
             <CreditCardIcon />
           </IconButton>
@@ -89,7 +90,7 @@ export default function PersonalInfoForm({
           isOpen={isNricModalOpen}
           setIsOpen={() => setIsNricModalOpen(false)}
           candidateCuid={oldCandidateDetails.cuid}
-        />
+        /> */}
       </Box>
 
       <Divider />

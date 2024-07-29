@@ -4,6 +4,8 @@ import UserOnboarded from "./UserOnboarded";
 // import BankDetailsStep from "./BankDetailsStep";
 import UserDetailsStep from "./UserDetailsStep";
 import EmergencyContactStep from "./EmergencyContactStep";
+import CameraPermissionStep from "./CameraPermissionStep";
+import LocationPermissionStep from "./LocationPermissionStep";
 import { useOnboardingContext } from "../../providers/onboardingContextProvider";
 
 import {
@@ -19,9 +21,11 @@ import {
 import {
   // AccountBalanceRounded as AccountBalanceIcon,
   // BadgeRounded as BadgeIcon,
+  CameraAltOutlined as CameraAltIcon,
   CheckCircleRounded as CheckCircleIcon,
   ContactEmergencyRounded as ContactEmergencyIcon,
   // HomeRounded as HomeIcon,
+  RoomOutlined as RoomIcon,
   WavingHandRounded as WavingHandIcon,
 } from "@mui/icons-material";
 
@@ -54,6 +58,16 @@ export default function OnboardingUI() {
     //   icon: <AccountBalanceIcon />,
     //   component: <BankDetailsStep />,
     // },
+    {
+      label: "Location Permission",
+      icon: <RoomIcon />,
+      component: <LocationPermissionStep />,
+    },
+    {
+      label: "Camera Permission",
+      icon: <CameraAltIcon />,
+      component: <CameraPermissionStep />,
+    },
     {
       label: "Complete",
       icon: <CheckCircleIcon />,

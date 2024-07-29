@@ -8,7 +8,6 @@ import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 import {
   contactRegex,
-  dateRegex,
   nricRegex,
   sanitizeContact,
 } from "../../../utils/validation";
@@ -245,9 +244,9 @@ const AssignCandidateModal = ({
         message: "Date of birth is required",
         level: "error",
       });
-    } else if (!dateRegex.test(row.dateOfBirth as string)) {
+    } else if (!parseDate(row.dateOfBirth as string).isValid()) {
       addError("dateOfBirth", {
-        message: "Invalid format. Please use DD/MM/YYYY",
+        message: "Invalid format. Please use DD/MM/YYYY or DD-MM-YYYY",
         level: "error",
       });
     } else if (dayjs().diff(parseDate(row.dateOfBirth), "years") < 16) {
@@ -271,9 +270,9 @@ const AssignCandidateModal = ({
         message: "Start date is required",
         level: "error",
       });
-    } else if (!dateRegex.test(row.startDate as string)) {
+    } else if (!parseDate(row.startDate as string).isValid()) {
       addError("startDate", {
-        message: "Invalid format. Please use DD/MM/YYYY",
+        message: "Invalid format. Please use DD/MM/YYYY or DD-MM-YYYY",
         level: "error",
       });
     } else if (
@@ -305,9 +304,9 @@ const AssignCandidateModal = ({
         message: "End date is required",
         level: "error",
       });
-    } else if (!dateRegex.test(row.endDate as string)) {
+    } else if (!parseDate(row.endDate as string).isValid()) {
       addError("endDate", {
-        message: "Invalid format. Please use DD/MM/YYYY",
+        message: "Invalid format. Please use DD/MM/YYYY or DD-MM-YYYY",
         level: "error",
       });
     } else if (
@@ -520,7 +519,7 @@ const AssignCandidateModal = ({
 };
 
 function parseDate(date: string | boolean) {
-  return dayjs(date as string, ["DD/MM/YYYY"]);
+  return dayjs(date as string, ["DD/MM/YYYY", "DD-MM-YYYY"]);
 }
 
 function IsoOrInvalid(date: dayjs.Dayjs) {

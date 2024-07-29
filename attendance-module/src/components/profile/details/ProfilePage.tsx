@@ -5,8 +5,8 @@ import { checkPermission } from "../../../utils/permission";
 import { CommonCandidate, PermissionList } from "../../../types/common";
 import { useUserContext } from "../../../providers/userContextProvider";
 
-import AddressForm from "./AddressForm";
-import BankDetailsForm from "./BankDetailsForm";
+// import AddressForm from "./AddressForm";
+// import BankDetailsForm from "./BankDetailsForm";
 import EmergencyContactForm from "./EmergencyContactForm";
 import PersonalInfoForm from "./PersonalInfoForm";
 
@@ -58,7 +58,12 @@ const ProfilePage = () => {
   if (!candidate) return null;
   if (!user) return null;
 
-  const { address, bankDetails, emergencyContact, ...details } = candidate;
+  const {
+    //address,
+    // bankDetails,
+    emergencyContact,
+    ...details
+  } = candidate;
 
   async function handleSubmitHandler(
     data: object,
@@ -86,10 +91,10 @@ const ProfilePage = () => {
     canEdit = user.cuid === candidate.cuid;
   }
 
-  const hasReadCandidateDetailsPermission = checkPermission(
-    user,
-    PermissionList.CAN_READ_CANDIDATE_DETAILS
-  );
+  // const hasReadCandidateDetailsPermission = checkPermission(
+  //   user,
+  //   PermissionList.CAN_READ_CANDIDATE_DETAILS
+  // );
 
   return (
     <>
@@ -148,7 +153,7 @@ const ProfilePage = () => {
           canEdit={canEdit}
         />
 
-        {hasReadCandidateDetailsPermission && (
+        {/* {hasReadCandidateDetailsPermission && (
           <>
             <AddressForm
               address={address}
@@ -162,7 +167,7 @@ const ProfilePage = () => {
               canEdit={canEdit}
             />
           </>
-        )}
+        )} */}
 
         <EmergencyContactForm
           contact={emergencyContact}
