@@ -1313,7 +1313,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
         nric: cdd.nric,
         contact: cdd.contact,
         name: cdd.name,
-        dateOfBirth: new Date(Date.parse(cdd.dateOfBirth)),
+        dateOfBirth: dayjs.utc(cdd.dateOfBirth).toDate(),
         residency: cdd.residency,
         hasOnboarded: false,
         nationality: null,
