@@ -87,12 +87,15 @@ export default function WeekPicker() {
         ${dateRangeEnd?.format("DD/MM/YY")}`}
         </Button>
         <Select
-          defaultValue="name-asc"
+          defaultValue="selected"
           sx={{
             width: "9rem",
           }}
           onChange={(_, value) => {
             switch (value) {
+              case "selected":
+                setSortOrderBy("selected");
+                break;
               case "name-asc":
                 setSortOrder("asc");
                 setSortOrderBy("name");
@@ -114,6 +117,7 @@ export default function WeekPicker() {
             }
           }}
         >
+          <Option value="selected">Selected</Option>
           <Option value="name-asc">Name (Asc)</Option>
           <Option value="name-desc">Name (Desc)</Option>
           <Option value="unassign">Unassigned</Option>

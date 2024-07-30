@@ -39,7 +39,7 @@ const RosterTableContext = createContext<{
   sortOrder: "asc" | "desc";
   weekOffset: number;
   rosterData: MappedRosterResponse | null;
-  sortOrderBy: "name" | "assign";
+  sortOrderBy: "name" | "assign" | "selected";
   draggingCuid: string | null;
   dateRangeEnd: dayjs.Dayjs;
   dateRangeStart: dayjs.Dayjs;
@@ -54,7 +54,7 @@ const RosterTableContext = createContext<{
   setHoverDate: (date: dayjs.Dayjs | null) => void;
   setHoverCuid: (cuid: string | null) => void;
   setWeekOffset: (offset: number) => void;
-  setSortOrderBy: (orderBy: "name" | "assign") => void;
+  setSortOrderBy: (orderBy: "name" | "assign" | "selected") => void;
   setDraggingCuid: (cuid: string | null) => void;
   updateRosterData: () => void;
   setSelectedCandidates: (cuids: string[]) => void;
@@ -116,7 +116,9 @@ export function RosterTableContextProvider({
 
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [sortOrderBy, setSortOrderBy] = useState<"name" | "assign">("name");
+  const [sortOrderBy, setSortOrderBy] = useState<
+    "name" | "assign" | "selected"
+  >("selected");
 
   const baseDay = project?.startDate.startOf("isoWeek");
   const dateRangeStart = baseDay?.add(weekOffset, "weeks");

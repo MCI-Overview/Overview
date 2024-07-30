@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import axios from "axios";
 import { useDrop } from "react-dnd";
+import { useEffect, useState } from "react";
 import { useStore } from "@tanstack/react-store";
 
 import DroppableArea from "./DroppableArea";
@@ -55,6 +56,10 @@ export default function RosterTable({ type }: RosterTableProps) {
       createdAt: string;
     }[]
   >;
+
+  const [sortedCandidates, setSortedCandidates] = useState(
+    Object.keys(rosterData || {})
+  );
 
   const [{ item, itemType }, drop] = useDrop({
     accept: ["shift", "roster", "candidate"],
@@ -111,38 +116,51 @@ export default function RosterTable({ type }: RosterTableProps) {
     }),
   });
 
-  if (!rosterData) return null;
+  useEffect(() => {
+    if (!rosterData) return;
 
-  let sortedCandidates = Object.keys(rosterData);
+    console.log("HUHH");
 
-  if (sortOrderBy === "name") {
-    sortedCandidates = Object.keys(rosterData).sort((a, b) =>
+    const candidatesList = Object.keys(rosterData).sort((a, b) =>
       rosterData[a].name.localeCompare(rosterData[b].name)
     );
-  }
 
-  if (sortOrder === "desc") {
-    sortedCandidates = sortedCandidates.reverse();
-  }
+    if (sortOrderBy === "name") {
+      setSortedCandidates(candidatesList);
+    }
 
-  if (sortOrderBy === "assign") {
-    sortedCandidates = Object.keys(rosterData).sort((a, b) => {
-      if (
-        rosterData[a].rosterLength === 0 &&
-        rosterData[b].rosterLength === 0
-      ) {
-        return a.localeCompare(b);
-      }
-      if (rosterData[a].rosterLength === 0) {
-        return sortOrder === "asc" ? 1 : -1;
-      }
-      if (rosterData[b].rosterLength === 0) {
-        return sortOrder === "asc" ? -1 : 1;
-      }
+    if (sortOrderBy === "selected") {
+      setSortedCandidates([
+        ...selectedCandidates,
+        ...candidatesList.filter((c) => !selectedCandidates.includes(c)),
+      ]);
+    }
 
-      return a.localeCompare(b);
-    });
-  }
+    if (sortOrder === "desc") {
+      setSortedCandidates((c) => c.reverse());
+    }
+
+    if (sortOrderBy === "assign") {
+      setSortedCandidates(
+        candidatesList.sort((a, b) => {
+          if (
+            rosterData[a].rosterLength === 0 &&
+            rosterData[b].rosterLength === 0
+          ) {
+            return a.localeCompare(b);
+          }
+          if (rosterData[a].rosterLength === 0) {
+            return sortOrder === "asc" ? 1 : -1;
+          }
+          if (rosterData[b].rosterLength === 0) {
+            return sortOrder === "asc" ? -1 : 1;
+          }
+
+          return a.localeCompare(b);
+        })
+      );
+    }
+  }, [rosterData, selectedCandidates, sortOrder, sortOrderBy]);
 
   if (!dateRangeStart || !dateRangeEnd || !project || !rosterData) {
     return null;
