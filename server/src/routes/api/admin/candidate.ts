@@ -8,9 +8,12 @@ import {
   PERMISSION_ERROR_TEMPLATE,
   checkPermission,
   PermissionList,
+  getPermissions,
 } from "../../../utils/permissions";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
+import bcrypt from "bcrypt";
+import { generateDefaultPassword } from "../../../utils";
 
 const candidateAPIRoutes: Router = Router();
 
@@ -756,5 +759,42 @@ candidateAPIRoutes.get(
     }
   }
 );
+
+/**
+ * GET /api/admin/candidate/resetPasswords/:candidateCuid
+ *
+ * Resets the password of the candidate with the specified cuid.
+ * Requires isRoot permission.
+ */
+candidateAPIRoutes.get("/resetPasswords/:candidateCuid", async (req, res) => {
+  const user = req.user as User;
+  const candidateCuid = req.params.candidateCuid;
+
+  const permissions = await getPermissions(user.cuid);
+  if ("isRoot" in permissions && permissions["isRoot"]) {
+    return true;
+  }
+
+  const candidate = await prisma.candidate.findUnique({
+    where: {
+      cuid: candidateCuid,
+    },
+  });
+
+  if (!candidate) {
+    return res.status(404).send("Candidate not found.");
+  }
+
+  prisma.user.update({
+    where: {
+      cuid: candidateCuid,
+    },
+    data: {
+      hash: bcrypt.hashSync(generateDefaultPassword(candidate), 12),
+    },
+  });
+
+  return res.send("All passwords reset");
+});
 
 export default candidateAPIRoutes;
