@@ -261,7 +261,11 @@ export default function RosterTable({ type }: RosterTableProps) {
                     );
                   }}
                 />
-                Name
+                {`Name ${
+                  selectedCandidates.length > 0
+                    ? `(${selectedCandidates.length} of ${sortedCandidates.length})`
+                    : ""
+                }`}
               </Stack>
             </th>
 
