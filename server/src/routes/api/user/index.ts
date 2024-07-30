@@ -15,6 +15,12 @@ userAPIRouter.use("/", profileAPIRoutes);
 userAPIRouter.use("/", requestAPIRoutes);
 userAPIRouter.use("/", reportAPIRoutes);
 
+/**
+GET /api/user
+
+Retrieves the data of the current candidate.
+Used in UserContext.
+*/
 userAPIRouter.get("/", async (req, res) => {
   const { cuid } = req.user as User;
 
@@ -36,6 +42,11 @@ userAPIRouter.get("/", async (req, res) => {
   }
 });
 
+/**
+GET /api/user/projects
+
+Retrieves the user's currently assigned projects.
+*/
 userAPIRouter.get("/projects", async (req, res) => {
   const { cuid } = req.user as User;
 
@@ -105,6 +116,12 @@ userAPIRouter.get("/projects", async (req, res) => {
   }
 });
 
+/**
+GET /api/user/claimableShifts
+
+Retrieves the user's shifts that they were present for, or had medical leave for.
+Only shifts that are within the last month are returned.
+*/
 userAPIRouter.get("/claimableShifts", async (req, res) => {
   const { cuid } = req.user as User;
 
@@ -156,6 +173,13 @@ userAPIRouter.get("/claimableShifts", async (req, res) => {
   }
 });
 
+/**
+GET /api/user/upcomingRosters
+
+Retrieves the user's upcoming rosters which have no status or leave.
+Only shifts that are within the next month are returned.
+Used for leave form.
+*/
 userAPIRouter.get("/upcomingRosters", async (req, res) => {
   const { cuid } = req.user as User;
 
@@ -198,7 +222,12 @@ userAPIRouter.get("/upcomingRosters", async (req, res) => {
     return res.status(500).send("Internal server error");
   }
 });
+/**
+PATCH /api/user
 
+Updates the current candidate's profile.
+Used for onboarding and when user updtaes their own profile.
+*/
 userAPIRouter.patch(
   "/",
   upload.fields([

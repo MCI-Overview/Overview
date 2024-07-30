@@ -6,6 +6,12 @@ import { Readable } from "stream";
 
 const profileAPIRouter = Router();
 
+/**
+GET /api/user/profile/bankStatement
+
+Retrieve the user's bank statement images.
+Currently unused.
+*/
 profileAPIRouter.get("/bankStatement", async (req, res) => {
   const user = req.user as User;
   const { cuid } = user;
@@ -28,6 +34,12 @@ profileAPIRouter.get("/bankStatement", async (req, res) => {
   }
 });
 
+/**
+GET /api/user/profile/nric/front
+
+Retrieve the user's NRIC front image.
+Used in candidate profile page.
+*/
 profileAPIRouter.get("/nric/front", async (req, res) => {
   const user = req.user as User;
   const { cuid } = user;
@@ -50,6 +62,12 @@ profileAPIRouter.get("/nric/front", async (req, res) => {
   }
 });
 
+/**
+GET /api/user/profile/nric/back
+
+Retrieve the user's NRIC back image.
+Used in candidate profile page.
+*/
 profileAPIRouter.get("/nric/back", async (req, res) => {
   const user = req.user as User;
   const { cuid } = user;

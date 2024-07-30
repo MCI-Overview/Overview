@@ -9,7 +9,11 @@ import {
 } from "../../../utils/permissions";
 
 const clientAPIRoutes: Router = Router();
+/**
+GET /api/admin/client/:uen
 
+Retrieve the client with the given UEN.
+*/
 clientAPIRoutes.get("/client/:uen"),
   async (req: Request, res: Response) => {
     const { uen } = req.params;
@@ -27,6 +31,11 @@ clientAPIRoutes.get("/client/:uen"),
     }
   };
 
+/**
+POST /api/admin/client
+
+Create a new client.
+*/
 clientAPIRoutes.post("/client", async (req, res) => {
   const { uen, name } = req.body;
 
@@ -53,6 +62,7 @@ clientAPIRoutes.post("/client", async (req, res) => {
   return res.send("Client created successfully.");
 });
 
+// Currently unused
 clientAPIRoutes.delete("/client", async (req, res) => {
   const user = req.user as User;
   const { uen } = req.body;
@@ -131,9 +141,15 @@ async function updateClient(req: Request, res: Response) {
   }
 }
 
+// Unused
 clientAPIRoutes.put("/client", updateClient);
 clientAPIRoutes.patch("/client", updateClient);
 
+/**
+GET /api/admin/clients
+
+Retrieve all clients. (Project creation autocomplete)
+*/
 clientAPIRoutes.get("/clients", async (_req, res) => {
   const clientsData = await prisma.client.findMany({
     select: {

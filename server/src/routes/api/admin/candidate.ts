@@ -1,15 +1,9 @@
 import { Router, Request, Response } from "express";
 import { prisma, s3 } from "../../../client";
 import { PrismaError } from "@/types";
-import {
-  CommonAddress,
-  BankDetails,
-  EmergencyContact,
-  User,
-} from "@/types/common";
-import bcrypt from "bcrypt";
+import { User } from "@/types/common";
 import dayjs from "dayjs";
-import { generateDefaultPassword, maskNRIC } from "../../../utils";
+import { maskNRIC } from "../../../utils";
 import {
   PERMISSION_ERROR_TEMPLATE,
   checkPermission,
@@ -20,15 +14,26 @@ import { Readable } from "stream";
 
 const candidateAPIRoutes: Router = Router();
 
+/**
+GET /api/admin/candidate/:candidateCuid
+
+Fetches data of the candidate with the specified cuid.
+
+Parameters:
+candidateCuid
+
+Steps:
+1. Fetch user data fom database.
+2. Check if user has permission to edit candidate info. (canEdit field in response)
+  a. User has assigned the candidate
+  b. User is a client holder of the project the candidate is assigned to
+3. Check if user has permission to read sensitive candidate details (full nric, address, bank details).
+*/
 candidateAPIRoutes.get(
   "/candidate/:candidateCuid",
   async (req: Request, res: Response) => {
     const user = req.user as User;
     const { candidateCuid } = req.params;
-
-    if (user.userType !== "Admin") {
-      // TODO: redirect request to user api endpoint
-    }
 
     try {
       const candidateData = await prisma.candidate.findUniqueOrThrow({
@@ -41,11 +46,7 @@ candidateAPIRoutes.get(
               Consultant: true,
               Project: {
                 include: {
-                  Manage: {
-                    where: {
-                      role: "CLIENT_HOLDER",
-                    },
-                  },
+                  Manage: true,
                 },
               },
             },
@@ -66,29 +67,22 @@ candidateAPIRoutes.get(
         ...otherData
       } = candidateData;
 
-      // Initialise editor list (who can edit candidate profile)
-      let assignersAndClientHolders: string[] = [];
-
-      // Add assigners to the editor list
-      candidateData.Assign.forEach((assign) => {
-        // Exclude assigners if they are already in the list
-        if (!assignersAndClientHolders.includes(assign.consultantCuid)) {
-          assignersAndClientHolders.push(assign.consultantCuid);
-        }
-      });
-
-      // Add client holders to the editor list
-      candidateData.Assign.forEach((assign) => {
-        assign.Project.Manage.forEach((manage) => {
-          // Exclude client holders if they are already in the list
-          if (
-            manage.role === "CLIENT_HOLDER" &&
-            !assignersAndClientHolders.includes(manage.consultantCuid)
-          ) {
-            assignersAndClientHolders.push(manage.consultantCuid);
-          }
-        });
-      });
+      // Check if user has permission to edit candidate info
+      // Either the assigner or the client holder can edit the candidate info
+      const canEdit =
+        candidateData.Assign.some(
+          (assign) =>
+            assign.consultantCuid === user.cuid ||
+            assign.Project.Manage.some(
+              (manage) =>
+                manage.consultantCuid === user.cuid &&
+                manage.role === "CLIENT_HOLDER"
+            )
+        ) ||
+        (await checkPermission(
+          user.cuid,
+          PermissionList.CAN_UPDATE_CANDIDATES
+        ));
 
       const hasReadCandidateDetailsPermission = await checkPermission(
         user.cuid,
@@ -106,7 +100,7 @@ candidateAPIRoutes.get(
           nationality,
           hasOnboarded,
           emergencyContact,
-          assignersAndClientHolders,
+          canEdit,
           ...otherData,
         });
       }
@@ -121,7 +115,7 @@ candidateAPIRoutes.get(
         dateOfBirth,
         hasOnboarded,
         emergencyContact,
-        assignersAndClientHolders,
+        canEdit,
       });
     } catch (error) {
       return res.status(404).send("Candidate not found.");
@@ -129,13 +123,16 @@ candidateAPIRoutes.get(
   }
 );
 
-candidateAPIRoutes.get("/candidate/bynric/:candidateNric", async (req, res) => {
-  const user = req.user as User;
-  const { candidateNric } = req.params;
+/**
+GET /api/admin/candidate/bynric/:candidateNric
 
-  if (user.userType !== "Admin") {
-    res.status(401).send("Unauthorized");
-  }
+Fetches data of the candidate with the specified NRIC, if they exist.
+
+Parameters:
+candidateNric
+*/
+candidateAPIRoutes.get("/candidate/bynric/:candidateNric", async (req, res) => {
+  const { candidateNric } = req.params;
 
   try {
     const candidate = await prisma.candidate.findUnique({
@@ -162,179 +159,23 @@ candidateAPIRoutes.get("/candidate/bynric/:candidateNric", async (req, res) => {
   }
 });
 
-candidateAPIRoutes.post("/candidate", async (req, res) => {
-  const {
-    nric,
-    name,
-    contact,
-    residency,
-    nationality,
-    dateOfBirth,
-    bankDetails,
-    address,
-    emergencyContact,
-  } = req.body;
+/**
+PATCH /api/admin/candidate
 
-  // Checking for the required parameters
-  if (!nric) return res.status(400).send("nric parameter is required.");
+Updates data of the candidate with the specified cuid.
 
-  if (!name) return res.status(400).send("name parameter is required.");
+Parameters:
+cuid
+(and optional parameters)
 
-  if (!contact) return res.status(400).send("contact parameter is required.");
-
-  if (!dateOfBirth)
-    return res.status(400).send("dateOfBirth parameter is required.");
-
-  if (!residency)
-    return res.status(400).send("residency parameter is required.");
-
-  // Validation for dateOfBirth
-  if (dateOfBirth && !Date.parse(dateOfBirth)) {
-    return res.status(400).send("Invalid dateOfBirth parameter.");
-  }
-
-  // Validation for bankDetails
-  let bankDetailsObject: BankDetails | undefined;
-  if (bankDetails) {
-    try {
-      bankDetailsObject = JSON.parse(bankDetails) as BankDetails;
-      if (
-        !bankDetailsObject.bankHolderName ||
-        !bankDetailsObject.bankName ||
-        !bankDetailsObject.bankNumber
-      ) {
-        throw new Error();
-      }
-    } catch (error) {
-      return res.status(400).send("Invalid bankDetails JSON.");
-    }
-  }
-
-  // Validation for address
-  let addressObject: CommonAddress | undefined;
-  if (address) {
-    try {
-      addressObject = JSON.parse(address) as CommonAddress;
-      if (
-        !addressObject.block ||
-        !addressObject.building ||
-        !addressObject.floor ||
-        !addressObject.unit ||
-        !addressObject.street ||
-        !addressObject.postal ||
-        !addressObject.country
-      ) {
-        throw new Error();
-      }
-    } catch (error) {
-      return res.status(400).send("Invalid address JSON.");
-    }
-  }
-
-  // Validation for emergencyContact
-  let emergencyContactObject: EmergencyContact | undefined;
-  if (emergencyContact) {
-    try {
-      emergencyContactObject = JSON.parse(emergencyContact) as EmergencyContact;
-      if (
-        !emergencyContactObject.name ||
-        !emergencyContactObject.relationship ||
-        !emergencyContactObject.contact
-      ) {
-        throw new Error();
-      }
-    } catch (error) {
-      return res.status(400).send("Invalid emergencyContact JSON.");
-    }
-  }
-
-  const dateOfBirthObject = dayjs(dateOfBirth);
-  if (!dateOfBirthObject.isValid()) {
-    return res.status(400).send("Invalid dateOfBirth parameter.");
-  }
-
-  const createData = {
-    nric,
-    name,
-    contact,
-    residency,
-    dateOfBirth,
-    ...(nationality && { nationality }),
-    ...(addressObject && { address: { update: addressObject } }),
-    ...(bankDetailsObject && { bankDetails: { update: bankDetailsObject } }),
-    ...(emergencyContactObject && {
-      emergencyContact: { update: emergencyContactObject },
-    }),
-  };
-
-  try {
-    await prisma.candidate.create({
-      data: {
-        ...createData,
-        User: {
-          create: {
-            username: nric,
-            hash: await bcrypt.hash(generateDefaultPassword(createData), 12),
-          },
-        },
-      },
-    });
-  } catch (error) {
-    const prismaError = error as PrismaError;
-    if (prismaError.code === "P2002") {
-      const prismaErrorMetaTarget = prismaError.meta.target || [];
-
-      if (prismaErrorMetaTarget.includes("nric")) {
-        return res.status(400).send("Candidate already exists.");
-      }
-
-      // contact is no longer unique
-      // if (prismaErrorMetaTarget.includes("contact")) {
-      //   return res.status(400).send("Another candidate has the same contact.");
-      // }
-    }
-
-    console.log(error);
-    return res.status(500).send("Internal server error.");
-  }
-
-  return res.send(`Candidate ${nric} created successfully.`);
-});
-
-candidateAPIRoutes.delete("/candidate", async (req, res) => {
-  const user = req.user as User;
-  const { cuid } = req.body;
-
-  if (!cuid) return res.status(400).send("cuid parameter is required.");
-
-  const hasDeleteCandidatePermission = await checkPermission(
-    user.cuid,
-    PermissionList.CAN_DELETE_CANDIDATES
-  );
-
-  if (!hasDeleteCandidatePermission) {
-    return res
-      .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_DELETE_CANDIDATES);
-  }
-
-  try {
-    await prisma.candidate.delete({
-      where: {
-        cuid,
-        Assign: {
-          none: {},
-        },
-      },
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send("Internal server error.");
-  }
-
-  return res.send(`Candidate ${cuid} deleted successfully.`);
-});
-
+Steps:
+1. Check permission to update candidate data
+  a. User has CAN_UPDATE_CANDIDATES permission
+  b. User is an assigner of the candidate
+  c. User is a client holder of the project the candidate is assigned to
+2. Validate the input fields
+3. Update the candidate data
+*/
 candidateAPIRoutes.patch("/candidate", async (req, res) => {
   const user = req.user as User;
   const {
@@ -394,23 +235,23 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
       },
     });
 
-    const assignersAndClientHolders: string[] = [];
-    data?.Assign.forEach((assign) => {
-      if (!assignersAndClientHolders.includes(assign.consultantCuid)) {
-        assignersAndClientHolders.push(assign.consultantCuid);
-      }
+    if (!data) {
+      return res.status(404).send("Candidate not found.");
+    }
 
-      assign.Project.Manage.forEach((manage) => {
-        if (
-          manage.role === "CLIENT_HOLDER" &&
-          !assignersAndClientHolders.includes(manage.consultantCuid)
-        ) {
-          assignersAndClientHolders.push(manage.consultantCuid);
-        }
-      });
-    });
+    // Check if user has permission to edit candidate info
+    // Either the assigner or the client holder can edit the candidate info
+    const canEdit = data.Assign.some(
+      (assign) =>
+        assign.consultantCuid === user.cuid ||
+        assign.Project.Manage.some(
+          (manage) =>
+            manage.consultantCuid === user.cuid &&
+            manage.role === "CLIENT_HOLDER"
+        )
+    );
 
-    if (!assignersAndClientHolders.includes(user.cuid)) {
+    if (!canEdit) {
       return res
         .status(401)
         .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_UPDATE_CANDIDATES);
@@ -490,6 +331,20 @@ candidateAPIRoutes.patch("/candidate", async (req, res) => {
   }
 });
 
+/**
+GET /api/admin/history/:candidatecuid/:page
+
+Fetches the attendance history of the candidate with the specified cuid.
+Uses pagination.
+
+Parameters:
+candidatecuid
+
+Steps:
+1. Display attendances based on whether the user is part of the project.
+  a. Unless they have CAN_READ_ALL_PROJECTS
+2. Fetch the attendance data from the database.
+*/
 candidateAPIRoutes.get(
   "/history/:candidatecuid/:page",
   async (req: Request, res: Response) => {
@@ -504,7 +359,7 @@ candidateAPIRoutes.get(
       let whereClause: any = {
         candidateCuid: usercuid,
         shiftDate: {
-          lt: today,
+          lt: today.toDate(),
         },
       };
 
@@ -513,17 +368,45 @@ candidateAPIRoutes.get(
         whereClause = {
           ...whereClause,
           shiftDate: {
-            gte: selectedDate.startOf("day"),
-            lt:
-              selectedDate.endOf("day") < today
-                ? selectedDate.endOf("day")
-                : today,
+            gte: selectedDate.startOf("day").toDate(),
+            lt: selectedDate.isBefore(today, "day")
+              ? selectedDate.endOf("day").toDate()
+              : today.toDate(),
+          },
+        };
+      }
+
+      const hasReadAllProjectsPermission = await checkPermission(
+        usercuid,
+        PermissionList.CAN_READ_ALL_PROJECTS
+      );
+
+      if (!hasReadAllProjectsPermission) {
+        whereClause = {
+          ...whereClause,
+          Candidate: {
+            Assign: {
+              some: {
+                Project: {
+                  Manage: {
+                    some: {
+                      consultantCuid: usercuid,
+                    },
+                  },
+                },
+              },
+            },
           },
         };
       }
 
       const totalCount = await prisma.attendance.count({
-        where: whereClause,
+        where: {
+          candidateCuid: usercuid,
+          shiftDate: {
+            lt: today.toDate(),
+          },
+        },
       });
 
       const fetchedData = await prisma.attendance.findMany({
@@ -561,6 +444,16 @@ candidateAPIRoutes.get(
   }
 );
 
+/**
+GET /api/admin/report/:candidatecuid
+
+Fetches the data of the candidate with the specified cuid.
+Used for candidate profile report tab.
+No permissions required, since only combined data is shown.
+
+Parameters:
+candidatecuid
+*/
 candidateAPIRoutes.get("/report/:candidateCuid", async (req, res) => {
   const { candidateCuid } = req.params;
 

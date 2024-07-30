@@ -9,6 +9,12 @@ import { correctTimes } from "../../../utils/clash";
 
 const requestAPIRouter = Router();
 
+/**
+GET /api/user/requests/current
+
+Retrieve the user's recent or pending requests.
+Only requests from the past 7 days are considered recent.
+*/
 requestAPIRouter.get("/requests/current", async (req, res) => {
   const user = req.user as User;
 
@@ -86,6 +92,19 @@ requestAPIRouter.get("/requests/current", async (req, res) => {
   }
 });
 
+/**
+GET /api/user/requests/history/:page
+
+Parameters:
+page
+searchValue
+typeFilter
+statusFilter
+
+Retrieve the user's request history (excludes pending requests).
+Only requests older than 7 days are considered history.
+Uses pagination.
+*/
 requestAPIRouter.get("/requests/history/:page", async (req, res) => {
   const user = req.user as User;
   const page = parseInt(req.params.page, 10);
@@ -185,6 +204,19 @@ requestAPIRouter.get("/requests/history/:page", async (req, res) => {
   }
 });
 
+/**
+POST /api/user/request/claim
+
+Creates a new claim request.
+
+Parameters:
+projectCuid
+type
+description
+amount
+rosterCuid
+receipt
+*/
 requestAPIRouter.post(
   "/request/claim",
   upload.single("receipt"),
@@ -265,6 +297,11 @@ requestAPIRouter.post(
   }
 );
 
+/**
+POST /api/user/request/cancel
+
+Cancels a pending request.
+*/
 requestAPIRouter.post("/request/cancel", async (req, res) => {
   const { requestCuid } = req.body;
 
@@ -290,7 +327,18 @@ requestAPIRouter.post("/request/cancel", async (req, res) => {
   }
 });
 
-// Add validation for leave type
+/**
+POST /api/user/request/leave
+
+Creates a new leave request.
+
+Parameters:
+projectCuid
+rosterCuid
+type
+duration
+reason
+*/
 requestAPIRouter.post("/request/leave", async (req, res) => {
   const user = req.user as User;
 
@@ -299,6 +347,10 @@ requestAPIRouter.post("/request/leave", async (req, res) => {
 
   if (!type) {
     return res.status(400).send("Leave type is required");
+  }
+
+  if (type !== "PAID_LEAVE" && type !== "UNPAID_LEAVE") {
+    return res.status(400).send("Invalid leave type");
   }
 
   if (!rosterCuid) {
@@ -338,7 +390,16 @@ requestAPIRouter.post("/request/leave", async (req, res) => {
   }
 });
 
-// TODO: Add logic for when multiple resign requests are submitted
+/**
+POST /api/user/request/resign
+
+Creates a new resignation request.
+
+Parameters:
+projectCuid
+lastDay
+reason
+*/
 requestAPIRouter.post("/request/resign", async (req, res) => {
   const user = req.user as User;
 
@@ -347,17 +408,6 @@ requestAPIRouter.post("/request/resign", async (req, res) => {
 
   try {
     await prisma.$transaction([
-      prisma.request.updateMany({
-        where: {
-          candidateCuid,
-          projectCuid,
-          type: RequestType.RESIGNATION,
-          status: "PENDING",
-        },
-        data: {
-          status: "CANCELLED",
-        },
-      }),
       prisma.request.create({
         data: {
           projectCuid,
@@ -369,6 +419,19 @@ requestAPIRouter.post("/request/resign", async (req, res) => {
           },
         },
       }),
+
+      // Auto-cancel any pending resignation requests
+      prisma.request.updateMany({
+        where: {
+          candidateCuid,
+          projectCuid,
+          type: RequestType.RESIGNATION,
+          status: "PENDING",
+        },
+        data: {
+          status: "CANCELLED",
+        },
+      }),
     ]);
 
     return res.send("Resignation request submitted successfully");
@@ -378,6 +441,24 @@ requestAPIRouter.post("/request/resign", async (req, res) => {
   }
 });
 
+/**
+POST /api/user/request/mc
+
+Creates a new medical leave request.
+
+Parameters:
+startDate
+numberOfDays
+
+Steps:
+1. Verify fields
+2. Fetch affected rosters
+  a. Exclude rosters with fullday leave
+  b. Exclude rosters with clocked in / MC status
+3. Upload MC image to S3
+4. Create request for each affected project
+5. Set pending leave requests to cancelled for affected rosters
+*/
 requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
   const user = req.user as User;
 
@@ -497,6 +578,19 @@ requestAPIRouter.post("/request/mc", upload.single("mc"), async (req, res) => {
   }
 });
 
+/**
+GET /api/user/request/:requestCuid/image
+
+Retrieve the image associated with a request.
+
+Parameters:
+requestCuid
+
+Steps:
+1. Fetch request details
+2. Determine request type
+3. Fetch image from S3
+*/
 requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
   const user = req.user as User;
   const { requestCuid } = req.params;
@@ -512,6 +606,10 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
       projectCuid: true,
     },
   });
+
+  if (!request) {
+    return res.status(404).send("Request not found");
+  }
 
   if (request.type === "CLAIM") {
     const command = new GetObjectCommand({
@@ -542,91 +640,6 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
   }
 
   return res.status(400).send("No image found for this request.");
-});
-
-// Is this still required? Attendance is already linked to the request
-requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
-  const user = req.user as User;
-  const { requestCuid } = req.params;
-
-  try {
-    const request = await prisma.request.findUniqueOrThrow({
-      where: {
-        cuid: requestCuid,
-        candidateCuid: user.cuid,
-      },
-      select: {
-        candidateCuid: true,
-        projectCuid: true,
-        data: true,
-        type: true,
-        Attendance: {
-          include: {
-            Shift: true,
-          },
-        },
-      },
-    });
-
-    if (request.type === "RESIGNATION") {
-      return res.status(404).send("No roster details found for this request.");
-    }
-
-    if (request.type === "MEDICAL_LEAVE") {
-      const affectedRosterData = await prisma.attendance.findMany({
-        where: {
-          candidateCuid: request.candidateCuid,
-          OR: [
-            {
-              status: null,
-            },
-            {
-              status: "NO_SHOW",
-            },
-          ],
-          shiftDate: {
-            gte: dayjs(
-              (request.data as { startDate: string }).startDate
-            ).toDate(),
-            lte: dayjs((request.data as { startDate: string }).startDate)
-              .add(
-                parseInt(
-                  (request.data as { numberOfDays: string }).numberOfDays,
-                  10
-                ) - 1,
-                "day"
-              )
-              .endOf("day")
-              .toDate(),
-          },
-          Shift: {
-            projectCuid: request.projectCuid,
-          },
-        },
-        include: {
-          Shift: true,
-        },
-      });
-
-      return res.json(affectedRosterData);
-    }
-
-    if (
-      // these request types should have only one linked roster
-      request.Attendance.length === 1 &&
-      (request.type === "CLAIM" ||
-        request.type === "UNPAID_LEAVE" ||
-        request.type === "PAID_LEAVE")
-    ) {
-      const rosterData = request.Attendance[0];
-      return res.json(rosterData);
-    }
-
-    return res.status(400).send("No roster details found for this request.");
-  } catch (error) {
-    console.error("Error while fetching roster details:", error);
-    return res.status(500).send("Internal server error");
-  }
 });
 
 export default requestAPIRouter;
