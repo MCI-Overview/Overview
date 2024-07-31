@@ -1561,22 +1561,23 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
  * cuidList
  *
  * Steps:
- * 1. Check permission, requires either:
- *   a. User is a assigner (TODO!) or client holder of the project
- *   b. User has CAN_EDIT_ALL_PROJECTS permission
- * 2. Hard delete
+ * 1. Check permission, either:
+ *  a. User is a client holder of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Otherwise, only proceed for candidates that the user has assigned
+ * 3. Delete scheduled future attendances (if they exist)
+ * 4. Check if candidate has past attendances
+ *  a. If candidate has no past attendances, hard delete candidate
+ *  b. Otherwise, soft delete candidate by setting endDate to current date
  *
- * TODO: revisit candidate deletion logic. Proposed steps:
- * 1. Delete scheduled future attendances (if they exist)
- * 2. If candidate has no past attendances, hard delete candidate
- * 3. Otherwise, soft delete candidate by setting endDate to current date
+ * TODO: Test if this works as intended
  */
 projectAPIRouter.delete(
   "/project/:projectCuid/candidates",
   async (req, res) => {
     const user = req.user as User;
     const { projectCuid } = req.params;
-    const { cuidList } = req.body;
+    let { cuidList } = req.body;
 
     if (!projectCuid) {
       return res.status(400).send("projectCuid is required.");
@@ -1593,7 +1594,35 @@ projectAPIRouter.delete(
           cuid: projectCuid,
         },
         include: {
-          Manage: true,
+          // for permission check
+          Manage: {
+            where: {
+              role: Role.CLIENT_HOLDER,
+            },
+          },
+
+          // for permission check
+          Assign: {
+            where: {
+              consultantCuid: user.cuid,
+            },
+          },
+
+          // for checking attendances
+          Shift: {
+            include: {
+              Attendance: {
+                where: {
+                  candidateCuid: {
+                    in: cuidList,
+                  },
+                },
+                include: {
+                  Request: true,
+                },
+              },
+            },
+          },
         },
       });
     } catch (error) {
@@ -1606,24 +1635,112 @@ projectAPIRouter.delete(
       return res.status(500).send("Internal server error.");
     }
 
-    const hasPermission =
+    const hasPermissionToDeleteAll =
       projectData.Manage.some((m) => m.consultantCuid === user.cuid) ||
       (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
-    if (!hasPermission) {
-      return res
-        .status(401)
-        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+    if (!hasPermissionToDeleteAll) {
+      // filter out candidates that the user did not assign
+      cuidList = cuidList.filter((cuid) => {
+        const assign = projectData.Assign.find(
+          (assign) => assign.candidateCuid === cuid
+        );
+
+        return assign && assign.consultantCuid === user.cuid;
+      });
+
+      if (cuidList.length === 0) {
+        return res
+          .status(401)
+          .send(
+            PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS
+          );
+      }
     }
 
+    // get list of all future attendances to be removed
+    const futureAttendances = projectData.Shift.flatMap((shift) =>
+      shift.Attendance.filter((attendance) => {
+        const isInCuidList = attendance.candidateCuid in cuidList;
+        if (!isInCuidList) return false;
+
+        const { correctStartTime } = correctTimes(
+          attendance.shiftDate,
+          attendance.shiftType === "SECOND_HALF"
+            ? shift.halfDayStartTime!
+            : shift.startTime,
+          attendance.shiftType === "FIRST_HALF"
+            ? shift.halfDayEndTime!
+            : shift.endTime
+        );
+
+        return dayjs().isBefore(correctStartTime);
+      })
+    );
+
     try {
-      await prisma.assign.deleteMany({
-        where: {
-          projectCuid: projectCuid,
-          candidateCuid: {
-            in: cuidList,
-          },
-        },
+      prisma.$transaction(async () => {
+        // delete future attendances
+        await prisma.attendance
+          .deleteMany({
+            where: {
+              cuid: {
+                in: futureAttendances.map((attendance) => attendance.cuid),
+              },
+            },
+          })
+          .then(async () => {
+            // marks all related requests as REJECTED
+            await prisma.request.updateMany({
+              where: {
+                cuid: {
+                  in: futureAttendances.flatMap((attendance) =>
+                    attendance.Request.map((request) => request.cuid)
+                  ),
+                },
+                status: {
+                  not: "CANCELLED",
+                },
+              },
+              data: {
+                status: "REJECTED",
+              },
+            });
+
+            // delete assigns without attendances
+            await prisma.assign.deleteMany({
+              where: {
+                projectCuid,
+                Candidate: {
+                  cuid: {
+                    in: cuidList,
+                  },
+
+                  // has no past attendances
+                  Attendance: { none: {} },
+                },
+              },
+            });
+
+            // update end date for candidates with past attendances
+            await prisma.assign.updateMany({
+              where: {
+                projectCuid,
+                Candidate: {
+                  cuid: {
+                    in: cuidList,
+                  },
+
+                  //  has past attendances for this project
+                  Attendance: { some: {} },
+                },
+              },
+
+              data: {
+                endDate: dayjs().startOf("day").toDate(),
+              },
+            });
+          });
       });
     } catch (error) {
       console.log(error);
@@ -1633,6 +1750,7 @@ projectAPIRouter.delete(
     return res.send("Candidates removed successfully.");
   }
 );
+
 /**
  * POST /api/admin/project/:projectCuid/shifts
  *
