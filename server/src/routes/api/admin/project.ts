@@ -212,6 +212,7 @@ projectAPIRouter.get(
         ],
       },
       select: {
+        employeeId: true,
         restDay: true,
         candidateCuid: true,
         startDate: true,
@@ -219,7 +220,6 @@ projectAPIRouter.get(
         Candidate: {
           select: {
             name: true,
-            nric: true,
           },
         },
       },
@@ -268,7 +268,7 @@ projectAPIRouter.get(
       return {
         cuid: c.candidateCuid,
         name: c.Candidate.name,
-        nric: maskNRIC(c.Candidate.nric),
+        employeeId: c.employeeId,
         startDate: c.startDate,
         endDate: c.endDate,
         restDay: c.restDay,

@@ -19,6 +19,7 @@ import {
 export default function WeekPicker() {
   const { project } = useProjectContext();
   const {
+    sortOrder,
     dateRangeStart,
     dateRangeEnd,
     weekOffset,
@@ -86,7 +87,7 @@ export default function WeekPicker() {
         ${dateRangeEnd?.format("DD/MM/YY")}`}
         </Button>
         <Select
-          defaultValue="selected"
+          value={sortOrder}
           sx={{
             width: "9rem",
           }}
@@ -95,15 +96,17 @@ export default function WeekPicker() {
               value as
                 | "name-asc"
                 | "name-desc"
+                | "employeeId-asc"
+                | "employeeId-desc"
                 | "unassign"
                 | "assign"
-                | "selected"
             );
           }}
         >
-          <Option value="selected">Selected</Option>
           <Option value="name-asc">Name (Asc)</Option>
           <Option value="name-desc">Name (Desc)</Option>
+          <Option value="employeeId-asc">ID (Asc)</Option>
+          <Option value="employeeId-desc">ID (Desc)</Option>
           <Option value="unassign">Unassigned</Option>
           <Option value="assign">Assigned</Option>
         </Select>

@@ -212,7 +212,7 @@ export type GetCandidateResponse = {
 export type GetRosterResponse = {
   cuid: string;
   name: string;
-  nric: string;
+  employeeId: string;
   restDay: string;
   startDate: string;
   endDate: string;

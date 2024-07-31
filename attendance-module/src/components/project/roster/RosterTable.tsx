@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import axios from "axios";
 import { useDrop } from "react-dnd";
-import { useEffect, useState } from "react";
 import { useStore } from "@tanstack/react-store";
 
 import DroppableArea from "./DroppableArea";
@@ -325,7 +324,9 @@ export default function RosterTable({ type }: RosterTableProps) {
                     />
                     <Stack direction="column" gap={1}>
                       <Typography level="title-sm">{candidate.name}</Typography>
-                      <Typography level="body-xs">{candidate.nric}</Typography>
+                      <Typography level="body-xs">
+                        {candidate.employeeId}
+                      </Typography>
                     </Stack>
                   </Stack>
                 </td>
