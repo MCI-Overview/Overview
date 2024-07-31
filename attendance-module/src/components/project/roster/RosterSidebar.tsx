@@ -174,6 +174,7 @@ export default function RosterSidebar() {
                     type={
                       shift.type as "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF"
                     }
+                    breakDuration={shift.breakDuration}
                     shiftCuid={shift.cuid}
                     startTime={shift.startTime}
                     endTime={shift.endTime}

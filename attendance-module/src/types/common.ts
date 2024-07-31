@@ -115,6 +115,7 @@ export type CommonShift = {
   endTime: Dayjs;
   halfDayStartTime: Dayjs | null;
   halfDayEndTime: Dayjs | null;
+  breakDuration: number;
 };
 
 export type CommonAttendance = {

@@ -10,6 +10,7 @@ export type DraggableRosterChipProps = {
   shiftCuid: string;
   startTime: dayjs.Dayjs;
   endTime: dayjs.Dayjs;
+  breakDuration: number;
 };
 
 export default function DraggableRosterChip({
@@ -17,6 +18,7 @@ export default function DraggableRosterChip({
   shiftCuid,
   startTime,
   endTime,
+  breakDuration,
 }: DraggableRosterChipProps) {
   const { setHoverDate, setCandidateHoverCuid, setItem, setItemType } =
     useRosterTableContext();
@@ -28,6 +30,7 @@ export default function DraggableRosterChip({
         shiftCuid,
         startTime,
         endTime,
+        breakDuration,
       };
 
       setItem(item);
@@ -50,6 +53,7 @@ export default function DraggableRosterChip({
     <span ref={drag}>
       <RosterDisplay
         data={{
+          breakDuration,
           isPartial: false,
           type,
           shiftCuid,
