@@ -23,7 +23,6 @@ export default function WeekPicker() {
     dateRangeEnd,
     weekOffset,
     setSortOrder,
-    setSortOrderBy,
     setWeekOffset,
     setDates,
   } = useRosterTableContext();
@@ -92,29 +91,14 @@ export default function WeekPicker() {
             width: "9rem",
           }}
           onChange={(_, value) => {
-            switch (value) {
-              case "selected":
-                setSortOrderBy("selected");
-                break;
-              case "name-asc":
-                setSortOrder("asc");
-                setSortOrderBy("name");
-                break;
-              case "name-desc":
-                setSortOrder("desc");
-                setSortOrderBy("name");
-                break;
-              case "unassign":
-                setSortOrder("desc");
-                setSortOrderBy("assign");
-                break;
-              case "assign":
-                setSortOrder("asc");
-                setSortOrderBy("assign");
-                break;
-              default:
-                break;
-            }
+            setSortOrder(
+              value as
+                | "name-asc"
+                | "name-desc"
+                | "unassign"
+                | "assign"
+                | "selected"
+            );
           }}
         >
           <Option value="selected">Selected</Option>

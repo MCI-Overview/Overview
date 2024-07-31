@@ -36,13 +36,12 @@ const RosterTableContext = createContext<{
   itemType: "shift" | "roster" | null;
   hoverDate: dayjs.Dayjs | null;
   hoverCuid: string | null | undefined;
-  sortOrder: "asc" | "desc";
   weekOffset: number;
   rosterData: MappedRosterResponse | null;
-  sortOrderBy: "name" | "assign" | "selected";
   draggingCuid: string | null;
   dateRangeEnd: dayjs.Dayjs;
   dateRangeStart: dayjs.Dayjs;
+  sortedCandidates: string[];
   selectedCandidates: string[];
   candidateHoverCuid: string | null;
   setItem: (
@@ -50,11 +49,12 @@ const RosterTableContext = createContext<{
   ) => void;
   setDates: (dates: dayjs.Dayjs[]) => void;
   setItemType: (type: "shift" | "roster" | null) => void;
-  setSortOrder: (order: "asc" | "desc") => void;
+  setSortOrder: (
+    order: "name-asc" | "name-desc" | "unassign" | "assign" | "selected"
+  ) => void;
   setHoverDate: (date: dayjs.Dayjs | null) => void;
   setHoverCuid: (cuid: string | null) => void;
   setWeekOffset: (offset: number) => void;
-  setSortOrderBy: (orderBy: "name" | "assign" | "selected") => void;
   setDraggingCuid: (cuid: string | null) => void;
   updateRosterData: () => void;
   setSelectedCandidates: (cuids: string[]) => void;
@@ -65,14 +65,13 @@ const RosterTableContext = createContext<{
   itemType: null,
   hoverDate: dayjs(),
   hoverCuid: null,
-  sortOrder: "asc",
   rosterData: null,
   weekOffset: 0,
-  sortOrderBy: "name",
   draggingCuid: null,
   dateRangeEnd: dayjs(),
   dateRangeStart: dayjs(),
   candidateHoverCuid: null,
+  sortedCandidates: [],
   selectedCandidates: [],
   setItem: () => {},
   setDates: () => {},
@@ -81,7 +80,6 @@ const RosterTableContext = createContext<{
   setHoverDate: () => {},
   setHoverCuid: () => {},
   setWeekOffset: () => {},
-  setSortOrderBy: () => {},
   setDraggingCuid: () => {},
   updateRosterData: () => {},
   setSelectedCandidates: () => {},
@@ -111,15 +109,80 @@ export function RosterTableContextProvider({
     Math.floor(dayjs().diff(project?.startDate.startOf("isoWeek"), "weeks")) ||
       0
   );
-
-  const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
-
+  const [sortedCandidates, setSortedCandidates] = useState<string[]>(
+    Object.keys(rosterData || {})
+  );
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [sortOrderBy, setSortOrderBy] = useState<
-    "name" | "assign" | "selected"
+  const [sortOrder, setSortOrder] = useState<
+    "name-asc" | "name-desc" | "unassign" | "assign" | "selected"
   >("selected");
 
+  useEffect(() => {
+    if (!rosterData) return;
+
+    const candidatesList = Object.keys(rosterData).sort((a, b) =>
+      rosterData[a].name.localeCompare(rosterData[b].name)
+    );
+
+    if (sortOrder === "name-asc") {
+      setSortedCandidates(candidatesList);
+    }
+
+    if (sortOrder === "name-desc") {
+      setSortedCandidates(candidatesList.reverse());
+    }
+
+    if (sortOrder === "selected") {
+      setSortedCandidates([
+        ...selectedCandidates,
+        ...candidatesList.filter((c) => !selectedCandidates.includes(c)),
+      ]);
+    }
+
+    if (sortOrder === "unassign") {
+      setSortedCandidates(
+        candidatesList.sort((a, b) => {
+          if (
+            rosterData[a].rosterLength === 0 &&
+            rosterData[b].rosterLength === 0
+          ) {
+            return a.localeCompare(b);
+          }
+          if (rosterData[a].rosterLength === 0) {
+            return -1;
+          }
+          if (rosterData[b].rosterLength === 0) {
+            return 1;
+          }
+
+          return a.localeCompare(b);
+        })
+      );
+    }
+
+    if (sortOrder === "assign") {
+      setSortedCandidates(
+        candidatesList.sort((a, b) => {
+          if (
+            rosterData[a].rosterLength === 0 &&
+            rosterData[b].rosterLength === 0
+          ) {
+            return a.localeCompare(b);
+          }
+          if (rosterData[a].rosterLength === 0) {
+            return 1;
+          }
+          if (rosterData[b].rosterLength === 0) {
+            return -1;
+          }
+
+          return a.localeCompare(b);
+        })
+      );
+    }
+  }, [rosterData, selectedCandidates, sortOrder]);
+
+  const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
   const baseDay = project?.startDate.startOf("isoWeek");
   const dateRangeStart = baseDay?.add(weekOffset, "weeks");
   const dateRangeEnd = dateRangeStart?.endOf("isoWeek");
@@ -350,14 +413,13 @@ export function RosterTableContextProvider({
         item,
         dates,
         itemType,
-        sortOrder,
         hoverDate,
         hoverCuid,
         weekOffset,
-        sortOrderBy,
         draggingCuid,
         dateRangeEnd,
         dateRangeStart,
+        sortedCandidates,
         selectedCandidates,
         candidateHoverCuid,
         rosterData: memomizedMergedData,
@@ -368,7 +430,6 @@ export function RosterTableContextProvider({
         setHoverDate,
         setHoverCuid,
         setWeekOffset,
-        setSortOrderBy,
         setDraggingCuid,
         updateRosterData,
         setCandidateHoverCuid,

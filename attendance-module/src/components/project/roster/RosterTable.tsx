@@ -36,8 +36,7 @@ export default function RosterTable({ type }: RosterTableProps) {
     hoverDate,
     candidateHoverCuid,
     dates,
-    sortOrder,
-    sortOrderBy,
+    sortedCandidates,
     updateRosterData,
     setDates,
     setHoverDate,
@@ -56,10 +55,6 @@ export default function RosterTable({ type }: RosterTableProps) {
       createdAt: string;
     }[]
   >;
-
-  const [sortedCandidates, setSortedCandidates] = useState(
-    Object.keys(rosterData || {})
-  );
 
   const [{ item, itemType }, drop] = useDrop({
     accept: ["shift", "roster", "candidate"],
@@ -115,52 +110,6 @@ export default function RosterTable({ type }: RosterTableProps) {
       itemType: monitor.getItemType(),
     }),
   });
-
-  useEffect(() => {
-    if (!rosterData) return;
-
-    console.log("HUHH");
-
-    const candidatesList = Object.keys(rosterData).sort((a, b) =>
-      rosterData[a].name.localeCompare(rosterData[b].name)
-    );
-
-    if (sortOrderBy === "name") {
-      setSortedCandidates(candidatesList);
-    }
-
-    if (sortOrderBy === "selected") {
-      setSortedCandidates([
-        ...selectedCandidates,
-        ...candidatesList.filter((c) => !selectedCandidates.includes(c)),
-      ]);
-    }
-
-    if (sortOrder === "desc") {
-      setSortedCandidates((c) => c.reverse());
-    }
-
-    if (sortOrderBy === "assign") {
-      setSortedCandidates(
-        candidatesList.sort((a, b) => {
-          if (
-            rosterData[a].rosterLength === 0 &&
-            rosterData[b].rosterLength === 0
-          ) {
-            return a.localeCompare(b);
-          }
-          if (rosterData[a].rosterLength === 0) {
-            return sortOrder === "asc" ? 1 : -1;
-          }
-          if (rosterData[b].rosterLength === 0) {
-            return sortOrder === "asc" ? -1 : 1;
-          }
-
-          return a.localeCompare(b);
-        })
-      );
-    }
-  }, [rosterData, selectedCandidates, sortOrder, sortOrderBy]);
 
   if (!dateRangeStart || !dateRangeEnd || !project || !rosterData) {
     return null;
