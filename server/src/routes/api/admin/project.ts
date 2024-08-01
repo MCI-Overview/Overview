@@ -652,12 +652,6 @@ projectAPIRouter.post("/project/:projectCuid/roster", async (req, res) => {
     PermissionList.CAN_EDIT_ALL_PROJECTS
   );
 
-  if (!hasCanEditAllProjectsPermission) {
-    return res.status(403).json({
-      message: "You are not authorized to create rosters for this project.",
-    });
-  }
-
   try {
     if (!hasCanEditAllProjectsPermission) {
       const project = await prisma.project.findUnique({
@@ -1661,7 +1655,7 @@ projectAPIRouter.delete(
     // get list of all future attendances to be removed
     const futureAttendances = projectData.Shift.flatMap((shift) =>
       shift.Attendance.filter((attendance) => {
-        const isInCuidList = attendance.candidateCuid in cuidList;
+        const isInCuidList = cuidList.includes(attendance.candidateCuid);
         if (!isInCuidList) return false;
 
         const { correctStartTime } = correctTimes(
@@ -1679,68 +1673,78 @@ projectAPIRouter.delete(
     );
 
     try {
-      prisma.$transaction(async () => {
+      await prisma.$transaction(async () => {
         // delete future attendances
-        await prisma.attendance
-          .deleteMany({
-            where: {
+        await prisma.attendance.deleteMany({
+          where: {
+            cuid: {
+              in: futureAttendances.map((attendance) => attendance.cuid),
+            },
+          },
+        });
+
+        // marks all related requests as REJECTED
+        await prisma.request.updateMany({
+          where: {
+            cuid: {
+              in: futureAttendances.flatMap((attendance) =>
+                attendance.Request.map((request) => request.cuid)
+              ),
+            },
+            status: {
+              not: "CANCELLED",
+            },
+          },
+          data: {
+            status: "REJECTED",
+          },
+        });
+
+        // delete assigns without attendances
+        await prisma.assign.deleteMany({
+          where: {
+            projectCuid,
+            Candidate: {
               cuid: {
-                in: futureAttendances.map((attendance) => attendance.cuid),
+                in: cuidList,
+              },
+
+              // has no past attendances for this project
+              Attendance: {
+                none: {
+                  Shift: {
+                    projectCuid,
+                  },
+                },
               },
             },
-          })
-          .then(async () => {
-            // marks all related requests as REJECTED
-            await prisma.request.updateMany({
-              where: {
-                cuid: {
-                  in: futureAttendances.flatMap((attendance) =>
-                    attendance.Request.map((request) => request.cuid)
-                  ),
-                },
-                status: {
-                  not: "CANCELLED",
-                },
-              },
-              data: {
-                status: "REJECTED",
-              },
-            });
+          },
+        });
 
-            // delete assigns without attendances
-            await prisma.assign.deleteMany({
-              where: {
-                projectCuid,
-                Candidate: {
-                  cuid: {
-                    in: cuidList,
+        // update end date for candidates with past attendances
+        await prisma.assign.updateMany({
+          where: {
+            projectCuid,
+            Candidate: {
+              cuid: {
+                in: cuidList,
+              },
+
+              //  has past attendances for this project
+              Attendance: {
+                some: {
+                  Shift: {
+                    projectCuid,
                   },
-
-                  // has no past attendances
-                  Attendance: { none: {} },
                 },
               },
-            });
+            },
+          },
 
-            // update end date for candidates with past attendances
-            await prisma.assign.updateMany({
-              where: {
-                projectCuid,
-                Candidate: {
-                  cuid: {
-                    in: cuidList,
-                  },
-
-                  //  has past attendances for this project
-                  Attendance: { some: {} },
-                },
-              },
-
-              data: {
-                endDate: dayjs().startOf("day").toDate(),
-              },
-            });
-          });
+          data: {
+            endDate: dayjs().startOf("day").toDate(),
+          },
+        });
       });
     } catch (error) {
       console.log(error);

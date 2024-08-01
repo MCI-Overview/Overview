@@ -1,6 +1,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import { useOnboardingContext } from "../../providers/onboardingContextProvider";
+import { allCountries } from "../../utils/countries";
 
 import {
   Box,
@@ -170,7 +171,7 @@ export default function UserDetailsStep() {
             <FormLabel>Nationality</FormLabel>
             <Autocomplete
               value={newNationality || ""}
-              options={["Singapore", "Malaysia", "China"]}
+              options={allCountries}
               onChange={(_e, value) =>
                 setNewCandidate({
                   ...newCandidate,

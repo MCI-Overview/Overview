@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import isEqual from "../../../utils";
+import { allCountries } from "../../../utils/countries";
 import { CandidateDetails } from "../../../types/common";
 
 // import NricImagesModal from "./NricImagesModal";
@@ -187,7 +188,7 @@ export default function PersonalInfoForm({
             <FormLabel>Nationality</FormLabel>
             <Autocomplete
               value={newCandidateDetails.nationality || ""}
-              options={["Singapore", "Malaysia", "China"]}
+              options={allCountries}
               onChange={(_e, value) =>
                 setNewCandidateDetails({
                   ...newCandidateDetails,
