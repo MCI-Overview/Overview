@@ -35,9 +35,7 @@ type MappedRosterResponse = {
 };
 
 const RosterTableContext = createContext<{
-  item: DraggableRosterProps | DraggableRosterChipProps | null;
   dates: dayjs.Dayjs[];
-  itemType: "shift" | "roster" | null;
   sortOrder:
     | "name-asc"
     | "name-desc"
@@ -45,21 +43,11 @@ const RosterTableContext = createContext<{
     | "employeeId-desc"
     | "unassign"
     | "assign";
-  hoverDate: dayjs.Dayjs | null;
-  hoverCuid: string | null | undefined;
   weekOffset: number;
-  rosterData: MappedRosterResponse | null;
-  draggingCuid: string | null;
   dateRangeEnd: dayjs.Dayjs;
   dateRangeStart: dayjs.Dayjs;
-  sortedCandidates: string[];
   selectedCandidates: string[];
-  candidateHoverCuid: string | null;
-  setItem: (
-    item: DraggableRosterProps | DraggableRosterChipProps | null
-  ) => void;
   setDates: (dates: dayjs.Dayjs[]) => void;
-  setItemType: (type: "shift" | "roster" | null) => void;
   setSortOrder: (
     order:
       | "name-asc"
@@ -69,67 +57,76 @@ const RosterTableContext = createContext<{
       | "unassign"
       | "assign"
   ) => void;
-  setHoverDate: (date: dayjs.Dayjs | null) => void;
-  setHoverCuid: (cuid: string | null) => void;
   setWeekOffset: (offset: number) => void;
-  setDraggingCuid: (cuid: string | null) => void;
-  updateRosterData: () => void;
   setSelectedCandidates: (cuids: string[]) => void;
-  setCandidateHoverCuid: (cuid: string | null) => void;
 }>({
-  item: null,
   dates: [],
-  itemType: null,
-  hoverDate: dayjs(),
-  hoverCuid: null,
-  rosterData: null,
   weekOffset: 0,
-  draggingCuid: null,
   dateRangeEnd: dayjs(),
   dateRangeStart: dayjs(),
-  candidateHoverCuid: null,
-  sortedCandidates: [],
   selectedCandidates: [],
   sortOrder: "employeeId-asc",
-  setItem: () => {},
   setDates: () => {},
-  setItemType: () => {},
   setSortOrder: () => {},
-  setHoverDate: () => {},
-  setHoverCuid: () => {},
   setWeekOffset: () => {},
-  setDraggingCuid: () => {},
-  updateRosterData: () => {},
   setSelectedCandidates: () => {},
-  setCandidateHoverCuid: () => {},
 });
 
-export function RosterTableContextProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+const RosterDraggingContext = createContext<{
+  draggingCuid: string | null;
+  hoverDate: dayjs.Dayjs | null;
+  hoverRosterCuid: string | null | undefined;
+  hoverCandidateCuid: string | null;
+  setDraggingCuid: (cuid: string | null) => void;
+  setHoverDate: (date: dayjs.Dayjs | null) => void;
+  setHoverRosterCuid: (cuid: string | null) => void;
+  setHoverCandidateCuid: (cuid: string | null) => void;
+}>({
+  draggingCuid: null,
+  hoverDate: dayjs(),
+  hoverRosterCuid: null,
+  hoverCandidateCuid: null,
+  setDraggingCuid: () => {},
+  setHoverDate: () => {},
+  setHoverRosterCuid: () => {},
+  setHoverCandidateCuid: () => {},
+});
+
+const RosterItemContext = createContext<{
+  item: DraggableRosterProps | DraggableRosterChipProps | null;
+  itemType: "shift" | "roster" | null;
+  setItem: (
+    item: DraggableRosterProps | DraggableRosterChipProps | null
+  ) => void;
+  setItemType: (type: "shift" | "roster" | null) => void;
+}>({
+  item: null,
+  itemType: null,
+  setItem: () => {},
+  setItemType: () => {},
+});
+
+const RosterDataContext = createContext<{
+  rosterData: MappedRosterResponse | null;
+  sortedCandidates: string[];
+  updateRosterData: () => void;
+  setSortedCandidates: (cuids: string[]) => void;
+}>({
+  rosterData: null,
+  sortedCandidates: [],
+  updateRosterData: () => {},
+  setSortedCandidates: () => {},
+});
+
+function RosterTableContextProvider({ children }: { children: ReactNode }) {
   const { project } = useProjectContext();
-  const [rosterData, setRosterData] = useState<MappedRosterResponse | null>(
-    null
-  );
-  const [item, setItem] = useState<
-    DraggableRosterProps | DraggableRosterChipProps | null
-  >(null);
-  const [itemType, setItemType] = useState<"shift" | "roster" | null>(null);
-  const [hoverCuid, setHoverCuid] = useState<string | null>(null);
-  const [hoverDate, setHoverDate] = useState<dayjs.Dayjs | null>(null);
-  const [draggingCuid, setDraggingCuid] = useState<string | null>(null);
-  const [candidateHoverCuid, setCandidateHoverCuid] = useState<string | null>(
-    null
-  );
   const [weekOffset, setWeekOffset] = useState<number>(
     Math.floor(dayjs().diff(project?.startDate.startOf("isoWeek"), "weeks")) ||
       0
   );
-  const [sortedCandidates, setSortedCandidates] = useState<string[]>(
-    Object.keys(rosterData || {})
-  );
+
+  const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
+
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<
     | "name-asc"
@@ -138,7 +135,165 @@ export function RosterTableContextProvider({
     | "employeeId-desc"
     | "unassign"
     | "assign"
-  >("name-asc");
+  >("employeeId-asc");
+
+  const baseDay = project?.startDate.startOf("isoWeek");
+  const dateRangeStart = baseDay?.add(weekOffset, "weeks");
+  const dateRangeEnd = dateRangeStart?.endOf("isoWeek");
+
+  if (!dateRangeStart || !dateRangeEnd) {
+    return null;
+  }
+
+  return (
+    <RosterTableContext.Provider
+      value={{
+        dates,
+        sortOrder,
+        weekOffset,
+        dateRangeEnd,
+        dateRangeStart,
+        selectedCandidates,
+        setDates,
+        setSortOrder,
+        setWeekOffset,
+        setSelectedCandidates,
+      }}
+    >
+      {children}
+    </RosterTableContext.Provider>
+  );
+}
+
+function RosterItemContextProvider({ children }: { children: ReactNode }) {
+  const [item, setItem] = useState<
+    DraggableRosterProps | DraggableRosterChipProps | null
+  >(null);
+  const [itemType, setItemType] = useState<"shift" | "roster" | null>(null);
+
+  return (
+    <RosterItemContext.Provider
+      value={{ item, setItem, itemType, setItemType }}
+    >
+      {children}
+    </RosterItemContext.Provider>
+  );
+}
+
+function RosterDraggingContextProvider({ children }: { children: ReactNode }) {
+  const [hoverDate, setHoverDate] = useState<dayjs.Dayjs | null>(null);
+  const [draggingCuid, setDraggingCuid] = useState<string | null>(null);
+  const [hoverRosterCuid, setHoverRosterCuid] = useState<string | null>(null);
+  const [hoverCandidateCuid, setHoverCandidateCuid] = useState<string | null>(
+    null
+  );
+  return (
+    <RosterDraggingContext.Provider
+      value={{
+        hoverDate,
+        setHoverDate,
+        draggingCuid,
+        setDraggingCuid,
+        hoverRosterCuid,
+        setHoverRosterCuid,
+        hoverCandidateCuid,
+        setHoverCandidateCuid,
+      }}
+    >
+      {children}
+    </RosterDraggingContext.Provider>
+  );
+}
+
+function RosterDataContextProvider({ children }: { children: ReactNode }) {
+  const { project } = useProjectContext();
+  const { item, itemType } = useRosterItemContext();
+  const {
+    dates,
+    dateRangeStart,
+    dateRangeEnd,
+    weekOffset,
+    sortOrder,
+    selectedCandidates,
+    setSelectedCandidates,
+  } = useRosterTableContext();
+  const { hoverCandidateCuid, hoverDate } = useRosterDraggingContext();
+
+  const [sortedCandidates, setSortedCandidates] = useState<string[]>([]);
+  const [rosterData, setRosterData] = useState<MappedRosterResponse | null>(
+    null
+  );
+  const updateRosterData = useCallback(() => {
+    if (!project || !dateRangeStart || !dateRangeEnd) return;
+
+    axios
+      .get(`/api/admin/project/${project?.cuid}/roster`, {
+        params: {
+          startDate: dateRangeStart.toISOString(),
+          endDate: dateRangeEnd.toISOString(),
+        },
+      })
+      .then((res) => {
+        const data: GetRosterResponse = res.data;
+        const mappedData = data.reduce<MappedRosterResponse>(
+          (acc, candidate) => {
+            acc[candidate.cuid] = {
+              name: candidate.name,
+              employeeId: candidate.employeeId,
+              restDay: candidate.restDay,
+              startDate: dayjs(candidate.startDate),
+              endDate: dayjs(candidate.endDate),
+              roster: candidate.rosters.reduce((acc, roster) => {
+                const date = dayjs(roster.startTime).format("DD-MM-YYYY");
+
+                if (!acc[date]) {
+                  acc[date] = [];
+                }
+
+                acc[date].push({
+                  rosterCuid: roster.rosterCuid,
+                  shiftCuid: roster.shiftCuid,
+                  clientHolderCuids: roster.clientHolderCuids,
+                  candidateCuid: candidate.cuid,
+                  projectCuid: roster.projectCuid,
+                  type: roster.type,
+                  breakDuration: roster.breakDuration,
+                  status: roster.status,
+                  leave: roster.leave,
+                  isPartial: false,
+                  startTime: dayjs(roster.startTime),
+                  endTime: dayjs(roster.endTime),
+                  originalStartTime: dayjs(roster.startTime),
+                  originalEndTime: dayjs(roster.endTime),
+                  clockInTime: dayjs(roster.clockInTime),
+                  clockOutTime: dayjs(roster.clockOutTime),
+                });
+
+                return acc;
+              }, {} as Record<string, RosterDisplayProps["data"][]>),
+              newRoster: {},
+              rosterLength: candidate.rosters.length,
+            };
+            return acc;
+          },
+          {}
+        );
+
+        setRosterData(mappedData);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekOffset, project]);
+
+  useEffect(() => {
+    updateRosterData();
+  }, [weekOffset, updateRosterData]);
+
+  useEffect(() => {
+    setSelectedCandidates(
+      selectedCandidates.filter((cuid) => rosterData?.[cuid])
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rosterData]);
 
   useEffect(() => {
     if (!rosterData) return;
@@ -227,83 +382,6 @@ export function RosterTableContextProvider({
       ]);
     }
   }, [rosterData, selectedCandidates, sortOrder]);
-
-  const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
-  const baseDay = project?.startDate.startOf("isoWeek");
-  const dateRangeStart = baseDay?.add(weekOffset, "weeks");
-  const dateRangeEnd = dateRangeStart?.endOf("isoWeek");
-
-  const updateRosterData = useCallback(() => {
-    if (!project || !dateRangeStart || !dateRangeEnd) return;
-
-    axios
-      .get(`/api/admin/project/${project?.cuid}/roster`, {
-        params: {
-          startDate: dateRangeStart.toISOString(),
-          endDate: dateRangeEnd.toISOString(),
-        },
-      })
-      .then((res) => {
-        const data: GetRosterResponse = res.data;
-        const mappedData = data.reduce<MappedRosterResponse>(
-          (acc, candidate) => {
-            acc[candidate.cuid] = {
-              name: candidate.name,
-              employeeId: candidate.employeeId,
-              restDay: candidate.restDay,
-              startDate: dayjs(candidate.startDate),
-              endDate: dayjs(candidate.endDate),
-              roster: candidate.rosters.reduce((acc, roster) => {
-                const date = dayjs(roster.startTime).format("DD-MM-YYYY");
-
-                if (!acc[date]) {
-                  acc[date] = [];
-                }
-
-                acc[date].push({
-                  rosterCuid: roster.rosterCuid,
-                  shiftCuid: roster.shiftCuid,
-                  clientHolderCuids: roster.clientHolderCuids,
-                  candidateCuid: candidate.cuid,
-                  projectCuid: roster.projectCuid,
-                  type: roster.type,
-                  breakDuration: roster.breakDuration,
-                  status: roster.status,
-                  leave: roster.leave,
-                  isPartial: false,
-                  startTime: dayjs(roster.startTime),
-                  endTime: dayjs(roster.endTime),
-                  originalStartTime: dayjs(roster.startTime),
-                  originalEndTime: dayjs(roster.endTime),
-                  clockInTime: dayjs(roster.clockInTime),
-                  clockOutTime: dayjs(roster.clockOutTime),
-                });
-
-                return acc;
-              }, {} as Record<string, RosterDisplayProps["data"][]>),
-              newRoster: {},
-              rosterLength: candidate.rosters.length,
-            };
-            return acc;
-          },
-          {}
-        );
-
-        setRosterData(mappedData);
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weekOffset, project]);
-
-  useEffect(() => {
-    updateRosterData();
-  }, [weekOffset, updateRosterData]);
-
-  useEffect(() => {
-    setSelectedCandidates(
-      selectedCandidates.filter((cuid) => rosterData?.[cuid])
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rosterData]);
 
   const memomizedMergedData = useMemo(() => {
     if (!rosterData || !dateRangeEnd || !dateRangeStart) return rosterData;
@@ -404,7 +482,7 @@ export function RosterTableContextProvider({
               if (itemType === "shift") {
                 const isCandidate =
                   selectedCandidates.includes(cuid) ||
-                  (!selectedCandidates.length && candidateHoverCuid === cuid);
+                  (!selectedCandidates.length && hoverCandidateCuid === cuid);
 
                 const isDateSelected =
                   dates.some((d) => d.isSame(date, "day")) ||
@@ -427,7 +505,7 @@ export function RosterTableContextProvider({
               }
 
               if (itemType === "roster") {
-                const isCandidate = candidateHoverCuid === cuid;
+                const isCandidate = hoverCandidateCuid === cuid;
 
                 const isDateSelected =
                   hoverDate && hoverDate.isSame(date, "day");
@@ -474,53 +552,34 @@ export function RosterTableContextProvider({
     item,
     itemType,
     selectedCandidates,
-    candidateHoverCuid,
+    hoverCandidateCuid,
     dates,
     hoverDate,
   ]);
 
-  if (
-    !project ||
-    !dateRangeStart ||
-    !dateRangeEnd ||
-    !rosterData ||
-    !memomizedMergedData
-  ) {
-    return null;
-  }
-
   return (
-    <RosterTableContext.Provider
+    <RosterDataContext.Provider
       value={{
-        item,
-        dates,
-        itemType,
-        hoverDate,
-        hoverCuid,
-        sortOrder,
-        weekOffset,
-        draggingCuid,
-        dateRangeEnd,
-        dateRangeStart,
-        sortedCandidates,
-        selectedCandidates,
-        candidateHoverCuid,
         rosterData: memomizedMergedData,
-        setItem,
-        setDates,
-        setItemType,
-        setSortOrder,
-        setHoverDate,
-        setHoverCuid,
-        setWeekOffset,
-        setDraggingCuid,
         updateRosterData,
-        setCandidateHoverCuid,
-        setSelectedCandidates,
+        sortedCandidates,
+        setSortedCandidates,
       }}
     >
       {children}
-    </RosterTableContext.Provider>
+    </RosterDataContext.Provider>
+  );
+}
+
+export function RosterContextProvider({ children }: { children: ReactNode }) {
+  return (
+    <RosterTableContextProvider>
+      <RosterDraggingContextProvider>
+        <RosterItemContextProvider>
+          <RosterDataContextProvider>{children}</RosterDataContextProvider>
+        </RosterItemContextProvider>
+      </RosterDraggingContextProvider>
+    </RosterTableContextProvider>
   );
 }
 
@@ -528,7 +587,37 @@ export function useRosterTableContext() {
   const context = useContext(RosterTableContext);
   if (context === undefined) {
     throw new Error(
-      "useRosterContext must be used within a RosterContextProvider"
+      "useRosterTableContext must be used within a RosterTableContextProvider"
+    );
+  }
+  return context;
+}
+
+export function useRosterItemContext() {
+  const context = useContext(RosterItemContext);
+  if (context === undefined) {
+    throw new Error(
+      "useRosterItemContext must be used within a RosterItemContextProvider"
+    );
+  }
+  return context;
+}
+
+export function useRosterDataContext() {
+  const context = useContext(RosterDataContext);
+  if (context === undefined) {
+    throw new Error(
+      "useRosterDataContext must be used within a RosterDataContextProvider"
+    );
+  }
+  return context;
+}
+
+export function useRosterDraggingContext() {
+  const context = useContext(RosterDraggingContext);
+  if (context === undefined) {
+    throw new Error(
+      "useRosterDraggingContext must be used within a RosterDraggingContextProvider"
     );
   }
   return context;

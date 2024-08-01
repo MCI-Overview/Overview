@@ -7,7 +7,11 @@ import DroppableArea from "./DroppableArea";
 import RosterSummary from "./RosterSummary";
 import AttendanceSummary from "./AttendanceSummary";
 import { RosterDisplayProps } from "./RosterDisplay";
-import { useRosterTableContext } from "../../../providers/rosterContextProvider";
+import {
+  useRosterDataContext,
+  useRosterDraggingContext,
+  useRosterTableContext,
+} from "../../../providers/rosterContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
 import {
@@ -28,20 +32,18 @@ type RosterTableProps = {
 export default function RosterTable({ type }: RosterTableProps) {
   const { project } = useProjectContext();
   const {
-    rosterData,
     dateRangeStart,
     dateRangeEnd,
     selectedCandidates,
-    hoverDate,
-    candidateHoverCuid,
     dates,
-    sortedCandidates,
-    updateRosterData,
     setDates,
-    setHoverDate,
     setSelectedCandidates,
-    setCandidateHoverCuid,
   } = useRosterTableContext();
+
+  const { rosterData, updateRosterData, sortedCandidates } =
+    useRosterDataContext();
+  const { hoverDate, setHoverDate, hoverCandidateCuid, setHoverCandidateCuid } =
+    useRosterDraggingContext();
 
   const publicHolidays = useStore(
     store,
@@ -94,7 +96,7 @@ export default function RosterTable({ type }: RosterTableProps) {
         axios
           .patch(`/api/admin/roster`, {
             rosterCuid: (item as RosterDisplayProps["data"]).rosterCuid,
-            candidateCuid: candidateHoverCuid,
+            candidateCuid: hoverCandidateCuid,
             rosterDate: hoverDate,
           })
           .then(() => {
@@ -104,7 +106,7 @@ export default function RosterTable({ type }: RosterTableProps) {
     },
     hover: () => {
       setHoverDate(null);
-      setCandidateHoverCuid(null);
+      setHoverCandidateCuid(null);
     },
     collect: (monitor) => ({
       item: monitor.getItem(),
@@ -298,7 +300,7 @@ export default function RosterTable({ type }: RosterTableProps) {
           {sortedCandidates.map((cuid) => {
             const candidate = rosterData[cuid];
             return (
-              <tr key={cuid} onPointerEnter={() => setCandidateHoverCuid}>
+              <tr key={cuid}>
                 <td>
                   <Stack direction="row" gap={1} alignItems="center">
                     <Checkbox

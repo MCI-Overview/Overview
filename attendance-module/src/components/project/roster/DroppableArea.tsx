@@ -3,7 +3,10 @@ import { useDrop } from "react-dnd";
 import { useState, useEffect } from "react";
 
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { useRosterTableContext } from "../../../providers/rosterContextProvider";
+import {
+  useRosterDraggingContext,
+  useRosterItemContext,
+} from "../../../providers/rosterContextProvider";
 
 import DraggableRoster from "./DraggableRoster";
 import { RosterDisplayProps } from "./RosterDisplay";
@@ -30,7 +33,10 @@ export default function DroppableArea({
   date: dayjs.Dayjs;
 }) {
   const { project } = useProjectContext();
-  const { setHoverDate, setCandidateHoverCuid, item } = useRosterTableContext();
+
+  const { item } = useRosterItemContext();
+  const { setHoverDate, setHoverCandidateCuid } = useRosterDraggingContext();
+
   const [tooltip, setTooltip] = useState<React.ReactElement | null>(null);
   const [isOutOfDateRange, setIsOutOfDateRange] = useState(false);
   const [isPossible, setIsPossible] = useState(false);
@@ -39,7 +45,7 @@ export default function DroppableArea({
     accept: ["shift", "roster"],
     hover: () => {
       setHoverDate(date);
-      setCandidateHoverCuid(candidate.cuid);
+      setHoverCandidateCuid(candidate.cuid);
     },
   });
 

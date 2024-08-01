@@ -1,7 +1,10 @@
 import dayjs from "dayjs";
 import { useDrag } from "react-dnd";
 
-import { useRosterTableContext } from "../../../providers/rosterContextProvider";
+import {
+  useRosterDraggingContext,
+  useRosterItemContext,
+} from "../../../providers/rosterContextProvider";
 
 import RosterDisplay from "./RosterDisplay";
 
@@ -20,8 +23,9 @@ export default function DraggableRosterChip({
   endTime,
   breakDuration,
 }: DraggableRosterChipProps) {
-  const { setHoverDate, setCandidateHoverCuid, setItem, setItemType } =
-    useRosterTableContext();
+  const { setHoverDate, setHoverCandidateCuid } = useRosterDraggingContext();
+  const { setItem, setItemType } = useRosterItemContext();
+
   const [{ isDragging }, drag] = useDrag({
     type: "shift",
     item: () => {
@@ -42,7 +46,7 @@ export default function DraggableRosterChip({
       setItem(null);
       setItemType(null);
       setHoverDate(null);
-      setCandidateHoverCuid(null);
+      setHoverCandidateCuid(null);
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),

@@ -2,7 +2,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider } from "react-dnd";
 import { useEffect, useState } from "react";
 
-import { RosterTableContextProvider } from "../../../providers/rosterContextProvider";
+import { RosterContextProvider } from "../../../providers/rosterContextProvider";
 import ShiftDisplay from "./RosterSidebar";
 import RosterTable from "./RosterTable";
 import WeekPicker from "./WeekPicker";
@@ -27,7 +27,7 @@ export default function NewRosterPage() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <RosterTableContextProvider>
+      <RosterContextProvider>
         {!editMode && (
           <Stack spacing={2}>
             <WeekPicker />
@@ -65,7 +65,7 @@ export default function NewRosterPage() {
             </Stack>
           </ModalDialog>
         </Modal>
-      </RosterTableContextProvider>
+      </RosterContextProvider>
     </DndProvider>
   );
 }
