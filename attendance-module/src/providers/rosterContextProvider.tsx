@@ -481,12 +481,15 @@ function RosterDataContextProvider({ children }: { children: ReactNode }) {
 
               if (itemType === "shift") {
                 const isCandidate =
-                  selectedCandidates.includes(cuid) ||
-                  (!selectedCandidates.length && hoverCandidateCuid === cuid);
+                  (selectedCandidates.length > 0 &&
+                    selectedCandidates.includes(cuid)) ||
+                  (selectedCandidates.length === 0 &&
+                    hoverCandidateCuid === cuid);
 
                 const isDateSelected =
-                  selectedDates.some((d) => d.isSame(date, "day")) ||
-                  (!selectedDates.length &&
+                  (selectedDates.length > 0 &&
+                    selectedDates.some((d) => d.isSame(date, "day"))) ||
+                  (selectedDates.length === 0 &&
                     hoverDate &&
                     hoverDate.isSame(date, "day"));
 
