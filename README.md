@@ -1,6 +1,6 @@
 # Overview
 
-## S3 Folder Structure
+## S3 Bucket Structure
 
 ```
 📦S3
@@ -20,5 +20,5 @@
 |      │   [requestCuid]
 |
 └───📂mcs
-    │   imageUUID
+    │   [imageUUID]
 ```
