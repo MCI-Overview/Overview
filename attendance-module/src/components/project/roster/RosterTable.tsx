@@ -299,6 +299,9 @@ export default function RosterTable({ type }: RosterTableProps) {
           )}
           {sortedCandidates.map((cuid) => {
             const candidate = rosterData[cuid];
+
+            if (!candidate) return;
+
             return (
               <tr key={cuid}>
                 <td>
