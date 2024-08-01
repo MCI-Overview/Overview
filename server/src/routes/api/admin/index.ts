@@ -22,17 +22,23 @@ adminAPIRouter.use("/", candidateAPIRoutes);
 adminAPIRouter.use("/", consultantAPIRoutes);
 adminAPIRouter.use("/", attendanceAPIRoutes);
 
+/**
+GET /api/admin
+
+Retrieves the data of the current consultant.
+Used in UserContext.
+*/
 adminAPIRouter.get("/", async (req, res) => {
   const { cuid } = req.user as User;
 
   try {
-    const candidateData = await prisma.consultant.findUniqueOrThrow({
+    const adminData = await prisma.consultant.findUniqueOrThrow({
       where: {
         cuid,
       },
     });
 
-    return res.json({ ...req.user, ...candidateData });
+    return res.json({ ...req.user, ...adminData });
   } catch (error) {
     const prismaError = error as PrismaError;
     if (prismaError.code === "P2025") {

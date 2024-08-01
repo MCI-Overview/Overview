@@ -1,8 +1,11 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { checkPermission } from "../../../utils/permission";
-import { CommonCandidate, PermissionList } from "../../../types/common";
+// import { checkPermission } from "../../../utils/permission";
+import {
+  CommonCandidate,
+  // PermissionList
+} from "../../../types/common";
 import { useUserContext } from "../../../providers/userContextProvider";
 
 // import AddressForm from "./AddressForm";
@@ -22,9 +25,7 @@ const ProfilePage = () => {
   const { user } = useUserContext();
 
   const [candidate, setCandidate] = useState<CommonCandidate | null>(null);
-  const [assignersAndClientHolders, setAssignersAndClientHolders] = useState<
-    string[]
-  >([]);
+  const [canEdit, setCanEdit] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -35,8 +36,8 @@ const ProfilePage = () => {
         .then((response) => {
           setCandidate(response.data);
 
-          const { assignersAndClientHolders } = response.data;
-          setAssignersAndClientHolders(assignersAndClientHolders);
+          const { canEdit } = response.data;
+          setCanEdit(canEdit);
         })
         .catch(() => navigate("/admin/candidates"));
       return;
@@ -47,6 +48,7 @@ const ProfilePage = () => {
         .get(`/api/user`)
         .then((response) => {
           setCandidate(response.data);
+          setCanEdit(true);
         })
         .catch(() => navigate("/user/profile"));
       return;
@@ -80,15 +82,6 @@ const ProfilePage = () => {
         errorCallback();
         console.log(error);
       });
-  }
-
-  let canEdit = false;
-  if (user.userType === "Admin") {
-    canEdit =
-      checkPermission(user, PermissionList.CAN_UPDATE_CANDIDATES) ||
-      assignersAndClientHolders.includes(user.cuid);
-  } else {
-    canEdit = user.cuid === candidate.cuid;
   }
 
   // const hasReadCandidateDetailsPermission = checkPermission(

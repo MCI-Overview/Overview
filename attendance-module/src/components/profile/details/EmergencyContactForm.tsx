@@ -188,5 +188,6 @@ const RELATIONSHIPS = [
   "Stepbrother",
   "Stepmother",
   "Stepfather",
+  "Friend",
   "Others",
 ];

@@ -1,15 +1,34 @@
-import dayjs from "dayjs";
 import { Router } from "express";
 import { Readable } from "stream";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 
 import { User } from "@/types/common";
-import { prisma, s3 } from "../../../client";
 import { maskNRIC } from "../../../utils";
+import { prisma, s3 } from "../../../client";
 import { correctTimes } from "../../../utils/clash";
+import { checkPermission, PermissionList } from "../../../utils/permissions";
 
 const requestAPIRouter: Router = Router();
 
+/**
+GET /api/admin/request/all/:page
+
+Fetches list of requests for projects the user is a client holder of.
+Uses pagination.
+
+Parameters:
+page
+searchValue
+typeFilter
+statusFilter
+
+Steps:
+1. Fetch all projects the user is a client holder of.
+2. Fetch requests for these projects.
+3. Apply filters and search value.
+4. Return paginated data.
+5. Mask data if user is missing CAN_READ_CANDIDATE_DETAILS permission.
+*/
 requestAPIRouter.get("/request/all/:page", async (req, res) => {
   const user = req.user as User;
   const page = parseInt(req.params.page, 10);
@@ -115,10 +134,10 @@ requestAPIRouter.get("/request/all/:page", async (req, res) => {
       };
     });
 
-    const maskedData = customRequests.map((req) => {
-      req.Assign.Candidate.nric = maskNRIC(req.Assign.Candidate.nric);
-      return req;
-    });
+    const hasCanReadCandidateDetails = await checkPermission(
+      user.cuid,
+      PermissionList.CAN_READ_CANDIDATE_DETAILS
+    );
 
     const totalCount = await prisma.request.count({
       where: queryConditions,
@@ -134,13 +153,38 @@ requestAPIRouter.get("/request/all/:page", async (req, res) => {
       totalCount: totalCount,
     };
 
-    return res.json([maskedData, paginationData]);
+    if (!hasCanReadCandidateDetails) {
+      const maskedData = customRequests.map((req) => {
+        req.Assign.Candidate.nric = maskNRIC(req.Assign.Candidate.nric);
+        return req;
+      });
+
+      return res.json([maskedData, paginationData]);
+    }
+
+    return res.json([customRequests, paginationData]);
   } catch (error) {
     console.error("Error while fetching requests:", error);
     return res.status(500).send("Internal server error");
   }
 });
 
+/**
+POST /api/admin/request/:requestCuid/approve
+
+Approves a request and updates assign/rosters accordingly.
+
+Parameters:
+requestCuid
+
+Steps:
+1. Check permissions, either:
+  a. User is a client holder of the project.
+  b. User has CAN_EDIT_ALL_PROJECTS permission.
+2. Perform transaction:
+  a. Update affected rosters based on request type.
+  b. Update request status to APPROVED.
+*/
 requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
   const user = req.user as User;
   const { requestCuid } = req.params;
@@ -156,7 +200,11 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
           select: {
             Project: {
               select: {
-                Manage: true,
+                Manage: {
+                  where: {
+                    role: "CLIENT_HOLDER",
+                  },
+                },
               },
             },
           },
@@ -167,9 +215,9 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
 
     if (
       !request.Assign.Project.Manage.some(
-        (assign) =>
-          assign.consultantCuid === user.cuid && assign.role === "CLIENT_HOLDER"
-      )
+        (assign) => assign.consultantCuid === user.cuid
+      ) ||
+      (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS))
     ) {
       return res
         .status(403)
@@ -186,7 +234,12 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
               in: request.Attendance.map((attendance) => attendance.cuid),
             },
             AND: [
+              // Attendance must not be FULLDAY leave
+              // MC does not override or refund leaves
               { OR: [{ leave: null }, { leave: "HALFDAY" }] },
+
+              // Attendance status must be either NO_SHOW or null
+              // MC should not affect attendance that has been marked as present
               { OR: [{ status: null }, { status: "NO_SHOW" }] },
             ],
           },
@@ -221,6 +274,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
 
     if (request.type === "RESIGNATION") {
       transactionRequests.push(
+        // set assigned candidate's end date to the lastDay in the request
         prisma.assign.update({
           where: {
             projectCuid_candidateCuid: {
@@ -236,6 +290,7 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
     }
 
     if (request.type === "PAID_LEAVE" || request.type === "UNPAID_LEAVE") {
+      // should have only 1 affected roster
       if (request.Attendance.length !== 1) {
         return res.status(500).send("Linked roster details are invalid.");
       }
@@ -305,6 +360,20 @@ requestAPIRouter.post("/request/:requestCuid/approve", async (req, res) => {
   }
 });
 
+/**
+POST /api/admin/request/:requestCuid/reject
+
+Rejects a request.
+
+Parameters:
+requestCuid
+
+Steps:
+1. Check permissions, either:
+  a. User is a client holder of the project.
+  b. User has CAN_EDIT_ALL_PROJECTS permission.
+2. Update request status to REJECTED.
+*/
 requestAPIRouter.post("/request/:requestCuid/reject", async (req, res) => {
   const user = req.user as User;
   const { requestCuid } = req.params;
@@ -320,7 +389,11 @@ requestAPIRouter.post("/request/:requestCuid/reject", async (req, res) => {
           select: {
             Project: {
               select: {
-                Manage: true,
+                Manage: {
+                  where: {
+                    role: "CLIENT_HOLDER",
+                  },
+                },
               },
             },
           },
@@ -330,9 +403,9 @@ requestAPIRouter.post("/request/:requestCuid/reject", async (req, res) => {
 
     if (
       !request.Assign.Project.Manage.some(
-        (assign) =>
-          assign.consultantCuid === user.cuid && assign.role === "CLIENT_HOLDER"
-      )
+        (assign) => assign.consultantCuid === user.cuid
+      ) ||
+      (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS))
     ) {
       return res
         .status(403)
@@ -355,6 +428,20 @@ requestAPIRouter.post("/request/:requestCuid/reject", async (req, res) => {
   }
 });
 
+/**
+GET /api/admin/request/:requestCuid/image
+
+Fetches image for a request. Only relevant for claims and medical leaves.
+
+Parameters:
+requestCuid
+
+Steps:
+1. Check permissions, either:
+  a. User is a client holder of the project.
+  b. User has CAN_READ_CANDIDATE_DETAILS permission.
+2. Fetch image from S3 based on request type.
+*/
 requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
   const user = req.user as User;
   const { requestCuid } = req.params;
@@ -371,7 +458,11 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
         select: {
           Project: {
             select: {
-              Manage: true,
+              Manage: {
+                where: {
+                  role: "CLIENT_HOLDER",
+                },
+              },
             },
           },
         },
@@ -381,8 +472,7 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
 
   if (
     !request.Assign.Project.Manage.some(
-      (assign) =>
-        assign.consultantCuid === user.cuid && assign.role === "CLIENT_HOLDER"
+      (assign) => assign.consultantCuid === user.cuid
     )
   ) {
     return res
@@ -419,128 +509,6 @@ requestAPIRouter.get("/request/:requestCuid/image", async (req, res) => {
   }
 
   return res.status(400).send("No image found for this request.");
-});
-
-requestAPIRouter.get("/request/:requestCuid/roster", async (req, res) => {
-  const user = req.user as User;
-  const { requestCuid } = req.params;
-
-  try {
-    const request = await prisma.request.findUniqueOrThrow({
-      where: {
-        cuid: requestCuid,
-      },
-      select: {
-        candidateCuid: true,
-        projectCuid: true,
-        data: true,
-        type: true,
-        Attendance: true,
-        Assign: {
-          select: {
-            Project: {
-              select: {
-                Manage: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (
-      !request.Assign.Project.Manage.some(
-        (assign) =>
-          assign.consultantCuid === user.cuid && assign.role === "CLIENT_HOLDER"
-      )
-    ) {
-      return res
-        .status(403)
-        .send("You are not authorized to reject this request.");
-    }
-
-    if (request.type === "RESIGNATION") {
-      return res.status(404).send("No roster details found for this request.");
-    }
-
-    if (request.type === "MEDICAL_LEAVE") {
-      const reqData = request.data as {
-        startDate: string;
-        numberOfDays: string;
-      };
-
-      const affectedRosterData = await prisma.attendance.findMany({
-        where: {
-          candidateCuid: request.candidateCuid,
-          OR: [
-            {
-              status: null,
-            },
-            {
-              status: "NO_SHOW",
-            },
-          ],
-          leave: null,
-          shiftDate: {
-            gte: dayjs(reqData.startDate).toDate(),
-            lte: dayjs(reqData.startDate)
-              .add(parseInt(reqData.numberOfDays, 10) - 1, "day")
-              .endOf("day")
-              .toDate(),
-          },
-          Shift: {
-            projectCuid: request.projectCuid,
-          },
-        },
-        include: {
-          Shift: true,
-        },
-      });
-
-      return res.json(affectedRosterData);
-    }
-
-    if (request.type === "CLAIM") {
-      if (request.Attendance.length !== 1) {
-        return res.status(500).send("Linked roster details are invalid.");
-      }
-      const affectedRoster = request.Attendance[0];
-
-      const claimRosterData = await prisma.attendance.findUniqueOrThrow({
-        where: {
-          cuid: affectedRoster.cuid,
-        },
-        include: {
-          Shift: true,
-        },
-      });
-
-      return res.json(claimRosterData);
-    }
-
-    if (request.type === "UNPAID_LEAVE" || request.type === "PAID_LEAVE") {
-      if (request.Attendance.length !== 1) {
-        return res.status(500).send("Linked roster details are invalid.");
-      }
-      const affectedRoster = request.Attendance[0];
-
-      const leaveRosterData = await prisma.attendance.findUniqueOrThrow({
-        where: {
-          cuid: affectedRoster.cuid,
-        },
-        include: {
-          Shift: true,
-        },
-      });
-
-      return res.json(leaveRosterData);
-    }
-
-    return res.status(400).send("Invalid request type.");
-  } catch (error) {
-    console.error("Error while fetching roster details:", error);
-    return res.status(500).send("Internal server error");
-  }
 });
 
 export default requestAPIRouter;
