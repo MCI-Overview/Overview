@@ -652,12 +652,6 @@ projectAPIRouter.post("/project/:projectCuid/roster", async (req, res) => {
     PermissionList.CAN_EDIT_ALL_PROJECTS
   );
 
-  if (!hasCanEditAllProjectsPermission) {
-    return res.status(403).json({
-      message: "You are not authorized to create rosters for this project.",
-    });
-  }
-
   try {
     if (!hasCanEditAllProjectsPermission) {
       const project = await prisma.project.findUnique({
