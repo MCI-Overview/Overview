@@ -20,15 +20,17 @@ export default function AttendanceSummary() {
 
   const consolidatedRoster = Object.values(rosterData).reduce(
     (acc, candidate) => {
-      candidate.roster.forEach((roster) => {
-        if (roster.projectCuid !== project.cuid) return;
+      Object.values(candidate.roster)
+        .flat()
+        .forEach((roster) => {
+          if (roster.projectCuid !== project.cuid) return;
 
-        const date = roster.startTime.format("DD-MM-YYYY");
-        if (!acc[date]) {
-          acc[date] = [];
-        }
-        acc[date].push(roster);
-      });
+          const date = roster.startTime.format("DD-MM-YYYY");
+          if (!acc[date]) {
+            acc[date] = [];
+          }
+          acc[date].push(roster);
+        });
       return acc;
     },
     {} as Record<string, RosterDisplayProps["data"][]>

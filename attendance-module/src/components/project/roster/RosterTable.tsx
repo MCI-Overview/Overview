@@ -64,12 +64,14 @@ export default function RosterTable({ type }: RosterTableProps) {
         const newRoster = Object.keys(rosterData).reduce(
           (acc, cuid) => [
             ...acc,
-            ...rosterData[cuid].newRoster.map((roster) => ({
-              shiftType: roster.type,
-              shiftDate: roster.startTime.startOf("day").toDate(),
-              shiftCuid: roster.shiftCuid,
-              candidateCuid: cuid,
-            })),
+            ...Object.values(rosterData[cuid].newRoster)
+              .flat()
+              .map((roster) => ({
+                shiftType: roster.type,
+                shiftDate: roster.startTime.startOf("day").toDate(),
+                shiftCuid: roster.shiftCuid,
+                candidateCuid: cuid,
+              })),
           ],
           [] as {
             shiftDate: Date;
@@ -114,47 +116,38 @@ export default function RosterTable({ type }: RosterTableProps) {
     return null;
   }
 
-  const processedRoster = sortedCandidates.reduce((acc, cuid) => {
-    const candidate = rosterData[cuid];
-    const candidateRoster = candidate.roster
-      .map((roster) => ({
-        ...roster,
-        originalStartTime: roster.startTime,
-        originalEndTime: roster.endTime,
-      }))
-      .flatMap((roster) => {
-        if (
-          roster.startTime.isSame(roster.endTime, "day") ||
-          roster.endTime.isSame(roster.endTime.startOf("day"))
-        ) {
-          return roster;
-        }
+  // Code that splits overnight rosters
+  // Object.keys(rosterData).forEach((cuid) =>
+  //   Object.keys(rosterData[cuid].roster).forEach((date) => {
+  //     const candidateRoster = rosterData[cuid].roster;
+  //     candidateRoster[date] = candidateRoster[date]
+  //       .map((roster) => ({
+  //         ...roster,
+  //         originalStartTime: roster.startTime,
+  //         originalEndTime: roster.endTime,
+  //       }))
+  //       .flatMap((roster) => {
+  //         if (
+  //           roster.startTime.isSame(roster.endTime, "day") ||
+  //           roster.endTime.isSame(roster.endTime.startOf("day"))
+  //         ) {
+  //           return roster;
+  //         }
 
-        return [
-          {
-            ...roster,
-            endTime: roster.startTime.endOf("day"),
-          },
-          {
-            ...roster,
-            startTime: roster.endTime.startOf("day"),
-            isPartial: true,
-          },
-        ];
-      })
-      .reduce((acc, roster) => {
-        const data = roster as RosterDisplayProps["data"];
-        const date = data.startTime.format("DD-MM-YYYY");
-        if (!acc[date]) {
-          acc[date] = [];
-        }
-        acc[date].push(data);
-        return acc;
-      }, {} as Record<string, RosterDisplayProps["data"][]>);
-
-    acc[cuid] = candidateRoster;
-    return acc;
-  }, {} as Record<string, Record<string, RosterDisplayProps["data"][]>>);
+  //         return [
+  //           {
+  //             ...roster,
+  //             endTime: roster.startTime.endOf("day"),
+  //           },
+  //           {
+  //             ...roster,
+  //             startTime: roster.endTime.startOf("day"),
+  //             isPartial: true,
+  //           },
+  //         ];
+  //       });
+  //   })
+  // );
 
   const numberOfDays = dateRangeEnd.diff(dateRangeStart, "days") + 1;
 
@@ -340,9 +333,14 @@ export default function RosterTable({ type }: RosterTableProps) {
                       candidate={{
                         ...candidate,
                         cuid,
-                        roster:
-                          processedRoster[cuid][date.format("DD-MM-YYYY")] ||
-                          [],
+                        roster: [
+                          ...(rosterData[cuid].roster[
+                            date.format("DD-MM-YYYY")
+                          ] || []),
+                          ...(rosterData[cuid].newRoster[
+                            date.format("DD-MM-YYYY")
+                          ] || []),
+                        ],
                       }}
                       date={date}
                     />

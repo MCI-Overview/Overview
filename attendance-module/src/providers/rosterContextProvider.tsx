@@ -23,9 +23,13 @@ type MappedRosterResponse = {
     restDay: string;
     startDate: dayjs.Dayjs;
     endDate: dayjs.Dayjs;
-    roster: RosterDisplayProps["data"][];
+    roster: {
+      [date: string]: RosterDisplayProps["data"][];
+    };
     rosterLength: number;
-    newRoster: RosterDisplayProps["data"][];
+    newRoster: {
+      [date: string]: RosterDisplayProps["data"][];
+    };
     possibleDates?: dayjs.Dayjs[];
   };
 };
@@ -249,25 +253,35 @@ export function RosterTableContextProvider({
               restDay: candidate.restDay,
               startDate: dayjs(candidate.startDate),
               endDate: dayjs(candidate.endDate),
-              roster: candidate.rosters.map((roster) => ({
-                rosterCuid: roster.rosterCuid,
-                shiftCuid: roster.shiftCuid,
-                clientHolderCuids: roster.clientHolderCuids,
-                candidateCuid: candidate.cuid,
-                projectCuid: roster.projectCuid,
-                type: roster.type,
-                breakDuration: roster.breakDuration,
-                status: roster.status,
-                leave: roster.leave,
-                isPartial: false,
-                startTime: dayjs(roster.startTime),
-                endTime: dayjs(roster.endTime),
-                originalStartTime: dayjs(roster.startTime),
-                originalEndTime: dayjs(roster.endTime),
-                clockInTime: dayjs(roster.clockInTime),
-                clockOutTime: dayjs(roster.clockOutTime),
-              })),
-              newRoster: [],
+              roster: candidate.rosters.reduce((acc, roster) => {
+                const date = dayjs(roster.startTime).format("DD-MM-YYYY");
+
+                if (!acc[date]) {
+                  acc[date] = [];
+                }
+
+                acc[date].push({
+                  rosterCuid: roster.rosterCuid,
+                  shiftCuid: roster.shiftCuid,
+                  clientHolderCuids: roster.clientHolderCuids,
+                  candidateCuid: candidate.cuid,
+                  projectCuid: roster.projectCuid,
+                  type: roster.type,
+                  breakDuration: roster.breakDuration,
+                  status: roster.status,
+                  leave: roster.leave,
+                  isPartial: false,
+                  startTime: dayjs(roster.startTime),
+                  endTime: dayjs(roster.endTime),
+                  originalStartTime: dayjs(roster.startTime),
+                  originalEndTime: dayjs(roster.endTime),
+                  clockInTime: dayjs(roster.clockInTime),
+                  clockOutTime: dayjs(roster.clockOutTime),
+                });
+
+                return acc;
+              }, {} as Record<string, RosterDisplayProps["data"][]>),
+              newRoster: {},
               rosterLength: candidate.rosters.length,
             };
             return acc;
@@ -356,7 +370,19 @@ export function RosterTableContextProvider({
               itemEndTime = itemEndTime.add(1, "day");
             }
 
-            const hasNoOverlap = rosterData[cuid].roster
+            const candidateRoster = rosterData[cuid].roster;
+
+            const currentDate = itemStartTime.format("DD-MM-YYYY");
+            const previousDate = itemStartTime
+              .subtract(1, "day")
+              .format("DD-MM-YYYY");
+            const nextDate = itemStartTime.add(1, "day").format("DD-MM-YYYY");
+
+            const hasNoOverlap = [
+              ...(candidateRoster[currentDate] || []),
+              ...(candidateRoster[previousDate] || []),
+              ...(candidateRoster[nextDate] || []),
+            ]
               .filter((roster) => roster.state !== "PREVIEW")
               .every(
                 (roster) =>
@@ -385,15 +411,18 @@ export function RosterTableContextProvider({
                   (!dates.length && hoverDate && hoverDate.isSame(date, "day"));
 
                 if (isCandidate && isDateSelected) {
-                  acc[0].push({
-                    ...item,
-                    isPartial: false,
-                    originalStartTime: itemStartTime,
-                    originalEndTime: itemEndTime,
-                    startTime: itemStartTime,
-                    endTime: itemEndTime,
-                    state: "PREVIEW",
-                  });
+                  acc[0][currentDate] = [
+                    ...(acc[0][currentDate] || []),
+                    {
+                      ...item,
+                      isPartial: false,
+                      originalStartTime: itemStartTime,
+                      originalEndTime: itemEndTime,
+                      startTime: itemStartTime,
+                      endTime: itemEndTime,
+                      state: "PREVIEW",
+                    },
+                  ];
                 }
               }
 
@@ -404,15 +433,18 @@ export function RosterTableContextProvider({
                   hoverDate && hoverDate.isSame(date, "day");
 
                 if (isCandidate && isDateSelected) {
-                  acc[0].push({
-                    ...item,
-                    isPartial: false,
-                    originalStartTime: itemStartTime,
-                    originalEndTime: itemEndTime,
-                    startTime: itemStartTime,
-                    endTime: itemEndTime,
-                    state: "PREVIEW",
-                  });
+                  acc[0][currentDate] = [
+                    ...(acc[0][currentDate] || []),
+                    {
+                      ...item,
+                      isPartial: false,
+                      originalStartTime: itemStartTime,
+                      originalEndTime: itemEndTime,
+                      startTime: itemStartTime,
+                      endTime: itemEndTime,
+                      state: "PREVIEW",
+                    },
+                  ];
                 }
               }
 
@@ -421,14 +453,16 @@ export function RosterTableContextProvider({
 
             return acc;
           },
-          [[], []] as [RosterDisplayProps["data"][], dayjs.Dayjs[]]
+          [{}, []] as [
+            Record<string, RosterDisplayProps["data"][]>,
+            dayjs.Dayjs[]
+          ]
         );
 
       acc[cuid] = {
         ...rosterData[cuid],
         possibleDates,
-        roster: [...rosterData[cuid].roster, ...newRoster],
-        newRoster: [...newRoster],
+        newRoster,
       };
 
       return acc;
@@ -445,7 +479,13 @@ export function RosterTableContextProvider({
     hoverDate,
   ]);
 
-  if (!project || !dateRangeStart || !dateRangeEnd || !rosterData) {
+  if (
+    !project ||
+    !dateRangeStart ||
+    !dateRangeEnd ||
+    !rosterData ||
+    !memomizedMergedData
+  ) {
     return null;
   }
 
