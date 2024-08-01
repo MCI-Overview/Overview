@@ -24,6 +24,7 @@ import {
   Typography,
 } from "@mui/joy";
 import { store } from "../../../store";
+import { useEffect } from "react";
 
 type RosterTableProps = {
   type: "ATTENDANCE" | "ROSTER";
@@ -35,8 +36,8 @@ export default function RosterTable({ type }: RosterTableProps) {
     dateRangeStart,
     dateRangeEnd,
     selectedCandidates,
-    dates,
-    setDates,
+    selectedDates,
+    setSelectedDates,
     setSelectedCandidates,
   } = useRosterTableContext();
 
@@ -56,6 +57,15 @@ export default function RosterTable({ type }: RosterTableProps) {
       createdAt: string;
     }[]
   >;
+
+  useEffect(() => {
+    return () => {
+      if (type === "ROSTER") {
+        setSelectedDates([]);
+        setSelectedCandidates([]);
+      }
+    };
+  }, [setSelectedDates, setSelectedCandidates, type]);
 
   const [{ item, itemType }, drop] = useDrop({
     accept: ["shift", "roster", "candidate"],
@@ -223,7 +233,7 @@ export default function RosterTable({ type }: RosterTableProps) {
                   }}
                 />
                 {`Name ${
-                  selectedCandidates.length > 0
+                  selectedCandidates.length > 0 && type === "ROSTER"
                     ? `(${selectedCandidates.length} of ${sortedCandidates.length})`
                     : ""
                 }`}
@@ -252,14 +262,16 @@ export default function RosterTable({ type }: RosterTableProps) {
                       sx={{
                         display: type === "ATTENDANCE" ? "none" : "block",
                       }}
-                      checked={dates.some((otherDate) =>
+                      checked={selectedDates.some((otherDate) =>
                         otherDate.isSame(date, "day")
                       )}
                       onChange={(e) => {
-                        setDates(
+                        setSelectedDates(
                           e.target.checked
-                            ? [...dates, date]
-                            : dates.filter((d) => !d.isSame(date, "day"))
+                            ? [...selectedDates, date]
+                            : selectedDates.filter(
+                                (d) => !d.isSame(date, "day")
+                              )
                         );
                       }}
                     />

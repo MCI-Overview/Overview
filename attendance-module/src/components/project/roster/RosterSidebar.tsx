@@ -37,8 +37,12 @@ import {
 export default function RosterSidebar() {
   const { project, updateProject } = useProjectContext();
   const { updateRosterData } = useRosterDataContext();
-  const { dateRangeStart, dateRangeEnd, selectedCandidates } =
-    useRosterTableContext();
+  const {
+    dateRangeStart,
+    dateRangeEnd,
+    selectedCandidates,
+    selectedDates: selectedDates,
+  } = useRosterTableContext();
   const [filterState, setFilterState] = useState<
     "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF"
   >("FULL_DAY");
@@ -206,9 +210,10 @@ export default function RosterSidebar() {
               onClick={() => {
                 axios
                   .post(`/api/admin/project/${project?.cuid}/roster/copy`, {
-                    candidateCuids: selectedCandidates,
                     startDate: dateRangeStart?.toISOString(),
                     endDate: dateRangeEnd?.toISOString(),
+                    selectedCandidates,
+                    selectedDates,
                   })
                   .then(() => {
                     toast.success("Successfully copied roster to next week.");
@@ -249,6 +254,8 @@ export default function RosterSidebar() {
                   .post(`/api/admin/project/${project?.cuid}/roster/clear`, {
                     startDate: dateRangeStart?.toISOString(),
                     endDate: dateRangeEnd?.toISOString(),
+                    selectedCandidates,
+                    selectedDates,
                   })
                   .then(() => {
                     toast.success("Successfully cleared this weeks's roster.");

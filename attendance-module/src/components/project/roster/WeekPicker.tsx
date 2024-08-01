@@ -25,7 +25,7 @@ export default function WeekPicker() {
     weekOffset,
     setSortOrder,
     setWeekOffset,
-    setDates,
+    setSelectedDates,
   } = useRosterTableContext();
   const projectStartDate = dayjs(project?.startDate);
   const projectEndDate = dayjs(project?.endDate);
@@ -36,12 +36,12 @@ export default function WeekPicker() {
 
   const handlePrevious = () => {
     setWeekOffset(Math.max(weekOffset - 1, 0));
-    setDates([]);
+    setSelectedDates([]);
   };
 
   const handleNext = () => {
     setWeekOffset(weekOffset + 1);
-    setDates([]);
+    setSelectedDates([]);
   };
 
   if (!project) {

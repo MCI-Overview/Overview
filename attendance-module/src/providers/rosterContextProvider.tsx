@@ -35,7 +35,7 @@ type MappedRosterResponse = {
 };
 
 const RosterTableContext = createContext<{
-  dates: dayjs.Dayjs[];
+  selectedDates: dayjs.Dayjs[];
   sortOrder:
     | "name-asc"
     | "name-desc"
@@ -47,7 +47,7 @@ const RosterTableContext = createContext<{
   dateRangeEnd: dayjs.Dayjs;
   dateRangeStart: dayjs.Dayjs;
   selectedCandidates: string[];
-  setDates: (dates: dayjs.Dayjs[]) => void;
+  setSelectedDates: (selectedDates: dayjs.Dayjs[]) => void;
   setSortOrder: (
     order:
       | "name-asc"
@@ -60,13 +60,13 @@ const RosterTableContext = createContext<{
   setWeekOffset: (offset: number) => void;
   setSelectedCandidates: (cuids: string[]) => void;
 }>({
-  dates: [],
+  selectedDates: [],
   weekOffset: 0,
   dateRangeEnd: dayjs(),
   dateRangeStart: dayjs(),
   selectedCandidates: [],
   sortOrder: "employeeId-asc",
-  setDates: () => {},
+  setSelectedDates: () => {},
   setSortOrder: () => {},
   setWeekOffset: () => {},
   setSelectedCandidates: () => {},
@@ -125,7 +125,7 @@ function RosterTableContextProvider({ children }: { children: ReactNode }) {
       0
   );
 
-  const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
+  const [selectedDates, setSelectedDates] = useState<dayjs.Dayjs[]>([]);
 
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<
@@ -148,13 +148,13 @@ function RosterTableContextProvider({ children }: { children: ReactNode }) {
   return (
     <RosterTableContext.Provider
       value={{
-        dates,
+        selectedDates,
         sortOrder,
         weekOffset,
         dateRangeEnd,
         dateRangeStart,
         selectedCandidates,
-        setDates,
+        setSelectedDates,
         setSortOrder,
         setWeekOffset,
         setSelectedCandidates,
@@ -209,7 +209,7 @@ function RosterDataContextProvider({ children }: { children: ReactNode }) {
   const { project } = useProjectContext();
   const { item, itemType } = useRosterItemContext();
   const {
-    dates,
+    selectedDates,
     dateRangeStart,
     dateRangeEnd,
     weekOffset,
@@ -485,8 +485,10 @@ function RosterDataContextProvider({ children }: { children: ReactNode }) {
                   (!selectedCandidates.length && hoverCandidateCuid === cuid);
 
                 const isDateSelected =
-                  dates.some((d) => d.isSame(date, "day")) ||
-                  (!dates.length && hoverDate && hoverDate.isSame(date, "day"));
+                  selectedDates.some((d) => d.isSame(date, "day")) ||
+                  (!selectedDates.length &&
+                    hoverDate &&
+                    hoverDate.isSame(date, "day"));
 
                 if (isCandidate && isDateSelected) {
                   acc[0][currentDate] = [
@@ -553,7 +555,7 @@ function RosterDataContextProvider({ children }: { children: ReactNode }) {
     itemType,
     selectedCandidates,
     hoverCandidateCuid,
-    dates,
+    selectedDates,
     hoverDate,
   ]);
 
