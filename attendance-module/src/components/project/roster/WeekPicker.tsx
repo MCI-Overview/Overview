@@ -19,11 +19,11 @@ import {
 export default function WeekPicker() {
   const { project } = useProjectContext();
   const {
+    sortOrder,
     dateRangeStart,
     dateRangeEnd,
     weekOffset,
     setSortOrder,
-    setSortOrderBy,
     setWeekOffset,
     setDates,
   } = useRosterTableContext();
@@ -87,35 +87,26 @@ export default function WeekPicker() {
         ${dateRangeEnd?.format("DD/MM/YY")}`}
         </Button>
         <Select
-          defaultValue="name-asc"
+          value={sortOrder}
           sx={{
             width: "9rem",
           }}
           onChange={(_, value) => {
-            switch (value) {
-              case "name-asc":
-                setSortOrder("asc");
-                setSortOrderBy("name");
-                break;
-              case "name-desc":
-                setSortOrder("desc");
-                setSortOrderBy("name");
-                break;
-              case "unassign":
-                setSortOrder("desc");
-                setSortOrderBy("assign");
-                break;
-              case "assign":
-                setSortOrder("asc");
-                setSortOrderBy("assign");
-                break;
-              default:
-                break;
-            }
+            setSortOrder(
+              value as
+                | "name-asc"
+                | "name-desc"
+                | "employeeId-asc"
+                | "employeeId-desc"
+                | "unassign"
+                | "assign"
+            );
           }}
         >
           <Option value="name-asc">Name (Asc)</Option>
           <Option value="name-desc">Name (Desc)</Option>
+          <Option value="employeeId-asc">ID (Asc)</Option>
+          <Option value="employeeId-desc">ID (Desc)</Option>
           <Option value="unassign">Unassigned</Option>
           <Option value="assign">Assigned</Option>
         </Select>

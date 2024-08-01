@@ -1,6 +1,9 @@
 import { Stack, Tooltip, Typography } from "@mui/joy";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { useRosterTableContext } from "../../../providers/rosterContextProvider";
+import {
+  useRosterDataContext,
+  useRosterTableContext,
+} from "../../../providers/rosterContextProvider";
 import { seedToColor } from "../../../utils/colors";
 import SummaryDisplayItem from "./SummaryDisplayItem";
 import { RosterDisplayProps } from "./RosterDisplay";
@@ -16,21 +19,24 @@ type RosterSummary = {
 
 export default function RosterSummary() {
   const { project } = useProjectContext();
-  const { rosterData, dateRangeStart, dateRangeEnd } = useRosterTableContext();
+  const { rosterData } = useRosterDataContext();
+  const { dateRangeStart, dateRangeEnd } = useRosterTableContext();
 
   if (!rosterData || !project) return null;
 
   const consolidatedRoster = Object.values(rosterData).reduce(
     (acc, candidate) => {
-      candidate.roster.forEach((roster) => {
-        if (roster.projectCuid !== project.cuid) return;
+      Object.values(candidate.roster)
+        .flat()
+        .forEach((roster) => {
+          if (roster.projectCuid !== project.cuid) return;
 
-        const date = roster.startTime.format("DD-MM-YYYY");
-        if (!acc[date]) {
-          acc[date] = [];
-        }
-        acc[date].push(roster);
-      });
+          const date = roster.startTime.format("DD-MM-YYYY");
+          if (!acc[date]) {
+            acc[date] = [];
+          }
+          acc[date].push(roster);
+        });
       return acc;
     },
     {} as Record<string, RosterDisplayProps["data"][]>

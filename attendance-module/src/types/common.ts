@@ -115,6 +115,7 @@ export type CommonShift = {
   endTime: Dayjs;
   halfDayStartTime: Dayjs | null;
   halfDayEndTime: Dayjs | null;
+  breakDuration: number;
 };
 
 export type CommonAttendance = {
@@ -211,7 +212,7 @@ export type GetCandidateResponse = {
 export type GetRosterResponse = {
   cuid: string;
   name: string;
-  nric: string;
+  employeeId: string;
   restDay: string;
   startDate: string;
   endDate: string;

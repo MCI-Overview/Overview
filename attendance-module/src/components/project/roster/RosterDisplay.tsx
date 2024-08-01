@@ -46,6 +46,7 @@ export type RosterDisplayProps = {
     rosterCuid?: string;
     breakDuration?: number;
     projectCuid?: string;
+    candidateCuid?: string;
     clientHolderCuids?: string[];
     originalStartTime: dayjs.Dayjs;
     originalEndTime: dayjs.Dayjs;

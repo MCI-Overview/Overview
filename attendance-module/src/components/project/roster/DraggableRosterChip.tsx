@@ -1,7 +1,10 @@
 import dayjs from "dayjs";
 import { useDrag } from "react-dnd";
 
-import { useRosterTableContext } from "../../../providers/rosterContextProvider";
+import {
+  useRosterDraggingContext,
+  useRosterItemContext,
+} from "../../../providers/rosterContextProvider";
 
 import RosterDisplay from "./RosterDisplay";
 
@@ -10,6 +13,7 @@ export type DraggableRosterChipProps = {
   shiftCuid: string;
   startTime: dayjs.Dayjs;
   endTime: dayjs.Dayjs;
+  breakDuration: number;
 };
 
 export default function DraggableRosterChip({
@@ -17,9 +21,11 @@ export default function DraggableRosterChip({
   shiftCuid,
   startTime,
   endTime,
+  breakDuration,
 }: DraggableRosterChipProps) {
-  const { setHoverDate, setCandidateHoverCuid, setItem, setItemType } =
-    useRosterTableContext();
+  const { setHoverDate, setHoverCandidateCuid } = useRosterDraggingContext();
+  const { setItem, setItemType } = useRosterItemContext();
+
   const [{ isDragging }, drag] = useDrag({
     type: "shift",
     item: () => {
@@ -28,6 +34,7 @@ export default function DraggableRosterChip({
         shiftCuid,
         startTime,
         endTime,
+        breakDuration,
       };
 
       setItem(item);
@@ -39,7 +46,7 @@ export default function DraggableRosterChip({
       setItem(null);
       setItemType(null);
       setHoverDate(null);
-      setCandidateHoverCuid(null);
+      setHoverCandidateCuid(null);
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
@@ -50,6 +57,7 @@ export default function DraggableRosterChip({
     <span ref={drag}>
       <RosterDisplay
         data={{
+          breakDuration,
           isPartial: false,
           type,
           shiftCuid,

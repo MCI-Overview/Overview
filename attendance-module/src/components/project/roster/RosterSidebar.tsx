@@ -7,7 +7,10 @@ import CreateShiftModal from "./CreateShiftModal";
 import { CommonShift } from "../../../types/common";
 import DraggableRosterChip from "./DraggableRosterChip";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { useRosterTableContext } from "../../../providers/rosterContextProvider";
+import {
+  useRosterDataContext,
+  useRosterTableContext,
+} from "../../../providers/rosterContextProvider";
 
 import {
   Box,
@@ -33,7 +36,8 @@ import {
 
 export default function RosterSidebar() {
   const { project, updateProject } = useProjectContext();
-  const { dateRangeStart, dateRangeEnd, updateRosterData, selectedCandidates } =
+  const { updateRosterData } = useRosterDataContext();
+  const { dateRangeStart, dateRangeEnd, selectedCandidates } =
     useRosterTableContext();
   const [filterState, setFilterState] = useState<
     "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF"
@@ -174,6 +178,7 @@ export default function RosterSidebar() {
                     type={
                       shift.type as "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF"
                     }
+                    breakDuration={shift.breakDuration}
                     shiftCuid={shift.cuid}
                     startTime={shift.startTime}
                     endTime={shift.endTime}
