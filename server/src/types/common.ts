@@ -1,4 +1,5 @@
 import { Dayjs } from "dayjs";
+import { PermissionList } from "../utils/permissions";
 
 export type CommonCandidate = {
   cuid: string;
@@ -58,23 +59,6 @@ export type Client = {
 };
 
 export type User = ConsultantUser | CandidateUser;
-
-export enum PermissionList {
-  CAN_READ_ALL_PROJECTS = "canReadAllProjects",
-  CAN_EDIT_ALL_PROJECTS = "canEditAllProjects",
-  CAN_HARD_DELETE_PROJECTS = "canHardDeleteProjects",
-
-  CAN_DELETE_CLIENTS = "canDeleteClients",
-  CAN_UPDATE_CLIENTS = "canUpdateClients",
-
-  CAN_CREATE_CONSULTANTS = "canCreateConsultants",
-  CAN_UPDATE_CONSULTANTS = "canUpdateConsultants",
-  CAN_DELETE_CONSULTANTS = "canDeleteConsultants",
-
-  CAN_DELETE_CANDIDATES = "canDeleteCandidates",
-  CAN_UPDATE_CANDIDATES = "canUpdateCandidates",
-  CAN_READ_CANDIDATE_DETAILS = "canRersadCandidateDetails",
-}
 
 export type ConsultantUser = {
   cuid: string;

@@ -39,6 +39,19 @@ import { correctTimes, doesClash } from "../../../utils/clash";
 
 const projectAPIRouter: Router = Router();
 
+/**
+ * GET /api/admin/project/:projectCuid
+ *
+ * Retrieve the project data with the given cuid.
+ * Used in projectContextProvider
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a consultant of the project
+ *  b. User has CAN_READ_ALL_PROJECTS permission
+ * 2. Retrieve the project data with the given cuid
+ * 3. Process the project data and return it
+ */
 projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
@@ -154,6 +167,26 @@ projectAPIRouter.get("/project/:projectCuid", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/admin/project/:projectCuid/roster
+ *
+ * Retrieve the roster data for candidates within the project with the given cuid.
+ *
+ * Parameters:
+ * startDate
+ * endDate
+ * projectCuid
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a consultant of the project
+ *  b. User has CAN_READ_ALL_PROJECTS permission
+ * 2. Retrieve list of candidate cuids with start date and end dates within the specified range
+ *  a. User has CAN_READ_ALL_PROJECTS permission and is client holder can view all candidates
+ *  b. User is a consultant of the project can view only their candidates
+ * 3. Retrieve the roster data for the candidates within the specified range
+ * 4. Process the roster data and return it
+ */
 projectAPIRouter.get(
   "/project/:projectCuid/roster",
   async (req: Request, res) => {
@@ -184,6 +217,11 @@ projectAPIRouter.get(
     const startDateObject = dayjs(startDate);
     const endDateObject = dayjs(endDate);
 
+    const hasReadAllProjectsPermission = await checkPermission(
+      user.cuid,
+      PermissionList.CAN_READ_ALL_PROJECTS
+    );
+
     const candidateCuids = await prisma.assign.findMany({
       where: {
         Project: {
@@ -195,21 +233,23 @@ projectAPIRouter.get(
         endDate: {
           gte: startDateObject.toDate(),
         },
-        OR: [
-          {
-            consultantCuid: user.cuid,
-          },
-          {
-            Project: {
-              Manage: {
-                some: {
-                  consultantCuid: user.cuid,
-                  role: Role.CLIENT_HOLDER,
+        ...(!hasReadAllProjectsPermission && {
+          OR: [
+            {
+              consultantCuid: user.cuid,
+            },
+            {
+              Project: {
+                Manage: {
+                  some: {
+                    consultantCuid: user.cuid,
+                    role: Role.CLIENT_HOLDER,
+                  },
                 },
               },
             },
-          },
-        ],
+          ],
+        }),
       },
       select: {
         restDay: true,
@@ -220,6 +260,11 @@ projectAPIRouter.get(
           select: {
             name: true,
             nric: true,
+          },
+        },
+        Project: {
+          select: {
+            Manage: true,
           },
         },
       },
@@ -324,8 +369,25 @@ projectAPIRouter.get(
   }
 );
 
-// TODO: Add Permission check and overlap check
+// TODO: Add overlap check
+/**
+ * PATCH /api/admin/project/:projectCuid/roster
+ *
+ * Change an existing roster record to either a new candidate or new date.
+ *
+ * Parameters:
+ * rosterCuid
+ * candidateCuid
+ * rosterDate
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a client holder of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Update the roster record
+ */
 projectAPIRouter.patch("/roster", async (req, res) => {
+  const user = req.user as User;
   const { rosterCuid, candidateCuid, rosterDate } = req.body;
 
   if (!rosterCuid)
@@ -345,10 +407,34 @@ projectAPIRouter.patch("/roster", async (req, res) => {
 
   const rosterDateObject = new Date(rosterDate);
 
+  const hasCanEditAllProjectsPermission = await checkPermission(
+    user.cuid,
+    PermissionList.CAN_EDIT_ALL_PROJECTS
+  );
+
   try {
     await prisma.attendance.update({
       where: {
         cuid: rosterCuid,
+        // Ensure that there are no pending requests, if there are, do not update the roster
+        Request: {
+          none: {
+            status: RequestStatus.PENDING,
+          },
+        },
+        // Add in client holder check only if user does not have CAN_EDIT_ALL_PROJECTS permission
+        ...(!hasCanEditAllProjectsPermission && {
+          Shift: {
+            Project: {
+              Manage: {
+                some: {
+                  role: Role.CLIENT_HOLDER,
+                  consultantCuid: user.cuid,
+                },
+              },
+            },
+          },
+        }),
       },
       data: {
         candidateCuid: candidateCuid,
@@ -367,7 +453,25 @@ projectAPIRouter.patch("/roster", async (req, res) => {
   }
 });
 
-// TODO: Add root permission check
+/**
+ * GET /api/admin/project/:cuid/requests/:page
+ *
+ * Retrieve the requests for the project with the given cuid.
+ *
+ * Parameters:
+ * cuid
+ * page
+ * searchValue
+ * typeFilter
+ * statusFilter
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a client holder of the project
+ *  b. User has CAN_READ_ALL_PROJECTS permission
+ * 2. Retrieve the requests for the project with the given cuid
+ * 3. Process the requests data and return it
+ */
 projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
   const user = req.user as User;
   const { cuid } = req.params;
@@ -394,7 +498,8 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
     if (
       !project.Manage.some(
         (m) => m.role === "CLIENT_HOLDER" && m.consultantCuid === user.cuid
-      )
+      ) ||
+      (await checkPermission(user.cuid, PermissionList.CAN_READ_ALL_PROJECTS))
     ) {
       return res
         .status(403)
@@ -507,9 +612,28 @@ projectAPIRouter.get("/project/:cuid/requests/:page", async (req, res) => {
   }
 });
 
-// TODO: Add permission check
+/**
+ * POST /api/admin/project/:projectCuid/roster
+ *
+ * Create multiple attendance records for the project with the given cuid.
+ *
+ * Parameters:
+ * projectCuid
+ * newRoster: {
+ *  candidateCuid
+ *  shiftDate;
+ *  shiftType: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
+ *  shiftCuid;
+ * }
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a client holder of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Create the attendance records
+ */
 projectAPIRouter.post("/project/:projectCuid/roster", async (req, res) => {
-  // const user = req.user as User;
+  const user = req.user as User;
   const { projectCuid } = req.params;
   const { newRoster } = req.body;
 
@@ -523,7 +647,40 @@ projectAPIRouter.post("/project/:projectCuid/roster", async (req, res) => {
       message: "Please specify new roster data.",
     });
 
+  const hasCanEditAllProjectsPermission = await checkPermission(
+    user.cuid,
+    PermissionList.CAN_EDIT_ALL_PROJECTS
+  );
+
+  if (!hasCanEditAllProjectsPermission) {
+    return res.status(403).json({
+      message: "You are not authorized to create rosters for this project.",
+    });
+  }
+
   try {
+    if (!hasCanEditAllProjectsPermission) {
+      const project = await prisma.project.findUnique({
+        where: {
+          cuid: projectCuid,
+        },
+        include: {
+          Manage: {
+            where: {
+              consultantCuid: user.cuid,
+              role: "CLIENT_HOLDER",
+            },
+          },
+        },
+      });
+
+      if (!project) {
+        return res.status(403).json({
+          message: "You are not authorized to create rosters for this project.",
+        });
+      }
+    }
+
     await prisma.attendance.createMany({
       data: newRoster,
       skipDuplicates: true,
@@ -540,6 +697,24 @@ projectAPIRouter.post("/project/:projectCuid/roster", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/admin/project/:projectCuid/history
+ *
+ * Retrieve the attendance records for the project with the given cuid.
+ *
+ * Parameters:
+ * projectCuid
+ * startDate
+ * endDate
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a consultant of the project
+ *  b. User has CAN_READ_ALL_PROJECTS permission
+ * 2. Retrieve the attendance records for the project with the given cuid
+ * 3. Check if the user has permission to view unmasked NRIC
+ * 4. Process the attendance data and return it
+ */
 projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
@@ -553,6 +728,11 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
     PermissionList.CAN_READ_CANDIDATE_DETAILS
   );
 
+  const hasReadAllProjectsPermission = await checkPermission(
+    user.cuid,
+    PermissionList.CAN_READ_ALL_PROJECTS
+  );
+
   try {
     const response = await prisma.attendance.findMany({
       where: {
@@ -562,6 +742,17 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
         },
         Shift: {
           projectCuid: projectCuid,
+          // Add in client holder check only if user does not have CAN_READ_ALL_PROJECTS permission
+          ...(!hasReadAllProjectsPermission && {
+            Project: {
+              Manage: {
+                some: {
+                  consultantCuid: user.cuid,
+                  role: "CLIENT_HOLDER",
+                },
+              },
+            },
+          }),
         },
       },
       include: {
@@ -576,6 +767,10 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
         shiftDate: "asc",
       },
     });
+
+    if (!response) {
+      return res.status(404).send("No attendance records found.");
+    }
 
     return res.send(
       response.map((row) => ({
@@ -607,7 +802,26 @@ projectAPIRouter.get("/project/:projectCuid/history", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/admin/project/:projectCuid/overview
+ *
+ * Retrieve the overview data for the project with the given cuid.
+ *
+ * Parameters:
+ * projectCuid
+ * weekStart
+ * endDate
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a consultant of the project
+ *  b. User has CAN_READ_ALL_PROJECTS permission
+ * 2. Fetch attendance, headcount, and claims data
+ * 3. Process the data and return it
+ *
+ */
 projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
+  const user = req.user as User;
   const { projectCuid } = req.params;
   const { weekStart, endDate } = req.query;
 
@@ -619,6 +833,37 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
     dayjs(formattedWeekStart),
     "day"
   ); // Including the end day
+
+  const hasReadAllProjectsPermission = await checkPermission(
+    user.cuid,
+    PermissionList.CAN_READ_ALL_PROJECTS
+  );
+
+  try {
+    const project = await prisma.project.findUnique({
+      where: {
+        cuid: projectCuid,
+      },
+      include: {
+        Manage: {
+          where: {
+            consultantCuid: user.cuid,
+          },
+        },
+      },
+    });
+
+    if (!project && !hasReadAllProjectsPermission) {
+      return res.status(403).json({
+        message: "You are not authorized to view this project's overview.",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    return res.status(500).json({
+      message: "Internal server error.",
+    });
+  }
 
   try {
     // Fetch attendance data
@@ -811,78 +1056,26 @@ projectAPIRouter.get("/project/:projectCuid/overview", async (req, res) => {
   }
 });
 
-// Add permission check for root
-projectAPIRouter.delete("/roster/:rosterCuid", async (req, res) => {
-  const user = req.user as User;
-  const { rosterCuid } = req.params;
-
-  if (!rosterCuid)
-    return res.status(400).json({
-      message: "Please specify a roster cuid.",
-    });
-
-  try {
-    const attendanceToBeDeleted = await prisma.attendance.findUnique({
-      where: { cuid: rosterCuid },
-      include: {
-        Shift: {
-          include: {
-            Project: {
-              include: {
-                Manage: true,
-              },
-            },
-          },
-        },
-        Request: {
-          select: {
-            status: true,
-          },
-        },
-      },
-    });
-
-    if (!attendanceToBeDeleted) {
-      return res.status(404).json({ message: "Attendance not found." });
-    }
-
-    const hasPermission =
-      attendanceToBeDeleted.Shift.Project.Manage.some(
-        (manage) => manage.consultantCuid === user.cuid
-      ) ||
-      (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
-
-    if (!hasPermission) {
-      return res
-        .status(401)
-        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
-    }
-
-    // Check if any requests are pending or approved
-    const hasPendingOrApprovedRequests = attendanceToBeDeleted.Request.some(
-      (request) =>
-        request.status === RequestStatus.PENDING ||
-        request.status === RequestStatus.APPROVED
-    );
-
-    if (hasPendingOrApprovedRequests) {
-      return res.status(400).json({
-        message: "Cannot delete roster with pending or approved requests.",
-      });
-    }
-
-    // Perform the deletion
-    await prisma.attendance.delete({
-      where: { cuid: rosterCuid },
-    });
-
-    return res.json({ message: "Attendance deleted successfully." });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error." });
-  }
-});
-
+/**
+ * POST /api/admin/project
+ *
+ * Create a new project.
+ *
+ * Parameters:
+ * name
+ * clientUEN
+ * clientName
+ * employmentBy
+ * startDate
+ * endDate
+ * noticePeriodDuration
+ * noticePeriodUnit
+ * timezone
+ *
+ * Steps:
+ * 1. Check if all fields are present and valid
+ * 2. Create the project
+ */
 projectAPIRouter.post("/project", async (req, res) => {
   const user = req.user as User;
   const {
@@ -1013,91 +1206,22 @@ projectAPIRouter.post("/project", async (req, res) => {
   }
 });
 
-projectAPIRouter.delete("/project/:projectCuid", async (req, res) => {
-  const user = req.user as User;
-  const { projectCuid } = req.params;
-
-  if (!projectCuid)
-    return res.status(400).json({ message: "projectCuid is required." });
-
-  let projectData;
-  try {
-    projectData = await prisma.project.findUniqueOrThrow({
-      where: {
-        cuid: projectCuid,
-      },
-      include: {
-        Manage: true,
-      },
-    });
-  } catch (error) {
-    const prismaError = error as PrismaError;
-    if (prismaError.code === "P2025") {
-      return res.status(404).send("Project does not exist.");
-    }
-
-    console.log(error);
-    return res.status(500).send("Internal server error.");
-  }
-
-  const hasPermission =
-    projectData.Manage.some((manage) => manage.consultantCuid === user.cuid) ||
-    (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
-
-  if (!hasPermission) {
-    return res
-      .status(401)
-      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
-  }
-
-  try {
-    await prisma.project.update({
-      where: {
-        cuid: projectCuid,
-      },
-      data: {
-        status: "DELETED",
-      },
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send("Internal server error.");
-  }
-
-  return res.send("Project deleted");
-});
-
-// TODO: Delete related references in other tables first
-projectAPIRouter.delete("/project/permanent", async (req, res) => {
-  const user = req.user as User;
-  const { projectCuid } = req.body;
-
-  const hasHardDeletePermission = await checkPermission(
-    user.cuid,
-    PermissionList.CAN_HARD_DELETE_PROJECTS
-  );
-
-  if (!hasHardDeletePermission) {
-    return res
-      .status(401)
-      .send(
-        PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_HARD_DELETE_PROJECTS
-      );
-  }
-
-  try {
-    await prisma.project.delete({
-      where: {
-        cuid: projectCuid,
-      },
-    });
-
-    return res.send("Project hard deleted.");
-  } catch (error) {
-    return res.status(500).send("Internal server error.");
-  }
-});
-
+/**
+ * PATCH /api/admin/project
+ *
+ * Update an existing project.
+ *
+ * Parameters:
+ * projectCuid
+ * and optional fields to update
+ *
+ * Steps:
+ * 1. Check if fields present are valid
+ * 2. Check if user has permission to update the project
+ *  a. User is a client holder of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 3. Update the project if there is a field to update
+ */
 projectAPIRouter.patch("/project", async (req, res) => {
   const user = req.user as User;
 
@@ -1224,6 +1348,27 @@ projectAPIRouter.patch("/project", async (req, res) => {
   }
 });
 
+/**
+ * POST /api/admin/project/:projectCuid/candidates
+ *
+ * Assigns candidates to a project.
+ * Creates candidate records if they do not exist yet.
+ * Ignores and returns list of candidates that were already assigned to the project.
+ *
+ * Parameters:
+ * projectCuid
+ * candidates
+ *
+ * Steps:
+ * 1. Check permission, requires either:
+ *  a. User is a consultant of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Validate candidates data
+ * 3. Within a transaction:
+ *  a. Create candidate (and user) records if they do not exist
+ *  b. Assign all candidates to the project
+ *  c. Return list of candidates that were already assigned to the project
+ */
 projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
@@ -1335,6 +1480,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
           skipDuplicates: true,
         });
 
+        // create user records for new candidates
         await Promise.all(
           candidateData.map((cdd) =>
             prisma.user.create({
@@ -1351,7 +1497,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
           )
         );
 
-        // retrieve cuids
+        // retrieve cuids (some might be newly created, some might be already in db)
         const candidatesInDb = await prisma.candidate.findMany({
           where: {
             nric: {
@@ -1394,6 +1540,7 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
         return res.send(alreadyAssignedCandidates);
       },
       {
+        // variable transaction timeout based on number of candidates
         timeout: candidates.length * 2000,
       }
     );
@@ -1404,16 +1551,33 @@ projectAPIRouter.post("/project/:projectCuid/candidates", async (req, res) => {
   }
 });
 
-// TODO: revisit candidate deletion logic. Proposed steps:
-// 1. Delete scheduled future attendances (if they exist)
-// 2. If candidate has no past attendances, hard delete candidate
-// 3. Otherwise, soft delete candidate by setting endDate to current date
+/**
+ * DELETE /api/admin/project/:projectCuid/candidates
+ *
+ * HARD DELETES ASSIGNS WITH NO CARES ABOUT ATTENDANCES
+ *
+ * Parameters:
+ * projectCuid
+ * cuidList
+ *
+ * Steps:
+ * 1. Check permission, either:
+ *  a. User is a client holder of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Otherwise, only proceed for candidates that the user has assigned
+ * 3. Delete scheduled future attendances (if they exist)
+ * 4. Check if candidate has past attendances
+ *  a. If candidate has no past attendances, hard delete candidate
+ *  b. Otherwise, soft delete candidate by setting endDate to current date
+ *
+ * TODO: Test if this works as intended
+ */
 projectAPIRouter.delete(
   "/project/:projectCuid/candidates",
   async (req, res) => {
     const user = req.user as User;
     const { projectCuid } = req.params;
-    const { cuidList } = req.body;
+    let { cuidList } = req.body;
 
     if (!projectCuid) {
       return res.status(400).send("projectCuid is required.");
@@ -1430,7 +1594,35 @@ projectAPIRouter.delete(
           cuid: projectCuid,
         },
         include: {
-          Manage: true,
+          // for permission check
+          Manage: {
+            where: {
+              role: Role.CLIENT_HOLDER,
+            },
+          },
+
+          // for permission check
+          Assign: {
+            where: {
+              consultantCuid: user.cuid,
+            },
+          },
+
+          // for checking attendances
+          Shift: {
+            include: {
+              Attendance: {
+                where: {
+                  candidateCuid: {
+                    in: cuidList,
+                  },
+                },
+                include: {
+                  Request: true,
+                },
+              },
+            },
+          },
         },
       });
     } catch (error) {
@@ -1443,24 +1635,112 @@ projectAPIRouter.delete(
       return res.status(500).send("Internal server error.");
     }
 
-    const hasPermission =
+    const hasPermissionToDeleteAll =
       projectData.Manage.some((m) => m.consultantCuid === user.cuid) ||
       (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
 
-    if (!hasPermission) {
-      return res
-        .status(401)
-        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+    if (!hasPermissionToDeleteAll) {
+      // filter out candidates that the user did not assign
+      cuidList = cuidList.filter((cuid) => {
+        const assign = projectData.Assign.find(
+          (assign) => assign.candidateCuid === cuid
+        );
+
+        return assign && assign.consultantCuid === user.cuid;
+      });
+
+      if (cuidList.length === 0) {
+        return res
+          .status(401)
+          .send(
+            PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS
+          );
+      }
     }
 
+    // get list of all future attendances to be removed
+    const futureAttendances = projectData.Shift.flatMap((shift) =>
+      shift.Attendance.filter((attendance) => {
+        const isInCuidList = attendance.candidateCuid in cuidList;
+        if (!isInCuidList) return false;
+
+        const { correctStartTime } = correctTimes(
+          attendance.shiftDate,
+          attendance.shiftType === "SECOND_HALF"
+            ? shift.halfDayStartTime!
+            : shift.startTime,
+          attendance.shiftType === "FIRST_HALF"
+            ? shift.halfDayEndTime!
+            : shift.endTime
+        );
+
+        return dayjs().isBefore(correctStartTime);
+      })
+    );
+
     try {
-      await prisma.assign.deleteMany({
-        where: {
-          projectCuid: projectCuid,
-          candidateCuid: {
-            in: cuidList,
-          },
-        },
+      prisma.$transaction(async () => {
+        // delete future attendances
+        await prisma.attendance
+          .deleteMany({
+            where: {
+              cuid: {
+                in: futureAttendances.map((attendance) => attendance.cuid),
+              },
+            },
+          })
+          .then(async () => {
+            // marks all related requests as REJECTED
+            await prisma.request.updateMany({
+              where: {
+                cuid: {
+                  in: futureAttendances.flatMap((attendance) =>
+                    attendance.Request.map((request) => request.cuid)
+                  ),
+                },
+                status: {
+                  not: "CANCELLED",
+                },
+              },
+              data: {
+                status: "REJECTED",
+              },
+            });
+
+            // delete assigns without attendances
+            await prisma.assign.deleteMany({
+              where: {
+                projectCuid,
+                Candidate: {
+                  cuid: {
+                    in: cuidList,
+                  },
+
+                  // has no past attendances
+                  Attendance: { none: {} },
+                },
+              },
+            });
+
+            // update end date for candidates with past attendances
+            await prisma.assign.updateMany({
+              where: {
+                projectCuid,
+                Candidate: {
+                  cuid: {
+                    in: cuidList,
+                  },
+
+                  //  has past attendances for this project
+                  Attendance: { some: {} },
+                },
+              },
+
+              data: {
+                endDate: dayjs().startOf("day").toDate(),
+              },
+            });
+          });
       });
     } catch (error) {
       console.log(error);
@@ -1471,6 +1751,27 @@ projectAPIRouter.delete(
   }
 );
 
+/**
+ * POST /api/admin/project/:projectCuid/shifts
+ *
+ * Create a new shift for the project with the given cuid.
+ *
+ * Parameters:
+ * projectCuid
+ * startTime
+ * endTime
+ * halfDayStartTime
+ * halfDayEndTime
+ * breakDuration
+ * timezone
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a client holder of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Validate the shift data
+ * 3. Create the shift
+ */
 projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
@@ -1601,81 +1902,24 @@ projectAPIRouter.post("/project/:projectCuid/shifts", async (req, res) => {
   return res.send("Shift created successfully.");
 });
 
-projectAPIRouter.get(
-  "/project/:projectCuid/attendance/:date&:candidateCuid",
-  async (req: Request, res: Response) => {
-    const user = req.user as User;
-    const { projectCuid, candidateCuid, date } = req.params;
-
-    if (!projectCuid) {
-      return res.status(400).send("projectCuid is required.");
-    }
-
-    if (!date || isNaN(Date.parse(date))) {
-      return res.status(400).send("valid date is required.");
-    }
-
-    // find first and last day of month
-    const startDate = new Date(date);
-    const endDate = new Date(date);
-    startDate.setDate(1);
-    endDate.setMonth(endDate.getMonth() + 1);
-    endDate.setDate(0);
-
-    let projectData;
-    try {
-      projectData = await prisma.project.findUniqueOrThrow({
-        where: {
-          cuid: projectCuid,
-        },
-        include: {
-          Manage: true,
-        },
-      });
-    } catch (error) {
-      const prismaError = error as PrismaError;
-      if (prismaError.code === "P2025") {
-        return res.status(404).send("Project does not exist.");
-      }
-
-      console.log(error);
-      return res.status(500).send("Internal server error.");
-    }
-
-    const hasPermission =
-      projectData.Manage.some(
-        (manage) => manage.consultantCuid === user.cuid
-      ) ||
-      (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
-
-    if (!hasPermission) {
-      return res
-        .status(401)
-        .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
-    }
-
-    try {
-      const attendanceData = await prisma.attendance.findMany({
-        where: {
-          ...(candidateCuid && { candidateCuid }),
-          shiftDate: {
-            gte: startDate,
-            lte: endDate,
-          },
-          NOT: {
-            status: null,
-          },
-        },
-      });
-
-      return res.send(attendanceData);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).send("Internal server error.");
-    }
-  }
-);
-
+/**
+ * GET /api/admin/project/:projectCuid/candidates/roster
+ *
+ * Retrieve the roster data for the project with the given cuid.
+ * Used in rosterContextProvider
+ *
+ * Parameters:
+ * projectCuid
+ * startDate
+ * endDate
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a consultant of the project
+ *  b. User has CAN_READ_ALL_PROJECTS permission
+ * 2. Fetch attendance data between the given dates
+ * 3. Return the attendance data
+ */
 projectAPIRouter.get(
   "/project/:projectCuid/candidates/roster",
   async (req: Request, res: Response) => {
@@ -1756,6 +2000,11 @@ projectAPIRouter.get(
   }
 );
 
+/**
+ * GET /api/admin/projects
+ *
+ * Retrieve all projects that the user is a consultant of.
+ */
 projectAPIRouter.get("/projects", async (req, res) => {
   const user = req.user as User;
 
@@ -1812,6 +2061,11 @@ projectAPIRouter.get("/projects", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/admin/projects/all
+ *
+ * Retrieve all projects that the user is not a consultant of.
+ */
 projectAPIRouter.get("/projects/all", async (req, res) => {
   const user = req.user as User;
 
@@ -1867,7 +2121,23 @@ projectAPIRouter.get("/projects/all", async (req, res) => {
     return res.status(500).send("Internal server error.");
   }
 });
-
+/**
+ * POST /api/admin/project/:projectCuid/manage
+ *
+ * Add a consultant to the project with the given cuid and role.
+ *
+ * Parameters:
+ * projectCuid
+ * consultantCuid
+ * role
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ * a. User is a client holder of the project
+ * b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Validate the role
+ * 3. Add the consultant to the project
+ */
 projectAPIRouter.post("/project/:projectCuid/manage", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
@@ -1937,6 +2207,23 @@ projectAPIRouter.post("/project/:projectCuid/manage", async (req, res) => {
   }
 });
 
+/**
+ * PATCH /api/admin/project/:projectCuid/manage
+ *
+ * Change the role of a consultant in the project with the given cuid.
+ *
+ * Parameters:
+ * projectCuid
+ * consultantCuid
+ * role
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a client holder of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Validate the role
+ * 3. Update the role of the consultant in the project
+ */
 projectAPIRouter.patch("/project/:projectCuid/manage", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
@@ -2034,6 +2321,24 @@ projectAPIRouter.patch("/project/:projectCuid/manage", async (req, res) => {
   }
 });
 
+/**
+ * DELETE /api/admin/project/:projectCuid/manage
+ *
+ * Remove a consultant from the project with the given cuid.
+ *
+ * Parameters:
+ * projectCuid
+ * consultantCuid
+ * reassignments
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a client holder of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Ensure that last client holder is not removed
+ * 3. Reassign candidates to new consultants
+ * 4. Remove the consultant from the project
+ */
 projectAPIRouter.delete("/project/:projectCuid/manage", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
@@ -2169,26 +2474,28 @@ projectAPIRouter.delete("/project/:projectCuid/manage", async (req, res) => {
 });
 
 /**
-/project/:projectCuid/roster/copy
-
-Takes the attendance data for a week and copies it to the next week.
-
-Parameters:
-projectCuid
-startDate
-endDate
-
-Steps:
-1. Retrieve attendance data for that week (include with Manage data for permission check)
-2. Check permissions
-3. For each attendance:
-  a. Check that its shift's status is active
-  b. Check that its copy will be within candidate assign period
-  c. Check that it does not clash with any other attendance (can be from other projects)
-  d. If any of the above checks fail, add to failure list, continue to next attendance
-  e. Create new attendance
-    i. Check LeaveType => if HALF_DAY, adjust ShiftType
-4. Return failure list in response
+ * POST /project/:projectCuid/roster/copy
+ *
+ * Takes the attendance data for a week and copies it to the next week.
+ *
+ * Parameters:
+ * projectCuid
+ * startDate
+ * endDate
+ *
+ * Steps:
+ * 1. Retrieve attendance data for that week (include with Manage data for permission check)
+ * 2. Check permissions, requires either:
+ * a. User is a client holder of the project
+ * b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 3. For each attendance:
+ *  a. Check that its shift's status is active
+ *  b. Check that its copy will be within candidate assign period
+ *  c. Check that it does not clash with any other attendance (can be from other projects)
+ *  d. If any of the above checks fail, add to failure list, continue to next attendance
+ *  e. Create new attendance
+ *  i. Check LeaveType => if HALF_DAY, adjust ShiftType
+ * 4. Return failure list in response
  */
 projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
   const user = req.user as User;
@@ -2402,18 +2709,27 @@ projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
 });
 
 /**
-/project/:projectCuid/roster/clear
-
-Takes the roster data for period specified and deletes it if it has yet to happen.
-
-Parameters:
-projectCuid
-endDate
-
-Steps:
-1. Delete all attendance data for that period with status and leave null for that project and period (ensure that it has yet to passed by checking the start time, the start time will differ for different shift type as it can be second half)
+ * POST /api/admin/project/:projectCuid/roster/clear
+ *
+ * Takes the roster data for period specified and deletes it if it has yet to happen.
+ *
+ * Parameters:
+ * projectCuid
+ * startDate
+ * endDate
+ * candidateCuids
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a client holder of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Delete all attendance data for that period that satisfies the following conditions
+ *  a. status is null
+ *  b. leave is null
+ *  c. shiftDate is within the period and start time has yet to pass
+ *  d. projectCuid matches
+ *  e. candidateCuid is in candidateCuids if provided
  */
-
 projectAPIRouter.post(
   "/project/:projectCuid/roster/clear",
   async (req, res) => {
@@ -2509,6 +2825,22 @@ projectAPIRouter.post(
   }
 );
 
+/**
+ * POST /api/admin/project/:projectCuid/shifts/archive
+ *
+ * Archive all shifts that are rostered after the given date.
+ *
+ * Parameters:
+ * projectCuid
+ * startDate
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a client holder of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Retrieve all shifts that are rostered after the given date
+ * 3. Update all shifts that are not rostered to be archived
+ */
 projectAPIRouter.post(
   "/project/:projectCuid/shifts/archive",
   async (req, res) => {

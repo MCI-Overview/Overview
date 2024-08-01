@@ -7,6 +7,13 @@ import dayjs from "dayjs";
 
 const attendanceApiRouter: Router = Router();
 
+/**
+GET /api/user/attendance
+
+Retrieves the current user's attendance data.
+
+TODO: Replace with something like "/nextAttendance" instead
+*/
 attendanceApiRouter.get("/attendance", async (req: Request, res: Response) => {
   const user = req.user as User;
   const candidateCuid = user.cuid;
@@ -48,6 +55,22 @@ attendanceApiRouter.get("/attendance", async (req: Request, res: Response) => {
   }
 });
 
+/**
+PATCH /api/user/attendance
+
+Updates the current user's attendance data during clock in or clock out.
+Includes image upload during clock in.
+
+Parameters:
+attendanceCuid
+clockInTime
+clockOutTime
+imageData
+startTime
+location
+
+TODO: Seperate into two different endpoints for clock in and clock out?
+*/
 attendanceApiRouter.patch(
   "/attendance",
   async (req: Request, res: Response) => {
@@ -146,6 +169,16 @@ attendanceApiRouter.patch(
   }
 );
 
+/**
+GET /api/user/attendance/upcoming/:page
+
+Retrieves the current user's upcoming rosters.
+Uses pagination.
+
+Parameters:
+page
+date (optional)
+*/
 attendanceApiRouter.get(
   "/upcoming/:page",
   async (req: Request, res: Response) => {
@@ -214,6 +247,16 @@ attendanceApiRouter.get(
   }
 );
 
+/**
+GET /api/user/attendance/history/:page
+
+Retrieves the current user's past rosters.
+Uses pagination.
+
+Parameters:
+page
+date (optional)
+*/
 attendanceApiRouter.get(
   "/history/:page",
   async (req: Request, res: Response) => {
@@ -279,7 +322,7 @@ attendanceApiRouter.get(
       res.json([fetchedData, paginationData]);
     } catch (error) {
       res.status(500).json({
-        error: "An error occurred while fetching the upcoming shifts.",
+        error: "An error occurred while fetching history shifts.",
       });
     }
   }

@@ -3,6 +3,7 @@ import { prisma } from "../../../client";
 
 const consultantAPIRoutes: Router = Router();
 
+// Unused
 consultantAPIRoutes.get("/consultant/:cuid"),
   async (req: Request, res: Response) => {
     const { consultantId: cuid } = req.params;
@@ -29,8 +30,14 @@ consultantAPIRoutes.get("/consultant/:cuid"),
     }
   };
 
+/**
+GET /api/admin/consultant/candidates
+
+Gets the data of all candidates assigned by the consultant.
+Used in MyCandidatesPage.
+*/
 consultantAPIRoutes.get(
-  "/consultant/:consultantCuid/candidates",
+  "/consultant/candidates",
   async (req: Request, res: Response) => {
     const { consultantCuid } = req.params;
 
@@ -67,6 +74,11 @@ consultantAPIRoutes.get(
   }
 );
 
+/**
+GET /api/admin/consultants
+
+Retrieve all consultants.
+*/
 consultantAPIRoutes.get("/consultants", async (_req, res) => {
   const consultantsData = await prisma.consultant.findMany({
     where: {

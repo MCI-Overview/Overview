@@ -1,16 +1,33 @@
+import dayjs from "dayjs";
+import { Router } from "express";
 import { User } from "@/types/common";
 import { PrismaError } from "@/types";
+import { prisma } from "../../../client";
 import {
   PERMISSION_ERROR_TEMPLATE,
   checkPermission,
   PermissionList,
 } from "../../../utils/permissions";
-import { prisma } from "../../../client";
-import { Router } from "express";
-import dayjs from "dayjs";
 
 const projectShiftAPIRouter: Router = Router();
 
+/**
+DELETE /api/admin/shift/:shiftCuid
+
+Deletes a shift identified by its cuid.
+
+Parameters:
+shiftCuid
+
+Steps:
+1. Check permissions, either:
+  a. User is a client holder of the project
+  b. User has CAN_EDIT_ALL_PROJECTS permission
+2. Check connected attendances:
+  a. If there are future attendances, prevent deletion
+  b. If there are no attendances, hard delete
+  c. If there are past attendances, soft delete
+*/
 projectShiftAPIRouter.delete("/shift/:shiftCuid", async (req, res) => {
   const user = req.user as User;
   const { shiftCuid } = req.params;
@@ -29,7 +46,11 @@ projectShiftAPIRouter.delete("/shift/:shiftCuid", async (req, res) => {
       include: {
         Project: {
           include: {
-            Manage: true,
+            Manage: {
+              where: {
+                role: "CLIENT_HOLDER",
+              },
+            },
           },
         },
         Attendance: true,

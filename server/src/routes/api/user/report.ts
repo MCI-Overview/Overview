@@ -5,6 +5,11 @@ import { Router } from "express";
 
 const reportAPIRouter = Router();
 
+/**
+GET /api/user/report
+
+Used for candidate profile report.
+*/
 reportAPIRouter.get("/report", async (req, res) => {
   const user = req.user as User;
 
@@ -34,25 +39,24 @@ reportAPIRouter.get("/report", async (req, res) => {
 
   const onTime = attendanceData.filter(
     (attendance) =>
-      attendance.status === "ON_TIME" && attendance.clockOutTime !== null,
+      attendance.status === "ON_TIME" && attendance.clockOutTime !== null
   ).length;
   const late = attendanceData.filter(
     (attendance) =>
-      attendance.status === "LATE" && attendance.clockOutTime !== null,
+      attendance.status === "LATE" && attendance.clockOutTime !== null
   ).length;
   const noShow = attendanceData.filter(
-    (attendance) =>
-      attendance.status === "NO_SHOW" && attendance.leave === null,
+    (attendance) => attendance.status === "NO_SHOW" && attendance.leave === null
   ).length;
   const others = attendanceData.filter(
     (attendance) =>
-      attendance.clockInTime !== null && attendance.clockOutTime === null,
+      attendance.clockInTime !== null && attendance.clockOutTime === null
   ).length;
 
   const hoursWorked = attendanceData
     .filter(
       (attendance) =>
-        attendance.clockOutTime !== null && attendance.status !== "NO_SHOW",
+        attendance.clockOutTime !== null && attendance.status !== "NO_SHOW"
     )
     .reduce((acc, attendance) => {
       if (attendance.shiftType === "FULL_DAY") {
@@ -131,13 +135,12 @@ reportAPIRouter.get("/report", async (req, res) => {
     }, 0);
 
   const mc = attendanceData.filter(
-    (attendance) =>
-      attendance.status === "MEDICAL" && attendance.leave === null,
+    (attendance) => attendance.status === "MEDICAL" && attendance.leave === null
   ).length;
   const leave = attendanceData
     .filter(
       (attendance) =>
-        attendance.status !== "MEDICAL" && attendance.leave !== null,
+        attendance.status !== "MEDICAL" && attendance.leave !== null
     )
     .reduce((acc, attendance) => {
       if (attendance.leave === "HALFDAY") {

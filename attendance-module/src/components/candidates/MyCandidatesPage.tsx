@@ -1,6 +1,5 @@
 import axios from "axios";
 import { Fragment, useEffect, useState } from "react";
-import { useUserContext } from "../../providers/userContextProvider";
 import { formatDate } from "../../utils/date-time";
 import { TdTypo, ThTypo } from "../project/ui/TableTypo";
 
@@ -45,19 +44,13 @@ type ResponseDataType = {
 };
 
 const MyCandidatesPage = () => {
-  const { user } = useUserContext();
-
   const [candidateData, setCandidateData] = useState<CandidateData[]>([]);
   const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
-    if (!user?.cuid) return;
-
     const fetchData = async () => {
       try {
-        const res = await axios.get(
-          `/api/admin/consultant/${user?.cuid}/candidates`
-        );
+        const res = await axios.get(`/api/admin/consultant/candidates`);
         const data = res.data.map((data: ResponseDataType) => ({
           ...data,
           startDate: new Date(data.startDate),
@@ -70,7 +63,7 @@ const MyCandidatesPage = () => {
     };
 
     fetchData();
-  }, [user?.cuid]);
+  });
 
   const groupByCandidates = (data: CandidateData[]) => {
     const groupedData: Record<string, CandidateData[]> = {};
