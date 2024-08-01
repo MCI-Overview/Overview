@@ -48,6 +48,7 @@ const ProfilePage = () => {
         .get(`/api/user`)
         .then((response) => {
           setCandidate(response.data);
+          setCanEdit(true);
         })
         .catch(() => navigate("/user/profile"));
       return;
