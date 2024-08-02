@@ -42,8 +42,8 @@ export default function RosterSidebar() {
   const {
     showAttendance,
     setShowAttendance,
-    isPerformanceMode,
-    setIsPerformanceMode,
+    // isPerformanceMode,
+    // setIsPerformanceMode,
     dateRangeStart,
     dateRangeEnd,
     selectedCandidates,
