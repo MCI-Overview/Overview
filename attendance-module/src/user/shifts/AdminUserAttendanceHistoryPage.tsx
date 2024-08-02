@@ -52,9 +52,7 @@ const AdminUserAttendanceHistoryPage = () => {
       try {
         let url = `/api/admin/history/${candidateCuid}/${page}`;
         if (date) {
-          const formattedDate = dayjs(date).format(
-            "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
-          );
+          const formattedDate = dayjs(date).toISOString();
           url += `?date=${formattedDate}`;
         }
         const response = await axios.get(url);
