@@ -9,8 +9,8 @@ import {
   PERMISSION_ERROR_TEMPLATE,
   PermissionList,
 } from "../../../utils/permissions";
-import { checkTimesValidity } from "../../../utils";
 import { RequestStatus } from "@prisma/client";
+import dayjs from "dayjs";
 
 const attendanceApiRouter: Router = Router();
 
@@ -144,15 +144,24 @@ attendanceApiRouter.patch(
         });
       }
 
-      const timeValidity = checkTimesValidity(clockInTime, clockOutTime);
-      if (!timeValidity.isValid) {
-        return res.status(400).send(timeValidity.message);
+      const clockInTimeObject = dayjs(clockInTime);
+      let clockOutTimeObject = dayjs(clockOutTime);
+
+      if (
+        clockOutTimeObject.isValid() &&
+        clockOutTimeObject.isBefore(clockInTimeObject)
+      ) {
+        clockOutTimeObject.add(1, "day");
       }
 
       await prisma.attendance.update({
         data: {
-          clockInTime,
-          clockOutTime,
+          ...(clockInTimeObject.isValid() && {
+            clockInTime: clockInTimeObject.toDate(),
+          }),
+          ...(clockOutTimeObject.isValid() && {
+            clockOutTime: clockOutTimeObject.toDate(),
+          }),
           location,
           status,
         },

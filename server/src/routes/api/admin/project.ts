@@ -2486,9 +2486,12 @@ projectAPIRouter.delete("/project/:projectCuid/manage", async (req, res) => {
  * projectCuid
  * startDate
  * endDate
+ * selectedCandidates
+ * selectedDates
  *
  * Steps:
  * 1. Retrieve attendance data for that week (include with Manage data for permission check)
+ * of selectedDates and selectedCandidates if specified
  * 2. Check permissions, requires either:
  * a. User is a client holder of the project
  * b. User has CAN_EDIT_ALL_PROJECTS permission
@@ -2504,7 +2507,7 @@ projectAPIRouter.delete("/project/:projectCuid/manage", async (req, res) => {
 projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
   const user = req.user as User;
   const { projectCuid } = req.params;
-  const { startDate, endDate, candidateCuids } = req.body;
+  const { startDate, endDate, selectedCandidates, selectedDates } = req.body;
 
   if (!projectCuid) {
     return res.status(400).send("projectCuid is required.");
@@ -2552,41 +2555,34 @@ projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
   }
 
   try {
-    let attendanceList;
-    if (!candidateCuids || candidateCuids.length === 0) {
-      attendanceList = await prisma.attendance.findMany({
-        where: {
-          shiftDate: {
-            gte: new Date(startDate),
-            lte: new Date(endDate),
-          },
-          Shift: {
-            projectCuid,
-          },
-        },
-        include: {
-          Shift: true,
-        },
-      });
-    } else {
-      attendanceList = await prisma.attendance.findMany({
-        where: {
+    const attendanceList = await prisma.attendance.findMany({
+      where: {
+        ...(selectedCandidates && {
           candidateCuid: {
-            in: candidateCuids,
+            in: selectedCandidates,
           },
-          shiftDate: {
-            gte: new Date(startDate),
-            lte: new Date(endDate),
-          },
-          Shift: {
-            projectCuid,
-          },
+        }),
+        ...(selectedDates &&
+          selectedDates.length === 0 && {
+            shiftDate: {
+              gte: new Date(startDate),
+              lte: new Date(endDate),
+            },
+          }),
+        ...(selectedDates &&
+          selectedDates.length > 0 && {
+            shiftDate: {
+              in: selectedDates.map((date: string) => new Date(date)),
+            },
+          }),
+        Shift: {
+          projectCuid,
         },
-        include: {
-          Shift: true,
-        },
-      });
-    }
+      },
+      include: {
+        Shift: true,
+      },
+    });
 
     const failureList: CopyAttendanceResponse[] = [];
 
@@ -2721,7 +2717,8 @@ projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
  * projectCuid
  * startDate
  * endDate
- * candidateCuids
+ * selectedCandidates
+ * selectedDates
  *
  * Steps:
  * 1. Check permissions, requires either:
@@ -2730,16 +2727,16 @@ projectAPIRouter.post("/project/:projectCuid/roster/copy", async (req, res) => {
  * 2. Delete all attendance data for that period that satisfies the following conditions
  *  a. status is null
  *  b. leave is null
- *  c. shiftDate is within the period and start time has yet to pass
+ *  c. shiftDate is within the period and start time has yet to pass or is within selectedDates if specified
  *  d. projectCuid matches
- *  e. candidateCuid is in candidateCuids if provided
+ *  e. candidateCuid is in selectedCandidates if provided
  */
 projectAPIRouter.post(
   "/project/:projectCuid/roster/clear",
   async (req, res) => {
     const user = req.user as User;
     const { projectCuid } = req.params;
-    const { startDate, endDate, candidateCuids } = req.body;
+    const { startDate, endDate, selectedCandidates, selectedDates } = req.body;
 
     if (!projectCuid) {
       return res.status(400).send("projectCuid is required.");
@@ -2798,16 +2795,25 @@ projectAPIRouter.post(
           },
 
           // check all candidate if candidateCuids is not provided/empty
-          ...(candidateCuids &&
-            candidateCuids.length > 0 && {
+          ...(selectedCandidates &&
+            selectedCandidates.length > 0 && {
               candidateCuid: {
-                in: candidateCuids,
+                in: selectedCandidates,
               },
             }),
-          shiftDate: {
-            gte: new Date(startDate),
-            lte: new Date(endDate),
-          },
+          ...(selectedDates &&
+            selectedDates.length === 0 && {
+              shiftDate: {
+                gte: new Date(startDate),
+                lte: new Date(endDate),
+              },
+            }),
+          ...(selectedDates &&
+            selectedDates.length > 0 && {
+              shiftDate: {
+                in: selectedDates.map((date: string) => new Date(date)),
+              },
+            }),
           Shift: {
             projectCuid,
           },
