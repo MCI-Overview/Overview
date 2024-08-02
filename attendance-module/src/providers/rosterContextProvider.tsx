@@ -45,8 +45,10 @@ const RosterTableContext = createContext<{
     | "assign";
   weekOffset: number;
   dateRangeEnd: dayjs.Dayjs;
+  isPerformanceMode: boolean;
   dateRangeStart: dayjs.Dayjs;
   selectedCandidates: string[];
+  setIsPerformanceMode: (isPerformanceMode: boolean) => void;
   setSelectedDates: (selectedDates: dayjs.Dayjs[]) => void;
   setSortOrder: (
     order:
@@ -66,6 +68,8 @@ const RosterTableContext = createContext<{
   dateRangeStart: dayjs(),
   selectedCandidates: [],
   sortOrder: "employeeId-asc",
+  isPerformanceMode: true,
+  setIsPerformanceMode: () => {},
   setSelectedDates: () => {},
   setSortOrder: () => {},
   setWeekOffset: () => {},
@@ -125,8 +129,9 @@ function RosterTableContextProvider({ children }: { children: ReactNode }) {
       0
   );
 
-  const [selectedDates, setSelectedDates] = useState<dayjs.Dayjs[]>([]);
+  const [isPerformanceMode, setIsPerformanceMode] = useState<boolean>(true);
 
+  const [selectedDates, setSelectedDates] = useState<dayjs.Dayjs[]>([]);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<
     | "name-asc"
@@ -148,12 +153,14 @@ function RosterTableContextProvider({ children }: { children: ReactNode }) {
   return (
     <RosterTableContext.Provider
       value={{
+        isPerformanceMode,
         selectedDates,
         sortOrder,
         weekOffset,
         dateRangeEnd,
         dateRangeStart,
         selectedCandidates,
+        setIsPerformanceMode,
         setSelectedDates,
         setSortOrder,
         setWeekOffset,
@@ -214,6 +221,7 @@ function RosterDataContextProvider({ children }: { children: ReactNode }) {
     dateRangeEnd,
     weekOffset,
     sortOrder,
+    isPerformanceMode,
     selectedCandidates,
     setSelectedCandidates,
   } = useRosterTableContext();
@@ -395,6 +403,56 @@ function RosterDataContextProvider({ children }: { children: ReactNode }) {
         .map((_, i) => dateRangeStart.add(i, "days"))
         .reduce(
           (acc, date) => {
+            const isHoveredCandidate =
+              hoverCandidateCuid && hoverCandidateCuid === cuid;
+            const isHoveredDate = hoverDate?.isSame(date, "day");
+
+            const isSelectedCandidate =
+              itemType === "shift" && selectedCandidates.includes(cuid);
+            const isSelectedDate =
+              itemType === "shift" &&
+              selectedDates.some((d) => d.isSame(date, "day"));
+
+            const isCandidate =
+              (selectedCandidates.length === 0 && isHoveredCandidate) ||
+              isSelectedCandidate;
+            const isDate =
+              (selectedDates.length === 0 && isHoveredDate) || isSelectedDate;
+
+            if (isPerformanceMode && itemType === "roster") {
+              // Skip if cuid is not hovered candidate
+              if (hoverCandidateCuid && !isHoveredCandidate) {
+                return acc;
+              }
+
+              // Skip if date is not hovered date
+              if (hoverDate && !isHoveredDate) {
+                return acc;
+              }
+            }
+
+            if (isPerformanceMode && itemType === "shift") {
+              // Skip if cuid is not hovered candidate or selected
+              if (
+                !(
+                  (selectedCandidates.length === 0 && isHoveredCandidate) ||
+                  isSelectedCandidate
+                )
+              ) {
+                return acc;
+              }
+
+              // Skip if date is not hovered date or selected
+              if (
+                !(
+                  (selectedDates.length === 0 && hoverDate && isHoveredDate) ||
+                  isSelectedDate
+                )
+              ) {
+                return acc;
+              }
+            }
+
             if (
               !date.isBetween(
                 rosterData[cuid].startDate,
@@ -456,11 +514,13 @@ function RosterDataContextProvider({ children }: { children: ReactNode }) {
               .format("DD-MM-YYYY");
             const nextDate = itemStartTime.add(1, "day").format("DD-MM-YYYY");
 
-            const hasNoOverlap = [
+            const possibleOverlappingRosters = [
               ...(candidateRoster[currentDate] || []),
               ...(candidateRoster[previousDate] || []),
               ...(candidateRoster[nextDate] || []),
-            ]
+            ];
+
+            const hasNoOverlap = possibleOverlappingRosters
               .filter((roster) => roster.state !== "PREVIEW")
               .every(
                 (roster) =>
@@ -480,20 +540,7 @@ function RosterDataContextProvider({ children }: { children: ReactNode }) {
               acc[1].push(date);
 
               if (itemType === "shift") {
-                const isCandidate =
-                  (selectedCandidates.length > 0 &&
-                    selectedCandidates.includes(cuid)) ||
-                  (selectedCandidates.length === 0 &&
-                    hoverCandidateCuid === cuid);
-
-                const isDateSelected =
-                  (selectedDates.length > 0 &&
-                    selectedDates.some((d) => d.isSame(date, "day"))) ||
-                  (selectedDates.length === 0 &&
-                    hoverDate &&
-                    hoverDate.isSame(date, "day"));
-
-                if (isCandidate && isDateSelected) {
+                if (isCandidate && isDate) {
                   acc[0][currentDate] = [
                     ...(acc[0][currentDate] || []),
                     {
@@ -510,12 +557,7 @@ function RosterDataContextProvider({ children }: { children: ReactNode }) {
               }
 
               if (itemType === "roster") {
-                const isCandidate = hoverCandidateCuid === cuid;
-
-                const isDateSelected =
-                  hoverDate && hoverDate.isSame(date, "day");
-
-                if (isCandidate && isDateSelected) {
+                if (isCandidate && isDate) {
                   acc[0][currentDate] = [
                     ...(acc[0][currentDate] || []),
                     {
@@ -554,12 +596,13 @@ function RosterDataContextProvider({ children }: { children: ReactNode }) {
     rosterData,
     dateRangeEnd,
     dateRangeStart,
-    item,
+    hoverCandidateCuid,
+    hoverDate,
     itemType,
     selectedCandidates,
-    hoverCandidateCuid,
     selectedDates,
-    hoverDate,
+    isPerformanceMode,
+    item,
   ]);
 
   return (

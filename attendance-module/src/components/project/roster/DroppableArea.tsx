@@ -6,6 +6,7 @@ import { useProjectContext } from "../../../providers/projectContextProvider";
 import {
   useRosterDraggingContext,
   useRosterItemContext,
+  useRosterTableContext,
 } from "../../../providers/rosterContextProvider";
 
 import DraggableRoster from "./DraggableRoster";
@@ -35,6 +36,7 @@ export default function DroppableArea({
   const { project } = useProjectContext();
 
   const { item } = useRosterItemContext();
+  const { isPerformanceMode } = useRosterTableContext();
   const { setHoverDate, setHoverCandidateCuid } = useRosterDraggingContext();
 
   const [tooltip, setTooltip] = useState<React.ReactElement | null>(null);
@@ -106,7 +108,9 @@ export default function DroppableArea({
           background: isOutOfDateRange
             ? "rgba(0, 0, 0, 0.08)"
             : item
-            ? isPossible
+            ? isPerformanceMode
+              ? "inherit"
+              : isPossible
               ? date.format("ddd").toUpperCase() === candidate.restDay
                 ? "repeating-linear-gradient(135deg,rgba(0, 128, 0, 0.08),rgba(0, 128, 0, 0.08) 10px,#ffffff 10px,#ffffff 20px)"
                 : "rgba(0, 128, 0, 0.08)"

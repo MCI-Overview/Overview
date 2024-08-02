@@ -20,6 +20,8 @@ import {
   ListItem,
   ListItemButton,
   Sheet,
+  Stack,
+  Switch,
   Table,
   ToggleButtonGroup,
   Typography,
@@ -41,7 +43,9 @@ export default function RosterSidebar() {
     dateRangeStart,
     dateRangeEnd,
     selectedCandidates,
-    selectedDates: selectedDates,
+    selectedDates,
+    isPerformanceMode,
+    setIsPerformanceMode,
   } = useRosterTableContext();
   const [filterState, setFilterState] = useState<
     "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF"
@@ -194,6 +198,22 @@ export default function RosterSidebar() {
         </Table>
       </div>
       <Box sx={{ mt: "auto", flexGrow: 0, mb: 2 }}>
+        <Stack
+          direction="row"
+          sx={{
+            placeItems: "center",
+            placeContent: "space-between",
+          }}
+          paddingX={1}
+          paddingY={1.5}
+          component="label"
+        >
+          Performance Mode
+          <Switch
+            checked={isPerformanceMode}
+            onChange={() => setIsPerformanceMode(!isPerformanceMode)}
+          />
+        </Stack>
         <Divider />
         <List
           size="sm"
