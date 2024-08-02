@@ -57,7 +57,7 @@ const UserAttendanceHistoryPage = () => {
     try {
       let url = `/api/user/history/${page}`;
       if (date) {
-        const formattedDate = dayjs(date).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+        const formattedDate = dayjs(date).toISOString();
         url += `?date=${formattedDate}`;
       }
       const response = await axios.get(url);
