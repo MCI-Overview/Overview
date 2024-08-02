@@ -482,12 +482,11 @@ const formatStartAndEndDates = (
   startDate: Dayjs,
   timespan: "day" | "week" | "month" | "isoWeek"
 ) => {
-  const format = (date: Dayjs) => date.format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
   if (timespan === "week") timespan = "isoWeek";
 
   return {
-    formattedStartDate: format(startDate.startOf(timespan)),
-    formattedEndDate: format(startDate.endOf(timespan)),
+    formattedStartDate: startDate.startOf(timespan),
+    formattedEndDate: startDate.endOf(timespan),
   };
 };
 

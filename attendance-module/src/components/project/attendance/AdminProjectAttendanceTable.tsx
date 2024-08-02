@@ -198,8 +198,7 @@ const AdminProjectAttendanceTable = ({
 const getStartColor = (rawStart: Dayjs | null, shiftStart: Dayjs) => {
   if (!rawStart) return undefined;
 
-  const diff = rawStart.diff(shiftStart);
-  return diff < 0 ? "success" : "warning";
+  return rawStart.isAfter(shiftStart, "minute") ? "warning" : "success";
 };
 
 const getEndColor = (
@@ -209,8 +208,7 @@ const getEndColor = (
 ) => {
   if (!rawEnd) return rawStart ? "warning" : undefined;
 
-  const diff = rawEnd.diff(shiftEnd);
-  return diff > 0 ? "success" : "warning";
+  return rawEnd.isBefore(shiftEnd, "minute") ? "warning" : "success";
 };
 
 export default AdminProjectAttendanceTable;

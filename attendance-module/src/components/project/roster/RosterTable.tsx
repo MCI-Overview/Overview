@@ -24,20 +24,25 @@ import {
   Typography,
 } from "@mui/joy";
 import { store } from "../../../store";
+import { useEffect } from "react";
+import WeekPicker from "./WeekPicker";
 
-type RosterTableProps = {
-  type: "ATTENDANCE" | "ROSTER";
-};
-
-export default function RosterTable({ type }: RosterTableProps) {
+export default function RosterTable({
+  viewOnly,
+  size,
+}: {
+  viewOnly?: boolean;
+  size: "md" | "lg";
+}) {
   const { project } = useProjectContext();
   const {
-    dateRangeStart,
-    dateRangeEnd,
+    selectedDates,
+    setSelectedDates,
     selectedCandidates,
-    dates,
-    setDates,
     setSelectedCandidates,
+    dateRangeEnd,
+    dateRangeStart,
+    showAttendance,
   } = useRosterTableContext();
 
   const { rosterData, updateRosterData, sortedCandidates } =
@@ -56,6 +61,15 @@ export default function RosterTable({ type }: RosterTableProps) {
       createdAt: string;
     }[]
   >;
+
+  useEffect(() => {
+    return () => {
+      if (!viewOnly) {
+        setSelectedDates([]);
+        setSelectedCandidates([]);
+      }
+    };
+  }, [setSelectedDates, setSelectedCandidates, viewOnly]);
 
   const [{ item, itemType }, drop] = useDrop({
     accept: ["shift", "roster", "candidate"],
@@ -154,209 +168,219 @@ export default function RosterTable({ type }: RosterTableProps) {
   const numberOfDays = dateRangeEnd.diff(dateRangeStart, "days") + 1;
 
   return (
-    <Sheet
-      ref={drop}
-      variant="outlined"
-      className="roster-table"
-      sx={{
-        "--TableCell-height": "3rem",
-        "--Table-firstColumnWidth": "200px",
-        overflow: "auto",
-        maxHeight: type === "ATTENDANCE" ? "65dvh" : "87dvh",
-      }}
-    >
-      <Table
-        borderAxis="bothBetween"
+    <>
+      {" "}
+      <WeekPicker />
+      <Sheet
+        ref={drop}
+        variant="outlined"
+        className="roster-table"
         sx={{
-          "& tr > td:first-of-type": {
-            position: "sticky",
-            left: 0,
-            boxShadow: "1px 0 var(--TableCell-borderColor)",
-            bgcolor: "background.surface",
-            zIndex: 1,
-            wordWrap: "break-word",
-          },
-          "& tr > th:first-of-type": {
-            position: "sticky",
-            left: 0,
-            boxShadow: "1px 0 var(--TableCell-borderColor)",
-            bgcolor: "background.surface",
-            zIndex: 3,
-          },
-          th: {
-            position: "sticky",
-            top: 0,
-            bottom: 0,
-            boxShadow: "1px 0 var(--TableCell-borderColor)",
-            bgcolor: "background.surface",
-            zIndex: 2,
-          },
+          "--TableCell-height": "3rem",
+          "--Table-firstColumnWidth": "200px",
+          overflow: "auto",
+          maxHeight: size === "md" ? "65dvh" : "87dvh",
         }}
       >
-        <thead>
-          <tr>
-            <th
-              style={{
-                width: "var(--Table-firstColumnWidth)",
-                alignContent: "center",
-                placeContent: "center",
-              }}
-            >
-              <Stack direction="row" gap={1}>
-                <Checkbox
-                  overlay
-                  sx={{
-                    display: type === "ATTENDANCE" ? "none" : "block",
-                  }}
-                  checked={
-                    selectedCandidates.length > 0 &&
-                    selectedCandidates.length === sortedCandidates.length
-                  }
-                  indeterminate={
-                    selectedCandidates.length > 0 &&
-                    selectedCandidates.length !== sortedCandidates.length
-                  }
-                  onChange={(e) => {
-                    setSelectedCandidates(
-                      e.target.checked ? sortedCandidates : []
-                    );
-                  }}
-                />
-                {`Name ${
-                  selectedCandidates.length > 0
-                    ? `(${selectedCandidates.length} of ${sortedCandidates.length})`
-                    : ""
-                }`}
-              </Stack>
-            </th>
-
-            {Array.from({
-              length: numberOfDays,
-            }).map((_, index) => {
-              const date = dateRangeStart.add(index, "days");
-              const holiday = publicHolidays[date.year()]?.find((holiday) =>
-                dayjs(holiday.date).isSame(date, "day")
-              );
-              return (
-                <th
-                  key={index}
-                  style={{
-                    width: "9rem",
-                    alignContent: "center",
-                    placeContent: "center",
-                  }}
-                >
-                  <Stack direction="row" gap={1}>
-                    <Checkbox
-                      overlay
-                      sx={{
-                        display: type === "ATTENDANCE" ? "none" : "block",
-                      }}
-                      checked={dates.some((otherDate) =>
-                        otherDate.isSame(date, "day")
-                      )}
-                      onChange={(e) => {
-                        setDates(
-                          e.target.checked
-                            ? [...dates, date]
-                            : dates.filter((d) => !d.isSame(date, "day"))
-                        );
-                      }}
-                    />
-                    {date.format("ddd DD MMM")}
-                    {holiday && (
-                      <Tooltip title={holiday.name}>
-                        <Chip
-                          size="sm"
-                          variant="solid"
-                          color="danger"
-                          sx={{ borderColor: "primary.main" }}
-                        >
-                          PH
-                        </Chip>
-                      </Tooltip>
-                    )}
-                  </Stack>
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody
-          style={{
-            scrollBehavior: "smooth",
-            scrollSnapType: "y mandatory",
+        <Table
+          borderAxis="bothBetween"
+          sx={{
+            "& tr > td:first-of-type": {
+              position: "sticky",
+              left: 0,
+              boxShadow: "1px 0 var(--TableCell-borderColor)",
+              bgcolor: "background.surface",
+              zIndex: 1,
+              wordWrap: "break-word",
+            },
+            "& tr > th:first-of-type": {
+              position: "sticky",
+              left: 0,
+              boxShadow: "1px 0 var(--TableCell-borderColor)",
+              bgcolor: "background.surface",
+              zIndex: 3,
+            },
+            th: {
+              position: "sticky",
+              top: 0,
+              bottom: 0,
+              boxShadow: "1px 0 var(--TableCell-borderColor)",
+              bgcolor: "background.surface",
+              zIndex: 2,
+            },
           }}
         >
-          {rosterData && Object.keys(rosterData).length === 0 && (
+          <thead>
             <tr>
-              <td colSpan={8}>
-                <Typography textAlign="center">
-                  No candidates available
-                </Typography>
-              </td>
-            </tr>
-          )}
-          {sortedCandidates.map((cuid) => {
-            const candidate = rosterData[cuid];
-            return (
-              <tr key={cuid}>
-                <td>
-                  <Stack direction="row" gap={1} alignItems="center">
-                    <Checkbox
-                      overlay
-                      sx={{
-                        display: type === "ATTENDANCE" ? "none" : "block",
-                      }}
-                      checked={selectedCandidates.includes(cuid)}
-                      onChange={(e) => {
-                        setSelectedCandidates(
-                          e.target.checked
-                            ? [...selectedCandidates, cuid]
-                            : selectedCandidates.filter((c) => c !== cuid)
-                        );
-                      }}
-                    />
-                    <Stack direction="column" gap={1}>
-                      <Typography level="title-sm">{candidate.name}</Typography>
-                      <Typography level="body-xs">
-                        {candidate.employeeId}
-                      </Typography>
+              <th
+                style={{
+                  width: "var(--Table-firstColumnWidth)",
+                  alignContent: "center",
+                  placeContent: "center",
+                }}
+              >
+                <Stack direction="row" gap={1}>
+                  <Checkbox
+                    overlay
+                    sx={{
+                      display: viewOnly ? "none" : "block",
+                    }}
+                    checked={
+                      selectedCandidates.length > 0 &&
+                      selectedCandidates.length === sortedCandidates.length
+                    }
+                    indeterminate={
+                      selectedCandidates.length > 0 &&
+                      selectedCandidates.length !== sortedCandidates.length
+                    }
+                    onChange={(e) => {
+                      setSelectedCandidates(
+                        e.target.checked ? sortedCandidates : []
+                      );
+                    }}
+                  />
+                  {`Name ${
+                    selectedCandidates.length > 0 && !viewOnly
+                      ? `(${selectedCandidates.length} of ${sortedCandidates.length})`
+                      : ""
+                  }`}
+                </Stack>
+              </th>
+
+              {Array.from({
+                length: numberOfDays,
+              }).map((_, index) => {
+                const date = dateRangeStart.add(index, "days");
+                const holiday = publicHolidays[date.year()]?.find((holiday) =>
+                  dayjs(holiday.date).isSame(date, "day")
+                );
+                return (
+                  <th
+                    key={index}
+                    style={{
+                      width: "9rem",
+                      alignContent: "center",
+                      placeContent: "center",
+                    }}
+                  >
+                    <Stack direction="row" gap={1}>
+                      <Checkbox
+                        overlay
+                        sx={{
+                          display: viewOnly ? "none" : "block",
+                        }}
+                        checked={selectedDates.some((otherDate) =>
+                          otherDate.isSame(date, "day")
+                        )}
+                        onChange={(e) => {
+                          setSelectedDates(
+                            e.target.checked
+                              ? [...selectedDates, date]
+                              : selectedDates.filter(
+                                  (d) => !d.isSame(date, "day")
+                                )
+                          );
+                        }}
+                      />
+                      {date.format("ddd DD MMM")}
+                      {holiday && (
+                        <Tooltip title={holiday.name}>
+                          <Chip
+                            size="sm"
+                            variant="solid"
+                            color="danger"
+                            sx={{ borderColor: "primary.main" }}
+                          >
+                            PH
+                          </Chip>
+                        </Tooltip>
+                      )}
                     </Stack>
-                  </Stack>
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody
+            style={{
+              scrollBehavior: "smooth",
+              scrollSnapType: "y mandatory",
+            }}
+          >
+            {rosterData && Object.keys(rosterData).length === 0 && (
+              <tr>
+                <td colSpan={8}>
+                  <Typography textAlign="center">
+                    No candidates available
+                  </Typography>
                 </td>
-                {Array.from({
-                  length: numberOfDays,
-                }).map((_, index) => {
-                  const date = dateRangeStart.add(index, "days");
-                  return (
-                    <DroppableArea
-                      type={type}
-                      candidate={{
-                        ...candidate,
-                        cuid,
-                        roster: [
-                          ...(rosterData[cuid].roster[
-                            date.format("DD-MM-YYYY")
-                          ] || []),
-                          ...(rosterData[cuid].newRoster[
-                            date.format("DD-MM-YYYY")
-                          ] || []),
-                        ],
-                      }}
-                      date={date}
-                    />
-                  );
-                })}
               </tr>
-            );
-          })}
-        </tbody>
-        <tfoot>
-          {type === "ATTENDANCE" && <AttendanceSummary />}
-          {type === "ROSTER" && <RosterSummary />}
-        </tfoot>
-      </Table>
-    </Sheet>
+            )}
+            {sortedCandidates.map((cuid) => {
+              const candidate = rosterData[cuid];
+
+              if (!candidate) return;
+
+              return (
+                <tr key={cuid}>
+                  <td>
+                    <Stack direction="row" gap={1} alignItems="center">
+                      <Checkbox
+                        overlay
+                        sx={{
+                          display: viewOnly ? "none" : "block",
+                        }}
+                        checked={selectedCandidates.includes(cuid)}
+                        onChange={(e) => {
+                          setSelectedCandidates(
+                            e.target.checked
+                              ? [...selectedCandidates, cuid]
+                              : selectedCandidates.filter((c) => c !== cuid)
+                          );
+                        }}
+                      />
+                      <Stack direction="column" gap={1}>
+                        <Typography level="title-sm">
+                          {candidate.name}
+                        </Typography>
+                        <Typography level="body-xs">
+                          {candidate.employeeId}
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                  </td>
+                  {Array.from({
+                    length: numberOfDays,
+                  }).map((_, index) => {
+                    const date = dateRangeStart.add(index, "days");
+                    return (
+                      <DroppableArea
+                        candidate={{
+                          ...candidate,
+                          cuid,
+                          roster: [
+                            ...(rosterData[cuid].roster[
+                              date.format("DD-MM-YYYY")
+                            ] || []),
+                            ...(rosterData[cuid].newRoster[
+                              date.format("DD-MM-YYYY")
+                            ] || []),
+                          ],
+                        }}
+                        date={date}
+                      />
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            {showAttendance && <AttendanceSummary />}
+            {!showAttendance && <RosterSummary />}
+          </tfoot>
+        </Table>
+      </Sheet>
+    </>
   );
 }

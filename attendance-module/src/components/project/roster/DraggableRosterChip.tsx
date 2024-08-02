@@ -65,7 +65,6 @@ export default function DraggableRosterChip({
           originalStartTime: startTime,
           originalEndTime: endTime,
           endTime,
-          displayType: "ROSTER",
         }}
         draggable
         opacity={isDragging ? 0.5 : 1}
