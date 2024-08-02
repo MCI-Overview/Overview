@@ -65,12 +65,9 @@ const AdminProjectAttendancePage = () => {
 
     const fetchUpcomingShifts = async (startDate: string, endDate: string) => {
       try {
-        const formattedStartDate = dayjs(startDate).format(
-          "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
-        );
-        const formattedEndDate = dayjs(endDate).format(
-          "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
-        );
+        const formattedStartDate = dayjs(startDate).toISOString();
+        const formattedEndDate = dayjs(endDate).toISOString();
+        
         const url = `/api/admin/project/${project.cuid}/history?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
 
         const response = await axios.get(url);

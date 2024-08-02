@@ -134,7 +134,7 @@ function RosterTableContextProvider({ children }: { children: ReactNode }) {
   );
 
   const [showAttendance, setShowAttendance] = useState<boolean>(true);
-  const [isPerformanceMode, setIsPerformanceMode] = useState<boolean>(true);
+  const [isPerformanceMode, setIsPerformanceMode] = useState<boolean>(false);
 
   const [selectedDates, setSelectedDates] = useState<dayjs.Dayjs[]>([]);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);

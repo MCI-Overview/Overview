@@ -57,7 +57,7 @@ const UserUpcomingShiftsPage = () => {
     try {
       let url = `/api/user/upcoming/${page}`;
       if (date) {
-        const formattedDate = dayjs(date).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+        const formattedDate = dayjs(date).toISOString();
         url += `?date=${formattedDate}`;
       }
       const response = await axios.get(url);

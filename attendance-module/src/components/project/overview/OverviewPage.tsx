@@ -112,12 +112,8 @@ const ProjectOverview = () => {
   useEffect(() => {
     const fetchUpcomingShifts = async () => {
       try {
-        const formattedStartDate = dayjs()
-          .startOf("day")
-          .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
-        const formattedEndDate = dayjs()
-          .endOf("day")
-          .format("YYYY-MM-DDTHH:mm:ss.SSS[Z]");
+        const formattedStartDate = dayjs().startOf("day").toISOString();
+        const formattedEndDate = dayjs().endOf("day").toISOString();
 
         axios
           .get(
