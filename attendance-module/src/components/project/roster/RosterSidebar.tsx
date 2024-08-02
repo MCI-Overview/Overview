@@ -215,7 +215,7 @@ export default function RosterSidebar() {
             onChange={() => setShowAttendance(!showAttendance)}
           />
         </Stack>
-        <Stack
+        {/* <Stack
           direction="row"
           sx={{
             placeItems: "center",
@@ -230,7 +230,7 @@ export default function RosterSidebar() {
             checked={isPerformanceMode}
             onChange={() => setIsPerformanceMode(!isPerformanceMode)}
           />
-        </Stack>
+        </Stack> */}
         <Divider />
         <List
           size="sm"
