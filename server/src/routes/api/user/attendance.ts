@@ -107,12 +107,15 @@ attendanceApiRouter.patch(
     }
 
     let body;
+    const clockInTimeObject = dayjs(clockInTime);
+    const startTimeObject = dayjs(startTime);
+
     if (!clockInTime) {
       body = { clockOutTime };
-    } else if (clockInTime < startTime) {
-      body = { clockInTime, status: AttendanceStatus.ON_TIME, location };
-    } else {
+    } else if (clockInTimeObject.isAfter(startTimeObject, "minute")) {
       body = { clockInTime, status: AttendanceStatus.LATE, location };
+    } else {
+      body = { clockInTime, status: AttendanceStatus.ON_TIME, location };
     }
 
     try {
