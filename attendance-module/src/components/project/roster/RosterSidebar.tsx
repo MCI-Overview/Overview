@@ -40,12 +40,14 @@ export default function RosterSidebar() {
   const { project, updateProject } = useProjectContext();
   const { updateRosterData } = useRosterDataContext();
   const {
+    showAttendance,
+    setShowAttendance,
+    isPerformanceMode,
+    setIsPerformanceMode,
     dateRangeStart,
     dateRangeEnd,
     selectedCandidates,
     selectedDates,
-    isPerformanceMode,
-    setIsPerformanceMode,
   } = useRosterTableContext();
   const [filterState, setFilterState] = useState<
     "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF"
@@ -198,6 +200,21 @@ export default function RosterSidebar() {
         </Table>
       </div>
       <Box sx={{ mt: "auto", flexGrow: 0, mb: 2 }}>
+        <Stack
+          direction="row"
+          sx={{
+            placeItems: "center",
+            placeContent: "space-between",
+          }}
+          component="label"
+          paddingX={1}
+        >
+          Show Attendance
+          <Switch
+            checked={showAttendance}
+            onChange={() => setShowAttendance(!showAttendance)}
+          />
+        </Stack>
         <Stack
           direction="row"
           sx={{

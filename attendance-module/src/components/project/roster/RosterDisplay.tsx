@@ -34,6 +34,7 @@ import {
   FreeBreakfastRounded as BreakIcon,
   PunchClockRounded as PunchClockIcon,
 } from "@mui/icons-material";
+import { useRosterTableContext } from "../../../providers/rosterContextProvider";
 
 export type RosterDisplayProps = {
   data: {
@@ -54,7 +55,6 @@ export type RosterDisplayProps = {
     clockOutTime?: dayjs.Dayjs;
     isPartial: boolean;
     state?: "LOADING" | "PREVIEW";
-    displayType?: "ATTENDANCE" | "ROSTER";
   };
   draggable: boolean;
   opacity?: number;
@@ -98,6 +98,7 @@ export default function RosterDisplay({
 }: RosterDisplayProps) {
   const { user } = useUserContext();
   const { project } = useProjectContext();
+  const { showAttendance } = useRosterTableContext();
 
   const [open, setOpen] = useState(false);
 
@@ -198,7 +199,7 @@ export default function RosterDisplay({
         }}
         seed={data.shiftCuid}
         color={
-          data.displayType === "ATTENDANCE"
+          showAttendance
             ? getAttendanceColor(data.status, data.leave)
             : undefined
         }

@@ -14,7 +14,6 @@ export type DraggableRosterProps = RosterDisplayProps["data"];
 
 export default function DraggableRoster({
   breakDuration,
-  displayType,
   shiftCuid,
   rosterCuid,
   projectCuid,
@@ -69,13 +68,7 @@ export default function DraggableRoster({
       const isSameProject = !projectCuid || projectCuid === project?.cuid;
       const futureRoster = startTime.isAfter(dayjs());
 
-      return (
-        isSameProject &&
-        futureRoster &&
-        !status &&
-        !leave &&
-        displayType === "ROSTER"
-      );
+      return isSameProject && futureRoster && !status && !leave;
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
@@ -96,7 +89,6 @@ export default function DraggableRoster({
     <span ref={drag}>
       <RosterDisplay
         data={{
-          displayType,
           shiftCuid,
           rosterCuid,
           projectCuid,

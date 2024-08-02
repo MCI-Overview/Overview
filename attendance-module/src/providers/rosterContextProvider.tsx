@@ -45,9 +45,11 @@ const RosterTableContext = createContext<{
     | "assign";
   weekOffset: number;
   dateRangeEnd: dayjs.Dayjs;
+  showAttendance: boolean;
   isPerformanceMode: boolean;
   dateRangeStart: dayjs.Dayjs;
   selectedCandidates: string[];
+  setShowAttendance: (showAttendance: boolean) => void;
   setIsPerformanceMode: (isPerformanceMode: boolean) => void;
   setSelectedDates: (selectedDates: dayjs.Dayjs[]) => void;
   setSortOrder: (
@@ -68,7 +70,9 @@ const RosterTableContext = createContext<{
   dateRangeStart: dayjs(),
   selectedCandidates: [],
   sortOrder: "employeeId-asc",
-  isPerformanceMode: true,
+  isPerformanceMode: false,
+  showAttendance: true,
+  setShowAttendance: () => {},
   setIsPerformanceMode: () => {},
   setSelectedDates: () => {},
   setSortOrder: () => {},
@@ -129,6 +133,7 @@ function RosterTableContextProvider({ children }: { children: ReactNode }) {
       0
   );
 
+  const [showAttendance, setShowAttendance] = useState<boolean>(true);
   const [isPerformanceMode, setIsPerformanceMode] = useState<boolean>(true);
 
   const [selectedDates, setSelectedDates] = useState<dayjs.Dayjs[]>([]);
@@ -153,18 +158,20 @@ function RosterTableContextProvider({ children }: { children: ReactNode }) {
   return (
     <RosterTableContext.Provider
       value={{
+        showAttendance,
+        setShowAttendance,
         isPerformanceMode,
+        setIsPerformanceMode,
         selectedDates,
+        setSelectedDates,
         sortOrder,
+        setSortOrder,
         weekOffset,
+        setWeekOffset,
+        selectedCandidates,
+        setSelectedCandidates,
         dateRangeEnd,
         dateRangeStart,
-        selectedCandidates,
-        setIsPerformanceMode,
-        setSelectedDates,
-        setSortOrder,
-        setWeekOffset,
-        setSelectedCandidates,
       }}
     >
       {children}

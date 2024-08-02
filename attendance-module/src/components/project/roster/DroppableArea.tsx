@@ -25,11 +25,9 @@ export type Candidate = {
 };
 
 export default function DroppableArea({
-  type,
   candidate,
   date,
 }: {
-  type: "ATTENDANCE" | "ROSTER";
   candidate: Candidate;
   date: dayjs.Dayjs;
 }) {
@@ -125,7 +123,6 @@ export default function DroppableArea({
             .sort((a, b) => (a.startTime.isBefore(b.startTime) ? -1 : 1))
             .map((roster) => (
               <DraggableRoster
-                displayType={type}
                 key={`${roster.rosterCuid} ${roster.type} ${roster.status} ${roster.shiftCuid} ${roster.originalStartTime} ${roster.originalEndTime} ${roster.startTime} ${roster.endTime}`}
                 clientHolderCuids={roster.clientHolderCuids}
                 status={roster.status}
