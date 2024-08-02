@@ -1,6 +1,7 @@
 import axios from "axios";
+import dayjs from "dayjs";
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CommonCandidate } from "../../../types/common";
 import { useProjectContext } from "../../../providers/projectContextProvider";
 
@@ -8,20 +9,24 @@ import AddCandidateModal from "./AddCandidateModal";
 import AssignCandidateModal from "./AssignCandidateModal";
 import DeleteCandidateModal from "./DeleteCandidateModal";
 import SmallScreenDivider from "../ui/SmallScreenDivider";
-import CandidateTable from "./CandidateTable";
+import AdminProjectCandidateTable, {
+  CddTableDataType,
+} from "./AdminProjectCandidateTable";
 
 import {
   Box,
-  Input,
+  Button,
+  Checkbox,
+  Dropdown,
   FormControl,
   FormLabel,
+  IconButton,
+  Input,
+  Menu,
+  MenuButton,
+  MenuItem,
   Stack,
   Tooltip,
-  IconButton,
-  Dropdown,
-  MenuButton,
-  Menu,
-  MenuItem,
   Typography,
 } from "@mui/joy";
 import {
@@ -30,37 +35,87 @@ import {
   SearchRounded as SearchIcon,
 } from "@mui/icons-material";
 
+type SortableKeys = "age" | "startDate" | "endDate";
+const getHeadComponents: () => {
+  name: string;
+  sortKey?: SortableKeys;
+}[] = () => {
+  return [
+    { name: "Employee ID" },
+    { name: "NRIC" },
+    { name: "Name" },
+    { name: "Contact" },
+    { name: "Date of Birth" },
+    { name: "Age", sortKey: "age" },
+    { name: "Residency" },
+    { name: "Start Date", sortKey: "startDate" },
+    { name: "End Date", sortKey: "endDate" },
+    { name: "Employment Type" },
+    { name: "Rest Day" },
+    { name: "Consultant" },
+    { name: "Action" },
+  ];
+};
+
 const AdminProjectCandidatesPage = () => {
   const { project, updateProject } = useProjectContext();
 
-  const candidatesData =
-    project?.candidates?.map((cdd) => {
-      return {
-        cuid: cdd.cuid,
-        nric: cdd.nric,
-        name: cdd.name,
-        contact: cdd.contact,
-        residency: cdd.residency,
-        dateOfBirth: cdd.dateOfBirth,
-        createdAt: cdd.createdAt,
-        startDate: cdd.startDate,
-        endDate: cdd.endDate,
-        hasOnboarded: cdd.hasOnboarded,
-        employmentType: cdd.employmentType,
-        consultantCuid: cdd.consultantCuid,
-        consultantName: project?.consultants.find(
-          (c) => c.cuid === cdd.consultantCuid
-        )!.name,
-        restDay: cdd.restDay,
-        employeeId: cdd.employeeId,
-      };
-    }) || [];
+  const [candidatesData, setCandidatesData] = useState<CddTableDataType[]>([]);
+
+  useEffect(() => {
+    setCandidatesData(
+      project?.candidates?.map((cdd) => {
+        return {
+          cuid: cdd.cuid,
+          nric: cdd.nric,
+          name: cdd.name,
+          contact: cdd.contact,
+          residency: cdd.residency,
+          dateOfBirth: cdd.dateOfBirth,
+          createdAt: cdd.createdAt,
+          startDate: cdd.startDate,
+          endDate: cdd.endDate,
+          hasOnboarded: cdd.hasOnboarded,
+          employmentType: cdd.employmentType,
+          consultantCuid: cdd.consultantCuid,
+          consultantName: project?.consultants.find(
+            (c) => c.cuid === cdd.consultantCuid
+          )!.name,
+          restDay: cdd.restDay,
+          employeeId: cdd.employeeId,
+        };
+      }) || []
+    );
+  }, [project]);
 
   const [searchValue, setSearchValue] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [newTableData, setNewTableData] = useState<CddTableDataType[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [candidatesToDelete, setCandidatesToDelete] = useState<string[]>([]);
+  const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
+  const [showColumnsList, setShowColumnsList] = useState<boolean[]>([
+    true, // employeeId
+    true, // nric
+    true, // name
+    false, // contact
+    false, // dateOfBirth
+    false, // age
+    false, // residency
+    true, // startDate
+    true, // endDate
+    true, // employmentType
+    true, // restDay
+    true, // consultant
+    false, // action
+  ]);
+
+  const unhideableColumnIndexes = [
+    0, // employeeId
+    1, // nric
+    2, // name
+  ];
 
   // TODO: Fix type
   const matchSearchValue = (c: CommonCandidate) =>
@@ -84,6 +139,64 @@ const AdminProjectCandidatesPage = () => {
     } catch (error) {
       setIsDeleteModalOpen(false);
       toast.error("Error while removing candidate");
+    }
+  };
+
+  useEffect(() => {
+    setNewTableData(structuredClone(candidatesData));
+  }, [candidatesData]);
+
+  const handleEditCandidates = async () => {
+    const editedRows = newTableData.filter((cdd) => {
+      const originalCdd = candidatesData.find((c) => c.cuid === cdd.cuid);
+      return (
+        cdd.startDate !== originalCdd?.startDate ||
+        cdd.endDate !== originalCdd?.endDate ||
+        cdd.employmentType !== originalCdd?.employmentType ||
+        cdd.restDay !== originalCdd?.restDay ||
+        cdd.consultantCuid !== originalCdd?.consultantCuid ||
+        cdd.employeeId !== originalCdd?.employeeId
+      );
+    });
+
+    if (editedRows.length === 0) {
+      toast.error("No changes made");
+      return;
+    }
+
+    // validate all start and end dates exist and are valid
+    const hasSomeInvalidDates = editedRows.some(
+      (cdd) =>
+        !cdd.startDate ||
+        !cdd.endDate ||
+        dayjs(cdd.startDate).isAfter(dayjs(cdd.endDate), "day")
+    );
+
+    if (hasSomeInvalidDates) {
+      toast.error("Invalid start/end dates");
+      return;
+    }
+
+    try {
+      // only rows that were changed
+      const body = editedRows.map((cdd) => {
+        return {
+          candidateCuid: cdd.cuid,
+          employeeId: cdd.employeeId,
+          startDate: dayjs(cdd.startDate),
+          endDate: dayjs(cdd.endDate),
+          employmentType: cdd.employmentType,
+          restDay: cdd.restDay,
+          consultantCuid: cdd.consultantCuid,
+        };
+      });
+
+      await axios.patch(`/api/admin/project/${project?.cuid}/assign`, body);
+
+      updateProject();
+      toast.success("Candidate changes saved");
+    } catch (error) {
+      toast.error("Error while editing candidate");
     }
   };
 
@@ -115,6 +228,64 @@ const AdminProjectCandidatesPage = () => {
             fullWidth
           />
         </FormControl>
+
+        <Button
+          onClick={handleEditCandidates}
+          size="sm"
+          sx={{
+            mt: "auto",
+            display: { xs: "none", sm: "flex" },
+          }}
+        >
+          Save changes
+        </Button>
+
+        <Dropdown>
+          <MenuButton
+            variant="solid"
+            color="primary"
+            size="sm"
+            sx={{
+              mt: "auto",
+              display: { xs: "none", sm: "flex" },
+            }}
+            onClick={() => setIsColumnSelectorOpen((prev) => !prev)}
+          >
+            Columns
+            <ArrowDropDownIcon />
+          </MenuButton>
+
+          <Menu
+            open={isColumnSelectorOpen}
+            onClose={() => setIsColumnSelectorOpen(false)}
+            onMouseLeave={() => setIsColumnSelectorOpen(false)}
+          >
+            {getHeadComponents().map((column, index) => {
+              if (unhideableColumnIndexes.includes(index)) return null;
+              return (
+                <MenuItem
+                  key={index}
+                  onClick={() => {
+                    const newShowColumnsList = [...showColumnsList];
+                    newShowColumnsList[index] = !showColumnsList[index];
+                    setShowColumnsList(newShowColumnsList);
+                  }}
+                >
+                  <Checkbox
+                    checked={showColumnsList[index]}
+                    color="neutral"
+                    onChange={() => {
+                      const newShowColumnsList = [...showColumnsList];
+                      newShowColumnsList[index] = !showColumnsList[index];
+                      setShowColumnsList(newShowColumnsList);
+                    }}
+                    label={column.name}
+                  />
+                </MenuItem>
+              );
+            })}
+          </Menu>
+        </Dropdown>
 
         <Dropdown>
           <MenuButton
@@ -163,10 +334,12 @@ const AdminProjectCandidatesPage = () => {
 
       <SmallScreenDivider />
 
-      <CandidateTable
+      <AdminProjectCandidateTable
         tableData={candidatesData.filter((c) => matchSearchValue(c))}
         handleDelete={handleConfirmDeletion}
-        showCandidateHolder={true}
+        showColumnsList={showColumnsList}
+        newTableData={newTableData.filter((c) => matchSearchValue(c))}
+        setNewTableData={setNewTableData}
       />
 
       <AssignCandidateModal

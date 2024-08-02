@@ -2,9 +2,8 @@ import dayjs from "dayjs";
 import { Fragment, useState } from "react";
 import { useUserContext } from "../../../providers/userContextProvider";
 import { useProjectContext } from "../../../providers/projectContextProvider";
-import { checkPermission } from "../../../utils/permission";
 import { readableEnum } from "../../../utils/capitalize";
-import { CommonCandidate, PermissionList } from "../../../types/common";
+import { CommonCandidate } from "../../../types/common";
 import { ThTypo, TdTypo } from "../ui/TableTypo";
 
 import {
@@ -13,7 +12,6 @@ import {
   CardOverflow,
   Chip,
   ColorPaletteProp,
-  IconButton,
   Link,
   List,
   ListDivider,
@@ -22,11 +20,9 @@ import {
   Sheet,
   Table,
   TableProps,
-  Tooltip,
   Typography,
 } from "@mui/joy";
 import {
-  DeleteRounded as DeleteIcon,
   ArrowUpwardRounded as ArrowUpwardIcon,
   ArrowDownwardRounded as ArrowDownwardIcon,
   SwapVertRounded as SwapVertIcon,
@@ -39,26 +35,20 @@ export type CddTableDataType = CommonCandidate & {
 };
 
 export interface CandidateTableProps {
-  tableTitle?: string;
-  tableDescription?: string;
+  tableTitle: string;
+  tableDescription: string;
   tableProps?: TableProps;
   tableData: CddTableDataType[];
-  handleDelete?: (nricList: string[]) => void;
-  showCandidateHolder?: boolean;
-  showRestDay?: boolean;
 }
 
 // List of sortable keys
 type SortableKeys = "age" | "startDate" | "endDate";
 
-const CandidateTable = ({
+const AssignCandidateTable = ({
   tableTitle,
   tableDescription,
   tableProps,
   tableData,
-  handleDelete,
-  showCandidateHolder = false,
-  showRestDay = false,
 }: CandidateTableProps) => {
   const { user } = useUserContext();
   const { project } = useProjectContext();
@@ -73,19 +63,6 @@ const CandidateTable = ({
 
   // Early return if user or project is null
   if (!project || !user) return null;
-
-  const hasEditProjectPermission =
-    project.consultants
-      .filter((c) => c.role === "CLIENT_HOLDER")
-      .some((c) => c.cuid === user.cuid) ||
-    checkPermission(user, PermissionList.CAN_EDIT_ALL_PROJECTS);
-
-  const isHolder = (cddCuid: string) => {
-    return (
-      project.candidates.find((c) => c.cuid === cddCuid)?.consultantCuid ===
-      user.cuid
-    );
-  };
 
   const sortedData = [...tableData].sort((a, b) => {
     if (sortConfig.key) {
@@ -169,7 +146,6 @@ const CandidateTable = ({
                 <tr>
                   <ThTypo>Nric</ThTypo>
                   <ThTypo>Name</ThTypo>
-                  <ThTypo>Employee ID</ThTypo>
                   <ThTypo>Contact</ThTypo>
                   <ThTypo>Date of birth</ThTypo>
                   <ThTypo onClick={() => requestSort("age")}>
@@ -183,18 +159,14 @@ const CandidateTable = ({
                     {renderSortIcon("endDate")} End date
                   </ThTypo>
                   <ThTypo>Type</ThTypo>
-                  {showRestDay && <ThTypo>Rest day</ThTypo>}
-                  {showCandidateHolder && <ThTypo>Consultant</ThTypo>}
-                  {handleDelete && <ThTypo>Action</ThTypo>}
+                  <ThTypo>Rest day</ThTypo>
                 </tr>
               </thead>
 
               <tbody>
                 {sortedData.length === 0 ? (
                   <tr>
-                    <TdTypo colSpan={handleDelete ? 10 : 9}>
-                      No candidates found
-                    </TdTypo>
+                    <TdTypo colSpan={9}>No candidates found</TdTypo>
                   </tr>
                 ) : (
                   sortedData.map((row) => (
@@ -215,7 +187,6 @@ const CandidateTable = ({
                           row.name
                         )}
                       </TdTypo>
-                      <TdTypo>{row.employeeId}</TdTypo>
                       <TdTypo>{row.contact}</TdTypo>
                       <TdTypo>
                         {dayjs(row.dateOfBirth).format("DD/MM/YY")}
@@ -225,45 +196,7 @@ const CandidateTable = ({
                       <TdTypo>{dayjs(row.startDate).format("DD/MM/YY")}</TdTypo>
                       <TdTypo>{dayjs(row.endDate).format("DD/MM/YY")}</TdTypo>
                       <TdTypo>{readableEnum(row.employmentType)}</TdTypo>
-                      {showRestDay && (
-                        <TdTypo>{readableEnum(row.restDay)}</TdTypo>
-                      )}
-                      {showCandidateHolder && (
-                        <TdTypo>{row.consultantName}</TdTypo>
-                      )}
-
-                      {handleDelete && (
-                        <td>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              flexWrap: "wrap",
-                              justifyContent: "center",
-                              gap: 1,
-                            }}
-                          >
-                            {handleDelete && (
-                              <Tooltip
-                                size="sm"
-                                title="Delete"
-                                placement="right"
-                              >
-                                <IconButton
-                                  size="sm"
-                                  color="danger"
-                                  onClick={() => handleDelete([row.cuid])}
-                                  disabled={
-                                    !hasEditProjectPermission &&
-                                    !isHolder(row.cuid)
-                                  }
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Box>
-                        </td>
-                      )}
+                      <TdTypo>{readableEnum(row.restDay)}</TdTypo>
                     </tr>
                   ))
                 )}
@@ -365,4 +298,4 @@ const CandidateTable = ({
   );
 };
 
-export default CandidateTable;
+export default AssignCandidateTable;

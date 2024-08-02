@@ -2925,4 +2925,133 @@ projectAPIRouter.post(
   }
 );
 
+/**
+ * PATCH /api/admin/project/:projectCuid/assign
+ *
+ * Update the assign data for the project with the given cuid.
+ *
+ * Parameters:
+ * projectCuid
+ * editedRows : {
+ *   candidateCuid
+ *   employeeId
+ *   startDate
+ *   endDate
+ *   employmentType
+ *   restDay
+ *   consultantCuid
+ * }[]
+ *
+ * Steps:
+ * 1. Check permissions, requires either:
+ *  a. User is a client holder of the project
+ *  b. User has CAN_EDIT_ALL_PROJECTS permission
+ * 2. Validate the assign data
+ * 3. Update the assign data
+ */
+projectAPIRouter.patch("/project/:projectCuid/assign", async (req, res) => {
+  const user = req.user as User;
+  const { projectCuid } = req.params;
+  const editedRows = req.body;
+
+  if (!projectCuid) {
+    return res.status(400).send("projectCuid is required.");
+  }
+
+  let projectData;
+  try {
+    projectData = await prisma.project.findUniqueOrThrow({
+      where: {
+        cuid: projectCuid,
+      },
+      include: {
+        Manage: {
+          where: {
+            role: Role.CLIENT_HOLDER,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    const prismaError = error as PrismaError;
+    if (prismaError.code === "P2025") {
+      return res.status(404).send("Project does not exist.");
+    }
+
+    console.error(error);
+    return res.status(500).send({ error: "Internal server error." });
+  }
+
+  const hasPermission =
+    projectData.Manage.some((m) => m.consultantCuid === user.cuid) ||
+    (await checkPermission(user.cuid, PermissionList.CAN_EDIT_ALL_PROJECTS));
+
+  if (!hasPermission) {
+    return res
+      .status(401)
+      .send(PERMISSION_ERROR_TEMPLATE + PermissionList.CAN_EDIT_ALL_PROJECTS);
+  }
+
+  for (const row of editedRows) {
+    const {
+      candidateCuid,
+      employeeId,
+      startDate,
+      endDate,
+      employmentType,
+      restDay,
+      consultantCuid,
+    } = row;
+
+    if (
+      !candidateCuid ||
+      !employeeId ||
+      !startDate ||
+      !endDate ||
+      !restDay ||
+      !consultantCuid ||
+      !employmentType
+    ) {
+      return res.status(400).send("All fields are required.");
+    }
+  }
+
+  try {
+    await prisma.$transaction(
+      editedRows.map(
+        (row: {
+          candidateCuid: string;
+          employeeId: string;
+          startDate: string;
+          endDate: string;
+          employmentType: "FULL_TIME" | "PART_TIME";
+          restDay: "SUN" | "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT";
+          consultantCuid: string;
+        }) =>
+          prisma.assign.update({
+            where: {
+              projectCuid_candidateCuid: {
+                projectCuid,
+                candidateCuid: row.candidateCuid,
+              },
+            },
+            data: {
+              employeeId: row.employeeId,
+              startDate: new Date(row.startDate),
+              endDate: new Date(row.endDate),
+              employmentType: row.employmentType,
+              restDay: row.restDay,
+              consultantCuid: row.consultantCuid,
+            },
+          })
+      )
+    );
+
+    return res.send("Successfully updated assign data.");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ error: "Internal server error." });
+  }
+});
+
 export default projectAPIRouter;

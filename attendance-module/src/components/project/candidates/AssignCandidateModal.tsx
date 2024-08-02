@@ -12,10 +12,10 @@ import {
   sanitizeContact,
 } from "../../../utils/validation";
 import { generateCapitalizations } from "../../../utils/capitalize";
-import CandidateTable, {
+import AssignCandidateTable, {
   CandidateTableProps,
   CddTableDataType,
-} from "./CandidateTable";
+} from "./AssignCandidateTable";
 import LoadingRequestButton from "../../LoadingRequestButton";
 
 import {
@@ -377,7 +377,6 @@ const AssignCandidateModal = ({
         "These candidates will be added to the project upon submission.",
       tableProps: { stripe: "odd", size: "sm" },
       tableData: validCddList,
-      showRestDay: true,
     },
     {
       tableTitle: "Invalid Info",
@@ -385,7 +384,6 @@ const AssignCandidateModal = ({
         "These candidates have missing/invalid info and will be excluded from submission.",
       tableProps: { variant: "soft", color: "danger", size: "sm" },
       tableData: invalidCddList,
-      showRestDay: true,
     },
   ];
 
@@ -454,7 +452,7 @@ const AssignCandidateModal = ({
                 .filter((props) => props.tableData.length > 0)
                 .map((props, index) => (
                   <Box key={props.tableTitle}>
-                    <CandidateTable {...props} />
+                    <AssignCandidateTable {...props} />
                     {index !== candidateTableProps.length - 1 && (
                       <Divider sx={{ marginTop: "15px" }} />
                     )}
@@ -494,7 +492,7 @@ const AssignCandidateModal = ({
         <ModalOverflow>
           <ModalClose />
           <ModalDialog style={{ maxWidth: "65%" }}>
-            <CandidateTable
+            <AssignCandidateTable
               tableTitle="Already In Project"
               tableDescription="These candidates have already been added to the project previously. This is just for your information, no action is required."
               tableProps={{ variant: "soft", color: "warning", size: "sm" }}
